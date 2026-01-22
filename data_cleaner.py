@@ -279,7 +279,60 @@ class DataCleaner:
                         st.info(f"   Исправлено {mask.sum()} дат финиша")
                 except Exception as e:
                     st.warning(f"   Не удалось обработать даты финиша в '{col}': {str(e)[:100]}")
+
+        # === Проверка ошибок в годе ===
+        st.info("   🔍 Проверяю ошибки в годе дат...")
         
+        # Ищем колонки старта и финиша
+        start_date_cols = []
+        end_date_cols = []
+        
+        for col in date_cols:
+            col_lower = str(col).lower()
+            if any(word in col_lower for word in ['старт', 'начал', 'start']):
+                start_date_cols.append(col)
+            elif any(word in col_lower for word in ['финиш', 'конец', 'end']):
+                end_date_cols.append(col)
+        
+        # Если нашли обе колонки
+        if start_date_cols and end_date_cols:
+            for start_col in start_date_cols:
+                for end_col in end_date_cols:
+                    try:
+                        # Убедимся что обе колонки - datetime
+                        if (df_clean[start_col].dtype == 'datetime64[ns]' and 
+                            df_clean[end_col].dtype == 'datetime64[ns]'):
+                            
+                            # Находим строки где финиш раньше старта
+                            mask = df_clean[end_col] < df_clean[start_col]
+                            
+                            if mask.any():
+                                corrected_count = 0
+                                
+                                for idx in df_clean[mask].index:
+                                    start_date = df_clean.at[idx, start_col]
+                                    end_date = df_clean.at[idx, end_col]
+                                    
+                                    # Проверяем разницу (в днях)
+                                    diff_days = (start_date - end_date).days
+                                    
+                                    # Если разница от 1 до 365 дней
+                                    # → считаем что ошибка в годе
+                                    if 1 <= diff_days <= 365:
+                                        # Исправляем год финиша = год старта
+                                        corrected_date = end_date.replace(year=start_date.year)
+                                        df_clean.at[idx, end_col] = corrected_date
+                                        corrected_count += 1
+                                        st.info(f"      Строка {idx+1}: {end_date.date()} → {corrected_date.date()}")
+                                
+                                if corrected_count > 0:
+                                    st.success(f"   ✅ Исправлено {corrected_count} ошибок в годе")
+                                    date_rules_applied += corrected_count
+                                    
+                    except Exception as e:
+                        st.warning(f"   Ошибка проверки '{start_col}' и '{end_col}': {str(e)[:50]}")
+        
+        # === ИТОГИ ===
         if date_rules_applied > 0:
             st.success(f"   ✅ Применено {date_rules_applied} бизнес-правил для дат")
         else:
@@ -387,3 +440,4 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+

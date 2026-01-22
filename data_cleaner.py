@@ -492,7 +492,131 @@ class DataCleaner:
     
     return df_clean
 
-
+    def export_array_to_excel(self, cleaned_array_df, filename="очищенный_массив"):
+        """
+        Создает Excel файл для очищенного массива:
+        - Вкладка 1: Очищенные данные
+        - Вкладка 2: Строки с Н/Д (до замены)
+        - Вкладка 3: Строки с нулями в датах (до замены)
+        """
+        try:
+            if cleaned_array_df is None or cleaned_array_df.empty:
+                return None
+            
+            output = io.BytesIO()
+            
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                
+                # === ВКЛАДКА 1: Очищенные данные ===
+                cleaned_array_df.to_excel(writer, sheet_name='ОЧИЩЕННЫЙ МАССИВ', index=False)
+                
+                # === ВКЛАДКА 2: Строки где были Н/Д ===
+                # ТЕ ЖЕ значения что в clean_array!
+                na_values = ['Н/Д', 'н/д', 'N/A', 'n/a', '#Н/Д', '#н/д', 'NA', 'na', '-', '—', '–']
+                nan_values = ['nan', 'NaN', 'none', 'null', 'NULL', 'None']
+                
+                # Находим строки с такими значениями
+                na_mask_total = pd.Series(False, index=cleaned_array_df.index)
+                
+                for col in cleaned_array_df.columns:
+                    # Проверяем КАК СТРОКУ (как в clean_array)
+                    col_str = cleaned_array_df[col].astype(str).str.strip()
+                    
+                    # Проверяем каждое значение Н/Д
+                    for val in na_values:
+                        na_mask_total = na_mask_total | (col_str == val)
+                    
+                    # Проверяем nan значения
+                    for val in nan_values:
+                        na_mask_total = na_mask_total | (col_str.str.lower() == val)
+                
+                if na_mask_total.any():
+                    na_rows_df = cleaned_array_df[na_mask_total].copy()
+                    
+                    # Добавляем колонку с информацией
+                    reasons = []
+                    for idx in na_rows_df.index:
+                        empty_cols = []
+                        for col in cleaned_array_df.columns:
+                            col_val = str(cleaned_array_df.at[idx, col]).strip()
+                            col_val_lower = col_val.lower()
+                            
+                            # ТА ЖЕ ЛОГИКА что в clean_array
+                            if (col_val in na_values or 
+                                col_val_lower in nan_values or 
+                                col_val == ''):
+                                empty_cols.append(col)
+                        
+                        if empty_cols:
+                            reasons.append(', '.join(empty_cols[:3]) + 
+                                         ('...' if len(empty_cols) > 3 else ''))
+                        else:
+                            reasons.append('не определено')
+                    
+                    na_rows_df.insert(0, 'БЫЛИ_Н/Д_В_КОЛОНКАХ', reasons)
+                    na_rows_df.to_excel(writer, sheet_name='СТРОКИ С Н/Д', index=False)
+                else:
+                    pd.DataFrame({'Сообщение': ['Строк с Н/Д не найдено']}).to_excel(
+                        writer, sheet_name='СТРОКИ С Н/Д', index=False
+                    )
+                
+                # === ВКЛАДКА 3: Строки с суррогатными датами ===
+                DATE_COLUMNS = [
+                    'Дата визита', 'Дата создания проверки',
+                    'Дата назначения опроса за тайным покупателем',
+                    'Дата подтверждения опроса тайным покупателем',
+                    'Время окончания',
+                    'Время завершения ожидания статуса утверждения (Дата проведения опроса?)',
+                    'Время утверждения'
+                ]
+                
+                existing_date_cols = [col for col in DATE_COLUMNS if col in cleaned_array_df.columns]
+                
+                if existing_date_cols:
+                    SURROGATE_DATE = pd.Timestamp('1900-01-01')
+                    surrogate_mask = pd.Series(False, index=cleaned_array_df.index)
+                    
+                    for col in existing_date_cols:
+                        if cleaned_array_df[col].dtype == 'datetime64[ns]':
+                            mask = cleaned_array_df[col] == SURROGATE_DATE
+                            surrogate_mask = surrogate_mask | mask
+                    
+                    if surrogate_mask.any():
+                        surrogate_rows_df = cleaned_array_df[surrogate_mask].copy()
+                        
+                        # Добавляем информацию о каких датах идет речь
+                        date_reasons = []
+                        for idx in surrogate_rows_df.index:
+                            surrogate_dates = []
+                            for col in existing_date_cols:
+                                if (col in cleaned_array_df.columns and 
+                                    cleaned_array_df[col].dtype == 'datetime64[ns]' and
+                                    cleaned_array_df.at[idx, col] == SURROGATE_DATE):
+                                    surrogate_dates.append(col)
+                            
+                            if surrogate_dates:
+                                date_reasons.append(', '.join(surrogate_dates))
+                            else:
+                                date_reasons.append('дата не наступила')
+                        
+                        surrogate_rows_df.insert(0, 'НУЛИ_В_ДАТАХ', date_reasons)
+                        surrogate_rows_df.to_excel(writer, sheet_name='НУЛИ В ДАТАХ', index=False)
+                    else:
+                        pd.DataFrame({'Сообщение': ['Строк с нулями в датах не найдено']}).to_excel(
+                            writer, sheet_name='НУЛИ В ДАТАХ', index=False
+                        )
+                else:
+                    pd.DataFrame({'Сообщение': ['Колонки с датами не найдены']}).to_excel(
+                        writer, sheet_name='НУЛИ В ДАТАХ', index=False
+                    )
+            
+            output.seek(0)
+            return output
+            
+        except Exception as e:
+            st.error(f"Ошибка при создании Excel: {e}")
+            return None
+    
     def export_to_excel(self, original_df, cleaned_df, filename="очищенные_данные"):
         """
         Создает Excel файл с тремя вкладками для сравнения
@@ -559,5 +683,6 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 

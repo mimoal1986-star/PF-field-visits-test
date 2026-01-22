@@ -29,10 +29,44 @@ class DataCleaner:
         # === ШАГ 1: Удалить дубликаты записей ===
         st.write("**1️⃣ Удаляю дубликаты записей...**")
         
-        # ТОЛЬКО по трем полям как в инструкции
-        required_fields = ['Код проекта', 'Дата старта', 'Дата финиша']
-        existing_fields = [col for col in required_fields if col in df_clean.columns]
+        # Ищем поля с учетом реальных названий
+        code_field = self._find_column(df_clean, [
+            'Код проекта RU00.000.00.01SVZ24',  # Основное название
+            'Код проекта',
+            'Код',
+            'Project Code'
+        ])
         
+        start_date_field = self._find_column(df_clean, [
+            'Дата старта',
+            'Дата начала',
+            'Start Date'
+        ])
+        
+        end_date_field = self._find_column(df_clean, [
+            'Дата финиша с продлением',  # Основное название
+            'Дата финиша',
+            'Дата конца',
+            'End Date'
+        ])
+        
+        # Собираем найденные поля
+        existing_fields = []
+        field_display_names = []
+        
+        if code_field:
+            existing_fields.append(code_field)
+            field_display_names.append('Код проекта')
+            
+        if start_date_field:
+            existing_fields.append(start_date_field)
+            field_display_names.append('Дата старта')
+            
+        if end_date_field:
+            existing_fields.append(end_date_field)
+            field_display_names.append('Дата финиша')
+        
+        # Проверяем сколько полей нашлось
         if len(existing_fields) == 3:
             before = len(df_clean)
             df_clean = df_clean.drop_duplicates(subset=existing_fields, keep='first')
@@ -40,11 +74,34 @@ class DataCleaner:
             removed = before - after
             
             if removed > 0:
-                st.success(f"   ✅ Удалено {removed} дубликатов (по полям: {', '.join(existing_fields)})")
+                st.success(f"   ✅ Удалено {removed} дубликатов")
+                st.info(f"   По полям: {', '.join(field_display_names)}")
+                st.info(f"   Фактические имена: {', '.join(existing_fields)}")
             else:
                 st.info("   ℹ️ Дубликатов не найдено")
+                
+        elif len(existing_fields) >= 1:
+            st.warning(f"   ⚠️ Найдено только {len(existing_fields)} из 3 полей: {', '.join(field_display_names)}")
+            
+            # Все равно пытаемся удалить дубли по найденным полям
+            before = len(df_clean)
+            df_clean = df_clean.drop_duplicates(subset=existing_fields, keep='first')
+            after = len(df_clean)
+            removed = before - after
+            
+            if removed > 0:
+                st.success(f"   ✅ Удалено {removed} дубликатов (по найденным полям)")
+            else:
+                st.info("   ℹ️ Дубликатов не найдено по найденным полям")
+                
         else:
-            st.warning(f"   ⚠️ Не найдены все три поля для проверки дубликатов. Найдено: {existing_fields}")
+            st.warning("   ⚠️ Не найдено ни одного ключевого поля для проверки дубликатов")
+            st.info("   Проверьте названия колонок в файле")
+            
+            # Показываем какие колонки есть
+            st.info("   **Найденные колонки:**")
+            for i, col in enumerate(df_clean.columns[:10]):  # Первые 10 колонок
+                st.info(f"   {i+1}. {col}")
         
         # === ШАГ 2: Сжать пробелы в кодах проектов ===
         st.write("**2️⃣ Чищу пробелы в кодах проектов...**")
@@ -211,10 +268,20 @@ class DataCleaner:
         return df_clean
     
     def _find_column(self, df, possible_names):
-        """Находит колонку по возможным названиям"""
+        """
+        Находит колонку по возможным названиям
+        Возвращает точное название колонки из DataFrame
+        """
         for name in possible_names:
+            # Проверяем точное совпадение
             if name in df.columns:
                 return name
+            
+            # Проверяем частичное совпадение (регистронезависимо)
+            for col in df.columns:
+                if str(col).strip().lower() == str(name).strip().lower():
+                    return col
+        
         return None
     
     def _apply_date_business_rules(self, df):
@@ -339,3 +406,4 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+

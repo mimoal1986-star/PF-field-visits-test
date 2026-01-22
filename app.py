@@ -1,13 +1,11 @@
 import streamlit as st
+from utils.data_loader import loader
 
-st.set_page_config(
-    page_title="ИУ Аудиты - ПланФакт",
-    page_icon="📊",
-    layout="wide"
-)
+st.set_page_config(page_title="ИУ Аудиты", layout="wide")
+st.title("📊 ИУ Аудиты - План/Факт")
 
-st.title("📊 ИУ Аудиты - Мониторинг План/Факт")
-st.write("Загрузка данных и отчеты...")
-
-# Пока заглушка
-st.info("Приложение в разработке. Скоро здесь будут отчеты!")
+if st.button("📥 Загрузить данные"):
+    portal_data = loader.load_portal()
+    if portal_data is not None:
+        st.write(f"Загружено: {len(portal_data)} строк")
+        st.dataframe(portal_data.head())

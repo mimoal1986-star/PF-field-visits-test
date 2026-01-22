@@ -32,22 +32,14 @@ class DataCleaner:
         # Ищем поля с учетом реальных названий
         code_field = self._find_column(df_clean, [
             'Код проекта RU00.000.00.01SVZ24',  # Основное название
-            'Код проекта',
-            'Код',
-            'Project Code'
         ])
         
         start_date_field = self._find_column(df_clean, [
-            'Дата старта',
-            'Дата начала',
-            'Start Date'
+            'Дата старта', # Основное название
         ])
         
         end_date_field = self._find_column(df_clean, [
             'Дата финиша с продлением',  # Основное название
-            'Дата финиша',
-            'Дата конца',
-            'End Date'
         ])
         
         # Собираем найденные поля
@@ -406,4 +398,5 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 

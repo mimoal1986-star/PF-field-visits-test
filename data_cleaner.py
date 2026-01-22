@@ -161,46 +161,93 @@ code_col = self._find_column(df_clean, [
 
 if code_col:
     changes_count = 0
+    examples = []
     
-    # Значения которые ищем (в нижнем регистре)
-    target_values = ['пилот', 'семпл', 'мультикод']
+    # Список целевых слов и их правильное написание
+    target_words = {
+        'пилот': 'Пилот',
+        'семпл': 'Семпл', 
+        'мультикод': 'Мультикод'
+    }
     
-    # 2. Проверить каждое значение в колонке
-    for idx, value in df_clean[code_col].items():
-        if pd.isna(value):
+    # 2. Пройти по всем строкам
+    for i in range(len(df_clean)):
+        original_value = df_clean.at[i, code_col]
+        
+        # Пропускаем пустые значения
+        if pd.isna(original_value):
             continue
             
-        str_value = str(value).strip()
-        
-        # Приводим к нижнему регистру для сравнения
+        # Приводим к строке
+        str_value = str(original_value).strip()
+        if not str_value:
+            continue
+            
+        # Приводим к нижнему регистру для поиска
         lower_value = str_value.lower()
         
-        # ШАГ 1: Найти если значение содержит target
-        found_match = False
-        for target in target_values:
-            if lower_value == target:  # Точное совпадение
-                found_match = True
+        # Проверяем, содержит ли строка любое из целевых слов
+        word_found = None
+        for target_lower, target_proper in target_words.items():
+            # Ищем полное совпадение (значение == целевому слову)
+            if lower_value == target_lower:
+                word_found = target_proper
+                break
+            # Или начинается с целевого слова (например "пилот_123")
+            elif lower_value.startswith(target_lower + '_') or lower_value.startswith(target_lower + '-'):
+                word_found = target_proper
                 break
         
-        if found_match:
-            # ШАГ 2: Форматировать - первая заглавная, остальные строчные
-            formatted_value = str_value.capitalize() if str_value else str_value
+        # Если нашли целевое слово
+        if word_found:
+            # Заменяем в строке
+            if str_value.lower() == word_found.lower():  # Полное совпадение
+                formatted_value = word_found
+            elif str_value.lower().startswith(word_found.lower() + '_'):
+                # Сохраняем суффикс (например "_123")
+                suffix = str_value[len(word_found):]
+                formatted_value = word_found + suffix
+            elif str_value.lower().startswith(word_found.lower() + '-'):
+                # Сохраняем суффикс (например "-250")
+                suffix = str_value[len(word_found):]
+                formatted_value = word_found + suffix
+            else:
+                # Если не распознан формат, просто капитализируем
+                formatted_value = str_value.title()
             
             if formatted_value != str_value:
-                df_clean.at[idx, code_col] = formatted_value
+                df_clean.at[i, code_col] = formatted_value
                 changes_count += 1
+                
+                # Сохраняем примеры (максимум 3)
+                if len(examples) < 3:
+                    examples.append(f"'{str_value}' → '{formatted_value}'")
     
     if changes_count > 0:
         st.success(f"   ✅ Отформатировано {changes_count} значений")
-        st.info("   Пример: 'пиЛот' → 'Пилот', 'СЕМПЛ' → 'Семпл'")
+        if examples:
+            st.info(f"   Примеры: {', '.join(examples)}")
+        st.info("   📝 Изменения: первая заглавная, остальные строчные")
     else:
-        st.info("   ℹ️ Значения уже отформатированы")
+        st.info("   ℹ️ Целевые слова не найдены или уже отформатированы")
+        
+        # Покажем какие значения есть в столбце
+        unique_values = df_clean[code_col].dropna().unique()[:10]
+        st.info(f"   🔍 Примеры значений в столбце: {', '.join(map(str, unique_values[:5]))}")
+        
+        # Проверим специально для целевых слов
+        for target_lower, target_proper in target_words.items():
+            mask = df_clean[code_col].astype(str).str.lower().str.contains(target_lower, na=False)
+            if mask.any():
+                found_values = df_clean.loc[mask, code_col].unique()[:3]
+                st.info(f"   🔍 Найдены похожие на '{target_proper}': {', '.join(map(str, found_values))}")
 else:
     st.warning("   ⚠️ Колонка с кодом проекта не найдена")
 
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

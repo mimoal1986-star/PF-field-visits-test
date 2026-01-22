@@ -8,6 +8,14 @@ import io
 
 
 class DataCleaner:
+
+    def _find_column(self, df, possible_names):
+        """Находит колонку по возможным названиям"""
+        for name in possible_names:
+            if name in df.columns:
+                return name
+        return None
+        
     """
     Очистка данных по инструкции для ИУ Аудиты
     """
@@ -459,6 +467,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

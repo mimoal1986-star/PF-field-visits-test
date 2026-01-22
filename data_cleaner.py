@@ -149,58 +149,55 @@ class DataCleaner:
             else:
                 st.warning("   ⚠️ Колонка с именем проекта не найдена")
         
-        # === ШАГ 4: Форматировать Пилоты/Семплы/Мультикоды ===
-        st.write("**4️⃣ Форматирую Пилоты/Семплы/Мультикоды...**")
-        
-        # 1. Найти колонку с кодом проекта
-        code_col = self._find_column(df_clean, [
-            'Код проекта RU00.000.00.01SVZ24',
-            'Код проекта',
-            'Код'
-        ])
-        
-        if code_col:
-            changes_count = 0
-            
-            # Значения которые ищем (в нижнем регистре)
-            target_values = ['пилот', 'семпл', 'мультикод']
-            
-            # 2. Проверить каждое значение в колонке
-            for idx, value in df_clean[code_col].items():
-                if pd.isna(value):
-                    continue
-                    
-                str_value = str(value).strip()
-                
-                # Приводим к нижнему регистру для сравнения
-                lower_value = str_value.lower()
-                
-                # ШАГ 1: Найти если значение содержит target
-                found_match = False
-                for target in target_values:
-                    if lower_value == target:  # Точное совпадение
-                        found_match = True
-                        break
-                
-                if found_match:
-                    # ШАГ 2: Форматировать - первая заглавная, остальные строчные
-                    formatted_value = str_value.capitalize() if str_value else str_value
-                    
-                    if formatted_value != str_value:
-                        df_clean.at[idx, code_col] = formatted_value
-                        changes_count += 1
-            
-            if changes_count > 0:
-                st.success(f"   ✅ Отформатировано {changes_count} значений")
-                st.info("   Пример: 'пиЛот' → 'Пилот', 'СЕМПЛ' → 'Семпл'")
-            else:
-                st.info("   ℹ️ Значения уже отформатированы")
-        else:
-            st.warning("   ⚠️ Колонка с кодом проекта не найдена")
+# === ШАГ 4: Проверить Пилоты, Семплы, Мультикоды ===
+st.write("**4️⃣ Форматирую Пилоты/Семплы/Мультикоды...**")
 
-        return df_clean
+code_col = self._find_column(df_clean, [
+    'Код проекта RU00.000.00.01SVZ24',
+    'Код проекта',
+    'Код'
+])
+
+if code_col:
+    changes_count = 0
+    
+    # Словарь: нижний регистр → правильный формат
+    format_map = {
+        'пилот': 'Пилот',
+        'семпл': 'Семпл', 
+        'мультикод': 'Мультикод',
+        'пилоты': 'Пилоты',
+        'семплы': 'Семплы',
+        'мультикоды': 'Мультикоды'
+    }
+    
+    for idx, value in df_clean[code_col].items():
+        if pd.isna(value):
+            continue
+            
+        str_value = str(value).strip()
+        lower_value = str_value.lower()
         
+        # Проверяем если значение есть в нашем словаре
+        if lower_value in format_map:
+            correct_format = format_map[lower_value]
+            
+            # Если отличается от правильного формата
+            if str_value != correct_format:
+                df_clean.at[idx, code_col] = correct_format
+                changes_count += 1
+    
+    if changes_count > 0:
+        st.success(f"   ✅ Исправлено {changes_count} значений")
+    else:
+        st.info("   ℹ️ Значения уже в правильном формате")
+else:
+    st.warning("   ⚠️ Колонка с кодом проекта не найдена")
+
+
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
+
 
 

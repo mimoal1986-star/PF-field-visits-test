@@ -264,7 +264,14 @@ class DataCleaner:
         st.write("**6️⃣ Применяю бизнес-правила для дат...**")
         
         date_rules_applied = 0
-        current_date = pd.Timestamp.now()
+        today = pd.Timestamp.now()
+        
+        # 1 число текущего месяца
+        first_day_current_month = today.replace(day=1, hour=0, minute=0, second=0)
+        
+        # Последнее число текущего месяца
+        next_month = today.replace(day=28) + timedelta(days=4)
+        last_day_current_month = next_month - timedelta(days=next_month.day)
         
         for col in date_cols:
             if col not in df_clean.columns:
@@ -274,27 +281,38 @@ class DataCleaner:
             
             # ПРАВИЛО 1: Для дат старта
             if any(word in col_lower for word in ['старт', 'начал', 'start']):
-                # Простая проверка: есть ли в колонке хоть одна дата?
-                if df_clean[col].dtype == 'datetime64[ns]':
-                    # Если дата раньше 1 числа текущего месяца → ставим 1 число
-                    first_day = current_date.replace(day=1, hour=0, minute=0, second=0)
-                    mask = df_clean[col] < first_day
+                try:
+                    # Конвертируем в datetime если еще не
+                    if df_clean[col].dtype != 'datetime64[ns]':
+                        df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                    
+                    # Находим даты которые раньше 1 числа текущего месяца
+                    mask = df_clean[col] < first_day_current_month
+                    
                     if mask.any():
-                        df_clean.loc[mask, col] = first_day
+                        # Ставим 1 число текущего месяца
+                        df_clean.loc[mask, col] = first_day_current_month
                         date_rules_applied += mask.sum()
-                        st.info(f"   Исправлено {mask.sum()} дат старта (правило 1)")
+                        st.info(f"   Исправлено {mask.sum()} дат старта")
+                except Exception as e:
+                    st.warning(f"   Не удалось обработать даты старта в {col}: {e}")
             
             # ПРАВИЛО 2: Для дат финиша  
             elif any(word in col_lower for word in ['финиш', 'конец', 'end']):
-                if df_clean[col].dtype == 'datetime64[ns]':
-                    # Если день месяца < 5 → ставим 5 число
-                    mask = df_clean[col].dt.day < 5
+                try:
+                    if df_clean[col].dtype != 'datetime64[ns]':
+                        df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                    
+                    # Находим даты которые позже последнего числа текущего месяца
+                    mask = df_clean[col] > last_day_current_month
+                    
                     if mask.any():
-                        df_clean.loc[mask, col] = df_clean.loc[mask, col].apply(
-                            lambda x: x.replace(day=5) if pd.notna(x) else x
-                        )
+                        # Ставим последнее число текущего месяца
+                        df_clean.loc[mask, col] = last_day_current_month
                         date_rules_applied += mask.sum()
-                        st.info(f"   Исправлено {mask.sum()} дат финиша (правило 2)")
+                        st.info(f"   Исправлено {mask.sum()} дат финиша")
+                except Exception as e:
+                    st.warning(f"   Не удалось обработать даты финиша в {col}: {e}")
         
         if date_rules_applied > 0:
             st.success(f"   ✅ Применено {date_rules_applied} бизнес-правил для дат")
@@ -321,6 +339,7 @@ class DataCleaner:
  
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -338,13 +338,11 @@ class DataCleaner:
     
     def export_to_excel(self, original_df, cleaned_df, filename="очищенные_данны"):
         """
-        Создает Excel файл с двумя вкладками: оригинал и очищенный
-        для сверки изменений
+        Создает Excel файл с четырьмя вкладками
         """
         if original_df is None or cleaned_df is None:
             return None
         
-        # Создаем буфер для Excel
         output = io.BytesIO()
         
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -357,10 +355,65 @@ class DataCleaner:
             # Вкладка 3: Сравнение изменений
             comparison = self._create_comparison_sheet(original_df, cleaned_df)
             comparison.to_excel(writer, sheet_name='СРАВНЕНИЕ', index=False)
+            
+            # НОВАЯ ВКЛАДКА 4: Удаленные дубликаты
+            duplicates = self._find_duplicates_sheet(original_df, cleaned_df)
+            if duplicates is not None and len(duplicates) > 0:
+                duplicates.to_excel(writer, sheet_name='ДУБЛИКАТЫ', index=False)
+            else:
+                # Пустая вкладка если нет дублей
+                pd.DataFrame({'Сообщение': ['Дубликаты не найдены']}).to_excel(
+                    writer, sheet_name='ДУБЛИКАТЫ', index=False
+                )
         
         output.seek(0)
-        
         return output
+    
+    def _find_duplicates_sheet(self, original_df, cleaned_df):
+        """
+        Находит удаленные дубликаты
+        """
+        # Находим ключевые поля для сравнения
+        key_fields = self._find_key_fields_for_duplicates(original_df)
+        
+        if not key_fields:
+            return None
+        
+        # Находим дубликаты в оригинальных данных
+        duplicates_mask = original_df.duplicated(subset=key_fields, keep=False)
+        duplicates_df = original_df[duplicates_mask].copy()
+        
+        if len(duplicates_df) > 0:
+            # Добавляем метку какой дубль удален
+            duplicates_df['_статус'] = 'ДУБЛИКАТ'
+            
+            # Помечаем какие строки остались после очистки
+            # (это требует более сложной логики сравнения)
+            # Пока просто показываем все дубли
+            
+            return duplicates_df
+        
+        return None
+    
+    def _find_key_fields_for_duplicates(self, df):
+        """
+        Определяет ключевые поля для поиска дубликатов
+        """
+        # Те же поля что в Шаге 1 очистки
+        possible_fields = [
+            'Код проекта RU00.000.00.01SVZ24',
+            'Код проекта',
+            'Дата старта',
+            'Дата финиша с продлением',
+            'Дата финиша'
+        ]
+        
+        found_fields = []
+        for field in possible_fields:
+            if field in df.columns:
+                found_fields.append(field)
+        
+        return found_fields
     
     def _create_comparison_sheet(self, original_df, cleaned_df):
         """Создает лист сравнения изменений"""
@@ -406,5 +459,6 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 

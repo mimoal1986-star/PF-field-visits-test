@@ -338,10 +338,76 @@ class DataCleaner:
                 st.info("   ℹ️ Признак 'Полевой' уже заполнен")
         
         return df_clean
-    
- 
+        
+            # === Выгрузка в эксель  ===
+            def export_to_excel(self, original_df, cleaned_df, filename="очищенные_данные"):
+                """
+                Создает Excel файл с тремя вкладками для сравнения
+                """
+                try:
+                    if original_df is None or cleaned_df is None:
+                        return None
+                    
+                    output = io.BytesIO()
+                    
+                    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                        # Вкладка 1: Оригинальные данные
+                        original_df.to_excel(writer, sheet_name='ОРИГИНАЛ', index=False)
+                        
+                        # Вкладка 2: Очищенные данные
+                        cleaned_df.to_excel(writer, sheet_name='ОЧИЩЕННЫЙ', index=False)
+                        
+                        # Вкладка 3: Сравнение изменений
+                        comparison_data = []
+                        
+                        # Сравниваем размеры
+                        comparison_data.append({
+                            'Параметр': 'Количество строк',
+                            'Оригинал': len(original_df),
+                            'Очищено': len(cleaned_df),
+                            'Изменение': len(cleaned_df) - len(original_df)
+                        })
+                        
+                        comparison_data.append({
+                            'Параметр': 'Количество колонок',
+                            'Оригинал': len(original_df.columns),
+                            'Очищено': len(cleaned_df.columns),
+                            'Изменение': len(cleaned_df.columns) - len(original_df.columns)
+                        })
+                        
+                        # Добавленные/удаленные колонки
+                        added_cols = set(cleaned_df.columns) - set(original_df.columns)
+                        removed_cols = set(original_df.columns) - set(cleaned_df.columns)
+                        
+                        if added_cols:
+                            comparison_data.append({
+                                'Параметр': 'Добавленные колонки',
+                                'Оригинал': '-',
+                                'Очищено': ', '.join(added_cols),
+                                'Изменение': f'+{len(added_cols)}'
+                            })
+                        
+                        if removed_cols:
+                            comparison_data.append({
+                                'Параметр': 'Удаленные колонки',
+                                'Оригинал': ', '.join(removed_cols),
+                                'Очищено': '-',
+                                'Изменение': f'-{len(removed_cols)}'
+                            })
+                        
+                        comparison_df = pd.DataFrame(comparison_data)
+                        comparison_df.to_excel(writer, sheet_name='СРАВНЕНИЕ', index=False)
+                    
+                    output.seek(0)
+                    return output
+                    
+                except Exception as e:
+                    st.error(f"Ошибка при создании Excel: {e}")
+                    return None
+            
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

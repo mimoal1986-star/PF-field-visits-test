@@ -554,10 +554,10 @@ class DataCleaner:
                             reasons.append('не определено')
                     
                     na_rows_df.insert(0, 'БЫЛИ_Н/Д_В_КОЛОНКАХ', reasons)
-                    na_rows_df.to_excel(writer, sheet_name='СТРОКИ С Н/Д', index=False)
+                    na_rows_df.to_excel(writer, sheet_name='СТРОКИ С Н Д', index=False)
                 else:
                     pd.DataFrame({'Сообщение': ['Строк с Н/Д не найдено']}).to_excel(
-                        writer, sheet_name='СТРОКИ С Н/Д', index=False
+                        writer, sheet_name='СТРОКИ С Н Д', index=False
                     )
                 
                 # === ВКЛАДКА 3: Строки с суррогатными датами ===
@@ -683,6 +683,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

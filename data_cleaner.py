@@ -149,107 +149,262 @@ class DataCleaner:
             else:
                 st.warning("   ⚠️ Колонка с именем проекта не найдена")
         
-# === ШАГ 4: Форматировать Пилоты/Семплы/Мультикоды ===
-st.write("**4️⃣ Форматирую Пилоты/Семплы/Мультикоды...**")
-
-# 1. Найти колонку с кодом проекта
-code_col = self._find_column(df_clean, [
-    'Код проекта RU00.000.00.01SVZ24',
-    'Код проекта',
-    'Код'
-])
-
-if code_col:
-    changes_count = 0
-    examples = []
-    
-    # Список целевых слов и их правильное написание
-    target_words = {
-        'пилот': 'Пилот',
-        'семпл': 'Семпл', 
-        'мультикод': 'Мультикод'
-    }
-    
-    # 2. Пройти по всем строкам
-    for i in range(len(df_clean)):
-        original_value = df_clean.at[i, code_col]
+        # === ШАГ 4: Проверить капитализацию ===
+        st.write("**4️⃣ Проверяю капитализацию категориальных полей...**")
         
-        # Пропускаем пустые значения
-        if pd.isna(original_value):
-            continue
-            
-        # Приводим к строке
-        str_value = str(original_value).strip()
-        if not str_value:
-            continue
-            
-        # Приводим к нижнему регистру для поиска
-        lower_value = str_value.lower()
+        categorical_fields = ['Пилот', 'Семпл', 'Тип проекта', 'Статус', 'Тип', 'Статус проекта']
+        existing_cat_fields = [col for col in categorical_fields if col in df_clean.columns]
         
-        # Проверяем, содержит ли строка любое из целевых слов
-        word_found = None
-        for target_lower, target_proper in target_words.items():
-            # Ищем полное совпадение (значение == целевому слову)
-            if lower_value == target_lower:
-                word_found = target_proper
-                break
-            # Или начинается с целевого слова (например "пилот_123")
-            elif lower_value.startswith(target_lower + '_') or lower_value.startswith(target_lower + '-'):
-                word_found = target_proper
-                break
-        
-        # Если нашли целевое слово
-        if word_found:
-            # Заменяем в строке
-            if str_value.lower() == word_found.lower():  # Полное совпадение
-                formatted_value = word_found
-            elif str_value.lower().startswith(word_found.lower() + '_'):
-                # Сохраняем суффикс (например "_123")
-                suffix = str_value[len(word_found):]
-                formatted_value = word_found + suffix
-            elif str_value.lower().startswith(word_found.lower() + '-'):
-                # Сохраняем суффикс (например "-250")
-                suffix = str_value[len(word_found):]
-                formatted_value = word_found + suffix
-            else:
-                # Если не распознан формат, просто капитализируем
-                formatted_value = str_value.title()
+        if existing_cat_fields:
+            changes_count = 0
             
-            if formatted_value != str_value:
-                df_clean.at[i, code_col] = formatted_value
-                changes_count += 1
+            for col in existing_cat_fields:
+                original_values = df_clean[col].copy()
                 
-                # Сохраняем примеры (максимум 3)
-                if len(examples) < 3:
-                    examples.append(f"'{str_value}' → '{formatted_value}'")
+                # Приводим к строке
+                df_clean[col] = df_clean[col].astype(str)
+                
+                # ИСПРАВЛЕНИЕ: Всегда приводим к формату "Пилот"
+                mask = df_clean[col].str.strip() != ''
+                df_clean.loc[mask, col] = df_clean.loc[mask, col].apply(
+                    lambda x: x.strip().capitalize() if pd.notna(x) else x
+                )
+                
+                # Считаем изменения
+                changed = (original_values.fillna('') != df_clean[col].fillna('')).sum()
+                changes_count += changed
+            
+            if changes_count > 0:
+                st.success(f"   ✅ Исправлено {changes_count} значений (приведено к формату 'Пилот')")
+            else:
+                st.info("   ℹ️ Значения уже в правильном формате")
+        else:
+            st.info("   ℹ️ Категориальные поля не найдены")
+        
+        # === ШАГ 5: Заполнить пустые даты ===
+        st.write("**5️⃣ Заполняю пустые даты...**")
+        
+        date_cols = [col for col in df_clean.columns 
+                    if any(keyword in col.lower() for keyword in ['дата', 'date', 'срок', 'time'])]
+        
+        if date_cols:
+            date_fixes = 0
+            
+            for col in date_cols:
+                # Конвертируем в datetime
+                df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                
+                # Считаем пустые даты
+                empty_dates = df_clean[col].isna().sum()
+                
+                if empty_dates > 0:
+                    is_start_date = any(word in col.lower() for word in ['старт', 'начал', 'start', 'начала'])
+                    is_end_date = any(word in col.lower() for word in ['финиш', 'конец', 'end', 'заверш'])
+                    
+                    current_date = pd.Timestamp.now()
+                    
+                    for idx in df_clean[df_clean[col].isna()].index:
+                        if is_start_date:
+                            df_clean.at[idx, col] = current_date.replace(day=1)
+                        elif is_end_date:
+                            next_month = current_date.replace(day=28) + timedelta(days=4)
+                            df_clean.at[idx, col] = next_month - timedelta(days=next_month.day)
+                        else:
+                            df_clean.at[idx, col] = current_date
+                    
+                    date_fixes += empty_dates
+            
+            if date_fixes > 0:
+                st.success(f"   ✅ Заполнено {date_fixes} пустых дат")
+            else:
+                st.info("   ℹ️ Пустых дат не найдено")
+        else:
+            st.warning("   ⚠️ Колонки с датами не найдены")
+        
+        # === ШАГ 6: Исправить даты по бизнес-правилам ===
+        st.write("**6️⃣ Применяю бизнес-правила для дат...**")
+        
+        date_rules_applied = self._apply_date_business_rules(df_clean)
+        
+        if date_rules_applied > 0:
+            st.success(f"   ✅ Применено {date_rules_applied} бизнес-правил для дат")
+        else:
+            st.info("   ℹ️ Бизнес-правила для дат не потребовались")
+        
+        # === ШАГ 7: Добавить признак Полевой/Неполевой ===
+        st.write("**7️⃣ Добавляю признак 'Полевой'...**")
+        
+        df_clean = self._add_field_type_flag(df_clean)
+        
+        # === ИТОГИ ОЧИСТКИ ===
+        st.markdown("---")
+        
+        final_rows = len(df_clean)
+        final_cols = len(df_clean.columns)
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Строк до очистки", original_rows, 
+                     delta=f"{final_rows - original_rows}")
+        
+        with col2:
+            st.metric("Строк после", final_rows)
+        
+        with col3:
+            removed_pct = ((original_rows - final_rows) / original_rows * 100) if original_rows > 0 else 0
+            st.metric("Удалено", f"{removed_pct:.1f}%")
+        
+        st.success(f"✅ Гугл таблица успешно очищена!")
+        
+        return df_clean
     
-    if changes_count > 0:
-        st.success(f"   ✅ Отформатировано {changes_count} значений")
-        if examples:
-            st.info(f"   Примеры: {', '.join(examples)}")
-        st.info("   📝 Изменения: первая заглавная, остальные строчные")
-    else:
-        st.info("   ℹ️ Целевые слова не найдены или уже отформатированы")
+    def _find_column(self, df, possible_names):
+        """
+        Находит колонку по возможным названиям
+        """
+        # Сначала проверяем точное совпадение
+        for name in possible_names:
+            if name in df.columns:
+                return name
         
-        # Покажем какие значения есть в столбце
-        unique_values = df_clean[code_col].dropna().unique()[:10]
-        st.info(f"   🔍 Примеры значений в столбце: {', '.join(map(str, unique_values[:5]))}")
+        # Если нет точного, проверяем частичное совпадение
+        for name in possible_names:
+            for col in df.columns:
+                # Приводим к строке и сравниваем без учета регистра и пробелов
+                col_str = str(col).strip().lower().replace(' ', '')
+                name_str = str(name).strip().lower().replace(' ', '')
+                
+                if col_str == name_str:
+                    return col
+                
+                # Проверяем частичное вхождение
+                if name_str in col_str or col_str in name_str:
+                    return col
         
-        # Проверим специально для целевых слов
-        for target_lower, target_proper in target_words.items():
-            mask = df_clean[code_col].astype(str).str.lower().str.contains(target_lower, na=False)
-            if mask.any():
-                found_values = df_clean.loc[mask, code_col].unique()[:3]
-                st.info(f"   🔍 Найдены похожие на '{target_proper}': {', '.join(map(str, found_values))}")
-else:
-    st.warning("   ⚠️ Колонка с кодом проекта не найдена")
+        return None
+    
+    def _apply_date_business_rules(self, df):
+        """Шаг 6: Бизнес-правила для дат"""
+        rules_applied = 0
+        
+        current_date = pd.Timestamp.now()
+        current_month = current_date.month
+        current_year = current_date.year
+        
+        # Правило 1: Дата начала = прошлый месяц → 1 число текущего
+        start_cols = [col for col in df.columns if any(word in col.lower() for word in ['начал', 'старт'])]
+        
+        for col in start_cols:
+            if col in df.columns and pd.api.types.is_datetime64_any_dtype(df[col]):
+                mask = (
+                    (df[col].dt.month == current_month - 1) & 
+                    (df[col].dt.year == current_year)
+                )
+                
+                if current_month == 1:
+                    mask = mask | (
+                        (df[col].dt.month == 12) & 
+                        (df[col].dt.year == current_year - 1)
+                    )
+                
+                if mask.any():
+                    df.loc[mask, col] = df.loc[mask, col].apply(
+                        lambda x: x.replace(month=current_month, year=current_year, day=1) 
+                        if pd.notna(x) else x
+                    )
+                    rules_applied += mask.sum()
+        
+        # Правило 2: Дата конца < 5 числа → 5 число месяца
+        end_cols = [col for col in df.columns if any(word in col.lower() for word in ['конец', 'финиш'])]
+        
+        for col in end_cols:
+            if col in df.columns and pd.api.types.is_datetime64_any_dtype(df[col]):
+                mask = (df[col].dt.day < 5) & df[col].notna()
+                
+                if mask.any():
+                    df.loc[mask, col] = df.loc[mask, col].apply(
+                        lambda x: x.replace(day=5) if pd.notna(x) else x
+                    )
+                    rules_applied += mask.sum()
+        
+        return rules_applied
+    
+    def _add_field_type_flag(self, df):
+        """Шаг 7: Добавляет признак Полевой/Неполевой"""
+        if 'Полевой' not in df.columns:
+            df['Полевой'] = 1
+        return df
+    
+    def export_to_excel(self, original_df, cleaned_df, filename="очищенные_данны"):
+        """
+        Создает Excel файл с двумя вкладками: оригинал и очищенный
+        для сверки изменений
+        """
+        if original_df is None or cleaned_df is None:
+            return None
+        
+        # Создаем буфер для Excel
+        output = io.BytesIO()
+        
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            # Вкладка 1: Оригинальные данные
+            original_df.to_excel(writer, sheet_name='ОРИГИНАЛ', index=False)
+            
+            # Вкладка 2: Очищенные данные
+            cleaned_df.to_excel(writer, sheet_name='ОЧИЩЕННЫЙ', index=False)
+            
+            # Вкладка 3: Сравнение изменений
+            comparison = self._create_comparison_sheet(original_df, cleaned_df)
+            comparison.to_excel(writer, sheet_name='СРАВНЕНИЕ', index=False)
+        
+        output.seek(0)
+        
+        return output
+    
+    def _create_comparison_sheet(self, original_df, cleaned_df):
+        """Создает лист сравнения изменений"""
+        comparison_data = []
+        
+        # Сравниваем размеры
+        comparison_data.append({
+            'Параметр': 'Количество строк',
+            'Оригинал': len(original_df),
+            'Очищено': len(cleaned_df),
+            'Изменение': len(cleaned_df) - len(original_df)
+        })
+        
+        comparison_data.append({
+            'Параметр': 'Количество колонок',
+            'Оригинал': len(original_df.columns),
+            'Очищено': len(cleaned_df.columns),
+            'Изменение': len(cleaned_df.columns) - len(original_df.columns)
+        })
+        
+        # Ищем добавленные/удаленные колонки
+        added_cols = set(cleaned_df.columns) - set(original_df.columns)
+        removed_cols = set(original_df.columns) - set(cleaned_df.columns)
+        
+        if added_cols:
+            comparison_data.append({
+                'Параметр': 'Добавленные колонки',
+                'Оригинал': '-',
+                'Очищено': ', '.join(added_cols),
+                'Изменение': f'+{len(added_cols)}'
+            })
+        
+        if removed_cols:
+            comparison_data.append({
+                'Параметр': 'Удаленные колонки',
+                'Оригинал': ', '.join(removed_cols),
+                'Очищено': '-',
+                'Изменение': f'-{len(removed_cols)}'
+            })
+        
+        return pd.DataFrame(comparison_data)
 
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
-
-
-
-
 
 

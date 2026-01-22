@@ -195,7 +195,7 @@ if len(st.session_state.uploaded_files) > 0:
                                 cleaned_df = original_df.copy()
                                 process_name = "файла"
                         
-                        if cleaned_df is not None and not cleaned_df.equals(original_df):
+                        if cleaned_df is not None:
                             # Сохраняем очищенные данные
                             st.session_state.cleaned_data[selected_file_key] = cleaned_df
                             
@@ -416,6 +416,7 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 
 
 

@@ -260,6 +260,8 @@ class DataCleaner:
         else:
             st.warning("   ⚠️ Колонка с кодом проекта не найдена")
 
+        return df_clean
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+

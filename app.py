@@ -225,7 +225,7 @@ if len(st.session_state.uploaded_files) > 0:
                                 if selected_file_key == 'портал':  # Массив
                                     excel_file = data_cleaner.export_array_to_excel(cleaned_df)
                                     file_name = "очищенный_массив.xlsx"
-                                    help_text = "Файл содержит 3 вкладки: ОЧИЩЕННЫЙ МАССИВ, СТРОКИ С Н/Д, НУЛИ В ДАТАХ"
+                                    help_text = "Файл содержит 3 вкладки: ОЧИЩЕННЫЙ МАССИВ, СТРОКИ С Н Д, НУЛИ В ДАТАХ"
                                 else:  # Гугл таблица и другие
                                     excel_file = data_cleaner.export_to_excel(
                                         original_df, 
@@ -369,7 +369,7 @@ if st.session_state.cleaned_data:
                             data=excel_file,
                             file_name=f"очищенный_массив.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                            help="3 вкладки: 📊 Данные, ⚠️ Строки с Н/Д, 📅 Нули в датах"
+                            help="3 вкладки: 📊 Данные, ⚠️ Строки с Н Д, 📅 Нули в датах"
                         )
                     else:
                         # Fallback на CSV если Excel не создался
@@ -452,6 +452,7 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 
 
 

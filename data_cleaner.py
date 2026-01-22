@@ -15,10 +15,6 @@ class DataCleaner:
             if name in df.columns:
                 return name
         return None
-        
-    """
-    Очистка данных по инструкции для ИУ Аудиты
-    """
     
     def clean_google(self, df):
         """
@@ -118,9 +114,6 @@ class DataCleaner:
             # ТОЛЬКО удаляем пробелы в начале и конце (по инструкции)
             df_clean[code_col] = df_clean[code_col].str.strip()
             
-            # НЕ меняем внутренние пробелы!
-            # df_clean[code_col] = df_clean[code_col].str.replace(r'\s+', ' ', regex=True)  # УБРАТЬ!
-            
             # Считаем изменения
             changed = (original_codes.fillna('') != df_clean[code_col].fillna('')).sum()
             if changed > 0:
@@ -160,8 +153,8 @@ class DataCleaner:
         # === ШАГ 4: Форматировать Пилоты/Семплы/Мультикоды ===
         st.write("**4️⃣ Форматирую Пилоты/Семплы/Мультикоды...**")
         
-        # 1. Найти колонку с кодом проекта (используем code_col из шага 2 если есть)
-        if 'code_col' in locals() and code_col:  # Если нашли в шаге 2
+        # Используем code_col из шага 2 если есть
+        if 'code_col' in locals() and code_col:
             target_col = code_col
         else:
             target_col = self._find_column(df_clean, [
@@ -172,31 +165,23 @@ class DataCleaner:
         
         if target_col:
             changes_count = 0
-            
-            # Значения которые ищем (в нижнем регистре)
             target_values = ['пилот', 'семпл', 'мультикод']
             
-            # 2. Проверить каждое значение в колонке
             for idx, value in df_clean[target_col].items():
                 if pd.isna(value):
                     continue
                     
                 str_value = str(value).strip()
-                
-                # Приводим к нижнему регистру для сравнения
                 lower_value = str_value.lower()
                 
-                # Проверяем каждое целевое значение
                 for target in target_values:
-                    # Ищем ВХОЖДЕНИЕ подстроки, а не точное совпадение
                     if target in lower_value:
-                        # Форматируем - первая заглавная, остальные строчные
                         formatted_value = str_value.capitalize() if str_value else str_value
                         
                         if formatted_value != str_value:
                             df_clean.at[idx, target_col] = formatted_value
                             changes_count += 1
-                            break  # Прерываем после первого совпадения
+                            break
             
             if changes_count > 0:
                 st.success(f"   ✅ Отформатировано {changes_count} значений")
@@ -209,7 +194,6 @@ class DataCleaner:
         # === ШАГ 5: Заполнить пустые даты ===
         st.write("**5️⃣ Заполняю пустые даты...**")
         
-        # Найти колонки с датами
         date_patterns = ['дата', 'date', 'срок', 'time', 'начал', 'старт', 'финиш', 'конец', 'заверш']
         date_cols = []
         
@@ -223,30 +207,22 @@ class DataCleaner:
             
             for col in date_cols:
                 try:
-                    # Конвертируем в datetime
                     df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
-                    
-                    # Считаем пустые даты
                     empty_dates = df_clean[col].isna().sum()
                     
                     if empty_dates > 0:
-                        # Определяем тип даты по названию колонки
                         col_lower = str(col).lower()
                         is_start_date = any(word in col_lower for word in ['старт', 'начал', 'start'])
                         is_end_date = any(word in col_lower for word in ['финиш', 'конец', 'end', 'заверш'])
-                        
                         current_date = pd.Timestamp.now()
                         
                         for idx in df_clean[df_clean[col].isna()].index:
                             if is_start_date:
-                                # Для даты старта - 1 число текущего месяца
                                 df_clean.at[idx, col] = current_date.replace(day=1)
                             elif is_end_date:
-                                # Для даты финиша - последний день текущего месяца
                                 next_month = current_date.replace(day=28) + timedelta(days=4)
                                 df_clean.at[idx, col] = next_month - timedelta(days=next_month.day)
                             else:
-                                # Для других дат - текущая дата
                                 df_clean.at[idx, col] = current_date
                         
                         date_fixes += empty_dates
@@ -266,11 +242,7 @@ class DataCleaner:
         
         date_rules_applied = 0
         today = pd.Timestamp.now()
-        
-        # 1 число текущего месяца
         first_day_current_month = today.replace(day=1, hour=0, minute=0, second=0)
-        
-        # Последнее число текущего месяца
         next_month = today.replace(day=28) + timedelta(days=4)
         last_day_current_month = next_month - timedelta(days=next_month.day)
         
@@ -280,36 +252,28 @@ class DataCleaner:
                 
             col_lower = str(col).lower()
             
-            # ПРАВИЛО 1: Для дат старта
             if any(word in col_lower for word in ['старт', 'начал', 'start']):
                 try:
-                    # Убедимся что это datetime
                     if df_clean[col].dtype != 'datetime64[ns]':
                         df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
                     
-                    # Находим даты которые раньше 1 числа текущего месяца
                     mask = df_clean[col] < first_day_current_month
                     
                     if mask.any():
-                        # Ставим 1 число текущего месяца
                         df_clean.loc[mask, col] = first_day_current_month
                         date_rules_applied += mask.sum()
                         st.info(f"   Исправлено {mask.sum()} дат старта")
                 except Exception as e:
                     st.warning(f"   Не удалось обработать даты старта в '{col}': {str(e)[:100]}")
             
-            # ПРАВИЛО 2: Для дат финиша  
             elif any(word in col_lower for word in ['финиш', 'конец', 'end']):
                 try:
-                    # Убедимся что это datetime
                     if df_clean[col].dtype != 'datetime64[ns]':
                         df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
                     
-                    # Находим даты которые позже последнего числа текущего месяца
                     mask = df_clean[col] > last_day_current_month
                     
                     if mask.any():
-                        # Ставим последнее число текущего месяца
                         df_clean.loc[mask, col] = last_day_current_month
                         date_rules_applied += mask.sum()
                         st.info(f"   Исправлено {mask.sum()} дат финиша")
@@ -328,7 +292,6 @@ class DataCleaner:
             df_clean['Полевой'] = 1
             st.success("   ✅ Добавлен признак 'Полевой' = 1 для всех записей")
         else:
-            # Если колонка уже есть, заполняем пропуски
             empty_field = df_clean['Полевой'].isna().sum()
             if empty_field > 0:
                 df_clean['Полевой'] = df_clean['Полевой'].fillna(1)
@@ -336,83 +299,91 @@ class DataCleaner:
             else:
                 st.info("   ℹ️ Признак 'Полевой' уже заполнен")
         
+        # === ИТОГИ ОЧИСТКИ ===
+        st.markdown("---")
+        final_rows = len(df_clean)
+        final_cols = len(df_clean.columns)
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Строк до очистки", original_rows, 
+                     delta=f"{final_rows - original_rows}")
+        
+        with col2:
+            st.metric("Строк после", final_rows)
+        
+        with col3:
+            removed_pct = ((original_rows - final_rows) / original_rows * 100) if original_rows > 0 else 0
+            st.metric("Удалено", f"{removed_pct:.1f}%")
+        
+        st.success(f"✅ Гугл таблица успешно очищена!")
+        
         return df_clean
-        
-# === Выгрузка в эксель  ===
-def export_to_excel(self, original_df, cleaned_df, filename="очищенные_данные"):
-    """
-    Создает Excel файл с тремя вкладками для сравнения
-    """
-    try:
-        if original_df is None or cleaned_df is None:
+    
+    def export_to_excel(self, original_df, cleaned_df, filename="очищенные_данные"):
+        """
+        Создает Excel файл с тремя вкладками для сравнения
+        """
+        try:
+            if original_df is None or cleaned_df is None:
+                return None
+            
+            output = io.BytesIO()
+            
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                # Вкладка 1: Оригинальные данные
+                original_df.to_excel(writer, sheet_name='ОРИГИНАЛ', index=False)
+                
+                # Вкладка 2: Очищенные данные
+                cleaned_df.to_excel(writer, sheet_name='ОЧИЩЕННЫЙ', index=False)
+                
+                # Вкладка 3: Сравнение изменений
+                comparison_data = []
+                
+                comparison_data.append({
+                    'Параметр': 'Количество строк',
+                    'Оригинал': len(original_df),
+                    'Очищено': len(cleaned_df),
+                    'Изменение': len(cleaned_df) - len(original_df)
+                })
+                
+                comparison_data.append({
+                    'Параметр': 'Количество колонок',
+                    'Оригинал': len(original_df.columns),
+                    'Очищено': len(cleaned_df.columns),
+                    'Изменение': len(cleaned_df.columns) - len(original_df.columns)
+                })
+                
+                added_cols = set(cleaned_df.columns) - set(original_df.columns)
+                removed_cols = set(original_df.columns) - set(cleaned_df.columns)
+                
+                if added_cols:
+                    comparison_data.append({
+                        'Параметр': 'Добавленные колонки',
+                        'Оригинал': '-',
+                        'Очищено': ', '.join(added_cols),
+                        'Изменение': f'+{len(added_cols)}'
+                    })
+                
+                if removed_cols:
+                    comparison_data.append({
+                        'Параметр': 'Удаленные колонки',
+                        'Оригинал': ', '.join(removed_cols),
+                        'Очищено': '-',
+                        'Изменение': f'-{len(removed_cols)}'
+                    })
+                
+                comparison_df = pd.DataFrame(comparison_data)
+                comparison_df.to_excel(writer, sheet_name='СРАВНЕНИЕ', index=False)
+            
+            output.seek(0)
+            return output
+            
+        except Exception as e:
+            st.error(f"Ошибка при создании Excel: {e}")
             return None
-        
-        output = io.BytesIO()
-        
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            # Вкладка 1: Оригинальные данные
-            original_df.to_excel(writer, sheet_name='ОРИГИНАЛ', index=False)
-            
-            # Вкладка 2: Очищенные данные
-            cleaned_df.to_excel(writer, sheet_name='ОЧИЩЕННЫЙ', index=False)
-            
-            # Вкладка 3: Сравнение изменений
-            comparison_data = []
-            
-            # Сравниваем размеры
-            comparison_data.append({
-                'Параметр': 'Количество строк',
-                'Оригинал': len(original_df),
-                'Очищено': len(cleaned_df),
-                'Изменение': len(cleaned_df) - len(original_df)
-            })
-            
-            comparison_data.append({
-                'Параметр': 'Количество колонок',
-                'Оригинал': len(original_df.columns),
-                'Очищено': len(cleaned_df.columns),
-                'Изменение': len(cleaned_df.columns) - len(original_df.columns)
-            })
-            
-            # Добавленные/удаленные колонки
-            added_cols = set(cleaned_df.columns) - set(original_df.columns)
-            removed_cols = set(original_df.columns) - set(cleaned_df.columns)
-            
-            if added_cols:
-                comparison_data.append({
-                    'Параметр': 'Добавленные колонки',
-                    'Оригинал': '-',
-                    'Очищено': ', '.join(added_cols),
-                    'Изменение': f'+{len(added_cols)}'
-                })
-            
-            if removed_cols:
-                comparison_data.append({
-                    'Параметр': 'Удаленные колонки',
-                    'Оригинал': ', '.join(removed_cols),
-                    'Очищено': '-',
-                    'Изменение': f'-{len(removed_cols)}'
-                })
-            
-            comparison_df = pd.DataFrame(comparison_data)
-            comparison_df.to_excel(writer, sheet_name='СРАВНЕНИЕ', index=False)
-        
-        output.seek(0)
-        return output
-        
-    except Exception as e:
-        st.error(f"Ошибка при создании Excel: {e}")
-        return None
-            
+
+
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
-
-
-
-
-
-
-
-
-
-

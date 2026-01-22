@@ -114,10 +114,11 @@ if len(st.session_state.uploaded_files) == 4:
     
     # Кнопка для перехода к обработке
     if st.button("🚀 Перейти к обработке данных", type="primary"):
-        st.switch_page("pages/1_📊_Дашборд.py")
+        st.success("Дашборд будет скоро добавлен!")
         
 else:
     st.warning(f"⚠️ Загружено {len(st.session_state.uploaded_files)} из 4 файлов")
     missing = [f for f in ['портал', 'автокодификация', 'сервизория', 'иерархия'] 
                if f not in st.session_state.uploaded_files]
     st.write(f"Ожидаются: {', '.join(missing)}")
+

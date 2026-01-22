@@ -195,85 +195,84 @@ if len(st.session_state.uploaded_files) > 0:
                                 cleaned_df = original_df.copy()
                                 process_name = "файла"
                         
-                        if cleaned_df is not None and not cleaned_df.equals(original_df):
-                            # Сохраняем очищенные данные
+                        if cleaned_df is not None:
+                            # Всегда сохраняем очищенные данные (даже если не было изменений)
                             st.session_state.cleaned_data[selected_file_key] = cleaned_df
                             
-                            # Показываем результат
-                            st.success(f"✅ Очистка {process_name} завершена!")
-                            
-                            # Сравнение до/после
-                            with st.expander("📊 Сравнение до/после очистки", expanded=True):
-                                col_a, col_b = st.columns(2)
+                            if cleaned_df.equals(original_df):
+                                st.info("ℹ️ Данные уже были чистыми, изменений не потребовалось")
+                            else:
+                                st.success(f"✅ Очистка {process_name} завершена!")
                                 
-                                with col_a:
-                                    st.write(f"**До очистки ({selected_file_name}):**")
-                                    st.write(f"Строк: {len(original_df)}")
-                                    st.write(f"Колонок: {len(original_df.columns)}")
-                                    st.dataframe(original_df.head(3))
+                                # Сравнение до/после (только если были изменения)
+                                with st.expander("📊 Сравнение до/после очистки", expanded=True):
+                                    col_a, col_b = st.columns(2)
+                                    
+                                    with col_a:
+                                        st.write(f"**До очистки ({selected_file_name}):**")
+                                        st.write(f"Строк: {len(original_df)}")
+                                        st.write(f"Колонок: {len(original_df.columns)}")
+                                        st.dataframe(original_df.head(3))
+                                    
+                                    with col_b:
+                                        st.write(f"**После очистки:**")
+                                        st.write(f"Строк: {len(cleaned_df)}")
+                                        st.write(f"Колонок: {len(cleaned_df.columns)}")
+                                        st.dataframe(cleaned_df.head(3))
                                 
-                                with col_b:
-                                    st.write(f"**После очистки:**")
-                                    st.write(f"Строк: {len(cleaned_df)}")
-                                    st.write(f"Колонок: {len(cleaned_df.columns)}")
-                                    st.dataframe(cleaned_df.head(3))
-                            
-                            # Выгрузка в Excel для сверки
-                            st.markdown("---")
-                            st.subheader("📥 Выгрузка для сверки")
-                            
-                            excel_file = data_cleaner.export_to_excel(
-                                original_df, 
-                                cleaned_df,
-                                filename=f"очищенный_{selected_file_key}"
-                            )
-                            
-                            if excel_file:
-                                st.download_button(
-                                    label=f"⬇️ Скачать Excel с сравнением ({selected_file_name})",
-                                    data=excel_file,
-                                    file_name=f"очищенный_{selected_file_key}.xlsx",
-                                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                    help="Файл содержит 3 вкладки: ОРИГИНАЛ, ОЧИЩЕННЫЙ, СРАВНЕНИЕ"
+                                # Выгрузка в Excel для сверки (только если были изменения)
+                                st.markdown("---")
+                                st.subheader("📥 Выгрузка для сверки")
+                                
+                                excel_file = data_cleaner.export_to_excel(
+                                    original_df, 
+                                    cleaned_df,
+                                    filename=f"очищенный_{selected_file_key}"
                                 )
                                 
-                                st.info("""
-                                **Файл содержит 3 вкладки:**
-                                1. 📋 **ОРИГИНАЛ** - исходные данные
-                                2. ✅ **ОЧИЩЕННЫЙ** - после всех преобразований  
-                                3. 🔍 **СРАВНЕНИЕ** - статистика изменений
-                                """)
-                            
-                            # Показываем основные изменения
-                            with st.expander("🔍 Детали изменений"):
-                                changes = []
+                                if excel_file:
+                                    st.download_button(
+                                        label=f"⬇️ Скачать Excel с сравнением ({selected_file_name})",
+                                        data=excel_file,
+                                        file_name=f"очищенный_{selected_file_key}.xlsx",
+                                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                        help="Файл содержит 3 вкладки: ОРИГИНАЛ, ОЧИЩЕННЫЙ, СРАВНЕНИЕ"
+                                    )
+                                    
+                                    st.info("""
+                                    **Файл содержит 3 вкладки:**
+                                    1. 📋 **ОРИГИНАЛ** - исходные данные
+                                    2. ✅ **ОЧИЩЕННЫЙ** - после всех преобразований  
+                                    3. 🔍 **СРАВНЕНИЕ** - статистика изменений
+                                    """)
                                 
-                                # Изменение количества строк
-                                if len(original_df) != len(cleaned_df):
-                                    changes.append(f"Строк: {len(original_df)} → {len(cleaned_df)}")
-                                
-                                # Изменение количества колонок
-                                if len(original_df.columns) != len(cleaned_df.columns):
-                                    changes.append(f"Колонок: {len(original_df.columns)} → {len(cleaned_df.columns)}")
-                                
-                                # Добавленные колонки
-                                added_cols = set(cleaned_df.columns) - set(original_df.columns)
-                                if added_cols:
-                                    changes.append(f"Добавлены колонки: {', '.join(added_cols)}")
-                                
-                                # Удаленные колонки
-                                removed_cols = set(original_df.columns) - set(cleaned_df.columns)
-                                if removed_cols:
-                                    changes.append(f"Удалены колонки: {', '.join(removed_cols)}")
-                                
-                                if changes:
-                                    for change in changes:
-                                        st.write(f"- {change}")
-                                else:
-                                    st.write("Структура данных не изменилась")
-                        
-                        elif cleaned_df is not None:
-                            st.warning("⚠️ Данные не изменились после очистки")
+                                # Показываем основные изменения
+                                with st.expander("🔍 Детали изменений"):
+                                    changes = []
+                                    
+                                    # Изменение количества строк
+                                    if len(original_df) != len(cleaned_df):
+                                        changes.append(f"Строк: {len(original_df)} → {len(cleaned_df)}")
+                                    
+                                    # Изменение количества колонок
+                                    if len(original_df.columns) != len(cleaned_df.columns):
+                                        changes.append(f"Колонок: {len(original_df.columns)} → {len(cleaned_df.columns)}")
+                                    
+                                    # Добавленные колонки
+                                    added_cols = set(cleaned_df.columns) - set(original_df.columns)
+                                    if added_cols:
+                                        changes.append(f"Добавлены колонки: {', '.join(added_cols)}")
+                                    
+                                    # Удаленные колонки
+                                    removed_cols = set(original_df.columns) - set(cleaned_df.columns)
+                                    if removed_cols:
+                                        changes.append(f"Удалены колонки: {', '.join(removed_cols)}")
+                                    
+                                    if changes:
+                                        for change in changes:
+                                            st.write(f"- {change}")
+                                    else:
+                                        st.write("Структура данных не изменилась")
                         else:
                             st.error("❌ Очистка не удалась")
                             
@@ -416,3 +415,4 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+

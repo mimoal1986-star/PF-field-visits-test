@@ -223,35 +223,37 @@ class DataCleaner:
             date_fixes = 0
             
             for col in date_cols:
-                # Конвертируем в datetime
-                df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
-                
-                # Считаем пустые даты
-                empty_dates = df_clean[col].isna().sum()
-                
-                if empty_dates > 0:
-                    # Определяем тип даты по названию колонки
-                    col_lower = str(col).lower()
-                    is_start_date = any(word in col_lower for word in ['старт', 'начал', 'start', 'начала'])
-                    is_end_date = any(word in col_lower for word in ['финиш', 'конец', 'end', 'заверш'])
+                try:
+                    # Конвертируем в datetime
+                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
                     
-                    current_date = pd.Timestamp.now()
+                    # Считаем пустые даты
+                    empty_dates = df_clean[col].isna().sum()
                     
-                    # Заполняем пустые даты
-                    for idx in df_clean[df_clean[col].isna()].index:
-                        if is_start_date:
-                            # Для даты старта - 1 число текущего месяца
-                            df_clean.at[idx, col] = current_date.replace(day=1)
-                        elif is_end_date:
-                            # Для даты финиша - последний день текущего месяца
-                            next_month = current_date.replace(day=28) + timedelta(days=4)
-                            df_clean.at[idx, col] = next_month - timedelta(days=next_month.day)
-                        else:
-                            # Для других дат - текущая дата
-                            df_clean.at[idx, col] = current_date
-                    
-                    date_fixes += empty_dates
-                    st.info(f"   Заполнено {empty_dates} пустых дат в колонке '{col}'")
+                    if empty_dates > 0:
+                        # Определяем тип даты по названию колонки
+                        col_lower = str(col).lower()
+                        is_start_date = any(word in col_lower for word in ['старт', 'начал', 'start'])
+                        is_end_date = any(word in col_lower for word in ['финиш', 'конец', 'end', 'заверш'])
+                        
+                        current_date = pd.Timestamp.now()
+                        
+                        for idx in df_clean[df_clean[col].isna()].index:
+                            if is_start_date:
+                                # Для даты старта - 1 число текущего месяца
+                                df_clean.at[idx, col] = current_date.replace(day=1)
+                            elif is_end_date:
+                                # Для даты финиша - последний день текущего месяца
+                                next_month = current_date.replace(day=28) + timedelta(days=4)
+                                df_clean.at[idx, col] = next_month - timedelta(days=next_month.day)
+                            else:
+                                # Для других дат - текущая дата
+                                df_clean.at[idx, col] = current_date
+                        
+                        date_fixes += empty_dates
+                        st.info(f"   Заполнено {empty_dates} пустых дат в '{col}'")
+                except Exception as e:
+                    st.warning(f"   Ошибка в колонке '{col}': {str(e)[:100]}")
             
             if date_fixes > 0:
                 st.success(f"   ✅ Заполнено {date_fixes} пустых дат")
@@ -282,7 +284,7 @@ class DataCleaner:
             # ПРАВИЛО 1: Для дат старта
             if any(word in col_lower for word in ['старт', 'начал', 'start']):
                 try:
-                    # Конвертируем в datetime если еще не
+                    # Убедимся что это datetime
                     if df_clean[col].dtype != 'datetime64[ns]':
                         df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
                     
@@ -295,11 +297,12 @@ class DataCleaner:
                         date_rules_applied += mask.sum()
                         st.info(f"   Исправлено {mask.sum()} дат старта")
                 except Exception as e:
-                    st.warning(f"   Не удалось обработать даты старта в {col}: {e}")
+                    st.warning(f"   Не удалось обработать даты старта в '{col}': {str(e)[:100]}")
             
             # ПРАВИЛО 2: Для дат финиша  
             elif any(word in col_lower for word in ['финиш', 'конец', 'end']):
                 try:
+                    # Убедимся что это datetime
                     if df_clean[col].dtype != 'datetime64[ns]':
                         df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
                     
@@ -312,7 +315,7 @@ class DataCleaner:
                         date_rules_applied += mask.sum()
                         st.info(f"   Исправлено {mask.sum()} дат финиша")
                 except Exception as e:
-                    st.warning(f"   Не удалось обработать даты финиша в {col}: {e}")
+                    st.warning(f"   Не удалось обработать даты финиша в '{col}': {str(e)[:100]}")
         
         if date_rules_applied > 0:
             st.success(f"   ✅ Применено {date_rules_applied} бизнес-правил для дат")
@@ -323,14 +326,14 @@ class DataCleaner:
         st.write("**7️⃣ Добавляю признак 'Полевой'...**")
         
         if 'Полевой' not in df_clean.columns:
-            df_clean['Полевой'] = 1  # По умолчанию все проекты полевые
+            df_clean['Полевой'] = 1
             st.success("   ✅ Добавлен признак 'Полевой' = 1 для всех записей")
         else:
             # Если колонка уже есть, заполняем пропуски
             empty_field = df_clean['Полевой'].isna().sum()
             if empty_field > 0:
                 df_clean['Полевой'] = df_clean['Полевой'].fillna(1)
-                st.success(f"   ✅ Заполнено {empty_field} пустых значений признака 'Полевой'")
+                st.success(f"   ✅ Заполнено {empty_field} пустых значений")
             else:
                 st.info("   ℹ️ Признак 'Полевой' уже заполнен")
         
@@ -339,6 +342,7 @@ class DataCleaner:
  
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

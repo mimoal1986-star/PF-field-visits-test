@@ -185,9 +185,7 @@ if len(st.session_state.uploaded_files) > 0:
                                 process_name = "Гугл таблицы"
                         elif selected_file_key == 'портал':
                             with st.spinner("Очищаю массив (портал)..."):
-                                # TODO: Реализовать clean_array()
-                                cleaned_df = original_df.copy()
-                                st.info("Метод очистки массива будет реализован позже")
+                                cleaned_df = data_cleaner.clean_array(original_df)
                                 process_name = "Массива"
                         else:
                             with st.spinner("Базовая очистка..."):
@@ -354,13 +352,45 @@ if st.session_state.cleaned_data:
             st.dataframe(df.head(10), use_container_width=True)
             
             # Кнопка для скачивания очищенных данных
-            csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label=f"⬇️ Скачать очищенный {name} (CSV)",
-                data=csv,
-                file_name=f"очищенный_{name}.csv",
-                mime="text/csv"
-            )
+            if name == 'портал':  # Массив - Excel с вкладками
+                try:
+                    from data_cleaner import data_cleaner
+                    excel_file = data_cleaner.export_array_to_excel(df)
+                    if excel_file:
+                        st.download_button(
+                            label=f"⬇️ Скачать очищенный {name} (Excel с вкладками)",
+                            data=excel_file,
+                            file_name=f"очищенный_массив.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            help="3 вкладки: 📊 Данные, ⚠️ Строки с Н/Д, 📅 Нули в датах"
+                        )
+                    else:
+                        # Fallback на CSV если Excel не создался
+                        csv = df.to_csv(index=False).encode('utf-8')
+                        st.download_button(
+                            label=f"⬇️ Скачать очищенный {name} (CSV)",
+                            data=csv,
+                            file_name=f"очищенный_{name}.csv",
+                            mime="text/csv"
+                        )
+                except Exception as e:
+                    st.error(f"Ошибка экспорта в Excel: {e}")
+                    # Fallback на CSV
+                    csv = df.to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        label=f"⬇️ Скачать очищенный {name} (CSV)",
+                        data=csv,
+                        file_name=f"очищенный_{name}.csv",
+                        mime="text/csv"
+                    )
+            else:  # Остальные файлы - CSV
+                csv = df.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label=f"⬇️ Скачать очищенный {name} (CSV)",
+                    data=csv,
+                    file_name=f"очищенный_{name}.csv",
+                    mime="text/csv"
+                )
 
 # ==============================================
 # СЕКЦИЯ 5: ИНФОРМАЦИЯ О ПРОЕКТЕ
@@ -415,4 +445,5 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 

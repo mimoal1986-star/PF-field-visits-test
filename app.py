@@ -146,49 +146,188 @@ if len(st.session_state.uploaded_files) > 0:
     st.markdown("---")
     st.subheader("🧹 Тестирование очистки данных")
     
-    col1, col2 = st.columns(2)
+    # Выбор файла для очистки
+    st.write("**Выберите файл для очистки:**")
     
-    with col1:
-        if st.button("🧪 Протестировать очистку Гугл таблицы", type="secondary"):
-            if 'сервизория' in st.session_state.uploaded_files:
-                try:
-                    from data_cleaner import data_cleaner
-                    
-                    google_df = st.session_state.uploaded_files['сервизория']
-                    
-                    with st.spinner("Очищаю Гугл таблицу..."):
-                        cleaned_google = data_cleaner.clean_google(google_df)
+    file_options = {
+        'Гугл таблица (Проекты Сервизория)': 'сервизория',
+        'Массив (Портал)': 'портал',
+        'Автокодификация': 'автокодификация',
+        'Иерархия ЗОД-АСС': 'иерархия'
+    }
+    
+    available_files = {k: v for k, v in file_options.items() 
+                      if v in st.session_state.uploaded_files}
+    
+    if available_files:
+        selected_file_name = st.selectbox(
+            "Выберите файл",
+            options=list(available_files.keys()),
+            key="file_selector"
+        )
+        
+        selected_file_key = available_files[selected_file_name]
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("🧪 Протестировать очистку", type="primary"):
+                if selected_file_key in st.session_state.uploaded_files:
+                    try:
+                        from data_cleaner import data_cleaner
                         
-                        if cleaned_google is not None:
-                            st.session_state.cleaned_data['сервизория'] = cleaned_google
-                            st.success("✅ Очистка завершена! Данные сохранены в session_state")
+                        original_df = st.session_state.uploaded_files[selected_file_key]
+                        
+                        # Определяем какой метод очистки использовать
+                        if selected_file_key == 'сервизория':
+                            with st.spinner("Очищаю Гугл таблицу..."):
+                                cleaned_df = data_cleaner.clean_google(original_df)
+                                process_name = "Гугл таблицы"
+                        elif selected_file_key == 'портал':
+                            with st.spinner("Очищаю массив (портал)..."):
+                                # TODO: Реализовать clean_array()
+                                cleaned_df = original_df.copy()
+                                st.info("Метод очистки массива будет реализован позже")
+                                process_name = "Массива"
+                        else:
+                            with st.spinner("Базовая очистка..."):
+                                # Базовая очистка для остальных файлов
+                                cleaned_df = original_df.copy()
+                                process_name = "файла"
+                        
+                        if cleaned_df is not None and not cleaned_df.equals(original_df):
+                            # Сохраняем очищенные данные
+                            st.session_state.cleaned_data[selected_file_key] = cleaned_df
                             
-                            # НОВОЕ: Кнопка для выгрузки в Excel
+                            # Показываем результат
+                            st.success(f"✅ Очистка {process_name} завершена!")
+                            
+                            # Сравнение до/после
+                            with st.expander("📊 Сравнение до/после очистки", expanded=True):
+                                col_a, col_b = st.columns(2)
+                                
+                                with col_a:
+                                    st.write(f"**До очистки ({selected_file_name}):**")
+                                    st.write(f"Строк: {len(original_df)}")
+                                    st.write(f"Колонок: {len(original_df.columns)}")
+                                    st.dataframe(original_df.head(3))
+                                
+                                with col_b:
+                                    st.write(f"**После очистки:**")
+                                    st.write(f"Строк: {len(cleaned_df)}")
+                                    st.write(f"Колонок: {len(cleaned_df.columns)}")
+                                    st.dataframe(cleaned_df.head(3))
+                            
+                            # Выгрузка в Excel для сверки
                             st.markdown("---")
                             st.subheader("📥 Выгрузка для сверки")
                             
-                            # Создаем Excel файл для сравнения
                             excel_file = data_cleaner.export_to_excel(
-                                google_df, 
-                                cleaned_google,
-                                filename="очищенная_гугл_таблица"
+                                original_df, 
+                                cleaned_df,
+                                filename=f"очищенный_{selected_file_key}"
                             )
                             
                             if excel_file:
                                 st.download_button(
-                                    label="⬇️ Скачать Excel с сравнением",
+                                    label=f"⬇️ Скачать Excel с сравнением ({selected_file_name})",
                                     data=excel_file,
-                                    file_name="очищенная_гугл_таблица.xlsx",
+                                    file_name=f"очищенный_{selected_file_key}.xlsx",
                                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                    help="Файл содержит 3 вкладки: ОРИГИНАЛ, ОЧИЩЕННЫЙ, СРАВНЕНИЕ"
+                                    help="Файл содержит 3 вкладки: ОРИГИНАЛ, ОЧИЩЕННЫЙ, СРАВНЕНИЕ",
+                                    key=f"download_{selected_file_key}"
                                 )
                                 
                                 st.info("""
                                 **Файл содержит 3 вкладки:**
                                 1. 📋 **ОРИГИНАЛ** - исходные данные
-                                2. ✅ **ОЧИЩЕННЫЙ** - после всех преобразований
+                                2. ✅ **ОЧИЩЕННЫЙ** - после всех преобразований  
                                 3. 🔍 **СРАВНЕНИЕ** - статистика изменений
                                 """)
+                            
+                            # Показываем основные изменения
+                            with st.expander("🔍 Детали изменений"):
+                                changes = []
+                                
+                                # Изменение количества строк
+                                if len(original_df) != len(cleaned_df):
+                                    changes.append(f"Строк: {len(original_df)} → {len(cleaned_df)}")
+                                
+                                # Изменение количества колонок
+                                if len(original_df.columns) != len(cleaned_df.columns):
+                                    changes.append(f"Колонок: {len(original_df.columns)} → {len(cleaned_df.columns)}")
+                                
+                                # Добавленные колонки
+                                added_cols = set(cleaned_df.columns) - set(original_df.columns)
+                                if added_cols:
+                                    changes.append(f"Добавлены колонки: {', '.join(added_cols)}")
+                                
+                                # Удаленные колонки
+                                removed_cols = set(original_df.columns) - set(cleaned_df.columns)
+                                if removed_cols:
+                                    changes.append(f"Удалены колонки: {', '.join(removed_cols)}")
+                                
+                                if changes:
+                                    for change in changes:
+                                        st.write(f"- {change}")
+                                else:
+                                    st.write("Структура данных не изменилась")
+                        
+                        elif cleaned_df is not None:
+                            st.warning("⚠️ Данные не изменились после очистки")
+                        else:
+                            st.error("❌ Очистка не удалась")
+                            
+                    except ImportError as e:
+                        st.error(f"❌ Не удалось импортировать data_cleaner: {e}")
+                        st.info("Убедитесь что файл utils/data_cleaner.py существует")
+                    except Exception as e:
+                        st.error(f"❌ Ошибка при очистке: {e}")
+                else:
+                    st.error(f"Файл '{selected_file_key}' не найден в загруженных данных")
+        
+        with col2:
+            if st.button("🧹 Очистить ВСЕ файлы", type="secondary"):
+                try:
+                    from data_cleaner import data_cleaner
+                    
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
+                    
+                    files_to_clean = list(st.session_state.uploaded_files.keys())
+                    total_files = len(files_to_clean)
+                    
+                    for i, file_key in enumerate(files_to_clean):
+                        status_text.text(f"Очищаю {file_key}... ({i+1}/{total_files})")
+                        
+                        original_df = st.session_state.uploaded_files[file_key]
+                        
+                        # Пока только для Гугл таблицы есть полная очистка
+                        if file_key == 'сервизория':
+                            cleaned_df = data_cleaner.clean_google(original_df)
+                        else:
+                            cleaned_df = original_df.copy()
+                        
+                        if cleaned_df is not None:
+                            st.session_state.cleaned_data[file_key] = cleaned_df
+                        
+                        progress_bar.progress((i + 1) / total_files)
+                    
+                    status_text.text("✅ Все файлы очищены!")
+                    st.success(f"Очищено {total_files} файлов")
+                    st.rerun()
+                    
+                except Exception as e:
+                    st.error(f"❌ Ошибка при массовой очистке: {e}")
+        
+        with col3:
+            if st.button("🗑️ Очистить ВСЕ сохраненные данные", type="secondary"):
+                st.session_state.cleaned_data.clear()
+                st.success("✅ Все очищенные данные удалены из session_state")
+                st.rerun()
+    
+    else:
+        st.warning("⚠️ Нет загруженных файлов для очистки")
 
 # ==============================================
 # СЕКЦИЯ 4: ИНФОРМАЦИЯ ОБ ОЧИЩЕННЫХ ДАННЫХ
@@ -279,4 +418,5 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 

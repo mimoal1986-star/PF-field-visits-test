@@ -262,16 +262,24 @@ class DataCleaner:
     def _find_column(self, df, possible_names):
         """
         Находит колонку по возможным названиям
-        Возвращает точное название колонки из DataFrame
         """
+        # Сначала проверяем точное совпадение
         for name in possible_names:
-            # Проверяем точное совпадение
             if name in df.columns:
                 return name
-            
-            # Проверяем частичное совпадение (регистронезависимо)
+        
+        # Если нет точного, проверяем частичное совпадение
+        for name in possible_names:
             for col in df.columns:
-                if str(col).strip().lower() == str(name).strip().lower():
+                # Приводим к строке и сравниваем без учета регистра и пробелов
+                col_str = str(col).strip().lower().replace(' ', '')
+                name_str = str(name).strip().lower().replace(' ', '')
+                
+                if col_str == name_str:
+                    return col
+                
+                # Проверяем частичное вхождение
+                if name_str in col_str or col_str in name_str:
                     return col
         
         return None
@@ -398,5 +406,6 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 

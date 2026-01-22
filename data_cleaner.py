@@ -157,37 +157,54 @@ class DataCleaner:
             else:
                 st.warning("   ⚠️ Колонка с именем проекта не найдена")
         
-        # === ШАГ 4: Проверить капитализацию ===
-        st.write("**4️⃣ Проверяю капитализацию категориальных полей...**")
+        # === ШАГ 4: Форматировать Пилоты/Семплы/Мультикоды ===
+        st.write("**4️⃣ Форматирую Пилоты/Семплы/Мультикоды...**")
         
-        categorical_fields = ['Пилот', 'Семпл', 'Тип проекта', 'Статус', 'Тип', 'Статус проекта']
-        existing_cat_fields = [col for col in categorical_fields if col in df_clean.columns]
+        # 1. Найти колонку с кодом проекта (используем code_col из шага 2 если есть)
+        if 'code_col' in locals() and code_col:  # Если нашли в шаге 2
+            target_col = code_col
+        else:
+            target_col = self._find_column(df_clean, [
+                'Код проекта RU00.000.00.01SVZ24',
+                'Код проекта',
+                'Код'
+            ])
         
-        if existing_cat_fields:
+        if target_col:
             changes_count = 0
             
-            for col in existing_cat_fields:
-                original_values = df_clean[col].copy()
+            # Значения которые ищем (в нижнем регистре)
+            target_values = ['пилот', 'семпл', 'мультикод']
+            
+            # 2. Проверить каждое значение в колонке
+            for idx, value in df_clean[target_col].items():
+                if pd.isna(value):
+                    continue
+                    
+                str_value = str(value).strip()
                 
-                # Приводим к строке
-                df_clean[col] = df_clean[col].astype(str)
+                # Приводим к нижнему регистру для сравнения
+                lower_value = str_value.lower()
                 
-                # ИСПРАВЛЕНИЕ: Всегда приводим к формату "Пилот"
-                mask = df_clean[col].str.strip() != ''
-                df_clean.loc[mask, col] = df_clean.loc[mask, col].apply(
-                    lambda x: x.strip().capitalize() if pd.notna(x) else x
-                )
-                
-                # Считаем изменения
-                changed = (original_values.fillna('') != df_clean[col].fillna('')).sum()
-                changes_count += changed
+                # Проверяем каждое целевое значение
+                for target in target_values:
+                    # Ищем ВХОЖДЕНИЕ подстроки, а не точное совпадение
+                    if target in lower_value:
+                        # Форматируем - первая заглавная, остальные строчные
+                        formatted_value = str_value.capitalize() if str_value else str_value
+                        
+                        if formatted_value != str_value:
+                            df_clean.at[idx, target_col] = formatted_value
+                            changes_count += 1
+                            break  # Прерываем после первого совпадения
             
             if changes_count > 0:
-                st.success(f"   ✅ Исправлено {changes_count} значений (приведено к формату 'Пилот')")
+                st.success(f"   ✅ Отформатировано {changes_count} значений")
+                st.info("   Пример: 'пиЛот' → 'Пилот', 'СЕМПЛ' → 'Семпл'")
             else:
-                st.info("   ℹ️ Значения уже в правильном формате")
+                st.info("   ℹ️ Значения уже отформатированы")
         else:
-            st.info("   ℹ️ Категориальные поля не найдены")
+            st.warning("   ⚠️ Колонка с кодом проекта не найдена")
         
         # === ШАГ 5: Заполнить пустые даты ===
         st.write("**5️⃣ Заполняю пустые даты...**")
@@ -467,6 +484,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

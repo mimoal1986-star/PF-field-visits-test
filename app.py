@@ -235,7 +235,7 @@ if len(st.session_state.uploaded_files) > 0:
                                     file_name=f"очищенный_{selected_file_key}.xlsx",
                                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                                     help="Файл содержит 3 вкладки: ОРИГИНАЛ, ОЧИЩЕННЫЙ, СРАВНЕНИЕ",
-                                    key=f"download_{selected_file_key}"
+                                    key=f"download_excel_{selected_file_key}_{int(time.time())}"
                                 )
                                 
                                 st.info("""
@@ -362,7 +362,7 @@ if st.session_state.cleaned_data:
                 data=csv,
                 file_name=f"очищенный_{name}.csv",
                 mime="text/csv",
-                key=f"download_{name}"
+                key=f"download_{name}_{int(time.time())}"
             )
 
 # ==============================================
@@ -418,5 +418,6 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 
 

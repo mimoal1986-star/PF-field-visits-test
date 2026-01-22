@@ -217,27 +217,34 @@ if len(st.session_state.uploaded_files) > 0:
                                         st.write(f"Строк: {len(cleaned_df)}")
                                         st.write(f"Колонок: {len(cleaned_df.columns)}")
                                         st.dataframe(cleaned_df.head(3))
-                                
+
                                 # Выгрузка в Excel для сверки (только если были изменения)
                                 st.markdown("---")
                                 st.subheader("📥 Выгрузка для сверки")
                                 
-                                excel_file = data_cleaner.export_to_excel(
-                                    original_df, 
-                                    cleaned_df,
-                                    filename=f"очищенный_{selected_file_key}"
-                                )
+                                if selected_file_key == 'портал':  # Массив
+                                    excel_file = data_cleaner.export_array_to_excel(cleaned_df)
+                                    file_name = "очищенный_массив.xlsx"
+                                    help_text = "Файл содержит 3 вкладки: ОЧИЩЕННЫЙ МАССИВ, СТРОКИ С Н/Д, НУЛИ В ДАТАХ"
+                                else:  # Гугл таблица и другие
+                                    excel_file = data_cleaner.export_to_excel(
+                                        original_df, 
+                                        cleaned_df,
+                                        filename=f"очищенный_{selected_file_key}"
+                                    )
+                                    file_name = f"очищенный_{selected_file_key}.xlsx"
+                                    help_text = "Файл содержит 3 вкладки: ОРИГИНАЛ, ОЧИЩЕННЫЙ, СРАВНЕНИЕ"
                                 
                                 if excel_file:
                                     st.download_button(
                                         label=f"⬇️ Скачать Excel с сравнением ({selected_file_name})",
                                         data=excel_file,
-                                        file_name=f"очищенный_{selected_file_key}.xlsx",
+                                        file_name=file_name,
                                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                        help="Файл содержит 3 вкладки: ОРИГИНАЛ, ОЧИЩЕННЫЙ, СРАВНЕНИЕ"
+                                        help=help_text
                                     )
                                     
-                                    st.info("""
+                                    st.info(f"""
                                     **Файл содержит 3 вкладки:**
                                     1. 📋 **ОРИГИНАЛ** - исходные данные
                                     2. ✅ **ОЧИЩЕННЫЙ** - после всех преобразований  
@@ -445,5 +452,6 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 
 

@@ -404,17 +404,22 @@ if st.session_state.cleaned_data:
                         st.session_state['array_discrepancies'] = discrepancy_df
                         st.session_state['discrepancy_stats'] = stats
                         
-                        # Создаем Excel файл с расхождениями
-                        excel_file = data_cleaner.export_discrepancies_to_excel(discrepancy_df)
-                        
-                        if excel_file:
-                            st.download_button(
-                                label=f"⬇️ Скачать 'Расхождение Массив.xlsx' ({len(discrepancy_df)} строк)",
-                                data=excel_file,
-                                file_name="Расхождение_Массив.xlsx",
-                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                key="download_discrepancies"
-                            )
+                    # Создаем Excel файл с расхождениями
+                    st.write("🔍 Создаю Excel файл с расхождениями...")
+                    excel_file = data_cleaner.export_discrepancies_to_excel(discrepancy_df)
+                    
+                    if excel_file:
+                        st.write(f"✅ Excel файл создан успешно, размер: {len(excel_file.getvalue())} байт")
+                        st.download_button(
+                            label=f"⬇️ Скачать 'Расхождение Массив.xlsx' ({len(discrepancy_df)} строк)",
+                            data=excel_file,
+                            file_name="Расхождение_Массив.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            key="download_discrepancies"
+                        )
+                    else:
+                        st.write("❌ Excel файл НЕ создан (возвращено None)")
+                        st.write(f"Размер discrepancy_df: {len(discrepancy_df)} строк, {len(discrepancy_df.columns)} колонок")
                     
                     st.success(f"✅ Обогащение завершено! Заполнено {stats['filled']} кодов.")
                     st.rerun()
@@ -540,6 +545,7 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 
 
 

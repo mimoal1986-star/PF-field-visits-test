@@ -364,7 +364,7 @@ if st.session_state.cleaned_data:
                         st.session_state['discrepancy_stats'] = stats
                         
                         # Создаем Excel файл с расхождениями
-                        excel_file = data_cleaner.export_discrepancy_to_excel(discrepancy_df)
+                        excel_file = data_cleaner.export_discrepancies_to_excel(discrepancy_df)
                         
                         if excel_file:
                             st.download_button(
@@ -499,6 +499,7 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 
 
 

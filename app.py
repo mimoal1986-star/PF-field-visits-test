@@ -394,17 +394,17 @@ if st.session_state.cleaned_data:
                 st.success(f"✅ Обогащение завершено! Заполнено {stats.get('filled', 0)} кодов.")
                 st.rerun()
                 
-            except Exception as func_error:
-                st.error(f"❌ ОШИБКА ВНУТРИ ФУНКЦИИ: {str(func_error)}")
-                import traceback
-                st.text("📋 **ТРАССИРОВКА ОШИБКИ:**")
-                st.code(traceback.format_exc())
+        except Exception as func_error:
+            st.error(f"❌ ОШИБКА ВНУТРИ ФУНКЦИИ: {str(func_error)}")
+            import traceback
+            st.text("📋 **ТРАССИРОВКА ОШИБКИ:**")
+            st.code(traceback.format_exc())
                 
-    except Exception as e:
-        st.error(f"❌ ОБЩАЯ ОШИБКА: {str(e)}")
-        import traceback
-        st.text("📋 **ПОЛНАЯ ТРАССИРОВКА:**")
-        st.code(traceback.format_exc())
+        except Exception as e:
+            st.error(f"❌ ОБЩАЯ ОШИБКА: {str(e)}")
+            import traceback
+            st.text("📋 **ПОЛНАЯ ТРАССИРОВКА:**")
+            st.code(traceback.format_exc())
         
     else:
         st.info("Для обогащения нужны оба файла: 'портал' (Массив) и 'сервизория' (Проекты Сервизория)")
@@ -525,6 +525,7 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 
 
 

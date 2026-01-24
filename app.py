@@ -340,12 +340,22 @@ if st.session_state.cleaned_data:
     st.markdown("---")
     
     st.subheader("🎯 Обогащение Массива кодами проектов")
+
+    st.write("🐛 **ДИАГНОСТИКА:** cleaned_data существует")
+    st.write(f"- Ключи: {list(st.session_state.cleaned_data.keys())}")
+    st.write(f"- 'портал' есть? {'портал' in st.session_state.cleaned_data}")
+    st.write(f"- 'сервизория' есть? {'сервизория' in st.session_state.cleaned_data}")
+    
+    # Проверяем, есть ли оба необходимых файла
+    if 'портал' in st.session_state.cleaned_data and 'сервизория' in st.session_state.cleaned_data:
+        st.success("✅ Условие выполнено! Кнопка должна быть видна.")
     
     # Проверяем, есть ли оба необходимых файла
     if 'портал' in st.session_state.cleaned_data and 'сервизория' in st.session_state.cleaned_data:
         
         if st.button("🔍 Обогатить Массив кодами проектов", type="primary"):
             st.write("🔍 **1. Кнопка нажата!**")
+
             
             try:
                 from data_cleaner import data_cleaner
@@ -514,20 +524,7 @@ with st.sidebar:
     st.write("2. 🔗 Объединение данных")
     st.write("3. 📊 Создание отчетов")
 
-# ==============================================
-# СЕКЦИЯ 6: ДЕБАГ ИНФОРМАЦИЯ (для разработки)
-# ==============================================
-with st.expander("🐛 Дебаг информация (только для разработки)"):
-    st.write("**Session state keys:**")
-    st.write(list(st.session_state.keys()))
-    
-    st.write("**Загруженные файлы:**")
-    for key in st.session_state.uploaded_files:
-        st.write(f"- {key}")
-    
-    st.write("**Очищенные файлы:**")
-    for key in st.session_state.cleaned_data:
-        st.write(f"- {key}")
+
 
 
 

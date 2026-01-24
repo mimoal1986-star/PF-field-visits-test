@@ -630,38 +630,183 @@ class DataCleaner:
         Возвращает:
         tuple: (enriched_array, discrepancy_df, stats_dict)
         """
-        # 🔍 ДОБАВЬТЕ ЭТУ ОТЛАДКУ:
+        # 🔍 ОТЛАДКА:
         st.write("🔍 **НАЧАЛО ОТЛАДКИ ФУНКЦИИ**")
-        st.write(f"1. Размер Массива: {len(cleaned_array_df)} строк, {len(cleaned_array_df.columns)} колонок")
-        st.write(f"2. Размер Проектов: {len(projects_df)} строк, {len(projects_df.columns)} колонок")
+                st.write("🔍 **ОТЛАДКА: НАЧАЛО ОБОГАЩЕНИЯ**")
+        st.write("=" * 50)
         
-        # Проверка колонок
-        st.write("3. Колонки Массива:", list(cleaned_array_df.columns)[:10])
-        st.write("4. Колонки Проектов:", list(projects_df.columns)[:10])
-
-        # Проверка нужных колонок в Проектах
-        st.write("**🔍 Проверка колонок в Проектах Сервизория:**")
-        required_projects_cols = [
-            'Проекты в https://ru.checker-soft.com',
-            'Название волны на Чекере/ином ПО',
-            'Код проекта RU00.000.00.01SVZ24'
-        ]
+        # 1. ПРОВЕРКА ДАННЫХ
+        st.write("**1. ПРОВЕРКА ДАННЫХ:**")
+        st.write(f"- Размер Массива: {len(cleaned_array_df)} строк × {len(cleaned_array_df.columns)} колонок")
+        st.write(f"- Размер Проектов Сервизория: {len(projects_df)} строк × {len(projects_df.columns)} колонок")
         
-        for col in required_projects_cols:
-            if col in projects_df.columns:
-                st.write(f"✅ '{col}' есть в данных")
+        # 2. ПРОВЕРКА КОЛОНОК МАССИВА
+        st.write("\n**2. ПРОВЕРКА КОЛОНОК МАССИВА:**")
+        array_fields = {
+            'Код анкеты': '❌ НЕ НАЙДЕН',
+            'Имя клиента': '❌ НЕ НАЙДЕН', 
+            'Название проекта': '❌ НЕ НАЙДЕН'
+        }
+        
+        for field in array_fields.keys():
+            if field in cleaned_array_df.columns:
+                array_fields[field] = '✅ НАЙДЕН'
+                # Считаем пустые значения
+                empty_count = cleaned_array_df[field].isna().sum() + (cleaned_array_df[field].astype(str).str.strip() == '').sum()
+                st.write(f"  - '{field}': {array_fields[field]}, пустых: {empty_count}/{len(cleaned_array_df)}")
             else:
-                st.write(f"❌ '{col}' НЕТ в данных!")
-                # Покажем какие колонки есть на самом деле
-                st.write(f"   Доступные колонки: {list(projects_df.columns)}")
+                st.write(f"  - '{field}': {array_fields[field]}")
+        
+        # 3. ПРОВЕРКА КОЛОНОК ПРОЕКТОВ СЕРВИЗОРИЯ
+        st.write("\n**3. ПРОВЕРКА КОЛОНОК ПРОЕКТОВ СЕРВИЗОРИЯ:**")
+        project_fields = {
+            'Проекты в https://ru.checker-soft.com': '❌ НЕ НАЙДЕН',
+            'Название волны на Чекере/ином ПО': '❌ НЕ НАЙДЕН',
+            'Код проекта RU00.000.00.01SVZ24': '❌ НЕ НАЙДЕН'
+        }
+        
+        for field in project_fields.keys():
+            if field in projects_df.columns:
+                project_fields[field] = '✅ НАЙДЕН'
+                empty_count = projects_df[field].isna().sum() + (projects_df[field].astype(str).str.strip() == '').sum()
+                st.write(f"  - '{field}': {project_fields[field]}, пустых: {empty_count}/{len(projects_df)}")
+            else:
+                st.write(f"  - '{field}': {project_fields[field]}")
+        
+        # 4. ПРОВЕРКА НА ВСЕ НЕОБХОДИМЫЕ КОЛОНКИ
+        all_fields_found = all(status == '✅ НАЙДЕН' for status in list(array_fields.values()) + list(project_fields.values()))
+        
+        if not all_fields_found:
+            st.error("❌ **ОСТАНОВКА:** Не все необходимые колонки найдены!")
+            return cleaned_array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
+        
+        st.success("✅ Все необходимые колонки найдены!")
+        st.write("=" * 50)
+        
+        # ============================================
+        # ПОДГОТОВКА ДАННЫХ
+        # ============================================
+        st.write("\n**4. ПОДГОТОВКА ДАННЫХ:**")
+        
+        # Копируем данные
+        array_df = cleaned_array_df.copy()
+        projects_df = projects_df.copy()
+        
+        # Находим строки с пустым 'Код анкеты'
+        empty_code_mask = (
+            array_df['Код анкеты'].isna() |
+            (array_df['Код анкеты'].astype(str).str.strip() == '')
+        )
+        rows_to_process = array_df[empty_code_mask]
+        total_empty = len(rows_to_process)
+        
+        st.write(f"- Найдено строк с пустым 'Код анкеты': {total_empty}/{len(array_df)}")
+        
+        if total_empty == 0:
+            st.success("✅ Нечего заполнять. Все коды анкеты уже заполнены.")
+            return array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
+        
+        # ============================================
+        # ОСНОВНОЙ ЦИКЛ ПОИСКА
+        # ============================================
+        st.write("\n**5. ПОИСК СОВПАДЕНИЙ:**")
+        st.write(f"- Обрабатываю {total_empty} строк...")
+        
+        # Подготовка проектов для быстрого поиска
+        projects_df['_match_client'] = projects_df['Проекты в https://ru.checker-soft.com'].astype(str).str.strip()
+        projects_df['_match_wave'] = projects_df['Название волны на Чекере/ином ПО'].astype(str).str.strip()
+        
+        # Счетчики
+        filled_count = 0
+        discrepancy_rows = []
+        match_stats = {
+            'client_match': 0,  # совпадение по клиенту
+            'wave_match': 0,    # совпадение по волне
+            'both_match': 0,    # совпадение по обоим полям
+            'code_empty': 0,    # код проекта пустой
+            'no_match': 0       # нет совпадений
+        }
+        
+        # Примеры для отладки
+        examples = []
+        
+        for idx, row in rows_to_process.iterrows():
+            client_name = str(row['Имя клиента']).strip() if pd.notna(row['Имя клиента']) else ''
+            project_name = str(row['Название проекта']).strip() if pd.notna(row['Название проекта']) else ''
+            
+            # Ищем точное совпадение
+            match_mask = (
+                (projects_df['_match_client'] == client_name) &
+                (projects_df['_match_wave'] == project_name)
+            )
+            
+            matched_rows = projects_df[match_mask]
+            
+            if not matched_rows.empty:
+                match_stats['both_match'] += 1
+                project_code = matched_rows.iloc[0]['Код проекта RU00.000.00.01SVZ24']
+                
+                if pd.notna(project_code) and str(project_code).strip() != '':
+                    # Заполняем код
+                    array_df.at[idx, 'Код анкеты'] = str(project_code).strip()
+                    filled_count += 1
+                    
+                    # Сохраняем пример для отладки (первые 3)
+                    if len(examples) < 3:
+                        examples.append({
+                            'клиент': client_name[:30] + '...' if len(client_name) > 30 else client_name,
+                            'проект': project_name[:30] + '...' if len(project_name) > 30 else project_name,
+                            'найденный код': str(project_code).strip()[:20] + '...' if len(str(project_code)) > 20 else str(project_code)
+                        })
+                else:
+                    match_stats['code_empty'] += 1
+                    discrepancy_rows.append(row.to_dict())
+            else:
+                match_stats['no_match'] += 1
+                discrepancy_rows.append(row.to_dict())
+        
+        # ============================================
+        # РЕЗУЛЬТАТЫ
+        # ============================================
+        st.write("\n**6. РЕЗУЛЬТАТЫ ПОИСКА:**")
+        st.write(f"- Совпадений по обоим полям (клиент+волна): {match_stats['both_match']}/{total_empty}")
+        st.write(f"- Из них с заполненным кодом проекта: {filled_count}/{match_stats['both_match']}")
+        st.write(f"- Из них с пустым кодом проекта: {match_stats['code_empty']}/{match_stats['both_match']}")
+        st.write(f"- Без совпадений: {match_stats['no_match']}/{total_empty}")
+        
+        if examples:
+            st.write("\n**Примеры найденных совпадений:**")
+            for i, example in enumerate(examples, 1):
+                st.write(f"  {i}. Клиент: '{example['клиент']}'")
+                st.write(f"     Проект: '{example['проект']}'")
+                st.write(f"     Код: '{example['найденный код']}'")
+        
+        # Формируем результат
+        discrepancy_df = pd.DataFrame(discrepancy_rows) if discrepancy_rows else pd.DataFrame()
+        
+        st.write("\n**7. ИТОГИ:**")
+        st.write(f"- Всего обработано: {total_empty} строк")
+        st.write(f"- Успешно заполнено: {filled_count} кодов")
+        st.write(f"- Осталось расхождений: {len(discrepancy_df)} строк")
+        
+        # Удаляем временные колонки
+        projects_df.drop(['_match_client', '_match_wave'], axis=1, inplace=True, errors='ignore')
+        
+        st.success(f"✅ Обогащение завершено!")
+        st.write("=" * 50)
+        
+        stats = {
+            'processed': total_empty,
+            'filled': filled_count,
+            'discrepancies': len(discrepancy_df),
+            'match_stats': match_stats
+        }
+        
+        return ar
 
-        # Проверка 'Код анкеты'
-        if 'Код анкеты' in cleaned_array_df.columns:
-            empty_count = cleaned_array_df['Код анкеты'].isna().sum() + (cleaned_array_df['Код анкеты'] == '').sum()
-            st.write(f"5. Пустых 'Код анкеты': {empty_count}")
-        else:
-            st.error("❌ Колонка 'Код анкеты' не найдена в Массиве!")
-        # 🔍 ДОБАВЬТЕ ЭТУ ОТЛАДКУ:
+ray_df, discrepancy_df, stats
+
+        # 🔍 ОТЛАДКА:
 
     
         if cleaned_array_df is None or cleaned_array_df.empty:
@@ -887,6 +1032,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

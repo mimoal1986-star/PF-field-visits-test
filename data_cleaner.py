@@ -638,7 +638,23 @@ class DataCleaner:
         # Проверка колонок
         st.write("3. Колонки Массива:", list(cleaned_array_df.columns)[:10])
         st.write("4. Колонки Проектов:", list(projects_df.columns)[:10])
+
+        # Проверка нужных колонок в Проектах
+        st.write("**🔍 Проверка колонок в Проектах Сервизория:**")
+        required_projects_cols = [
+            'Проекты в https://ru.checker-soft.com',
+            'Название волны на Чекере/ином ПО',
+            'Код проекта RU00.000.00.01SVZ24'
+        ]
         
+        for col in required_projects_cols:
+            if col in projects_df.columns:
+                st.write(f"✅ '{col}' есть в данных")
+            else:
+                st.write(f"❌ '{col}' НЕТ в данных!")
+                # Покажем какие колонки есть на самом деле
+                st.write(f"   Доступные колонки: {list(projects_df.columns)}")
+
         # Проверка 'Код анкеты'
         if 'Код анкеты' in cleaned_array_df.columns:
             empty_count = cleaned_array_df['Код анкеты'].isna().sum() + (cleaned_array_df['Код анкеты'] == '').sum()
@@ -871,6 +887,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

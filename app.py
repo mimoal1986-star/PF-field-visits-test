@@ -335,16 +335,18 @@ if len(st.session_state.uploaded_files) > 0:
 # ==============================================
 # СЕКЦИЯ 4: ИНФОРМАЦИЯ ОБ ОЧИЩЕННЫХ ДАННЫХ
 # ==============================================
+
 if st.session_state.cleaned_data:
     st.markdown("---")
     
-    
     st.subheader("🎯 Обогащение Массива кодами проектов")
+    
     # Проверяем, есть ли оба необходимых файла
     if 'портал' in st.session_state.cleaned_data and 'сервизория' in st.session_state.cleaned_data:
         
         if st.button("🔍 Обогатить Массив кодами проектов", type="primary"):
             st.write("🔍 **1. Кнопка нажата!**")
+            
             try:
                 from data_cleaner import data_cleaner
                 st.write("✅ 2. data_cleaner импортирован")
@@ -390,24 +392,25 @@ if st.session_state.cleaned_data:
                                 )
                             else:
                                 st.warning("⚠️ Excel файл не создан")
+                        
+                        st.success(f"✅ Обогащение завершено! Заполнено {stats.get('filled', 0)} кодов.")
+                        st.rerun()
+                        
+                    except Exception as func_error:
+                        st.error(f"❌ ОШИБКА ВНУТРИ ФУНКЦИИ: {str(func_error)}")
+                        import traceback
+                        st.text("📋 **ТРАССИРОВКА ОШИБКИ:**")
+                        st.code(traceback.format_exc())
+                        
+            except Exception as e:
+                st.error(f"❌ ОБЩАЯ ОШИБКА: {str(e)}")
+                import traceback
+                st.text("📋 **ПОЛНАЯ ТРАССИРОВКА:**")
+                st.code(traceback.format_exc())
                 
-                st.success(f"✅ Обогащение завершено! Заполнено {stats.get('filled', 0)} кодов.")
-                st.rerun()
-                
-        except Exception as func_error:
-            st.error(f"❌ ОШИБКА ВНУТРИ ФУНКЦИИ: {str(func_error)}")
-            import traceback
-            st.text("📋 **ТРАССИРОВКА ОШИБКИ:**")
-            st.code(traceback.format_exc())
-                
-        except Exception as e:
-            st.error(f"❌ ОБЩАЯ ОШИБКА: {str(e)}")
-            import traceback
-            st.text("📋 **ПОЛНАЯ ТРАССИРОВКА:**")
-            st.code(traceback.format_exc())
-        
     else:
         st.info("Для обогащения нужны оба файла: 'портал' (Массив) и 'сервизория' (Проекты Сервизория)")
+        
     
     st.markdown("---")
     st.subheader("✅ Очищенные данные")
@@ -525,6 +528,7 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 
 
 

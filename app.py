@@ -337,6 +337,47 @@ if len(st.session_state.uploaded_files) > 0:
 # ==============================================
 if st.session_state.cleaned_data:
     st.markdown("---")
+    
+    # 🔍 ОТЛАДКА НАЧАЛО
+    st.subheader("🔍 ОТЛАДКА ДЛЯ ОБОГАЩЕНИЯ")
+    
+    st.write("**1. Проверка session_state.cleaned_data:**")
+    st.write(f"Количество файлов в cleaned_data: {len(st.session_state.cleaned_data)}")
+    st.write(f"Все ключи: {list(st.session_state.cleaned_data.keys())}")
+    
+    if st.session_state.cleaned_data:
+        st.write("**2. Детали по каждому файлу:**")
+        for key, df in st.session_state.cleaned_data.items():
+            st.write(f"- **{key}**: {len(df)} строк, {len(df.columns)} колонок")
+            # Покажем первые 2 названия колонок для идентификации
+            cols_sample = list(df.columns)[:2] if len(df.columns) > 0 else "нет колонок"
+            st.write(f"  Пример колонок: {cols_sample}")
+    
+    # Проверка конкретных ключей
+    st.write("**3. Проверка нужных ключей:**")
+    portal_exists = 'портал' in st.session_state.cleaned_data
+    servizoria_exists = 'сервизория' in st.session_state.cleaned_data
+    
+    st.write(f"- Ключ 'портал' существует: {'✅ ДА' if portal_exists else '❌ НЕТ'}")
+    st.write(f"- Ключ 'сервизория' существует: {'✅ ДА' if servizoria_exists else '❌ НЕТ'}")
+    
+    # Проверка столбцов в портале
+    if portal_exists:
+        portal_df = st.session_state.cleaned_data['портал']
+        st.write(f"**4. Колонки в 'портал' (первые 10):**")
+        st.write(list(portal_df.columns)[:10])
+        
+        # Проверяем наличие 'Код анкеты'
+        has_code = 'Код анкеты' in portal_df.columns
+        st.write(f"- Колонка 'Код анкеты' существует: {'✅ ДА' if has_code else '❌ НЕТ'}")
+        
+        if has_code:
+            empty_codes = portal_df['Код анкеты'].isna().sum() + (portal_df['Код анкеты'] == '').sum()
+            st.write(f"- Пустых 'Код анкеты': {empty_codes} из {len(portal_df)}")
+    
+    st.markdown("---")
+    # 🔍 ОТЛАДКА КОНЕЦ
+    
     st.subheader("🎯 Обогащение Массива кодами проектов")
     
     # Проверяем, есть ли оба необходимых файла
@@ -499,6 +540,7 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 
 
 

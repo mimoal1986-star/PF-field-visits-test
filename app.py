@@ -338,127 +338,74 @@ if len(st.session_state.uploaded_files) > 0:
 if st.session_state.cleaned_data:
     st.markdown("---")
     
-    # 🔍 ОТЛАДКА НАЧАЛО
-    st.subheader("🔍 ОТЛАДКА ДЛЯ ОБОГАЩЕНИЯ")
-    
-    st.write("**1. Проверка session_state.cleaned_data:**")
-    st.write(f"Количество файлов в cleaned_data: {len(st.session_state.cleaned_data)}")
-    st.write(f"Все ключи: {list(st.session_state.cleaned_data.keys())}")
-    
-    if st.session_state.cleaned_data:
-        st.write("**2. Детали по каждому файлу:**")
-        for key, df in st.session_state.cleaned_data.items():
-            st.write(f"- **{key}**: {len(df)} строк, {len(df.columns)} колонок")
-            # Покажем первые 2 названия колонок для идентификации
-            cols_sample = list(df.columns)[:2] if len(df.columns) > 0 else "нет колонок"
-            st.write(f"  Пример колонок: {cols_sample}")
-    
-    # Проверка конкретных ключей
-    st.write("**3. Проверка нужных ключей:**")
-    portal_exists = 'портал' in st.session_state.cleaned_data
-    servizoria_exists = 'сервизория' in st.session_state.cleaned_data
-    
-    st.write(f"- Ключ 'портал' существует: {'✅ ДА' if portal_exists else '❌ НЕТ'}")
-    st.write(f"- Ключ 'сервизория' существует: {'✅ ДА' if servizoria_exists else '❌ НЕТ'}")
-    
-    # Проверка столбцов в портале
-    if portal_exists:
-        portal_df = st.session_state.cleaned_data['портал']
-        st.write(f"**4. Колонки в 'портал' (первые 10):**")
-        st.write(list(portal_df.columns)[:10])
-        
-        # Проверяем наличие 'Код анкеты'
-        has_code = 'Код анкеты' in portal_df.columns
-        st.write(f"- Колонка 'Код анкеты' существует: {'✅ ДА' if has_code else '❌ НЕТ'}")
-        
-        if has_code:
-            empty_codes = portal_df['Код анкеты'].isna().sum() + (portal_df['Код анкеты'] == '').sum()
-            st.write(f"- Пустых 'Код анкеты': {empty_codes} из {len(portal_df)}")
-    
-    st.markdown("---")
-    # 🔍 ОТЛАДКА КОНЕЦ
     
     st.subheader("🎯 Обогащение Массива кодами проектов")
-    
-    # ОТЛАДКА
-    st.write("🔍 **ПРОВЕРКА ПЕРЕД КНОПКОЙ:**")
-    st.write(f"1. cleaned_data пустой? {len(st.session_state.cleaned_data) == 0}")
-    st.write(f"2. Ключи в cleaned_data: {list(st.session_state.cleaned_data.keys())}")
-    
-    if 'портал' in st.session_state.cleaned_data and 'сервизория' in st.session_state.cleaned_data:
-        st.write("✅ Оба файла есть в cleaned_data")
-        
-        array_df = st.session_state.cleaned_data['портал']
-        projects_df = st.session_state.cleaned_data['сервизория']
-        
-        st.write(f"3. array_df тип: {type(array_df)}, размер: {len(array_df)} строк")
-        st.write(f"4. projects_df тип: {type(projects_df)}, размер: {len(projects_df)} строк")
-        
-        # Проверка импорта
-        try:
-            from data_cleaner import data_cleaner
-            st.write("✅ data_cleaner импортирован успешно")
-            
-            # Проверка существования метода
-            if hasattr(data_cleaner, 'enrich_array_with_project_codes'):
-                st.write("✅ Метод enrich_array_with_project_codes найден")
-            else:
-                st.error("❌ Метод enrich_array_with_project_codes НЕ найден!")
-                st.write("Доступные методы:", [m for m in dir(data_cleaner) if not m.startswith('_')])
-        except ImportError as e:
-            st.error(f"❌ Ошибка импорта data_cleaner: {e}")
-    else:
-        st.error("❌ Нет одного или обоих файлов в cleaned_data")
-    
-    st.markdown("---")
-    # ОТЛАДКА
-    
     # Проверяем, есть ли оба необходимых файла
     if 'портал' in st.session_state.cleaned_data and 'сервизория' in st.session_state.cleaned_data:
         
         if st.button("🔍 Обогатить Массив кодами проектов", type="primary"):
+            st.write("🔍 **1. Кнопка нажата!**")
             try:
                 from data_cleaner import data_cleaner
+                st.write("✅ 2. data_cleaner импортирован")
                 
                 array_df = st.session_state.cleaned_data['портал']
                 projects_df = st.session_state.cleaned_data['сервизория']
+                st.write(f"✅ 3. Данные получены")
+                
+                st.write("🔍 4. Вызываю функцию enrich_array_with_project_codes...")
                 
                 with st.spinner("Ищу и заполняю коды проектов..."):
-                    # Вызов новой функции
-                    enriched_array, discrepancy_df, stats = data_cleaner.enrich_array_with_project_codes(
-                        array_df, projects_df
-                    )
-                    
-                    # Сохраняем обогащенный массив обратно
-                    st.session_state.cleaned_data['портал'] = enriched_array
-                    
-                    # Сохраняем расхождения
-                    if not discrepancy_df.empty:
-                        st.session_state['array_discrepancies'] = discrepancy_df
-                        st.session_state['discrepancy_stats'] = stats
-                        
-                    # Создаем Excel файл с расхождениями
-                    st.write("🔍 Создаю Excel файл с расхождениями...")
-                    excel_file = data_cleaner.export_discrepancies_to_excel(discrepancy_df)
-                    
-                    if excel_file:
-                        st.write(f"✅ Excel файл создан успешно, размер: {len(excel_file.getvalue())} байт")
-                        st.download_button(
-                            label=f"⬇️ Скачать 'Расхождение Массив.xlsx' ({len(discrepancy_df)} строк)",
-                            data=excel_file,
-                            file_name="Расхождение_Массив.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                            key="download_discrepancies"
+                    try:
+                        # ВЫЗОВ ФУНКЦИИ
+                        enriched_array, discrepancy_df, stats = data_cleaner.enrich_array_with_project_codes(
+                            array_df, projects_df
                         )
-                    else:
-                        st.write("❌ Excel файл НЕ создан (возвращено None)")
-                        st.write(f"Размер discrepancy_df: {len(discrepancy_df)} строк, {len(discrepancy_df.columns)} колонок")
-                    
-                    st.success(f"✅ Обогащение завершено! Заполнено {stats['filled']} кодов.")
-                    st.rerun()
-                    
-            except Exception as e:
-                st.error(f"❌ Ошибка при обогащении: {e}")
+                        
+                        st.write(f"✅ 5. Функция выполнилась успешно!")
+                        st.write(f"   - Размер enriched_array: {len(enriched_array)}")
+                        st.write(f"   - Размер discrepancy_df: {len(discrepancy_df)}")
+                        st.write(f"   - Статистика: {stats}")
+                        
+                        # Сохраняем обогащенный массив обратно
+                        st.session_state.cleaned_data['портал'] = enriched_array
+                        
+                        # Сохраняем расхождения
+                        if not discrepancy_df.empty:
+                            st.session_state['array_discrepancies'] = discrepancy_df
+                            st.session_state['discrepancy_stats'] = stats
+                            
+                            # Создаем Excel файл с расхождениями
+                            st.write("🔍 6. Создаю Excel файл...")
+                            excel_file = data_cleaner.export_discrepancies_to_excel(discrepancy_df)
+                            
+                            if excel_file:
+                                st.success(f"✅ Файл создан! {len(excel_file.getvalue())} байт")
+                                st.download_button(
+                                    label=f"⬇️ Скачать 'Расхождение Массив.xlsx' ({len(discrepancy_df)} строк)",
+                                    data=excel_file,
+                                    file_name="Расхождение_Массив.xlsx",
+                                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                    key="download_discrepancies"
+                                )
+                            else:
+                                st.warning("⚠️ Excel файл не создан")
+                
+                st.success(f"✅ Обогащение завершено! Заполнено {stats.get('filled', 0)} кодов.")
+                st.rerun()
+                
+            except Exception as func_error:
+                st.error(f"❌ ОШИБКА ВНУТРИ ФУНКЦИИ: {str(func_error)}")
+                import traceback
+                st.text("📋 **ТРАССИРОВКА ОШИБКИ:**")
+                st.code(traceback.format_exc())
+                
+    except Exception as e:
+        st.error(f"❌ ОБЩАЯ ОШИБКА: {str(e)}")
+        import traceback
+        st.text("📋 **ПОЛНАЯ ТРАССИРОВКА:**")
+        st.code(traceback.format_exc())
+        
     else:
         st.info("Для обогащения нужны оба файла: 'портал' (Массив) и 'сервизория' (Проекты Сервизория)")
     
@@ -578,6 +525,7 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 
 
 

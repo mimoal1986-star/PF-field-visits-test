@@ -481,6 +481,27 @@ class DataCleaner:
         # === ИТОГИ ОЧИСТКИ ===
         st.markdown("---")
         st.success(f"✅ Массив успешно очищен!")
+
+        # === Сохраняем информацию о строках с Н/Д для отчета ===
+        st.write("**3️⃣ Сохраняю информацию о строках с Н/Д для отчета...**")
+        
+        # Создаем маску для строк, которые имели Н/Д
+        had_na_mask = pd.Series(False, index=df_clean.index)
+        
+        for col in df_clean.columns:
+            try:
+                # Ищем оригинальные значения Н/Д
+                for na_val in na_values:
+                    mask = original_df[col].astype(str).str.strip() == na_val
+                    had_na_mask = had_na_mask | mask
+            except:
+                continue
+        
+        # Сохраняем маску как атрибут DataFrame
+        df_clean.attrs['had_na_rows'] = had_na_mask
+        df_clean.attrs['na_rows_count'] = had_na_mask.sum()
+        
+        st.success(f"   ✅ Сохранено {had_na_mask.sum()} строк с Н/Д для отчета")
         
         return df_clean
 
@@ -503,52 +524,43 @@ class DataCleaner:
                 cleaned_array_df.to_excel(writer, sheet_name='ОЧИЩЕННЫЙ МАССИВ', index=False)
                 
                 # === ВКЛАДКА 2: Строки где были Н/Д ===
-                # ТЕ ЖЕ значения что в clean_array!
-                na_values = ['Н/Д', 'н/д', 'N/A', 'n/a', '#Н/Д', '#н/д', 'NA', 'na', '-', '—', '–']
-                nan_values = ['nan', 'NaN', 'none', 'null', 'NULL', 'None']
-                
-                # Находим строки с такими значениями
-                na_mask_total = pd.Series(False, index=cleaned_array_df.index)
-                
-                for col in cleaned_array_df.columns:
-                    # Проверяем КАК СТРОКУ (как в clean_array)
-                    col_str = cleaned_array_df[col].astype(str).str.strip()
+                # Используем сохраненную информацию
+                if 'had_na_rows' in cleaned_array_df.attrs:
+                    had_na_mask = cleaned_array_df.attrs['had_na_rows']
                     
-                    # Проверяем каждое значение Н/Д
-                    for val in na_values:
-                        na_mask_total = na_mask_total | (col_str == val)
-                    
-                    # Проверяем nan значения
-                    for val in nan_values:
-                        na_mask_total = na_mask_total | (col_str.str.lower() == val)
-                
-                if na_mask_total.any():
-                    na_rows_df = cleaned_array_df[na_mask_total].copy()
-                    
-                    # Добавляем колонку с информацией
-                    reasons = []
-                    for idx in na_rows_df.index:
-                        empty_cols = []
-                        for col in cleaned_array_df.columns:
-                            col_val = str(cleaned_array_df.at[idx, col]).strip()
-                            col_val_lower = col_val.lower()
-                            
-                            # ТА ЖЕ ЛОГИКА что в clean_array
-                            if (col_val in na_values or 
-                                col_val_lower in nan_values or 
-                                col_val == ''):
-                                empty_cols.append(col)
+                    if had_na_mask.any():
+                        na_rows_df = cleaned_array_df[had_na_mask].copy()
                         
-                        if empty_cols:
-                            reasons.append(', '.join(empty_cols[:3]) + 
-                                         ('...' if len(empty_cols) > 3 else ''))
-                        else:
-                            reasons.append('не определено')
-                    
-                    na_rows_df.insert(0, 'БЫЛИ_Н/Д_В_КОЛОНКАХ', reasons)
-                    na_rows_df.to_excel(writer, sheet_name='СТРОКИ С Н Д', index=False)
+                        # Добавляем информацию о каких колонках были Н/Д
+                        reasons = []
+                        for idx in na_rows_df.index:
+                            na_cols = []
+                            for col in cleaned_array_df.columns:
+                                # Проверяем оригинальное значение (если доступно)
+                                try:
+                                    # Если есть доступ к original_df
+                                    if 'original_df' in locals():
+                                        orig_val = str(original_df.at[idx, col]).strip()
+                                        if orig_val in na_values:
+                                            na_cols.append(col)
+                                except:
+                                    # Просто отмечаем колонки с пустыми значениями
+                                    if str(cleaned_array_df.at[idx, col]).strip() == '':
+                                        na_cols.append(col)
+                            
+                            if na_cols:
+                                reasons.append(', '.join(na_cols[:3]) + ('...' if len(na_cols) > 3 else ''))
+                            else:
+                                reasons.append('не определено')
+                        
+                        na_rows_df.insert(0, 'БЫЛИ_Н/Д_В_КОЛОНКАХ', reasons)
+                        na_rows_df.to_excel(writer, sheet_name='СТРОКИ С Н Д', index=False)
+                    else:
+                        pd.DataFrame({'Сообщение': ['Строк с Н/Д не найдено']}).to_excel(
+                            writer, sheet_name='СТРОКИ С Н Д', index=False
+                        )
                 else:
-                    pd.DataFrame({'Сообщение': ['Строк с Н/Д не найдено']}).to_excel(
+                    pd.DataFrame({'Сообщение': ['Информация о Н/Д не сохранена']}).to_excel(
                         writer, sheet_name='СТРОКИ С Н Д', index=False
                     )
                 
@@ -894,6 +906,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -445,65 +445,95 @@ class DataCleaner:
         else:
             st.warning(f"   ⚠️ Не найдено ни одной колонки с датами")
             st.info(f"   Искал: {', '.join(DATE_COLUMNS[:3])}...")
+            
         
-        # === Проверить массив на Н/Д ===
+        # === Замена Н/Д с раздельной статистикой ===
         st.write("**2️⃣ Заменяю Н/Д на пустые значения...**")
         
-        # Значения Н/Д которые нужно заменить
-        na_values = ['Н/Д', 'н/д', 'N/A', 'n/a', '#Н/Д', '#н/д', 'NA', 'na', '-', '—', '–']
+        # Настоящие обозначения Н/Д (точное совпадение)
+        real_na_values = ['Н/Д', 'н/д', 'N/A', 'n/a', '#Н/Д', '#н/д', 'NA', 'na', '-', '—', '–']
+        # Текстовые обозначения отсутствия данных (только строки, не np.nan)
+        text_na_values = ['nan', 'none', 'null']
         
-        na_replacements = 0
+        real_na_count = 0
+        text_na_count = 0
         
-        # Проверяем ВСЕ колонки (не только даты)
         for col in df_clean.columns:
             try:
-                # Заменяем каждое значение Н/Д
-                for na_val in na_values:
-                    mask = df_clean[col].astype(str).str.strip() == na_val
-                    if mask.any():
-                        df_clean.loc[mask, col] = ''
-                        na_replacements += mask.sum()
-                
-                # Дополнительно: заменяем текстовые 'nan', 'NaN'
-                nan_mask = df_clean[col].astype(str).str.strip().str.lower().isin(['nan', 'none', 'null'])
-                if nan_mask.any():
-                    df_clean.loc[nan_mask, col] = ''
-                    na_replacements += nan_mask.sum()
+                # Проверяем только строковые колонки (object)
+                if df_clean[col].dtype == 'object':
+                    col_data = df_clean[col]
                     
+                    # 1. ЗАМЕНА НАСТОЯЩИХ Н/Д
+                    for na_val in real_na_values:
+                        # Точное совпадение (учитываем регистр и пробелы)
+                        mask = col_data.astype(str).str.strip() == na_val
+                        if mask.any():
+                            df_clean.loc[mask, col] = ''
+                            real_na_count += mask.sum()
+                    
+                    # 2. ЗАМЕНА ТЕКСТОВЫХ 'nan', 'none', 'null' 
+                    # Важно: исключаем реальные np.nan с помощью ~col_data.isna()
+                    for na_val in text_na_values:
+                        mask = (
+                            col_data.astype(str).str.strip().str.lower() == na_val
+                        ) & (~col_data.isna())  # ← ИСКЛЮЧАЕМ np.nan!
+                        
+                        if mask.any():
+                            df_clean.loc[mask, col] = ''
+                            text_na_count += mask.sum()
+                            
             except Exception as e:
                 st.warning(f"   Ошибка в колонке '{col}': {str(e)[:50]}")
         
-        if na_replacements > 0:
-            st.success(f"   ✅ Заменено {na_replacements} значений Н/Д")
+        # ЧЕТКАЯ СТАТИСТИКА
+        total_replacements = real_na_count + text_na_count
+        
+        if total_replacements > 0:
+            st.success(f"   ✅ Заменено ВСЕГО: {total_replacements} значений")
+            
+            # Детализация
+            if real_na_count > 0:
+                st.info(f"      • Настоящие 'Н/Д', 'N/A', '-': {real_na_count}")
+            if text_na_count > 0:
+                st.info(f"      • Текстовые 'nan', 'none', 'null': {text_na_count}")
+            
+            # Предупреждение если аномально много
+            if total_replacements > 1000:
+                st.warning(f"   ⚠️ Аномально много замен ({total_replacements}).")
+                st.warning(f"   Проверьте, не считаются ли пустые ячейки как 'nan'.")
         else:
-            st.info("   ℹ️ Значений Н/Д не найдено")
+            st.info("   ℹ️ Значений для замены не найдено")
+        
+        # === Сохранение информации для отчета ===
+        st.write("**3️⃣ Сохраняю информацию для отчета...**")
+        
+        # Создаем маску строк, которые имели Н/Д
+        had_na_mask = pd.Series(False, index=df_clean.index)
+        
+        # Проверяем только строковые колонки
+        for col in df_clean.columns:
+            if df_clean[col].dtype == 'object':
+                # Ищем оригинальные значения Н/Д (до замены)
+                for na_val in real_na_values + text_na_values:
+                    try:
+                        mask = original_df[col].astype(str).str.strip().str.lower() == na_val.lower()
+                        had_na_mask = had_na_mask | mask
+                    except:
+                        continue
+        
+        # Сохраняем в атрибуты DataFrame
+        df_clean.attrs['had_na_rows'] = had_na_mask
+        df_clean.attrs['na_rows_count'] = had_na_mask.sum()
+        
+        if had_na_mask.sum() > 0:
+            st.success(f"   ✅ Сохранено {had_na_mask.sum()} строк с Н/Д для отчета")
+        else:
+            st.info("   ℹ️ Строк с Н/Д не обнаружено")
         
         # === ИТОГИ ОЧИСТКИ ===
         st.markdown("---")
         st.success(f"✅ Массив успешно очищен!")
-
-        # === Сохраняем информацию о строках с Н/Д для отчета ===
-        st.write("**3️⃣ Сохраняю информацию о строках с Н/Д для отчета...**")
-        
-        # Создаем маску для строк, которые имели Н/Д
-        had_na_mask = pd.Series(False, index=df_clean.index)
-        
-        for col in df_clean.columns:
-            try:
-                # Ищем оригинальные значения Н/Д
-                for na_val in na_values:
-                    mask = original_df[col].astype(str).str.strip() == na_val
-                    had_na_mask = had_na_mask | mask
-            except:
-                continue
-        
-        # Сохраняем маску как атрибут DataFrame
-        df_clean.attrs['had_na_rows'] = had_na_mask
-        df_clean.attrs['na_rows_count'] = had_na_mask.sum()
-        
-        st.success(f"   ✅ Сохранено {had_na_mask.sum()} строк с Н/Д для отчета")
-        
-        return df_clean
 
     def export_array_to_excel(self, cleaned_array_df, filename="очищенный_массив"):
         """
@@ -524,43 +554,33 @@ class DataCleaner:
                 cleaned_array_df.to_excel(writer, sheet_name='ОЧИЩЕННЫЙ МАССИВ', index=False)
                 
                 # === ВКЛАДКА 2: Строки где были Н/Д ===
-                # Используем сохраненную информацию
+                # Используем сохраненную информацию о строках с Н/Д
                 if 'had_na_rows' in cleaned_array_df.attrs:
                     had_na_mask = cleaned_array_df.attrs['had_na_rows']
                     
                     if had_na_mask.any():
                         na_rows_df = cleaned_array_df[had_na_mask].copy()
                         
-                        # Добавляем информацию о каких колонках были Н/Д
-                        reasons = []
+                        # Добавляем колонку с количеством пустых ячеек в строке
+                        empty_counts = []
                         for idx in na_rows_df.index:
-                            na_cols = []
+                            count = 0
                             for col in cleaned_array_df.columns:
-                                # Проверяем оригинальное значение (если доступно)
-                                try:
-                                    # Если есть доступ к original_df
-                                    if 'original_df' in locals():
-                                        orig_val = str(original_df.at[idx, col]).strip()
-                                        if orig_val in na_values:
-                                            na_cols.append(col)
-                                except:
-                                    # Просто отмечаем колонки с пустыми значениями
-                                    if str(cleaned_array_df.at[idx, col]).strip() == '':
-                                        na_cols.append(col)
-                            
-                            if na_cols:
-                                reasons.append(', '.join(na_cols[:3]) + ('...' if len(na_cols) > 3 else ''))
-                            else:
-                                reasons.append('не определено')
+                                val = cleaned_array_df.at[idx, col]
+                                # Проверяем пустоту: '' или NaN
+                                if pd.isna(val) or str(val).strip() == '':
+                                    count += 1
+                            empty_counts.append(count)
                         
-                        na_rows_df.insert(0, 'БЫЛИ_Н/Д_В_КОЛОНКАХ', reasons)
+                        # Вставляем колонку в начало
+                        na_rows_df.insert(0, 'ПУСТЫХ_ЯЧЕЕК_В_СТРОКЕ', empty_counts)
                         na_rows_df.to_excel(writer, sheet_name='СТРОКИ С Н Д', index=False)
                     else:
                         pd.DataFrame({'Сообщение': ['Строк с Н/Д не найдено']}).to_excel(
                             writer, sheet_name='СТРОКИ С Н Д', index=False
                         )
                 else:
-                    pd.DataFrame({'Сообщение': ['Информация о Н/Д не сохранена']}).to_excel(
+                    pd.DataFrame({'Сообщение': ['Информация о Н/Д не сохранена при очистке']}).to_excel(
                         writer, sheet_name='СТРОКИ С Н Д', index=False
                     )
                 
@@ -906,6 +926,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

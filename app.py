@@ -349,80 +349,104 @@ if st.session_state.cleaned_data:
     # Проверяем, есть ли оба необходимых файла
     if 'портал' in st.session_state.cleaned_data and 'сервизория' in st.session_state.cleaned_data:
         st.success("✅ Условие выполнено! Кнопка должна быть видна.")
-    
-    # Проверяем, есть ли оба необходимых файла
-    if 'портал' in st.session_state.cleaned_data and 'сервизория' in st.session_state.cleaned_data:
         
-        if st.button("🔍 Обогатить Массив кодами проектов", type="primary"):
-            st.write("🔍 **1. Кнопка нажата!**")
+        # 🔴 ДОБАВЬТЕ ФЛАГ ДЛЯ СОХРАНЕНИЯ СОСТОЯНИЯ МЕЖДУ ПЕРЕЗАПУСКАМИ
+        if 'enrichment_completed' not in st.session_state:
+            st.session_state.enrichment_completed = False
+        
+        # Если обогащение еще не выполнялось - показываем кнопку
+        if not st.session_state.enrichment_completed:
+            if st.button("🔍 Обогатить Массив кодами проектов", type="primary"):
+                st.write("🔍 **1. Кнопка нажата!**")
 
-            
-            try:
-                from data_cleaner import data_cleaner
-                st.write("✅ 2. data_cleaner импортирован")
-                
-                array_df = st.session_state.cleaned_data['портал']
-                projects_df = st.session_state.cleaned_data['сервизория']
-                st.write(f"✅ 3. Данные получены")
-                
-                st.write("🔍 4. Вызываю функцию enrich_array_with_project_codes...")
-                
-                with st.spinner("Ищу и заполняю коды проектов..."):
-                    try:
-                        # ВЫЗОВ ФУНКЦИИ
-                        enriched_array, discrepancy_df, stats = data_cleaner.enrich_array_with_project_codes(
-                            array_df, projects_df
-                        )
-                        
-                        st.write(f"✅ 5. Функция выполнилась успешно!")
-                        st.write(f"   - Размер enriched_array: {len(enriched_array)}")
-                        st.write(f"   - Размер discrepancy_df: {len(discrepancy_df)}")
-                        st.write(f"   - Статистика: {stats}")
-                        
-                        # Сохраняем обогащенный массив обратно
-                        st.session_state.cleaned_data['портал'] = enriched_array
-                        
-                        # Сохраняем расхождения
-                        if not discrepancy_df.empty:
-                            st.session_state['array_discrepancies'] = discrepancy_df
-                            st.session_state['discrepancy_stats'] = stats
+                try:
+                    from data_cleaner import data_cleaner
+                    st.write("✅ 2. data_cleaner импортирован")
+                    
+                    array_df = st.session_state.cleaned_data['портал']
+                    projects_df = st.session_state.cleaned_data['сервизория']
+                    st.write(f"✅ 3. Данные получены")
+                    
+                    st.write("🔍 4. Вызываю функцию enrich_array_with_project_codes...")
+                    
+                    with st.spinner("Ищу и заполняю коды проектов..."):
+                        try:
+                            # ВЫЗОВ ФУНКЦИИ
+                            enriched_array, discrepancy_df, stats = data_cleaner.enrich_array_with_project_codes(
+                                array_df, projects_df
+                            )
                             
-                            # Создаем Excel файл с расхождениями
-                            st.write("🔍 6. Создаю Excel файл...")
-                            excel_file = data_cleaner.export_discrepancies_to_excel(discrepancy_df)
+                            st.write(f"✅ 5. Функция выполнилась успешно!")
+                            st.write(f"   - Размер enriched_array: {len(enriched_array)}")
+                            st.write(f"   - Размер discrepancy_df: {len(discrepancy_df)}")
+                            st.write(f"   - Статистика: {stats}")
                             
-                            if excel_file:
-                                st.success(f"✅ Файл создан! {len(excel_file.getvalue())} байт")
-                                st.download_button(
-                                    label=f"⬇️ Скачать 'Расхождение Массив.xlsx' ({len(discrepancy_df)} строк)",
-                                    data=excel_file,
-                                    file_name="Расхождение_Массив.xlsx",
-                                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                    key="download_discrepancies"
-                                )
-                            else:
-                                st.warning("⚠️ Excel файл не создан")
-                        
-                        st.success(f"✅ Обогащение завершено! Заполнено {stats.get('filled', 0)} кодов.")
-                        st.rerun()
-                        
-                    except Exception as func_error:
-                        st.error(f"❌ ОШИБКА ВНУТРИ ФУНКЦИИ: {str(func_error)}")
-                        import traceback
-                        st.text("📋 **ТРАССИРОВКА ОШИБКИ:**")
-                        st.code(traceback.format_exc())
-                        
-            except Exception as e:
-                st.error(f"❌ ОБЩАЯ ОШИБКА: {str(e)}")
-                import traceback
-                st.text("📋 **ПОЛНАЯ ТРАССИРОВКА:**")
-                st.code(traceback.format_exc())
+                            # Сохраняем обогащенный массив обратно
+                            st.session_state.cleaned_data['портал'] = enriched_array
+                            
+                            # Сохраняем расхождения
+                            if not discrepancy_df.empty:
+                                st.session_state['array_discrepancies'] = discrepancy_df
+                                st.session_state['discrepancy_stats'] = stats
+                                
+                                # Создаем Excel файл с расхождениями
+                                st.write("🔍 6. Создаю Excel файл...")
+                                excel_file = data_cleaner.export_discrepancies_to_excel(discrepancy_df)
+                                
+                                if excel_file:
+                                    st.success(f"✅ Файл создан! {len(excel_file.getvalue())} байт")
+                                    st.download_button(
+                                        label=f"⬇️ Скачать 'Расхождение Массив.xlsx' ({len(discrepancy_df)} строк)",
+                                        data=excel_file,
+                                        file_name="Расхождение_Массив.xlsx",
+                                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                        key="download_discrepancies"
+                                    )
+                                else:
+                                    st.warning("⚠️ Excel файл не создан")
+                            
+                            st.success(f"✅ Обогащение завершено! Заполнено {stats.get('filled', 0)} кодов.")
+                            
+                            # 🔴 ОТМЕЧАЕМ ЧТО ОБОГАЩЕНИЕ ВЫПОЛНЕНО
+                            st.session_state.enrichment_completed = True
+                            
+                            # 🔴 УБИРАЕМ st.rerun() - он вызывает бесконечный цикл
+                            # Вместо этого даем пользователю выбор
+                            st.markdown("---")
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                if st.button("🔄 Продолжить работу", type="primary"):
+                                    # Просто продолжаем показ результатов
+                                    pass
+                            with col2:
+                                if st.button("🗑️ Сбросить и начать заново", type="secondary"):
+                                    st.session_state.enrichment_completed = False
+                                    st.rerun()
+                            
+                        except Exception as func_error:
+                            st.error(f"❌ ОШИБКА ВНУТРИ ФУНКЦИИ: {str(func_error)}")
+                            import traceback
+                            st.text("📋 **ТРАССИРОВКА ОШИБКИ:**")
+                            st.code(traceback.format_exc())
+                            
+                except Exception as e:
+                    st.error(f"❌ ОБЩАЯ ОШИБКА: {str(e)}")
+                    import traceback
+                    st.text("📋 **ПОЛНАЯ ТРАССИРОВКА:**")
+                    st.code(traceback.format_exc())
+        else:
+            # 🔴 ЕСЛИ ОБОГАЩЕНИЕ УЖЕ ВЫПОЛНЕНО - ПОКАЗЫВАЕМ РЕЗУЛЬТАТЫ И КНОПКУ ДЛЯ ПОВТОРА
+            st.success("✅ Обогащение уже выполнено!")
+            if st.button("🔄 Выполнить обогащение снова", type="secondary"):
+                st.session_state.enrichment_completed = False
+                st.rerun()
                 
     else:
         st.info("Для обогащения нужны оба файла: 'портал' (Массив) и 'сервизория' (Проекты Сервизория)")
     
-    st.stop()
-        
+    # 🔴 УБИРАЕМ st.stop() - он блокирует дальнейший код
+    # st.stop()  # УДАЛИТЬ ЭТУ СТРОКУ
+    
     st.markdown("---")
     st.subheader("✅ Очищенные данные")
     
@@ -524,6 +548,7 @@ with st.sidebar:
     st.write("1. 🧹 Очистка всех файлов")
     st.write("2. 🔗 Объединение данных")
     st.write("3. 📊 Создание отчетов")
+
 
 
 

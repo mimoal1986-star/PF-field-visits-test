@@ -337,6 +337,53 @@ if len(st.session_state.uploaded_files) > 0:
 # ==============================================
 if st.session_state.cleaned_data:
     st.markdown("---")
+    st.subheader("🎯 Обогащение Массива кодами проектов")
+    
+    # Проверяем, есть ли оба необходимых файла
+    if 'портал' in st.session_state.cleaned_data and 'сервизория' in st.session_state.cleaned_data:
+        
+        if st.button("🔍 Обогатить Массив кодами проектов", type="primary"):
+            try:
+                from data_cleaner import data_cleaner
+                
+                array_df = st.session_state.cleaned_data['портал']
+                projects_df = st.session_state.cleaned_data['сервизория']
+                
+                with st.spinner("Ищу и заполняю коды проектов..."):
+                    # Вызов новой функции
+                    enriched_array, discrepancy_df, stats = data_cleaner.enrich_array_with_project_codes(
+                        array_df, projects_df
+                    )
+                    
+                    # Сохраняем обогащенный массив обратно
+                    st.session_state.cleaned_data['портал'] = enriched_array
+                    
+                    # Сохраняем расхождения
+                    if not discrepancy_df.empty:
+                        st.session_state['array_discrepancies'] = discrepancy_df
+                        st.session_state['discrepancy_stats'] = stats
+                        
+                        # Создаем Excel файл с расхождениями
+                        excel_file = data_cleaner.export_discrepancy_to_excel(discrepancy_df)
+                        
+                        if excel_file:
+                            st.download_button(
+                                label=f"⬇️ Скачать 'Расхождение Массив.xlsx' ({len(discrepancy_df)} строк)",
+                                data=excel_file,
+                                file_name="Расхождение_Массив.xlsx",
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                key="download_discrepancies"
+                            )
+                    
+                    st.success(f"✅ Обогащение завершено! Заполнено {stats['filled']} кодов.")
+                    st.rerun()
+                    
+            except Exception as e:
+                st.error(f"❌ Ошибка при обогащении: {e}")
+    else:
+        st.info("Для обогащения нужны оба файла: 'портал' (Массив) и 'сервизория' (Проекты Сервизория)")
+    
+    st.markdown("---")
     st.subheader("✅ Очищенные данные")
     
     for name, df in st.session_state.cleaned_data.items():
@@ -452,6 +499,7 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 
 
 

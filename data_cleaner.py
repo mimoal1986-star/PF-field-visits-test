@@ -801,9 +801,7 @@ class DataCleaner:
             'match_stats': match_stats
         }
         
-        return ar
-
-ray_df, discrepancy_df, stats
+        return array_df, discrepancy_df, stats
 
         # 🔍 ОТЛАДКА:
 
@@ -1031,6 +1029,7 @@ ray_df, discrepancy_df, stats
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

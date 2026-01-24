@@ -754,8 +754,40 @@ class DataCleaner:
             'discrepancies': discrepancies_count
         }
 
-        return array_df, discrepancy_df, stats    
+        return array_df, discrepancy_df, stats
+
+
+    def export_discrepancies_to_excel(self, discrepancy_df, filename="Расхождение_Массив"):
+    """Создает Excel файл для расхождений"""
+    try:
+        if discrepancy_df is None or discrepancy_df.empty:
+            return None
         
+        output = io.BytesIO()
+        
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            # Добавляем пояснительную вкладку
+            info_df = pd.DataFrame({
+                'Информация': [
+                    'Файл создан автоматически',
+                    f'Дата создания: {pd.Timestamp.now().strftime("%Y-%m-%d %H:%M")}',
+                    f'Количество строк: {len(discrepancy_df)}',
+                    'Эти строки не удалось обогатить кодами проектов'
+                ]
+            })
+            info_df.to_excel(writer, sheet_name='ИНФО', index=False)
+            
+            # Основные данные
+            discrepancy_df.to_excel(writer, sheet_name='РАСХОЖДЕНИЯ', index=False)
+        
+        output.seek(0)
+        return output
+        
+    except Exception as e:
+        st.error(f"Ошибка при создании Excel с расхождениями: {e}")
+        return None
+
+    
     
     def export_to_excel(self, original_df, cleaned_df, filename="очищенные_данные"):
         """
@@ -823,6 +855,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -127,7 +127,7 @@ class DataCleaner:
         st.write("**3️⃣ Заполняю пустые коды проектов...**")
         
         if code_col:
-            name_col = self._find_column(df_clean, ['Проекты в  ', 'Название проекта', 'Проект', 'Project Name'])
+            name_col = self._find_column(df_clean, ['Проекты в  https://ru.checker-soft.com', 'Название проекта', 'Проект', 'Project Name'])
             
             if name_col:
                 # Определяем пустые коды
@@ -624,7 +624,7 @@ class DataCleaner:
         используя данные из таблицы Проектов Сервизория.
     
         Логика сопоставления:
-        - 'Имя клиента' (Массив) -> 'Проекты в ' (Проекты)
+        - 'Имя клиента' (Массив) -> 'Проекты в  https://ru.checker-soft.com' (Проекты)
         - 'Название проекта' (Массив) -> 'Название волны на Чекере/ином ПО' (Проекты)
     
         Возвращает:
@@ -659,7 +659,7 @@ class DataCleaner:
         # 3. ПРОВЕРКА КОЛОНОК ПРОЕКТОВ СЕРВИЗОРИЯ
         st.write("\n**3. ПРОВЕРКА КОЛОНОК ПРОЕКТОВ СЕРВИЗОРИЯ:**")
         project_fields = {
-            'Проекты в  ': '❌ НЕ НАЙДЕН',
+            'Проекты в  https://ru.checker-soft.com': '❌ НЕ НАЙДЕН',
             'Название волны на Чекере/ином ПО': '❌ НЕ НАЙДЕН',
             'Код проекта RU00.000.00.01SVZ24': '❌ НЕ НАЙДЕН'
         }
@@ -712,7 +712,7 @@ class DataCleaner:
         st.write(f"- Обрабатываю {total_empty} строк...")
         
         # Подготовка проектов для быстрого поиска
-        projects_df['_match_client'] = projects_df['Проекты в  '].astype(str).str.strip()
+        projects_df['_match_client'] = projects_df['Проекты в  https://ru.checker-soft.com'].astype(str).str.strip()
         projects_df['_match_wave'] = projects_df['Название волны на Чекере/ином ПО'].astype(str).str.strip()
         
         # Счетчики
@@ -902,6 +902,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -616,6 +616,146 @@ class DataCleaner:
         except Exception as e:
             st.error(f"Ошибка при создании Excel: {e}")
             return None
+
+        
+        def enrich_array_with_project_codes(self, cleaned_array_df, projects_df):
+        """
+        Ищет и заполняет пустые 'Код анкеты' в очищенном Массиве,
+        используя данные из таблицы Проектов Сервизория.
+
+        Логика сопоставления:
+        - 'Имя клиента' (Массив) -> 'Проекты в https://ru.checker-soft.com' (Проекты)
+        - 'Название проекта' (Массив) -> 'Название волны на Чекере/ином ПО' (Проекты)
+
+        Возвращает:
+        tuple: (enriched_array, discrepancy_df, stats_dict)
+        """
+        import pandas as pd
+
+        if cleaned_array_df is None or cleaned_array_df.empty:
+            st.warning("⚠️ Массив для обогащения пустой.")
+            return cleaned_array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
+
+        if projects_df is None or projects_df.empty:
+            st.warning("⚠️ Таблица Проектов Сервизория пустая, обогащение невозможно.")
+            return cleaned_array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
+
+        st.info("🔍 Начинаю обогащение Массива кодами проектов...")
+
+        # Копируем данные, чтобы не менять оригинал
+        array_df = cleaned_array_df.copy()
+        projects_df = projects_df.copy()
+
+        # 1. Находим строки Массива с пустым 'Код анкеты'
+        array_code_col = 'Код анкеты'
+        if array_code_col not in array_df.columns:
+            st.error(f"❌ В Массиве не найдена обязательная колонка: '{array_code_col}'")
+            return array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
+
+        empty_code_mask = (
+            array_df[array_code_col].isna() |
+            (array_df[array_code_col].astype(str).str.strip() == '')
+        )
+        rows_to_process = array_df[empty_code_mask]
+        total_empty = len(rows_to_process)
+
+        st.write(f"**1️⃣ Найдено {total_empty} строк с пустым '{array_code_col}'**")
+
+        if total_empty == 0:
+            st.success("✅ Нечего заполнять. Все коды анкеты в Массиве уже заполнены.")
+            return array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
+
+        # 2. Проверяем наличие необходимых колонок в Массиве и Проектах
+        required_array_cols = ['Имя клиента', 'Название проекта']
+        required_projects_cols = [
+            'Проекты в https://ru.checker-soft.com',
+            'Название волны на Чекере/ином ПО',
+            'Код проекта RU00.000.00.01SVZ24'
+        ]
+
+        missing_in_array = [col for col in required_array_cols if col not in array_df.columns]
+        missing_in_projects = [col for col in required_projects_cols if col not in projects_df.columns]
+
+        if missing_in_array:
+            st.error(f"❌ В Массиве отсутствуют колонки для сопоставления: {missing_in_array}")
+            return array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
+
+        if missing_in_projects:
+            st.error(f"❌ В Проектах Сервизория отсутствуют колонки для сопоставления: {missing_in_projects}")
+            return array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
+
+        # 3. Подготавливаем DataFrame для расхождений
+        discrepancy_rows = []
+        filled_count = 0
+
+        # 4. Основной цикл поиска и заполнения
+        st.write("**2️⃣ Ищу совпадения в таблице Проектов Сервизория...**")
+
+        # Приводим ключевые поля в Проектах к строке для надежного сравнения
+        projects_df['_match_client'] = projects_df['Проекты в https://ru.checker-soft.com'].astype(str).str.strip()
+        projects_df['_match_wave'] = projects_df['Название волны на Чекере/ином ПО'].astype(str).str.strip()
+
+        for idx, row in rows_to_process.iterrows():
+            client_name = str(row['Имя клиента']).strip() if pd.notna(row['Имя клиента']) else ''
+            project_name = str(row['Название проекта']).strip() if pd.notna(row['Название проекта']) else ''
+
+            # Ищем точное совпадение по обоим полям
+            match_mask = (
+                (projects_df['_match_client'] == client_name) &
+                (projects_df['_match_wave'] == project_name)
+            )
+
+            matched_rows = projects_df[match_mask]
+
+            if not matched_rows.empty:
+                # Берем первую найденную запись
+                project_code = matched_rows.iloc[0]['Код проекта RU00.000.00.01SVZ24']
+
+                # Проверяем, что найденный код не пустой
+                if pd.notna(project_code) and str(project_code).strip() != '':
+                    # Заполняем код в Массиве
+                    array_df.at[idx, array_code_col] = str(project_code).strip()
+                    filled_count += 1
+                else:
+                    # Код найден, но он пустой - добавляем в расхождения
+                    discrepancy_rows.append(row.to_dict())
+            else:
+                # Совпадение не найдено - добавляем в расхождения
+                discrepancy_rows.append(row.to_dict())
+
+        # 5. Формируем результат
+        discrepancy_df = pd.DataFrame(discrepancy_rows) if discrepancy_rows else pd.DataFrame()
+        discrepancies_count = len(discrepancy_df)
+
+        # 6. Выводим статистику
+        st.write("**3️⃣ Результаты обогащения:**")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Обработано строк", total_empty)
+        with col2:
+            st.metric("Заполнено кодов", filled_count, delta=f"+{filled_count}")
+        with col3:
+            st.metric("Осталось расхождений", discrepancies_count, delta=f"-{discrepancies_count}")
+
+        if filled_count > 0:
+            st.success(f"✅ Успешно заполнено {filled_count} пустых кодов анкеты!")
+        else:
+            st.info("ℹ️ Не удалось заполнить ни одного кода анкеты.")
+
+        if discrepancies_count > 0:
+            st.warning(f"⚠️ Найдено {discrepancies_count} строк для ручной проверки (файл 'Расхождение Массив.xlsx')")
+
+        # Удаляем временные колонки
+        projects_df.drop(['_match_client', '_match_wave'], axis=1, inplace=True, errors='ignore')
+
+        stats = {
+            'processed': total_empty,
+            'filled': filled_count,
+            'discrepancies': discrepancies_count
+        }
+
+        return array_df, discrepancy_df, stats    
+        
     
     def export_to_excel(self, original_df, cleaned_df, filename="очищенные_данные"):
         """
@@ -683,6 +823,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

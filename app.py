@@ -380,6 +380,39 @@ if st.session_state.cleaned_data:
     
     st.subheader("🎯 Обогащение Массива кодами проектов")
     
+    # ОТЛАДКА
+    st.write("🔍 **ПРОВЕРКА ПЕРЕД КНОПКОЙ:**")
+    st.write(f"1. cleaned_data пустой? {len(st.session_state.cleaned_data) == 0}")
+    st.write(f"2. Ключи в cleaned_data: {list(st.session_state.cleaned_data.keys())}")
+    
+    if 'портал' in st.session_state.cleaned_data and 'сервизория' in st.session_state.cleaned_data:
+        st.write("✅ Оба файла есть в cleaned_data")
+        
+        array_df = st.session_state.cleaned_data['портал']
+        projects_df = st.session_state.cleaned_data['сервизория']
+        
+        st.write(f"3. array_df тип: {type(array_df)}, размер: {len(array_df)} строк")
+        st.write(f"4. projects_df тип: {type(projects_df)}, размер: {len(projects_df)} строк")
+        
+        # Проверка импорта
+        try:
+            from data_cleaner import data_cleaner
+            st.write("✅ data_cleaner импортирован успешно")
+            
+            # Проверка существования метода
+            if hasattr(data_cleaner, 'enrich_array_with_project_codes'):
+                st.write("✅ Метод enrich_array_with_project_codes найден")
+            else:
+                st.error("❌ Метод enrich_array_with_project_codes НЕ найден!")
+                st.write("Доступные методы:", [m for m in dir(data_cleaner) if not m.startswith('_')])
+        except ImportError as e:
+            st.error(f"❌ Ошибка импорта data_cleaner: {e}")
+    else:
+        st.error("❌ Нет одного или обоих файлов в cleaned_data")
+    
+    st.markdown("---")
+    # ОТЛАДКА
+    
     # Проверяем, есть ли оба необходимых файла
     if 'портал' in st.session_state.cleaned_data and 'сервизория' in st.session_state.cleaned_data:
         
@@ -545,6 +578,7 @@ with st.expander("🐛 Дебаг информация (только для ра
     st.write("**Очищенные файлы:**")
     for key in st.session_state.cleaned_data:
         st.write(f"- {key}")
+
 
 
 

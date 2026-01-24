@@ -102,7 +102,7 @@ class DataCleaner:
         # === ШАГ 2: Сжать пробелы в кодах проектов ===
         st.write("**2️⃣ Чищу пробелы в кодах проектов...**")
         
-        code_col = self._find_column(df_clean, ['Код проекта', 'Код', 'Project Code', 'КодПроекта'])
+        code_col = self._find_column(df_clean, ['Код проекта RU00.000.00.01SVZ24', 'Код', 'Project Code', 'КодПроекта'])
         
         if code_col:
             # Сохраняем оригинальные значения
@@ -127,7 +127,7 @@ class DataCleaner:
         st.write("**3️⃣ Заполняю пустые коды проектов...**")
         
         if code_col:
-            name_col = self._find_column(df_clean, ['Имя проекта', 'Название проекта', 'Проект', 'Project Name'])
+            name_col = self._find_column(df_clean, ['Проекты в  https://ru.checker-soft.com', 'Название проекта', 'Проект', 'Project Name'])
             
             if name_col:
                 # Определяем пустые коды
@@ -902,6 +902,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

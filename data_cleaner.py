@@ -630,7 +630,23 @@ class DataCleaner:
         Возвращает:
         tuple: (enriched_array, discrepancy_df, stats_dict)
         """
-        import pandas as pd
+        # 🔍 ДОБАВЬТЕ ЭТУ ОТЛАДКУ:
+        st.write("🔍 **НАЧАЛО ОТЛАДКИ ФУНКЦИИ**")
+        st.write(f"1. Размер Массива: {len(cleaned_array_df)} строк, {len(cleaned_array_df.columns)} колонок")
+        st.write(f"2. Размер Проектов: {len(projects_df)} строк, {len(projects_df.columns)} колонок")
+        
+        # Проверка колонок
+        st.write("3. Колонки Массива:", list(cleaned_array_df.columns)[:10])
+        st.write("4. Колонки Проектов:", list(projects_df.columns)[:10])
+        
+        # Проверка 'Код анкеты'
+        if 'Код анкеты' in cleaned_array_df.columns:
+            empty_count = cleaned_array_df['Код анкеты'].isna().sum() + (cleaned_array_df['Код анкеты'] == '').sum()
+            st.write(f"5. Пустых 'Код анкеты': {empty_count}")
+        else:
+            st.error("❌ Колонка 'Код анкеты' не найдена в Массиве!")
+        # 🔍 ДОБАВЬТЕ ЭТУ ОТЛАДКУ:
+
     
         if cleaned_array_df is None or cleaned_array_df.empty:
             st.warning("⚠️ Массив для обогащения пустой.")
@@ -855,6 +871,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

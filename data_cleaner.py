@@ -407,48 +407,40 @@ class DataCleaner:
             # Суррогатная дата для "событие еще не наступило"
             SURROGATE_DATE = pd.Timestamp('1900-01-01')
             
-            # Значения которые означают "не наступило"
-            not_happened_values = ['0', '0000-00-00', '00.00.0000', 'ноль', 'null', 'NULL', 'None', 'none', '']
-            
             total_replacements = 0
             
             for col in existing_date_cols:
                 try:
-                    # Сохраняем оригинальные значения для примера
-                    original_sample = df_clean[col].head(3).tolist()
-                    col_replacements = 0
-                    
-                    # 1. Заменяем текстовые обозначения "не наступило"
-                    for val in not_happened_values:
-                        # Сравниваем как строки, игнорируя пробелы
-                        mask = df_clean[col].astype(str).str.strip() == val
-                        if mask.any():
-                            df_clean.loc[mask, col] = SURROGATE_DATE
-                            col_replacements += mask.sum()
-                    
-                    # 2. Конвертируем ВСЕ значения в datetime
+                    # 🔴 УПРОЩЕННАЯ ЛОГИКА:
+                    # 1. Конвертируем ВСЕ значения в datetime
                     df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
                     
-                    # 3. Если после конвертации остались NaT - заменяем на суррогат
+                    # 2. Находим NaT (невалидные даты)
                     nat_mask = df_clean[col].isna()
+                    
+                    # 3. Заменяем все NaT на суррогатную дату
                     if nat_mask.any():
                         df_clean.loc[nat_mask, col] = SURROGATE_DATE
-                        col_replacements += nat_mask.sum()
-                    
-                    # 4. Показываем статистику по колонке
-                    if col_replacements > 0:
-                        st.info(f"   Обработано {col_replacements} значений в '{col}'")
+                        col_replacements = nat_mask.sum()
                         total_replacements += col_replacements
                         
+                        # Показываем примеры изменений
+                        example_indices = nat_mask[nat_mask].index[:3]
+                        if len(example_indices) > 0:
+                            st.info(f"   '{col}': заменено {col_replacements} значений")
+                            for idx in example_indices:
+                                if idx < len(original_df):
+                                    orig_val = original_df.at[idx, col]
+                                    st.info(f"     Строка {idx}: '{orig_val}' → '{SURROGATE_DATE.date()}'")
+                                
                 except Exception as e:
                     st.warning(f"   Ошибка в колонке '{col}': {str(e)[:100]}")
             
             if total_replacements > 0:
-                st.success(f"   ✅ Заменено {total_replacements} значений на суррогатную дату")
-                st.info(f"   Суррогатная дата: {SURROGATE_DATE.date()} (1900-01-01)")
+                st.success(f"   ✅ Заменено {total_replacements} невалидных дат на {SURROGATE_DATE.date()}")
                 st.info("   **Обозначает:** 'Событие еще не наступило'")
             else:
-                st.info("   ℹ️ Значений 'не наступило' не найдено")
+                st.info("   ℹ️ Невалидных дат не найдено")
             
         else:
             st.warning(f"   ⚠️ Не найдено ни одной колонки с датами")
@@ -902,6 +894,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

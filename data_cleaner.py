@@ -430,8 +430,8 @@ class DataCleaner:
                         if len(example_indices) > 0:
                             st.info(f"   '{col}': заменено {col_replacements} значений")
                             for idx in example_indices:
-                                if idx < len(original_df):
-                                    orig_val = original_df.at[idx, col]
+                                if idx < len(df):  
+                                    orig_val = df.at[idx, col]  
                                     st.info(f"     Строка {idx}: '{orig_val}' → '{SURROGATE_DATE.date()}'")
                                 
                 except Exception as e:
@@ -532,27 +532,21 @@ class DataCleaner:
                     if had_na_mask.any():
                         na_rows_df = cleaned_array_df[had_na_mask].copy()
                         
-                        # Добавляем информацию о каких колонках были Н/Д
+                        # Добавляем информацию о пустых колонках
                         reasons = []
                         for idx in na_rows_df.index:
-                            na_cols = []
+                            empty_cols = []
                             for col in cleaned_array_df.columns:
-                                # Проверяем оригинальное значение (если доступно)
-                                try:
-                                    # Если есть доступ к original_df
-                                    if 'original_df' in locals():
-                                        orig_val = str(original_df.at[idx, col]).strip()
-                                        if orig_val in na_values:
-                                            na_cols.append(col)
-                                except:
-                                    # Просто отмечаем колонки с пустыми значениями
-                                    if str(cleaned_array_df.at[idx, col]).strip() == '':
-                                        na_cols.append(col)
+                                # Просто проверяем пустые значения
+                                if str(cleaned_array_df.at[idx, col]).strip() == '':
+                                    empty_cols.append(col)
                             
-                            if na_cols:
-                                reasons.append(', '.join(na_cols[:3]) + ('...' if len(na_cols) > 3 else ''))
+                            if empty_cols:
+                                reasons.append(', '.join(empty_cols[:3]) + ('...' if len(empty_cols) > 3 else ''))
                             else:
                                 reasons.append('не определено')
+                        
+                        na_rows_df.insert(0, 'ПУСТЫЕ_КОЛОНКИ', reasons)
                         
                         na_rows_df.insert(0, 'БЫЛИ_Н/Д_В_КОЛОНКАХ', reasons)
                         na_rows_df.to_excel(writer, sheet_name='СТРОКИ С Н Д', index=False)
@@ -907,6 +901,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

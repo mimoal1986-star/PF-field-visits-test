@@ -76,9 +76,90 @@ def create_status_container():
     """Создание контейнера для отображения статуса"""
     return st.status("📊 **Подготовка к обработке...**", expanded=True)
 
+def process_field_projects_with_stats():
+    """Основная функция обработки полевых проектов"""
+    try:
+        # Проверяем наличие данных
+        required_keys = ['сервизория', 'портал', 'автокодификация']
+        missing_keys = [k for k in required_keys if k not in st.session_state.cleaned_data and 
+                       k not in st.session_state.uploaded_files]
+        
+        if missing_keys:
+            st.error(f"❌ Отсутствуют данные: {', '.join(missing_keys)}")
+            return False
+        
+        # Получаем данные
+        google_df = st.session_state.cleaned_data.get('сервизория')
+        if google_df is None:
+            google_df = st.session_state.uploaded_files.get('сервизория')
+            
+        array_df = st.session_state.cleaned_data.get('портал')
+        if array_df is None:
+            array_df = st.session_state.uploaded_files.get('портал')
+            
+        autocoding_df = st.session_state.uploaded_files.get('автокодификация')
+        
+        if None in [google_df, array_df, autocoding_df]:
+            st.error("❌ Не удалось получить все необходимые данные")
+            return False
+        
+        st.write("### 🎯 Шаг 1: Определение полевых проектов")
+        with st.spinner("Анализирую автокодификацию..."):
+            google_updated = data_cleaner.update_field_projects_flag(google_df, autocoding_df)
+            if google_updated is None:
+                return False
+            st.session_state.cleaned_data['сервизория_с_полем'] = google_updated
+        
+        st.write("### 🎯 Шаг 2: Добавление признака в массив")
+        with st.spinner("Сопоставляю коды проектов..."):
+            array_updated = data_cleaner.add_field_flag_to_array(array_df, google_updated)
+            if array_updated is None:
+                return False
+            st.session_state.cleaned_data['портал_с_полем'] = array_updated
+        
+        st.write("### 🎯 Шаг 3: Разделение на полевые/неполевые")
+        with st.spinner("Фильтрую данные..."):
+            field_df, non_field_df = data_cleaner.split_array_by_field_flag(array_updated)
+            if field_df is None and non_field_df is None:
+                return False
+            
+            st.session_state.cleaned_data['полевые_проекты'] = field_df
+            st.session_state.cleaned_data['неполевые_проекты'] = non_field_df
+        
+        st.write("### 🎯 Шаг 4: Создание отчета")
+        with st.spinner("Формирую Excel файл..."):
+            excel_output = data_cleaner.export_split_array_to_excel(field_df, non_field_df)
+            if excel_output:
+                st.session_state.excel_files['разделенный_массив'] = excel_output
+                st.success("✅ Отчет создан успешно!")
+            else:
+                st.warning("⚠️ Не удалось создать Excel файл")
+        
+        # Показываем статистику
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Полевые проекты", 
+                     len(field_df) if field_df is not None else 0)
+        with col2:
+            st.metric("Неполевые проекты", 
+                     len(non_field_df) if non_field_df is not None else 0)
+        with col3:
+            total = (len(field_df) if field_df is not None else 0) + \
+                   (len(non_field_df) if non_field_df is not None else 0)
+            st.metric("Всего", total)
+        
+        return True
+        
+    except Exception as e:
+        st.error(f"❌ Ошибка в process_field_projects_with_stats: {str(e)[:200]}")
+        import traceback
+        st.error(f"Детали: {traceback.format_exc()[:500]}")
+        return False
+
 # Основной интерфейс
 st.title("📤 Загрузка исходных данных")
 st.markdown("Загрузите 4 Excel файла для формирования отчетов")
+
 
 # ==============================================
 # СЕКЦИЯ 1: ЗАГРУЗКА ФАЙЛОВ
@@ -249,9 +330,25 @@ if st.session_state.uploaded_files:
                                     st.session_state['discrepancy_stats'] = stats
                             
                             status.write(f"✅ Обогащено кодов: {stats.get('filled', 0):,}")
+                            
+                        # ЭТАП 5: Разделение на полевые/неполевые проекты
+                        status.write("🎯 **5. Разделение на полевые/неполевые проекты...**")
                         
-                        # ЭТАП 5: Выгрузка в Excel
-                        status.write("📊 **5. Выгрузка в Excel...**")
+                        field_success = False
+                        try:
+                            field_success = process_field_projects_with_stats()
+                        except Exception as e:
+                            status.write(f"⚠️ Ошибка: {str(e)[:100]}")
+                        
+                        if field_success:
+                            status.write("✅ Проекты разделены")
+                            if 'разделенный_массив' in st.session_state.excel_files:
+                                status.write("📁 Файл 'разделенный_массив.xlsx' создан")
+                        else:
+                            status.write("⚠️ Разделение не удалось")
+                            
+                        # ЭТАП 6: Выгрузка в Excel
+                        status.write("📊 **6. Выгрузка в Excel...**")
                         
                         # Массив
                         if 'портал' in st.session_state.cleaned_data:
@@ -359,6 +456,23 @@ if st.session_state.processing_complete:
                 use_container_width=True,
                 help="3 вкладки: Оригинал, Очищенный, Сравнение"
             )
+            
+    # НОВАЯ КНОПКА - Разделенный массив
+    st.markdown("---")
+    st.subheader("🎯 Разделенный массив")
+    
+    if 'разделенный_массив' in st.session_state.excel_files:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.download_button(
+                label="⬇️ Скачать разделенный_массив.xlsx",
+                data=st.session_state.excel_files['разделенный_массив'],
+                file_name="разделенный_массив.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                type="primary",
+                use_container_width=True,
+                help="3 вкладки: Полевые проекты, Неполевые проекты, Статистика"
+            )
     
     # Просмотр данных
     st.markdown("---")
@@ -449,6 +563,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

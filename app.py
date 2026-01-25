@@ -109,6 +109,7 @@ def process_field_projects_with_stats():
             if google_updated is None:
                 return False
             st.session_state.cleaned_data['сервизория_с_полем'] = google_updated
+            st.session_state.cleaned_data['сервизория'] = google_updated 
         
         st.write("### 🎯 Шаг 2: Добавление признака в массив")
         with st.spinner("Сопоставляю коды проектов..."):
@@ -563,6 +564,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

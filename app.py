@@ -186,7 +186,7 @@ if st.session_state.uploaded_files:
                 st.session_state.processing_stats.clear()
                 
                 try:
-                    import data_cleaner as dc
+                    from utils.data_cleaner import data_cleaner
                     
                     with create_status_container() as status:
                         # ЭТАП 1: Проверка
@@ -200,7 +200,7 @@ if st.session_state.uploaded_files:
                         status.write("🧹 **2. Очистка портала...**")
                         portal_raw = st.session_state.uploaded_files['портал']
                         portal_cleaned, portal_error = process_single_step(
-                            dc.clean_array, "Очистка портала", portal_raw
+                            data_cleaner.clean_array, "Очистка портала", portal_raw
                         )
                         
                         if portal_error:
@@ -214,7 +214,7 @@ if st.session_state.uploaded_files:
                         status.write("🧹 **3. Очистка проектов...**")
                         projects_raw = st.session_state.uploaded_files['сервизория']
                         projects_cleaned, projects_error = process_single_step(
-                            dc.clean_google, "Очистка проектов", projects_raw
+                            data_cleaner.clean_google, "Очистка проектов", projects_raw
                         )
                         
                         if projects_error:
@@ -228,7 +228,7 @@ if st.session_state.uploaded_files:
                         status.write("🔗 **4. Обогащение массива...**")
                         if 'портал' in st.session_state.cleaned_data and 'сервизория' in st.session_state.cleaned_data:
                             enriched_result, enrich_error = process_single_step(
-                                dc.enrich_array_with_project_codes,
+                                data_cleaner.enrich_array_with_project_codes,
                                 "Обогащение массива",
                                 st.session_state.cleaned_data['портал'],
                                 st.session_state.cleaned_data['сервизория']
@@ -255,7 +255,7 @@ if st.session_state.uploaded_files:
                         # Массив
                         if 'портал' in st.session_state.cleaned_data:
                             array_excel, array_export_error = process_single_step(
-                                dc.export_array_to_excel,
+                                data_cleaner.export_array_to_excel,
                                 "Выгрузка массива",
                                 st.session_state.cleaned_data['портал']
                             )
@@ -269,7 +269,7 @@ if st.session_state.uploaded_files:
                         # Проекты
                         if 'сервизория' in st.session_state.cleaned_data:
                             projects_excel, projects_export_error = process_single_step(
-                                dc.export_to_excel,
+                                data_cleaner.export_to_excel,
                                 "Выгрузка проектов",
                                 st.session_state.uploaded_files['сервизория'],
                                 st.session_state.cleaned_data['сервизория'],
@@ -448,3 +448,4 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+

@@ -11,7 +11,7 @@ from io import BytesIO
 current_dir = os.path.dirname(os.path.abspath(__file__))
 utils_path = os.path.join(current_dir, 'utils')
 if utils_path not in sys.path:
-    sys.path.insert(0, utils_path)
+    sys.path.append(utils_path)
 
 # Настройка страницы
 st.set_page_config(
@@ -186,13 +186,7 @@ if st.session_state.uploaded_files:
                 st.session_state.processing_stats.clear()
 
                 try:
-                    # Динамический импорт data_cleaner
-                    import importlib.util
-                    module_path = os.path.join(utils_path, "data_cleaner.py")
-                    spec = importlib.util.spec_from_file_location("data_cleaner", module_path)
-                    module = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(module)
-                    data_cleaner = module.data_cleaner
+                    from data_cleaner import data_cleaner
                     
                     with create_status_container() as status:
                         # ЭТАП 1: Проверка
@@ -454,5 +448,6 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 

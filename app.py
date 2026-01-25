@@ -184,9 +184,15 @@ if st.session_state.uploaded_files:
                 st.session_state.processing_complete = False
                 st.session_state.excel_files.clear()
                 st.session_state.processing_stats.clear()
-                
+
                 try:
-                    from utils.data_cleaner import data_cleaner
+                    # Динамический импорт data_cleaner
+                    import importlib.util
+                    module_path = os.path.join(utils_path, "data_cleaner.py")
+                    spec = importlib.util.spec_from_file_location("data_cleaner", module_path)
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
+                    data_cleaner = module.data_cleaner
                     
                     with create_status_container() as status:
                         # ЭТАП 1: Проверка
@@ -448,4 +454,5 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 

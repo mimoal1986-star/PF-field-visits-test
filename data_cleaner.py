@@ -343,7 +343,7 @@ class DataCleaner:
         st.write("**7️⃣ Добавляю признак 'Полевой'...**")
         
         if 'Полевой' not in df_clean.columns:
-            df_clean['Полевой'] = 1
+            df_clean['Полевой'] = 0
             st.success("   ✅ Добавлен признак 'Полевой' = 1 для всех записей")
         else:
             empty_field = df_clean['Полевой'].isna().sum()
@@ -1184,3 +1184,4 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+

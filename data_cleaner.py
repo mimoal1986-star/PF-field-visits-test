@@ -1,4 +1,3 @@
-2. data cleaner
 # utils/data_cleaner.py
 import pandas as pd
 import numpy as np
@@ -684,3 +683,4 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+

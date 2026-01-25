@@ -629,57 +629,8 @@ class DataCleaner:
         Возвращает:
         tuple: (enriched_array, discrepancy_df, stats_dict)
         """
-        # 🔍 ОТЛАДКА:
-        st.write("🔍 **НАЧАЛО ОТЛАДКИ ФУНКЦИИ**")
-        st.write("=" * 50)
-        
-        # 1. ПРОВЕРКА ДАННЫХ
-        st.write("**1. ПРОВЕРКА ДАННЫХ:**")
-        st.write(f"- Размер Массива: {len(cleaned_array_df)} строк × {len(cleaned_array_df.columns)} колонок")
-        st.write(f"- Размер Проектов Сервизория: {len(projects_df)} строк × {len(projects_df.columns)} колонок")
-        
-        # 2. ПРОВЕРКА КОЛОНОК МАССИВА
-        st.write("\n**2. ПРОВЕРКА КОЛОНОК МАССИВА:**")
-        array_fields = {
-            'Код анкеты': '❌ НЕ НАЙДЕН',
-            'Имя клиента': '❌ НЕ НАЙДЕН', 
-            'Название проекта': '❌ НЕ НАЙДЕН'
-        }
-        
-        for field in array_fields.keys():
-            if field in cleaned_array_df.columns:
-                array_fields[field] = '✅ НАЙДЕН'
-                # Считаем пустые значения
-                empty_count = cleaned_array_df[field].isna().sum() + (cleaned_array_df[field].astype(str).str.strip() == '').sum()
-                st.write(f"  - '{field}': {array_fields[field]}, пустых: {empty_count}/{len(cleaned_array_df)}")
-            else:
-                st.write(f"  - '{field}': {array_fields[field]}")
-        
-        # 3. ПРОВЕРКА КОЛОНОК ПРОЕКТОВ СЕРВИЗОРИЯ
-        st.write("\n**3. ПРОВЕРКА КОЛОНОК ПРОЕКТОВ СЕРВИЗОРИЯ:**")
-        project_fields = {
-            'Проекты в  https://ru.checker-soft.com': '❌ НЕ НАЙДЕН',
-            'Название волны на Чекере/ином ПО': '❌ НЕ НАЙДЕН',
-            'Код проекта RU00.000.00.01SVZ24': '❌ НЕ НАЙДЕН'
-        }
-        
-        for field in project_fields.keys():
-            if field in projects_df.columns:
-                project_fields[field] = '✅ НАЙДЕН'
-                empty_count = projects_df[field].isna().sum() + (projects_df[field].astype(str).str.strip() == '').sum()
-                st.write(f"  - '{field}': {project_fields[field]}, пустых: {empty_count}/{len(projects_df)}")
-            else:
-                st.write(f"  - '{field}': {project_fields[field]}")
-        
-        # 4. ПРОВЕРКА НА ВСЕ НЕОБХОДИМЫЕ КОЛОНКИ
-        all_fields_found = all(status == '✅ НАЙДЕН' for status in list(array_fields.values()) + list(project_fields.values()))
-        
-        if not all_fields_found:
-            st.error("❌ **ОСТАНОВКА:** Не все необходимые колонки найдены!")
-            return cleaned_array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
-        
-        st.success("✅ Все необходимые колонки найдены!")
-        st.write("=" * 50)
+        array_df = cleaned_array_df.copy()
+
         
         # ============================================
         # ПОДГОТОВКА ДАННЫХ
@@ -687,7 +638,6 @@ class DataCleaner:
         st.write("\n**4. ПОДГОТОВКА ДАННЫХ:**")
         
         # Копируем данные
-        array_df = cleaned_array_df.copy(deep=True)
         projects_df = projects_df.copy()
         
         # Находим строки с пустым 'Код анкеты'
@@ -901,6 +851,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

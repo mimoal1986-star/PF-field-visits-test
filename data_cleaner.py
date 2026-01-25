@@ -687,7 +687,7 @@ class DataCleaner:
         st.write("\n**4. ПОДГОТОВКА ДАННЫХ:**")
         
         # Копируем данные
-        array_df = cleaned_array_df.copy()
+        array_df = cleaned_array_df.copy(deep=True)
         projects_df = projects_df.copy()
         
         # Находим строки с пустым 'Код анкеты'
@@ -901,6 +901,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

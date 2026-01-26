@@ -516,7 +516,7 @@ class DataCleaner:
         Логика сопоставления:
         - 'Имя клиента' (Массив) -> 'Проекты в  https://ru.checker-soft.com' (Проекты)
         - 'Название проекта' (Массив) -> 'Название волны на Чекере/ином ПО' (Проекты)
-
+        """
         array_df = cleaned_array_df.copy()
 
         
@@ -1020,6 +1020,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

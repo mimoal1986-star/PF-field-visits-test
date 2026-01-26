@@ -1228,7 +1228,7 @@ class DataCleaner:
                     else:
                         non_field_clean = non_field_unique
                         
-                    non_field_unique.to_excel(writer, sheet_name='НЕПОЛЕВЫЕ_ПРОЕКТЫ', index=False)
+                    non_field_clean.to_excel(writer, sheet_name='НЕПОЛЕВЫЕ_ПРОЕКТЫ', index=False)
                     
                     # Добавляем информацию об удаленных дубликатах на отдельную вкладку
                     info_data = {
@@ -1255,6 +1255,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

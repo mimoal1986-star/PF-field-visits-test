@@ -774,6 +774,23 @@ class DataCleaner:
                     continue
             
             st.info(f"🔍 Найдено {len(field_codes)} полевых кодов в автокодификации")
+
+            #ПРОВЕРКА
+            # 1. Сколько всего проектов в автокодификации
+            ak_total = len(autocoding_df_clean)
+            ak_direction_counts = autocoding_df_clean[ak_direction_col].value_counts()
+            
+            st.info("📊 Статистика автокодификации:")
+            st.info(f"   • Всего проектов в АК: {ak_total}")
+            st.info(f"   • Направление .01: {ak_direction_counts.get('.01', 0)} проектов")
+            st.info(f"   • Направление .02: {ak_direction_counts.get('.02', 0)} проектов")
+            st.info(f"   • Другие направления: {ak_total - ak_direction_counts.get('.01', 0) - ak_direction_counts.get('.02', 0)}")
+            
+            # 2. Сколько полевых проектов в АК
+            ak_field_count = sum(1 for _, row in autocoding_df_clean.iterrows() 
+                                if str(row.get(ak_direction_col, '')).strip() in allowed_directions)
+            st.success(f"   ✅ Полевых проектов в АК (направление .01/.02): {ak_field_count}")
+            #ПРОВЕРКА
             
             # Инициализируем/обновляем колонку 'Полевой'
             if 'Полевой' not in google_df_clean.columns:
@@ -868,6 +885,27 @@ class DataCleaner:
                     continue
             
             st.info(f"🔍 Загружено {len(code_to_field)} сопоставлений кодов")
+
+            #ПРОВЕРКА
+            # 2. Считаем совпадения массива с гугл
+            array_codes = array_df_clean[array_code_col].astype(str).str.strip()
+            valid_codes = array_codes[(array_codes != '') & (array_codes != 'nan') & (array_codes != 'None')]
+            
+            # Уникальные коды в массиве
+            unique_codes = set(valid_codes.unique())
+            array_total = len(unique_codes)
+            
+            # Совпадения с гугл
+            matched_google = sum(1 for code in unique_codes if code in code_to_field)
+            
+            st.success(f"📊 2. Совпадения массива с гугл: {matched_google:,} из {array_total:,}")
+            
+            # 3. Считаем совпадения массива с АК (если есть доступ)
+            if hasattr(google_df_clean, 'attrs') and 'ak_field_codes' in google_df_clean.attrs:
+                ak_field_codes = google_df_clean.attrs['ak_field_codes']
+                matched_ak = sum(1 for code in unique_codes if code in ak_field_codes)
+                st.success(f"📊 3. Совпадения массива с АК: {matched_ak:,} из {array_total:,}")
+             #ПРОВЕРКА
             
 
             
@@ -1025,6 +1063,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

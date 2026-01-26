@@ -66,7 +66,7 @@ class DataCleaner:
         # Проверяем сколько полей нашлось
         if len(existing_fields) == 3:
             before = len(df_clean)
-            df_clean = df_clean.drop_duplicates(subset=existing_fields, keep='first')
+            df_clean = df_clean.drop_duplicates(subset=existing_fields, keep='first') # удаляем дубликаты записей
             after = len(df_clean)
             removed = before - after
             
@@ -79,31 +79,16 @@ class DataCleaner:
                 
         elif len(existing_fields) >= 1:
             st.warning(f"   ⚠️ Найдено только {len(existing_fields)} из 3 полей: {', '.join(field_display_names)}")
-            
-            # Все равно пытаемся удалить дубли по найденным полям
-            before = len(df_clean)
-            df_clean = df_clean.drop_duplicates(subset=existing_fields, keep='first')
-            after = len(df_clean)
-            removed = before - after
-            
-            if removed > 0:
-                st.success(f"   ✅ Удалено {removed} дубликатов (по найденным полям)")
-            else:
-                st.info("   ℹ️ Дубликатов не найдено по найденным полям")
                 
         else:
             st.warning("   ⚠️ Не найдено ни одного ключевого поля для проверки дубликатов")
             st.info("   Проверьте названия колонок в файле")
             
-            # Показываем какие колонки есть
-            st.info("   **Найденные колонки:**")
-            for i, col in enumerate(df_clean.columns[:10]):  # Первые 10 колонок
-                st.info(f"   {i+1}. {col}")
         
         # === ШАГ 2: Сжать пробелы в кодах проектов ===
         st.write("**2️⃣ Чищу пробелы в кодах проектов...**")
         
-        code_col = self._find_column(df_clean, ['Код проекта RU00.000.00.01SVZ24', 'Код', 'Project Code', 'КодПроекта'])
+        code_col = self._find_column(df_clean, ['Код проекта RU00.000.00.01SVZ24'])
         
         if code_col:
             # Сохраняем оригинальные значения
@@ -128,7 +113,7 @@ class DataCleaner:
         st.write("**3️⃣ Заполняю пустые коды проектов...**")
         
         if code_col:
-            name_col = self._find_column(df_clean, ['Проекты в  https://ru.checker-soft.com', 'Название проекта', 'Проект', 'Project Name'])
+            name_col = self._find_column(df_clean, ['Проекты в  https://ru.checker-soft.com'])
             
             if name_col:
                 # Определяем пустые коды
@@ -154,15 +139,11 @@ class DataCleaner:
         # === ШАГ 4: Форматировать Пилоты/Семплы/Мультикоды ===
         st.write("**4️⃣ Форматирую Пилоты/Семплы/Мультикоды...**")
         
-        # Используем code_col из шага 2 если есть
+        # Используем код проекта из шага 2 если есть
         if 'code_col' in locals() and code_col:
             target_col = code_col
         else:
-            target_col = self._find_column(df_clean, [
-                'Код проекта RU00.000.00.01SVZ24',
-                'Код проекта',
-                'Код'
-            ])
+            target_col = self._find_column(df_clean, ['Код проекта RU00.000.00.01SVZ24'])
         
         if target_col:
             changes_count = 0
@@ -339,19 +320,19 @@ class DataCleaner:
         else:
             st.info("   ℹ️ Бизнес-правила для дат не потребовались")
         
-        # === ШАГ 7: Добавить признак 'Полевой' ===
-        st.write("**7️⃣ Добавляю признак 'Полевой'...**")
+        # # === ШАГ 7: Добавить признак 'Полевой' ===
+        # st.write("**7️⃣ Добавляю признак 'Полевой'...**")
         
-        if 'Полевой' not in df_clean.columns:
-            df_clean['Полевой'] = 0
-            st.success("   ✅ Добавлен признак 'Полевой' = 1 для всех записей")
-        else:
-            empty_field = df_clean['Полевой'].isna().sum()
-            if empty_field > 0:
-                df_clean['Полевой'] = df_clean['Полевой'].fillna(1)
-                st.success(f"   ✅ Заполнено {empty_field} пустых значений")
-            else:
-                st.info("   ℹ️ Признак 'Полевой' уже заполнен")
+        # if 'Полевой' not in df_clean.columns:
+        #     df_clean['Полевой'] = 0
+        #     st.success("   ✅ Добавлен признак 'Полевой' = 0 для всех записей")
+        # else:
+        #     empty_field = df_clean['Полевой'].isna().sum()
+        #     if empty_field > 0:
+        #         df_clean['Полевой'] = df_clean['Полевой'].fillna(1)
+        #         st.success(f"   ✅ Заполнено {empty_field} пустых значений")
+        #     else:
+        #         st.info("   ℹ️ Признак 'Полевой' уже заполнен")
         
         # === ИТОГИ ОЧИСТКИ ===
         st.markdown("---")
@@ -510,8 +491,6 @@ class DataCleaner:
         """
         Создает Excel файл для очищенного массива:
         - Вкладка 1: Очищенные данные
-        - Вкладка 2: Строки с Н/Д (до замены)
-        - Вкладка 3: Строки с нулями в датах (до замены)
         """
         try:
             if cleaned_array_df is None or cleaned_array_df.empty:
@@ -523,95 +502,7 @@ class DataCleaner:
                 
                 # === ВКЛАДКА 1: Очищенные данные ===
                 cleaned_array_df.to_excel(writer, sheet_name='ОЧИЩЕННЫЙ МАССИВ', index=False)
-                
-                # === ВКЛАДКА 2: Строки где были Н/Д ===
-                # Используем сохраненную информацию
-                if 'had_na_rows' in cleaned_array_df.attrs:
-                    had_na_mask = cleaned_array_df.attrs['had_na_rows']
-                    
-                    if had_na_mask.any():
-                        na_rows_df = cleaned_array_df[had_na_mask].copy()
                         
-                        # Добавляем информацию о пустых колонках
-                        reasons = []
-                        for idx in na_rows_df.index:
-                            empty_cols = []
-                            for col in cleaned_array_df.columns:
-                                # Просто проверяем пустые значения
-                                if str(cleaned_array_df.at[idx, col]).strip() == '':
-                                    empty_cols.append(col)
-                            
-                            if empty_cols:
-                                reasons.append(', '.join(empty_cols[:3]) + ('...' if len(empty_cols) > 3 else ''))
-                            else:
-                                reasons.append('не определено')
-                        
-                        na_rows_df.insert(0, 'ПУСТЫЕ_КОЛОНКИ', reasons)
-                        
-                        na_rows_df.insert(0, 'БЫЛИ_Н/Д_В_КОЛОНКАХ', reasons)
-                        na_rows_df.to_excel(writer, sheet_name='СТРОКИ С Н Д', index=False)
-                    else:
-                        pd.DataFrame({'Сообщение': ['Строк с Н/Д не найдено']}).to_excel(
-                            writer, sheet_name='СТРОКИ С Н Д', index=False
-                        )
-                else:
-                    pd.DataFrame({'Сообщение': ['Информация о Н/Д не сохранена']}).to_excel(
-                        writer, sheet_name='СТРОКИ С Н Д', index=False
-                    )
-                
-                # === ВКЛАДКА 3: Строки с суррогатными датами ===
-                DATE_COLUMNS = [
-                    'Дата визита', 'Дата создания проверки',
-                    'Дата назначения опроса за тайным покупателем',
-                    'Дата подтверждения опроса тайным покупателем',
-                    'Время окончания',
-                    'Время завершения ожидания статуса утверждения (Дата проведения опроса?)',
-                    'Время утверждения'
-                ]
-                
-                existing_date_cols = [col for col in DATE_COLUMNS if col in cleaned_array_df.columns]
-                
-                if existing_date_cols:
-                    SURROGATE_DATE = pd.Timestamp('1900-01-01')
-                    surrogate_mask = pd.Series(False, index=cleaned_array_df.index)
-                    
-                    for col in existing_date_cols:
-                        if cleaned_array_df[col].dtype == 'datetime64[ns]':
-                            mask = cleaned_array_df[col] == SURROGATE_DATE
-                            surrogate_mask = surrogate_mask | mask
-                    
-                    if surrogate_mask.any():
-                        surrogate_rows_df = cleaned_array_df[surrogate_mask].copy()
-                        
-                        # Добавляем информацию о каких датах идет речь
-                        date_reasons = []
-                        for idx in surrogate_rows_df.index:
-                            surrogate_dates = []
-                            for col in existing_date_cols:
-                                if (col in cleaned_array_df.columns and 
-                                    cleaned_array_df[col].dtype == 'datetime64[ns]' and
-                                    cleaned_array_df.at[idx, col] == SURROGATE_DATE):
-                                    surrogate_dates.append(col)
-                            
-                            if surrogate_dates:
-                                date_reasons.append(', '.join(surrogate_dates))
-                            else:
-                                date_reasons.append('дата не наступила')
-                        
-                        surrogate_rows_df.insert(0, 'НУЛИ_В_ДАТАХ', date_reasons)
-                        surrogate_rows_df.to_excel(writer, sheet_name='НУЛИ В ДАТАХ', index=False)
-                    else:
-                        pd.DataFrame({'Сообщение': ['Строк с нулями в датах не найдено']}).to_excel(
-                            writer, sheet_name='НУЛИ В ДАТАХ', index=False
-                        )
-                else:
-                    pd.DataFrame({'Сообщение': ['Колонки с датами не найдены']}).to_excel(
-                        writer, sheet_name='НУЛИ В ДАТАХ', index=False
-                    )
-            
-            output.seek(0)
-            return output
-            
         except Exception as e:
             st.error(f"Ошибка при создании Excel: {e}")
             return None
@@ -625,10 +516,7 @@ class DataCleaner:
         Логика сопоставления:
         - 'Имя клиента' (Массив) -> 'Проекты в  https://ru.checker-soft.com' (Проекты)
         - 'Название проекта' (Массив) -> 'Название волны на Чекере/ином ПО' (Проекты)
-    
-        Возвращает:
-        tuple: (enriched_array, discrepancy_df, stats_dict)
-        """
+
         array_df = cleaned_array_df.copy()
 
         
@@ -722,12 +610,6 @@ class DataCleaner:
         st.write(f"- Из них с пустым кодом проекта: {match_stats['code_empty']}/{match_stats['both_match']}")
         st.write(f"- Без совпадений: {match_stats['no_match']}/{total_empty}")
         
-        if examples:
-            st.write("\n**Примеры найденных совпадений:**")
-            for i, example in enumerate(examples, 1):
-                st.write(f"  {i}. Клиент: '{example['клиент']}'")
-                st.write(f"     Проект: '{example['проект']}'")
-                st.write(f"     Код: '{example['найденный код']}'")
         
         # Формируем результат
         discrepancy_df = pd.DataFrame(discrepancy_rows) if discrepancy_rows else pd.DataFrame()
@@ -802,48 +684,6 @@ class DataCleaner:
                 # Вкладка 2: Очищенные данные
                 cleaned_df.to_excel(writer, sheet_name='ОЧИЩЕННЫЙ', index=False)
                 
-                # Вкладка 3: Сравнение изменений
-                comparison_data = []
-                
-                comparison_data.append({
-                    'Параметр': 'Количество строк',
-                    'Оригинал': len(original_df),
-                    'Очищено': len(cleaned_df),
-                    'Изменение': len(cleaned_df) - len(original_df)
-                })
-                
-                comparison_data.append({
-                    'Параметр': 'Количество колонок',
-                    'Оригинал': len(original_df.columns),
-                    'Очищено': len(cleaned_df.columns),
-                    'Изменение': len(cleaned_df.columns) - len(original_df.columns)
-                })
-                
-                added_cols = set(cleaned_df.columns) - set(original_df.columns)
-                removed_cols = set(original_df.columns) - set(cleaned_df.columns)
-                
-                if added_cols:
-                    comparison_data.append({
-                        'Параметр': 'Добавленные колонки',
-                        'Оригинал': '-',
-                        'Очищено': ', '.join(added_cols),
-                        'Изменение': f'+{len(added_cols)}'
-                    })
-                
-                if removed_cols:
-                    comparison_data.append({
-                        'Параметр': 'Удаленные колонки',
-                        'Оригинал': ', '.join(removed_cols),
-                        'Очищено': '-',
-                        'Изменение': f'-{len(removed_cols)}'
-                    })
-                
-                comparison_df = pd.DataFrame(comparison_data)
-                comparison_df.to_excel(writer, sheet_name='СРАВНЕНИЕ', index=False)
-            
-            output.seek(0)
-            return output
-            
         except Exception as e:
             st.error(f"Ошибка при создании Excel: {e}")
             return None
@@ -1183,5 +1023,6 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 

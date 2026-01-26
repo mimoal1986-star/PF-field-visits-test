@@ -549,9 +549,9 @@ class DataCleaner:
         
         return array_clean
         
-        except Exception as e:
-            st.error(f"❌ Ошибка в add_zod_from_hierarchy: {str(e)[:100]}")
-            return array_df
+    except Exception as e:
+        st.error(f"❌ Ошибка в add_zod_from_hierarchy: {str(e)[:100]}")
+        return array_df
 
     def export_array_to_excel(self, cleaned_array_df, filename="очищенный_массив"):
         """
@@ -1151,6 +1151,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

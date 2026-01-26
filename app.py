@@ -411,7 +411,28 @@ if st.session_state.uploaded_files:
         st.warning(f"⚠️ Загружено {loaded_count} из 4 файлов")
         missing = [f for f in required_files if f not in st.session_state.uploaded_files]
         st.write(f"Ожидаются: {', '.join(missing)}")
+
+
+# ==============================================
+# СЕКЦИЯ 3: РЕЗУЛЬТАТЫ
+# ==============================================
+if st.session_state.processing_complete:
+    st.markdown("---")
+    st.subheader("✅ Результаты обработки")
     
+    stats_cols = st.columns(4)
+    with stats_cols[0]:
+        st.metric("Файлов обработано", len(st.session_state.cleaned_data))
+    with stats_cols[1]:
+        if 'портал' in st.session_state.cleaned_data:
+            st.metric("Строк в массиве", f"{len(st.session_state.cleaned_data['портал']):,}")
+    with stats_cols[2]:
+        if 'сервизория' in st.session_state.cleaned_data:
+            st.metric("Строк в проектах", f"{len(st.session_state.cleaned_data['сервизория']):,}")
+    with stats_cols[3]:
+        if 'enriched_codes' in st.session_state.processing_stats:
+            st.metric("Заполнено кодов", f"{st.session_state.processing_stats['enriched_codes']:,}")
+
     # === ПРОВЕРКА ===
     st.write("**🔍 ПРОВЕРКИ:**")
     
@@ -462,26 +483,6 @@ if st.session_state.uploaded_files:
             matched = len(array_codes.intersection(ak_field_codes))
             st.write(f"3️⃣ Массив→АК: {matched} из {len(array_codes)}")
     # === ПРОВЕРКА ===
-
-# ==============================================
-# СЕКЦИЯ 3: РЕЗУЛЬТАТЫ
-# ==============================================
-if st.session_state.processing_complete:
-    st.markdown("---")
-    st.subheader("✅ Результаты обработки")
-    
-    stats_cols = st.columns(4)
-    with stats_cols[0]:
-        st.metric("Файлов обработано", len(st.session_state.cleaned_data))
-    with stats_cols[1]:
-        if 'портал' in st.session_state.cleaned_data:
-            st.metric("Строк в массиве", f"{len(st.session_state.cleaned_data['портал']):,}")
-    with stats_cols[2]:
-        if 'сервизория' in st.session_state.cleaned_data:
-            st.metric("Строк в проектах", f"{len(st.session_state.cleaned_data['сервизория']):,}")
-    with stats_cols[3]:
-        if 'enriched_codes' in st.session_state.processing_stats:
-            st.metric("Заполнено кодов", f"{st.session_state.processing_stats['enriched_codes']:,}")
     
     # Загрузка файлов
     st.markdown("### 📥 Загрузка результатов")
@@ -618,6 +619,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

@@ -869,8 +869,7 @@ class DataCleaner:
             
             st.info(f"🔍 Загружено {len(code_to_field)} сопоставлений кодов")
             
-            # Добавляем колонку в массив
-            array_df_clean['Полевой'] = 0
+
             
             # Функция для поиска значения
             def get_field_value(code):
@@ -954,10 +953,10 @@ class DataCleaner:
             
             if not field_projects.empty:
                 field_projects = field_projects.rename(columns=reverse_mapping)
+                
             
             if not non_field_projects.empty:
                 non_field_projects = non_field_projects.rename(columns=reverse_mapping)
-                non_field_projects = non_field_projects.drop(columns=['Полевой'], errors='ignore')
             
             # Оставляем только 8 нужных колонок в правильном порядке
             final_columns = list(column_mapping.keys())
@@ -1026,6 +1025,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

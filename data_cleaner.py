@@ -954,8 +954,6 @@ class DataCleaner:
             
             if not field_projects.empty:
                 field_projects = field_projects.rename(columns=reverse_mapping)
-                # Удаляем колонку 'Полевой'
-                field_projects = field_projects.drop(columns=['Полевой'], errors='ignore')
             
             if not non_field_projects.empty:
                 non_field_projects = non_field_projects.rename(columns=reverse_mapping)
@@ -1028,6 +1026,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

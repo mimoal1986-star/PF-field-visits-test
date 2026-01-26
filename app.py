@@ -395,7 +395,6 @@ if st.session_state.uploaded_files:
                         
                         status.update(label="✅ **Обработка завершена!**", state="complete")
                         st.session_state.processing_complete = True
-                        st.rerun()
                         
                 except ImportError as e:
                     st.error(f"❌ Ошибка импорта модулей: {e}")
@@ -582,6 +581,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

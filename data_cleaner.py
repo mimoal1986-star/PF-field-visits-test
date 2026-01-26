@@ -1219,6 +1219,15 @@ class DataCleaner:
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 # Неполевые проекты (без дубликатов)
                 if not non_field_unique.empty:
+                    # УДАЛЯЕМ ЛИШНИЕ КОЛОНКИ
+                    columns_to_drop = ['ЗОД', 'АСС', 'ЭМ', 'Регион short', 'Регион', 'Полевой']
+                    columns_exist = [col for col in columns_to_drop if col in non_field_unique.columns]
+                    
+                    if columns_exist:
+                        non_field_clean = non_field_unique.drop(columns=columns_exist, errors='ignore')
+                    else:
+                        non_field_clean = non_field_unique
+                        
                     non_field_unique.to_excel(writer, sheet_name='НЕПОЛЕВЫЕ_ПРОЕКТЫ', index=False)
                     
                     # Добавляем информацию об удаленных дубликатах на отдельную вкладку
@@ -1246,6 +1255,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -742,6 +742,24 @@ class DataCleaner:
                 'Напр'
             ])
             
+             # Находим ВСЕ колонки "Направление"
+            all_dir_cols = [col for col in autocoding_df_clean.columns 
+                           if str(col).strip().lower() == 'направление']
+            
+            # Если нашли хотя бы одну
+            if all_dir_cols:
+                # Выбираем ту где есть .01/.02
+                for col in all_dir_cols:
+                    directions = autocoding_df_clean[col].astype(str).str.strip()
+                    if directions.isin(['.01', '.02']).any():
+                        ak_direction_col = col
+                        break
+                else:
+                    # Если ни в одной нет .01/.02 - берем первую
+                    ak_direction_col = all_dir_cols[0]
+            else:
+                ak_direction_col = None  # Не нашли колонку
+            
             if not ak_code_col:
                 st.error("❌ В автокодификации не найдена колонка 'ИТОГО КОД'")
                 return google_df
@@ -1063,6 +1081,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

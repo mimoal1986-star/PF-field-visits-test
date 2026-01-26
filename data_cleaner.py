@@ -488,70 +488,70 @@ class DataCleaner:
         return df_clean
     
     def add_zod_from_hierarchy(self, array_df, hierarchy_df):
-    """
-    Добавляет колонку ЗОД в массив на основе справочника ЗОД+АСС
-    Логика: АСС (массив) -> ЗОД (справочник)
-    """
-    try:
-        if array_df is None or array_df.empty:
-            return array_df
+        """
+        Добавляет колонку ЗОД в массив на основе справочника ЗОД+АСС
+        Логика: АСС (массив) -> ЗОД (справочник)
+        """
+        try:
+            if array_df is None or array_df.empty:
+                return array_df
+                
+            if hierarchy_df is None or hierarchy_df.empty:
+                st.warning("⚠️ Справочник ЗОД+АСС пустой")
+                return array_df
             
-        if hierarchy_df is None or hierarchy_df.empty:
-            st.warning("⚠️ Справочник ЗОД+АСС пустой")
-            return array_df
-        
-        array_clean = array_df.copy()
-        hierarchy_clean = hierarchy_df.copy()
-        
-        # Находим колонки в справочнике
-        zodiac_col = self._find_column(hierarchy_clean, ['ЗОД', 'zod', 'ZOD'])
-        acc_col = self._find_column(hierarchy_clean, ['АСС', 'acc', 'ACC'])
-        
-        if not zodiac_col or not acc_col:
-            st.error("❌ В справочнике не найдены колонки ЗОД и/или АСС")
-            return array_df
-        
-        # Находим колонку АСС в массиве
-        array_acc_col = self._find_column(array_clean, ['АСС', 'acc', 'ACC'])
-        
-        if not array_acc_col:
-            st.error("❌ В массиве не найдена колонка АСС")
-            return array_df
-        
-        # Создаем словарь сопоставления {АСС: ЗОД}
-        zod_mapping = {}
-        for _, row in hierarchy_clean.iterrows():
-            acc_val = str(row[acc_col]).strip()
-            zod_val = str(row[zod_col]).strip()
+            array_clean = array_df.copy()
+            hierarchy_clean = hierarchy_df.copy()
             
-            if acc_val and acc_val.lower() not in ['nan', 'none', 'null', '']:
-                zod_mapping[acc_val] = zod_val
-        
-        st.info(f"🔍 Загружено {len(zod_mapping)} сопоставлений АСС → ЗОД")
-        
-        # Добавляем или обновляем колонку ЗОД
-        if 'ЗОД' in array_clean.columns:
-            array_clean['ЗОД'] = ''
-        else:
-            array_clean['ЗОД'] = ''
-        
-        # Заполняем ЗОД на основе АСС
-        def get_zod_by_acc(acc_value):
-            if pd.isna(acc_value) or str(acc_value).strip().lower() in ['nan', 'none', 'null', '']:
-                return ''
-            clean_acc = str(acc_value).strip()
-            return zod_mapping.get(clean_acc, '')
-        
-        array_clean['ЗОД'] = array_clean[array_acc_col].apply(get_zod_by_acc)
-        
-        filled_count = (array_clean['ЗОД'] != '').sum()
-        st.success(f"✅ Добавлен ЗОД: заполнено {filled_count} значений")
-        
-        return array_clean
-        
-    except Exception as e:
-        st.error(f"❌ Ошибка в add_zod_from_hierarchy: {str(e)[:100]}")
-        return array_df
+            # Находим колонки в справочнике
+            zodiac_col = self._find_column(hierarchy_clean, ['ЗОД', 'zod', 'ZOD'])
+            acc_col = self._find_column(hierarchy_clean, ['АСС', 'acc', 'ACC'])
+            
+            if not zodiac_col or not acc_col:
+                st.error("❌ В справочнике не найдены колонки ЗОД и/или АСС")
+                return array_df
+            
+            # Находим колонку АСС в массиве
+            array_acc_col = self._find_column(array_clean, ['АСС', 'acc', 'ACC'])
+            
+            if not array_acc_col:
+                st.error("❌ В массиве не найдена колонка АСС")
+                return array_df
+            
+            # Создаем словарь сопоставления {АСС: ЗОД}
+            zod_mapping = {}
+            for _, row in hierarchy_clean.iterrows():
+                acc_val = str(row[acc_col]).strip()
+                zod_val = str(row[zod_col]).strip()
+                
+                if acc_val and acc_val.lower() not in ['nan', 'none', 'null', '']:
+                    zod_mapping[acc_val] = zod_val
+            
+            st.info(f"🔍 Загружено {len(zod_mapping)} сопоставлений АСС → ЗОД")
+            
+            # Добавляем или обновляем колонку ЗОД
+            if 'ЗОД' in array_clean.columns:
+                array_clean['ЗОД'] = ''
+            else:
+                array_clean['ЗОД'] = ''
+            
+            # Заполняем ЗОД на основе АСС
+            def get_zod_by_acc(acc_value):
+                if pd.isna(acc_value) or str(acc_value).strip().lower() in ['nan', 'none', 'null', '']:
+                    return ''
+                clean_acc = str(acc_value).strip()
+                return zod_mapping.get(clean_acc, '')
+            
+            array_clean['ЗОД'] = array_clean[array_acc_col].apply(get_zod_by_acc)
+            
+            filled_count = (array_clean['ЗОД'] != '').sum()
+            st.success(f"✅ Добавлен ЗОД: заполнено {filled_count} значений")
+            
+            return array_clean
+            
+        except Exception as e:
+            st.error(f"❌ Ошибка в add_zod_from_hierarchy: {str(e)[:100]}")
+            return array_df
 
     def export_array_to_excel(self, cleaned_array_df, filename="очищенный_массив"):
         """
@@ -1151,6 +1151,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -91,11 +91,13 @@ def process_field_projects_with_stats():
         # Получаем данные
         google_df = st.session_state.cleaned_data.get('сервизория')
         if google_df is None:
-            google_df = st.session_state.uploaded_files.get('сервизория')
+            st.error("❌ Не удалось получить данные сервизория")
+            return False 
             
         array_df = st.session_state.cleaned_data.get('портал')
         if array_df is None:
-            array_df = st.session_state.uploaded_files.get('портал')
+            st.error("❌ Не удалось получить данные портал")
+            return False 
             
         autocoding_df = st.session_state.uploaded_files.get('автокодификация')
         
@@ -443,7 +445,7 @@ if st.session_state.processing_complete:
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 type="primary",
                 use_container_width=True,
-                help="3 вкладки: Очищенный массив, Строки с Н Д, Нули в датах"
+                help="Очищенный массив"
             )
     
     with download_cols[1]:
@@ -564,6 +566,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

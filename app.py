@@ -442,8 +442,69 @@ if st.session_state.processing_complete:
             ak_01 = (autocoding_df['Направление'].astype(str).str.strip() == '.01').sum()
             ak_02 = (autocoding_df['Направление'].astype(str).str.strip() == '.02').sum()
             st.write(f"1️⃣ АК: {ak_01 + ak_02} полевых (.01={ak_01}, .02={ak_02})")
+            
+            # Дополнительная проверка: все направления
+            all_directions = autocoding_df['Направление'].astype(str).str.strip().unique()
+            st.write(f"   Все направления в АК: {list(all_directions)[:10]}")
         else:
             st.write("1️⃣ АК: нет колонки 'Направление'")
+            # Покажем какие колонки есть
+            st.write(f"   Колонки в АК: {list(autocoding_df.columns)[:10]}")
+    
+    # 2. Проверка совпадения кодов
+    st.write("**2. Проверка совпадения кодов:**")
+    
+    # Гугл таблица
+    google_df = st.session_state.cleaned_data.get('сервизория')
+    if google_df is not None:
+        # Ищем колонку с кодом
+        google_code_cols = [col for col in google_df.columns if 'код' in str(col).lower()]
+        if google_code_cols:
+            google_code_col = google_code_cols[0]
+            google_codes = google_df[google_code_col].astype(str).str.strip()
+            google_codes_valid = google_codes[~google_codes.isin(['', 'nan', 'None'])]
+            st.write(f"   Уникальных кодов в гугл: {len(google_codes_valid.unique())}")
+        else:
+            st.write("   ❌ В гугл нет колонки с 'код'")
+    
+    # Массив
+    array_df = st.session_state.cleaned_data.get('портал_с_полем')
+    if array_df is not None:
+        # Ищем колонку с кодом
+        array_code_cols = [col for col in array_df.columns if 'код' in str(col).lower() and 'анкет' in str(col).lower()]
+        if array_code_cols:
+            array_code_col = array_code_cols[0]
+            array_codes = array_df[array_code_col].astype(str).str.strip()
+            array_codes_valid = array_codes[~array_codes.isin(['', 'nan', 'None'])]
+            st.write(f"   Уникальных кодов в массиве: {len(array_codes_valid.unique())}")
+        else:
+            st.write("   ❌ В массиве нет колонки 'Код анкеты'")
+            
+    # 3. Проверка почему 0 полевых
+    st.write("**3. Анализ (почему 0 полевых):**")
+    
+    if 'автокодификация' in st.session_state.uploaded_files:
+        ak_df = st.session_state.uploaded_files['автокодификация']
+        
+        # Вариант A: В АК нет направлений .01/.02
+        if 'Направление' in ak_df.columns:
+            dir_01_count = (ak_df['Направление'].astype(str).str.strip() == '.01').sum()
+            dir_02_count = (ak_df['Направление'].astype(str).str.strip() == '.02').sum()
+            
+            if dir_01_count == 0 and dir_02_count == 0:
+                st.write("   ❌ **ВАРИАНТ А:** В АК нет проектов с направлениями .01/.02")
+                # Покажем какие направления есть
+                other_dirs = ak_df['Направление'].astype(str).str.strip().unique()
+                st.write(f"   Есть направления: {list(other_dirs)[:10]}")
+            else:
+                st.write(f"   ✅ В АК есть .01/.02: .01={dir_01_count}, .02={dir_02_count}")
+        
+        # Вариант B: Коды не совпадают
+        st.write("   **ВАРИАНТ Б:** Коды проектов не совпадают между источниками")
+        st.write("   Проверьте:")
+        st.write("   - Коды в АК совпадают с кодами в гугл таблице")
+        st.write("   - Коды в массиве совпадают с кодами в гугл таблице")
+
     # === ПРОВЕРКА ===
     
     # Загрузка файлов
@@ -581,6 +642,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

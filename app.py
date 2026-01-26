@@ -7,6 +7,12 @@ import os
 import traceback
 from datetime import datetime
 from io import BytesIO
+try:
+    from utils.data_cleaner import data_cleaner
+except ImportError:
+    # Создаем экземпляр, если импорт не сработал
+    from data_cleaner import DataCleaner
+    data_cleaner = DataCleaner()
 
 # Настройка путей
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -746,6 +752,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

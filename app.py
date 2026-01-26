@@ -359,7 +359,24 @@ if st.session_state.uploaded_files:
                                     st.session_state['discrepancy_stats'] = stats
                             
                             status.write(f"✅ Обогащено кодов: {stats.get('filled', 0):,}")
+
+                        # ЭТАП 4.5: Добавление ЗОД в массив
+                        status.write("👥 **4.5. Добавление ЗОД из справочника...**")
+                        if 'портал' in st.session_state.cleaned_data and 'иерархия' in st.session_state.uploaded_files:
+                            hierarchy_df = st.session_state.uploaded_files['иерархия']
+                            array_with_zod, zod_error = process_single_step(
+                                data_cleaner.add_zod_from_hierarchy,
+                                "Добавление ЗОД",
+                                st.session_state.cleaned_data['портал'],
+                                hierarchy_df
+                            )
                             
+                            if zod_error:
+                                st.warning(f"⚠️ {zod_error}")
+                            elif array_with_zod is not None:
+                                st.session_state.cleaned_data['портал'] = array_with_zod
+                                status.write(f"✅ ЗОД добавлен в массив")
+                                
                         # ЭТАП 5: Разделение на полевые/неполевые проекты
                         status.write("🎯 **5. Разделение на полевые/неполевые проекты...**")
                         
@@ -668,6 +685,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

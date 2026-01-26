@@ -1,5 +1,5 @@
 # app.py
-# draft 1.3
+# draft 1.4
 import streamlit as st
 import pandas as pd
 import sys
@@ -668,6 +668,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

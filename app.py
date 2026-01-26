@@ -101,7 +101,7 @@ def process_field_projects_with_stats():
             
         autocoding_df = st.session_state.uploaded_files.get('автокодификация')
         
-        if None in [google_df, array_df, autocoding_df]:
+        if google_df is None or array_df is None or autocoding_df is None:
             st.error("❌ Не удалось получить все необходимые данные")
             return False
         
@@ -566,6 +566,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

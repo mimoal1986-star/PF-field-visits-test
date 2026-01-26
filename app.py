@@ -355,10 +355,11 @@ if st.session_state.uploaded_files:
                         
                         # Массив
                         if 'портал' in st.session_state.cleaned_data:
+                            array_with_field = st.session_state.cleaned_data.get('портал_с_полем', st.session_state.cleaned_data['портал'])
                             array_excel, array_export_error = process_single_step(
                                 data_cleaner.export_array_to_excel,
                                 "Выгрузка массива",
-                                st.session_state.cleaned_data['портал']
+                                array_with_field  # ← передаем массив с колонкой 'Полевой'
                             )
                             
                             if array_excel:
@@ -566,6 +567,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

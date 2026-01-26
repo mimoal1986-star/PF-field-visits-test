@@ -742,30 +742,34 @@ class DataCleaner:
                 'Напр'
             ])
             
-             # Находим ВСЕ колонки "Направление"
+            # Находим ВСЕ колонки "Направление"
             all_dir_cols = [col for col in autocoding_df_clean.columns 
                            if str(col).strip().lower() == 'направление']
             
-            # Если нашли хотя бы одну
-            if all_dir_cols:
-                # Выбираем ту где есть .01/.02
-                for col in all_dir_cols:
-                    directions = autocoding_df_clean[col].astype(str).str.strip()
-                    if directions.isin(['.01', '.02']).any():
-                        ak_direction_col = col
-                        break
-                else:
-                    # Если ни в одной нет .01/.02 - берем первую
-                    ak_direction_col = all_dir_cols[0]
-            else:
-                ak_direction_col = None  # Не нашли колонку
-            
-            if not ak_code_col:
-                st.error("❌ В автокодификации не найдена колонка 'ИТОГО КОД'")
+            # Если колонок нет вообще
+            if not all_dir_cols:
+                st.error("❌ В АК нет колонки 'Направление'")
                 return google_df
-                
-            if not ak_direction_col:
-                st.warning("⚠️ В автокодификации не найдена колонка 'Направление'")
+            
+            # Проверяем каждую на наличие 0.1
+            valid_dir_cols = []
+            for col in all_dir_cols:
+                values = autocoding_df_clean[col].astype(str).str.strip()
+                if values.isin(['0.1', '0.2']).any():
+                    valid_dir_cols.append(col)
+            
+            # Выбираем колонку
+            if len(valid_dir_cols) == 1:
+                ak_direction_col = valid_dir_cols[0]
+            elif len(valid_dir_cols) > 1:
+                st.error(f"❌ Найдено {len(valid_dir_cols)} колонок 'Направление' с 0.1/0.2: {valid_dir_cols}")
+                return google_df
+            else:
+                # Если ни одна не содержит 0.1/0.2 - ОШИБКА
+                st.error("❌ Ни одна колонка 'Направление' не содержит значений 0.1 или 0.2")
+                st.error(f"   Колонки 'Направление': {all_dir_cols}")
+                st.error(f"   Пример значений: {autocoding_df_clean[all_dir_cols[0]].head().tolist()}")
+                return google_df
 
             
             # Предварительная очистка данных
@@ -1081,6 +1085,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -668,9 +668,6 @@ class DataCleaner:
     
     
     def export_to_excel(self, original_df, cleaned_df, filename="очищенные_данные"):
-        """
-        Создает Excel файл с тремя вкладками для сравнения
-        """
         try:
             if original_df is None or cleaned_df is None:
                 return None
@@ -683,7 +680,10 @@ class DataCleaner:
                 
                 # Вкладка 2: Очищенные данные
                 cleaned_df.to_excel(writer, sheet_name='ОЧИЩЕННЫЙ', index=False)
-                
+            
+            output.seek(0)
+            return output
+            
         except Exception as e:
             st.error(f"Ошибка при создании Excel: {e}")
             return None
@@ -1021,6 +1021,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

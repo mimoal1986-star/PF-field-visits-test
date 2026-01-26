@@ -1137,18 +1137,18 @@ class DataCleaner:
                         writer, sheet_name='НЕПОЛЕВЫЕ_ПРОЕКТЫ', index=False
                     )
                 
-                # Статистика
-                stats_data = {
-                    'Метрика': ['Всего записей', 'Полевые', 'Неполевые', 'Дата обработки'],
-                    'Значение': [
-                        (len(field_df) if field_df is not None else 0) + 
-                        (len(non_field_df) if non_field_df is not None else 0),
-                        len(field_df) if field_df is not None else 0,
-                        len(non_field_df) if non_field_df is not None else 0,
-                        pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
-                    ]
-                }
-                pd.DataFrame(stats_data).to_excel(writer, sheet_name='СТАТИСТИКА', index=False)
+                # # Статистика
+                # stats_data = {
+                #     'Метрика': ['Всего записей', 'Полевые', 'Неполевые', 'Дата обработки'],
+                #     'Значение': [
+                #         (len(field_df) if field_df is not None else 0) + 
+                #         (len(non_field_df) if non_field_df is not None else 0),
+                #         len(field_df) if field_df is not None else 0,
+                #         len(non_field_df) if non_field_df is not None else 0,
+                #         pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
+                #     ]
+                # }
+                # pd.DataFrame(stats_data).to_excel(writer, sheet_name='СТАТИСТИКА', index=False)
             
             output.seek(0)
             return output
@@ -1156,10 +1156,97 @@ class DataCleaner:
         except Exception as e:
             st.error(f"❌ Ошибка при создании Excel: {str(e)[:100]}")
             return None
+            
+    def export_field_projects_only(self, field_df, filename="полевые_проекты"):
+    """
+    Создает Excel файл ТОЛЬКО с полевыми проектами
+    """
+    try:
+        if field_df is None or field_df.empty:
+            return None
+        
+        output = io.BytesIO()
+        
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            # Полевые проекты
+            if not field_df.empty:
+                field_df.to_excel(writer, sheet_name='ПОЛЕВЫЕ_ПРОЕКТЫ', index=False)
+            else:
+                pd.DataFrame({'Сообщение': ['Нет полевых проектов']}).to_excel(
+                    writer, sheet_name='ПОЛЕВЫЕ_ПРОЕКТЫ', index=False
+                )
+        
+        output.seek(0)
+        return output
+        
+    except Exception as e:
+        st.error(f"❌ Ошибка при создании Excel (полевые): {str(e)[:100]}")
+        return None
 
+def export_non_field_projects_only(self, non_field_df, filename="неполевые_проекты"):
+    """
+    Создает Excel файл ТОЛЬКО с неполевыми проектами
+    УДАЛЯЕТ ДУБЛИКАТЫ по: Код проекта, Имя клиента, Название проекта
+    """
+    try:
+        if non_field_df is None or non_field_df.empty:
+            return None
+        
+        # Удаляем дубликаты по 3 полям
+        non_field_clean = non_field_df.copy()
+        
+        # Проверяем наличие нужных колонок
+        required_cols = ['Код проекта', 'Имя клиента', 'Название проекта']
+        missing_cols = [col for col in required_cols if col not in non_field_clean.columns]
+        
+        if missing_cols:
+            st.warning(f"⚠️ В неполевых проектах нет колонок: {missing_cols}")
+            # Если нет нужных колонок - не удаляем дубликаты
+            non_field_unique = non_field_clean
+            duplicates_removed = 0
+        else:
+            # Удаляем дубликаты
+            before_rows = len(non_field_clean)
+            non_field_unique = non_field_clean.drop_duplicates(
+                subset=required_cols, 
+                keep='first'
+            )
+            after_rows = len(non_field_unique)
+            duplicates_removed = before_rows - after_rows
+        
+        output = io.BytesIO()
+        
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            # Неполевые проекты (без дубликатов)
+            if not non_field_unique.empty:
+                non_field_unique.to_excel(writer, sheet_name='НЕПОЛЕВЫЕ_ПРОЕКТЫ', index=False)
+                
+                # Добавляем информацию об удаленных дубликатах на отдельную вкладку
+                info_data = {
+                    'Информация': [
+                        f'Файл создан: {pd.Timestamp.now().strftime("%Y-%m-%d %H:%M")}',
+                        f'Всего записей до удаления дубликатов: {before_rows}',
+                        f'Всего записей после удаления: {after_rows}',
+                        f'Удалено дубликатов: {duplicates_removed}',
+                        f'Поля для удаления дубликатов: Код проекта, Имя клиента, Название проекта'
+                    ]
+                }
+                pd.DataFrame(info_data).to_excel(writer, sheet_name='ИНФОРМАЦИЯ', index=False)
+            else:
+                pd.DataFrame({'Сообщение': ['Нет неполевых проектов']}).to_excel(
+                    writer, sheet_name='НЕПОЛЕВЫЕ_ПРОЕКТЫ', index=False
+                )
+        
+        output.seek(0)
+        return output
+        
+    except Exception as e:
+        st.error(f"❌ Ошибка при создании Excel (неполевые): {str(e)[:100]}")
+        return None
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

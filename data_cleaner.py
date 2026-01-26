@@ -901,8 +901,7 @@ class DataCleaner:
                 
             if not ak_direction_col:
                 st.warning("⚠️ В автокодификации не найдена колонка 'Направление'")
-                # Создаем пустую колонку если нет
-                autocoding_df_clean[ak_direction_col] = ''
+
             
             # Предварительная очистка данных
             autocoding_df_clean[ak_code_col] = autocoding_df_clean[ak_code_col].astype(str).str.strip()
@@ -910,7 +909,7 @@ class DataCleaner:
             google_df_clean[google_code_col] = google_df_clean[google_code_col].astype(str).str.strip()
             
             # Создаем множество разрешенных направлений
-            allowed_directions = {'.01', '.02', '01', '02', '0.01', '0.02', '1', '2'}
+            allowed_directions = {'.01', '.02'}
             
             # Создаем словарь для быстрого поиска {код: является_полевым}
             field_codes = set()
@@ -1067,14 +1066,14 @@ class DataCleaner:
             
             # Определяем маппинг стандартных колонок
             column_mapping = {
-                'Код проекта': ['Код проекта', 'Код анкеты', 'Project Code', 'Код'],
-                'Имя клиента': ['Имя клиента', 'Клиент', 'Client', 'Client Name'],
-                'Название проекта': ['Название проекта', 'Проект', 'Project', 'Project Name'],
+                'Код проекта': ['Код анкеты'],
+                'Имя клиента': ['Имя клиента'],
+                'Название проекта': ['Название проекта'],
                 'ЗОД': ['ЗОД', 'ZOD', 'Зод', 'zod'],
                 'АСС': ['АСС', 'ASS', 'Асс', 'ass'],
-                'ЭМ': ['ЭМ', 'EM', 'Ем', 'em'],
-                'Регион short': ['Регион short', 'Регион_short', 'Region_short', 'Short Region'],
-                'Регион': ['Регион', 'Region', 'рег']
+                'ЭМ': ['ЭМ рег'],
+                'Регион short': ['Регион'],
+                'Регион': ['Регион '] 
             }
             
             # Находим фактические названия колонок
@@ -1184,4 +1183,5 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 

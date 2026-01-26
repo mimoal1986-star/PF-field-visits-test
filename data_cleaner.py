@@ -1158,30 +1158,30 @@ class DataCleaner:
             return None
             
     def export_field_projects_only(self, field_df, filename="полевые_проекты"):
-    """
-    Создает Excel файл ТОЛЬКО с полевыми проектами
-    """
-    try:
-        if field_df is None or field_df.empty:
+        """
+        Создает Excel файл ТОЛЬКО с полевыми проектами
+        """
+        try:
+            if field_df is None or field_df.empty:
+                return None
+            
+            output = io.BytesIO()
+            
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                # Полевые проекты
+                if not field_df.empty:
+                    field_df.to_excel(writer, sheet_name='ПОЛЕВЫЕ_ПРОЕКТЫ', index=False)
+                else:
+                    pd.DataFrame({'Сообщение': ['Нет полевых проектов']}).to_excel(
+                        writer, sheet_name='ПОЛЕВЫЕ_ПРОЕКТЫ', index=False
+                    )
+            
+            output.seek(0)
+            return output
+            
+        except Exception as e:
+            st.error(f"❌ Ошибка при создании Excel (полевые): {str(e)[:100]}")
             return None
-        
-        output = io.BytesIO()
-        
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            # Полевые проекты
-            if not field_df.empty:
-                field_df.to_excel(writer, sheet_name='ПОЛЕВЫЕ_ПРОЕКТЫ', index=False)
-            else:
-                pd.DataFrame({'Сообщение': ['Нет полевых проектов']}).to_excel(
-                    writer, sheet_name='ПОЛЕВЫЕ_ПРОЕКТЫ', index=False
-                )
-        
-        output.seek(0)
-        return output
-        
-    except Exception as e:
-        st.error(f"❌ Ошибка при создании Excel (полевые): {str(e)[:100]}")
-        return None
 
     def export_non_field_projects_only(self, non_field_df, filename="неполевые_проекты"):
         """
@@ -1246,6 +1246,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

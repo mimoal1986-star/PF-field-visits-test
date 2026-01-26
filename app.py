@@ -595,6 +595,41 @@ if st.session_state.processing_complete:
                 use_container_width=True,
                 help="3 вкладки: Полевые проекты, Неполевые проекты, Статистика"
             )
+        st.markdown("---")
+        st.subheader("📥 Отдельные файлы")
+        
+        cols = st.columns(2)
+        with cols[0]:
+            if 'полевые_проекты' in st.session_state.cleaned_data:
+                field_excel = data_cleaner.export_field_projects_only(
+                    st.session_state.cleaned_data['полевые_проекты']
+                )
+                if field_excel:
+                    st.download_button(
+                        label="⬇️ ТОЛЬКО Полевые проекты",
+                        data=field_excel,
+                        file_name="полевые_проекты.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        type="primary",
+                        use_container_width=True,
+                        help="Только полевые проекты (все записи)"
+                    )
+        
+        with cols[1]:
+            if 'неполевые_проекты' in st.session_state.cleaned_data:
+                non_field_excel = data_cleaner.export_non_field_projects_only(
+                    st.session_state.cleaned_data['неполевые_проекты']
+                )
+                if non_field_excel:
+                    st.download_button(
+                        label="⬇️ ТОЛЬКО Неполевые проекты (без дубликатов)",
+                        data=non_field_excel,
+                        file_name="неполевые_проекты.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        type="primary",
+                        use_container_width=True,
+                        help="Только неполевые проекты (удалены дубликаты по Код/Клиент/Проект)"
+                    )
     
     # Просмотр данных
     st.markdown("---")
@@ -616,6 +651,32 @@ if st.session_state.processing_complete:
             df = st.session_state.cleaned_data[selected_key]
             st.dataframe(df, use_container_width=True, height=400)
             st.caption(f"Всего: {len(df):,} строк × {len(df.columns)} колонок")
+            if selected_key == 'портал':
+                st.markdown("---")
+                st.subheader("📊 Статистика разделения на полевые/неполевые")
+                
+                # Получаем данные
+                field_df = st.session_state.cleaned_data.get('полевые_проекты', pd.DataFrame())
+                non_field_df = st.session_state.cleaned_data.get('неполевые_проекты', pd.DataFrame())
+                
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric("Всего в массиве", len(df))
+                with col2:
+                    st.metric("Полевые проекты", len(field_df))
+                with col3:
+                    st.metric("Неполевые проекты", len(non_field_df))
+                with col4:
+                    if len(non_field_df) > 0:
+                        # Проверяем дубликаты в неполевых
+                        if 'Код проекта' in non_field_df.columns and \
+                           'Имя клиента' in non_field_df.columns and \
+                           'Название проекта' in non_field_df.columns:
+                            unique_non_field = non_field_df.drop_duplicates(
+                                subset=['Код проекта', 'Имя клиента', 'Название проекта']
+                            )
+                            st.metric("Уникальные неполевые", len(unique_non_field))
     
     # Действия
     st.markdown("---")
@@ -685,6 +746,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

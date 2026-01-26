@@ -636,7 +636,6 @@ class DataCleaner:
 
 
     def export_discrepancies_to_excel(self, discrepancy_df, filename="Расхождение_Массив"):
-        """Создает Excel файл для расхождений"""
         try:
             if discrepancy_df is None or discrepancy_df.empty:
                 return None
@@ -1021,6 +1020,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

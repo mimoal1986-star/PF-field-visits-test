@@ -42,7 +42,32 @@ def validate_file_upload(file_obj, file_name):
         return None
     
     try:
-        df = pd.read_excel(file_obj, dtype=str)
+        # Для автокодификации читаем вкладку "Коды"
+        if 'автокодификация' in file_name.lower() or 'автокодификац' in file_name.lower():
+            # Создаем Excel reader для проверки вкладок
+            excel_reader = pd.ExcelFile(file_obj)
+            sheet_names = excel_reader.sheet_names
+            
+            # Ищем вкладку с кодами
+            target_sheet = None
+            for sheet in sheet_names:
+                sheet_lower = sheet.lower()
+                if any(name in sheet_lower for name in ['код', 'codes', 'data', 'основная', 'main']):
+                    target_sheet = sheet
+                    break
+            
+            # Если не нашли - берем первую вкладку
+            if target_sheet is None:
+                target_sheet = sheet_names[0]
+                st.warning(f"⚠️ Вкладка 'Коды' не найдена, используем '{target_sheet}'")
+            else:
+                st.info(f"✅ Используем вкладку АК: '{target_sheet}'")
+            
+            df = pd.read_excel(file_obj, sheet_name=target_sheet, dtype=str)
+        else:
+            # Для остальных файлов читаем как обычно
+            df = pd.read_excel(file_obj, dtype=str)
+            
         if df.empty:
             st.warning(f"Файл {file_name} пуст")
             return None
@@ -642,6 +667,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

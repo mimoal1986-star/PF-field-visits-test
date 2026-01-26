@@ -58,8 +58,9 @@ def validate_file_upload(file_obj, file_name):
             
             # Если не нашли - берем первую вкладку
             if target_sheet is None:
-                target_sheet = sheet_names[0]
-                st.warning(f"⚠️ Вкладка 'Коды' не найдена, используем '{target_sheet}'")
+                st.error(f"❌ В файле автокодификации не найдена вкладка с кодами. Доступные вкладки: {', '.join(sheet_names)}")
+                st.error("❌ Нужна вкладка с названием содержащим 'код' или 'codes'")
+                return None  
             else:
                 st.info(f"✅ Используем вкладку АК: '{target_sheet}'")
             
@@ -667,6 +668,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

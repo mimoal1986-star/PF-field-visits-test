@@ -498,11 +498,19 @@ class DataCleaner:
             
             output = io.BytesIO()
             
+            # Используем контекстный менеджер pd.ExcelWriter
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                
                 # === ВКЛАДКА 1: Очищенные данные ===
-                cleaned_array_df.to_excel(writer, sheet_name='ОЧИЩЕННЫЙ МАССИВ', index=False)
-                        
+                cleaned_array_df.to_excel(
+                    writer, 
+                    sheet_name='ОЧИЩЕННЫЙ МАССИВ', 
+                    index=False
+                )
+            
+            # Важно: перемещаем указатель в начало
+            output.seek(0)
+            return output
+            
         except Exception as e:
             st.error(f"Ошибка при создании Excel: {e}")
             return None
@@ -1020,6 +1028,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

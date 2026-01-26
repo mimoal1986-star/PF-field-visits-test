@@ -531,7 +531,7 @@ class DataCleaner:
             zod_mapping = {}
             for _, row in hierarchy_clean.iterrows():
                 acc_val = str(row[acc_col]).strip()
-                zod_val = str(row[zod_col]).strip()
+                zod_val = str(row[zodiac_col]).strip()
                 
                 if acc_val and acc_val.lower() not in ['nan', 'none', 'null', '']:
                     zod_mapping[acc_val] = zod_val
@@ -1160,6 +1160,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

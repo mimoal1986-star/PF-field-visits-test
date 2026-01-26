@@ -434,54 +434,17 @@ if st.session_state.processing_complete:
             st.metric("Заполнено кодов", f"{st.session_state.processing_stats['enriched_codes']:,}")
 
     # === ПРОВЕРКА ===
-    st.write("**🔍 ПРОВЕРКИ:**")
+    st.write("**🔍 ПРОВЕРКА:**")
     
     # 1. АК - полевые проекты
+    autocoding_df = st.session_state.uploaded_files.get('автокодификация')
     if autocoding_df is not None:
-        ak_dir = data_cleaner._find_column(autocoding_df, ['Направление', 'Direction'])
-        if ak_dir:
-            ak_01 = (autocoding_df[ak_dir] == '.01').sum()
-            ak_02 = (autocoding_df[ak_dir] == '.02').sum()
+        if 'Направление' in autocoding_df.columns:
+            ak_01 = (autocoding_df['Направление'].astype(str).str.strip() == '.01').sum()
+            ak_02 = (autocoding_df['Направление'].astype(str).str.strip() == '.02').sum()
             st.write(f"1️⃣ АК: {ak_01 + ak_02} полевых (.01={ak_01}, .02={ak_02})")
         else:
             st.write("1️⃣ АК: нет колонки 'Направление'")
-    
-    # 2. Совпадения массив-гугл
-    if array_updated is not None and google_updated is not None:
-        array_code = data_cleaner._find_column(array_updated, ['Код анкеты'])
-        google_code = data_cleaner._find_column(google_updated, ['Код проекта RU00.000.00.01SVZ24'])
-        
-        if array_code and google_code:
-            # Простой подсчет
-            array_codes = array_updated[array_code].dropna().unique()
-            google_codes = google_updated[google_code].dropna().unique()
-            
-            array_set = set(str(c).strip() for c in array_codes if str(c).strip())
-            google_set = set(str(c).strip() for c in google_codes if str(c).strip())
-            
-            matched = len(array_set.intersection(google_set))
-            st.write(f"2️⃣ Массив→Гугл: {matched} из {len(array_set)}")
-    
-    # 3. Совпадения массив-АК
-    if array_updated is not None and autocoding_df is not None:
-        array_code = data_cleaner._find_column(array_updated, ['Код анкеты'])
-        ak_code = data_cleaner._find_column(autocoding_df, ['ИТОГО КОД', 'Код'])
-        ak_dir = data_cleaner._find_column(autocoding_df, ['Направление', 'Direction'])
-        
-        if array_code and ak_code and ak_dir:
-            # Полевые коды АК
-            ak_field_codes = set()
-            for _, row in autocoding_df.iterrows():
-                code = str(row[ak_code]).strip()
-                dir_val = str(row[ak_dir]).strip()
-                if code and dir_val in ['.01', '.02']:
-                    ak_field_codes.add(code)
-            
-            # Коды массива
-            array_codes = set(str(c).strip() for c in array_updated[array_code].dropna().unique() if str(c).strip())
-            
-            matched = len(array_codes.intersection(ak_field_codes))
-            st.write(f"3️⃣ Массив→АК: {matched} из {len(array_codes)}")
     # === ПРОВЕРКА ===
     
     # Загрузка файлов
@@ -619,6 +582,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

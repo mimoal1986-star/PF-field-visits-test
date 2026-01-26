@@ -474,7 +474,7 @@ class DataCleaner:
             try:
                 # Ищем оригинальные значения Н/Д
                 for na_val in na_values:
-                    mask = original_df[col].astype(str).str.strip() == na_val
+                    mask = df[col].astype(str).str.strip() == na_val
                     had_na_mask = had_na_mask | mask
             except:
                 continue
@@ -486,6 +486,72 @@ class DataCleaner:
         st.success(f"   ✅ Сохранено {had_na_mask.sum()} строк с Н/Д для отчета")
         
         return df_clean
+    
+    def add_zod_from_hierarchy(self, array_df, hierarchy_df):
+    """
+    Добавляет колонку ЗОД в массив на основе справочника ЗОД+АСС
+    Логика: АСС (массив) -> ЗОД (справочник)
+    """
+    try:
+        if array_df is None or array_df.empty:
+            return array_df
+            
+        if hierarchy_df is None or hierarchy_df.empty:
+            st.warning("⚠️ Справочник ЗОД+АСС пустой")
+            return array_df
+        
+        array_clean = array_df.copy()
+        hierarchy_clean = hierarchy_df.copy()
+        
+        # Находим колонки в справочнике
+        zodiac_col = self._find_column(hierarchy_clean, ['ЗОД', 'zod', 'ZOD'])
+        acc_col = self._find_column(hierarchy_clean, ['АСС', 'acc', 'ACC'])
+        
+        if not zodiac_col or not acc_col:
+            st.error("❌ В справочнике не найдены колонки ЗОД и/или АСС")
+            return array_df
+        
+        # Находим колонку АСС в массиве
+        array_acc_col = self._find_column(array_clean, ['АСС', 'acc', 'ACC'])
+        
+        if not array_acc_col:
+            st.error("❌ В массиве не найдена колонка АСС")
+            return array_df
+        
+        # Создаем словарь сопоставления {АСС: ЗОД}
+        zod_mapping = {}
+        for _, row in hierarchy_clean.iterrows():
+            acc_val = str(row[acc_col]).strip()
+            zod_val = str(row[zod_col]).strip()
+            
+            if acc_val and acc_val.lower() not in ['nan', 'none', 'null', '']:
+                zod_mapping[acc_val] = zod_val
+        
+        st.info(f"🔍 Загружено {len(zod_mapping)} сопоставлений АСС → ЗОД")
+        
+        # Добавляем или обновляем колонку ЗОД
+        if 'ЗОД' in array_clean.columns:
+            array_clean['ЗОД'] = ''
+        else:
+            array_clean['ЗОД'] = ''
+        
+        # Заполняем ЗОД на основе АСС
+        def get_zod_by_acc(acc_value):
+            if pd.isna(acc_value) or str(acc_value).strip().lower() in ['nan', 'none', 'null', '']:
+                return ''
+            clean_acc = str(acc_value).strip()
+            return zod_mapping.get(clean_acc, '')
+        
+        array_clean['ЗОД'] = array_clean[array_acc_col].apply(get_zod_by_acc)
+        
+        filled_count = (array_clean['ЗОД'] != '').sum()
+        st.success(f"✅ Добавлен ЗОД: заполнено {filled_count} значений")
+        
+        return array_clean
+        
+    except Exception as e:
+        st.error(f"❌ Ошибка в add_zod_from_hierarchy: {str(e)[:100]}")
+        return array_df
 
     def export_array_to_excel(self, cleaned_array_df, filename="очищенный_массив"):
         """
@@ -674,16 +740,16 @@ class DataCleaner:
 
     
     
-    def export_to_excel(self, original_df, cleaned_df, filename="очищенные_данные"):
+    def export_to_excel(self, df, cleaned_df, filename="очищенные_данные"):
         try:
-            if original_df is None or cleaned_df is None:
+            if df is None or cleaned_df is None:
                 return None
             
             output = io.BytesIO()
             
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 # Вкладка 1: Оригинальные данные
-                original_df.to_excel(writer, sheet_name='ОРИГИНАЛ', index=False)
+                df.to_excel(writer, sheet_name='ОРИГИНАЛ', index=False)
                 
                 # Вкладка 2: Очищенные данные
                 cleaned_df.to_excel(writer, sheet_name='ОЧИЩЕННЫЙ', index=False)
@@ -952,11 +1018,11 @@ class DataCleaner:
             st.error(f"Детали: {traceback.format_exc()[:300]}")
             return array_df
     
-    
     def split_array_by_field_flag(self, array_df):
         """
         Разделяет массив на Полевые и Неполевые проекты
-        Возвращает только 8 указанных колонок
+        Сохраняет колонку 'Полевой' в обеих частях
+        Возвращает 9 колонок (8 основных + Полевой)
         """
         try:
             if array_df is None or array_df.empty:
@@ -965,12 +1031,11 @@ class DataCleaner:
             
             array_df_clean = array_df.copy()
             
-            # Проверяем наличие колонки 'Полевой'
             if 'Полевой' not in array_df_clean.columns:
                 st.error("❌ В массиве нет колонки 'Полевой'")
                 return None, None
             
-            # Определяем маппинг стандартных колонок
+            # Маппинг стандартных колонок (9 колонок)
             column_mapping = {
                 'Код проекта': ['Код анкеты'],
                 'Имя клиента': ['Имя клиента'],
@@ -979,52 +1044,55 @@ class DataCleaner:
                 'АСС': ['АСС', 'ASS', 'Асс', 'ass'],
                 'ЭМ': ['ЭМ рег'],
                 'Регион short': ['Регион'],
-                'Регион': ['Регион '] 
+                'Регион': ['Регион '],
+                'Полевой': ['Полевой']  # СОХРАНЯЕМ
             }
             
             # Находим фактические названия колонок
             actual_columns = {}
-            missing_columns = []
             
             for std_col, possible_names in column_mapping.items():
                 found_col = self._find_column(array_df_clean, possible_names)
                 if found_col:
                     actual_columns[std_col] = found_col
                 else:
-                    missing_columns.append(std_col)
+                    # Создаем пустую колонку (кроме Полевой)
+                    if std_col != 'Полевой':
+                        array_df_clean[std_col] = ''
+                        actual_columns[std_col] = std_col
             
-            if missing_columns:
-                st.warning(f"⚠️ Не найдены колонки: {', '.join(missing_columns)}")
-                # Создаем пустые колонки для недостающих
-                for col in missing_columns:
-                    array_df_clean[col] = ''
-                    actual_columns[col] = col
-            
-            # Отбираем нужные колонки + Полевой для фильтрации
-            selected_cols = list(actual_columns.values()) + ['Полевой']
+            # Отбираем нужные колонки
+            selected_cols = list(actual_columns.values())
             
             # Фильтруем данные
             field_mask = array_df_clean['Полевой'] == 1
             field_projects = array_df_clean.loc[field_mask, selected_cols].copy()
             non_field_projects = array_df_clean.loc[~field_mask, selected_cols].copy()
             
-            # Переименовываем колонки к стандартным названиям
+            # Переименовываем колонки
             reverse_mapping = {v: k for k, v in actual_columns.items()}
             
             if not field_projects.empty:
                 field_projects = field_projects.rename(columns=reverse_mapping)
-                
             
             if not non_field_projects.empty:
                 non_field_projects = non_field_projects.rename(columns=reverse_mapping)
             
-            # Оставляем только 8 нужных колонок в правильном порядке
-            final_columns = list(column_mapping.keys())
+            # Правильный порядок колонок
+            final_columns = ['Код проекта', 'Имя клиента', 'Название проекта', 
+                           'ЗОД', 'АСС', 'ЭМ', 'Регион short', 'Регион', 'Полевой']
             
+            # Реорганизуем колонки
             if not field_projects.empty:
+                for col in final_columns:
+                    if col not in field_projects.columns:
+                        field_projects[col] = '' if col != 'Полевой' else 0
                 field_projects = field_projects.reindex(columns=final_columns)
             
             if not non_field_projects.empty:
+                for col in final_columns:
+                    if col not in non_field_projects.columns:
+                        non_field_projects[col] = '' if col != 'Полевой' else 0
                 non_field_projects = non_field_projects.reindex(columns=final_columns)
             
             st.success(f"✅ Разделение завершено:")
@@ -1034,9 +1102,7 @@ class DataCleaner:
             return field_projects, non_field_projects
             
         except Exception as e:
-            st.error(f"❌ Критическая ошибка в split_array_by_field_flag: {str(e)[:100]}")
-            import traceback
-            st.error(f"Детали: {traceback.format_exc()[:300]}")
+            st.error(f"❌ Ошибка в split_array_by_field_flag: {str(e)[:100]}")
             return None, None
     
     
@@ -1085,6 +1151,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

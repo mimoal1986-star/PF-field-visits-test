@@ -751,22 +751,22 @@ class DataCleaner:
                 st.error("❌ В АК нет колонки 'Направление'")
                 return google_df
             
-            # Проверяем каждую на наличие 0.1
+            # Проверяем каждую на наличие .01
             valid_dir_cols = []
             for col in all_dir_cols:
                 values = autocoding_df_clean[col].astype(str).str.strip()
-                if values.isin(['0.1', '0.2']).any():
+                if values.isin(['.01', '.02']).any():
                     valid_dir_cols.append(col)
             
             # Выбираем колонку
             if len(valid_dir_cols) == 1:
                 ak_direction_col = valid_dir_cols[0]
             elif len(valid_dir_cols) > 1:
-                st.error(f"❌ Найдено {len(valid_dir_cols)} колонок 'Направление' с 0.1/0.2: {valid_dir_cols}")
+                st.error(f"❌ Найдено {len(valid_dir_cols)} колонок 'Направление' с .01/.02: {valid_dir_cols}")
                 return google_df
             else:
-                # Если ни одна не содержит 0.1/0.2 - ОШИБКА
-                st.error("❌ Ни одна колонка 'Направление' не содержит значений 0.1 или 0.2")
+                # Если ни одна не содержит .01/.02 - ОШИБКА
+                st.error("❌ Ни одна колонка 'Направление' не содержит значений.01 или .02")
                 st.error(f"   Колонки 'Направление': {all_dir_cols}")
                 st.error(f"   Пример значений: {autocoding_df_clean[all_dir_cols[0]].head().tolist()}")
                 return google_df
@@ -1085,6 +1085,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -666,31 +666,41 @@ if st.session_state.processing_complete:
                     )
                     
     # ============================================
-    # 🆕 БАЗОВЫЕ ДАННЫЕ ДЛЯ РАСЧЕТА ПЛАН/ФАКТА
+    # 🆕 ДАННЫЕ ДЛЯ РАСЧЕТА ПЛАН/ФАКТА
     # ============================================
     if 'visit_report' in st.session_state and st.session_state.visit_report.get('base_data') is not None:
         st.markdown("---")
-        st.subheader("📊 Базовые данные для расчета план/факта")
+        st.subheader("📊 Данные для расчета план/факта")
         
         base_data = st.session_state.visit_report['base_data']
+        calculated_data = st.session_state.visit_report.get('calculated_data')
         
-        if not base_data.empty:
-            # Показываем метрику
+        # Используем calculated_data если есть расчет
+        display_data = calculated_data if calculated_data is not None else base_data
+        
+        if not display_data.empty:
+            # Показываем статус
+            if calculated_data is not None:
+                planned_count = (calculated_data['План на дату, шт.'] > 0).sum()
+                st.success(f"✅ Рассчитан план для {planned_count} из {len(calculated_data)} проектов")
+            else:
+                st.info(f"📋 {len(base_data)} проектов готовы к расчету")
+            
             col1, col2 = st.columns(2)
             with col1:
-                st.metric("Полевых проектов готово к расчету", len(base_data))
+                st.metric("Проектов", len(display_data))
             
             with col2:
-                # Кнопка скачивания В EXCEL формате
+                # Кнопка скачивания Excel
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                    base_data.to_excel(writer, sheet_name='Базовые_данные', index=False)
-                
+                    display_data.to_excel(writer, sheet_name='Данные_план_факт', index=False)
                 excel_buffer.seek(0)
+                
                 st.download_button(
                     label="⬇️ Excel",
                     data=excel_buffer,
-                    file_name="базовые_данные_план_факт.xlsx",
+                    file_name="данные_план_факт.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     type="secondary",
                     use_container_width=True
@@ -698,86 +708,26 @@ if st.session_state.processing_complete:
             
             # Просмотр таблицы
             with st.expander("👀 Просмотреть таблицу", expanded=False):
-                st.dataframe(base_data, use_container_width=True, height=250)
+                st.dataframe(display_data, use_container_width=True, height=250)
+        
+        # Кнопка расчета план/факта
+        if st.button("📊 Рассчитать план на дату", type="primary", use_container_width=True):
+            if 'plan_calc_params' in st.session_state and 'visit_report' in st.session_state:
+                base_data = st.session_state.visit_report['base_data']
+                google_df = st.session_state.cleaned_data['сервизория']
+                array_df = st.session_state.cleaned_data['портал']
+                params = st.session_state['plan_calc_params']
+                
+                result = visit_calculator.calculate_plan_on_date_full(
+                    base_data, google_df, array_df, params
+                )
+                
+                st.session_state['visit_report']['calculated_data'] = result
+                st.rerun()
     
     # Просмотр данных
     st.markdown("---")
     st.subheader("🔍 Просмотр данных")
-    
-    if st.session_state.cleaned_data:
-        selected_key = st.selectbox(
-            "Выберите набор данных для просмотра",
-            options=list(st.session_state.cleaned_data.keys()),
-            format_func=lambda x: {
-                'портал': '📊 Очищенный массив',
-                'сервизория': '📅 Очищенные проекты',
-                'автокодификация': '🏷️ Автокодификация',
-                'иерархия': '👥 Иерархия'
-            }.get(x, x.capitalize())
-        )
-        
-        if selected_key in st.session_state.cleaned_data:
-            df = st.session_state.cleaned_data[selected_key]
-            st.dataframe(df, use_container_width=True, height=400)
-            st.caption(f"Всего: {len(df):,} строк × {len(df.columns)} колонок")
-            if selected_key == 'портал':
-                st.markdown("---")
-                st.subheader("📊 Статистика разделения на полевые/неполевые")
-                
-                # Получаем данные
-                field_df = st.session_state.cleaned_data.get('полевые_проекты', pd.DataFrame())
-                non_field_df = st.session_state.cleaned_data.get('неполевые_проекты', pd.DataFrame())
-                
-                col1, col2, col3, col4 = st.columns(4)
-                
-                with col1:
-                    st.metric("Всего в массиве", len(df))
-                with col2:
-                    st.metric("Полевые проекты", len(field_df))
-                with col3:
-                    st.metric("Неполевые проекты", len(non_field_df))
-                with col4:
-                    if len(non_field_df) > 0:
-                        # Проверяем дубликаты в неполевых
-                        if 'Код проекта' in non_field_df.columns and \
-                           'Имя клиента' in non_field_df.columns and \
-                           'Название проекта' in non_field_df.columns:
-                            unique_non_field = non_field_df.drop_duplicates(
-                                subset=['Код проекта', 'Имя клиента', 'Название проекта']
-                            )
-                            st.metric("Уникальные неполевые", len(unique_non_field))
-    
-    # Действия
-    st.markdown("---")
-    action_cols = st.columns(3)
-    with action_cols[0]:
-        if st.button("🔄 Обработать заново", use_container_width=True):
-            st.session_state.processing_complete = False
-            st.session_state.excel_files.clear()
-            st.rerun()
-    
-    with action_cols[1]:
-        if st.button("📋 Экспорт сводки", use_container_width=True):
-            summary_df = pd.DataFrame([{
-                'Этап': 'Обработка данных',
-                'Статус': 'Завершено',
-                'Время': st.session_state.processing_stats.get('timestamp', 'N/A'),
-                'Файлов': len(st.session_state.cleaned_data),
-                'Excel файлов': len(st.session_state.excel_files)
-            }])
-            st.download_button(
-                label="⬇️ Скачать сводку",
-                data=summary_df.to_csv(index=False).encode('utf-8'),
-                file_name="сводка_обработки.csv",
-                mime="text/csv",
-                use_container_width=True
-            )
-    
-    with action_cols[2]:
-        if st.session_state.get('last_error'):
-            if st.button("🐛 Детали ошибки", use_container_width=True):
-                st.error(f"Последняя ошибка: {st.session_state['last_error'].get('step')}")
-                st.code(st.session_state['last_error'].get('error', 'Нет информации'))
 
 # ==============================================
 # САЙДБАР
@@ -894,6 +844,7 @@ with st.sidebar:
     
     
     
+
 
 
 

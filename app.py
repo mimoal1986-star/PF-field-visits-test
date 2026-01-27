@@ -850,19 +850,22 @@ with st.sidebar:
 
     # Этапы
     
+    
     st.markdown("---")
     st.subheader("📊 Коэффициенты этапов")
     
-    # Слайдеры для весов этапов
-    st.write("**Распределение весов по этапам:**")
+    # Слайдеры для весов этапов с ограничением 0-2
+    st.write("**Распределение весов по этапам (0-2):**")
     
     stage_weights = []
+    default_weights = [0.8, 1.2, 1.0, 0.9]  # новые дефолтные значения
+    
     for i in range(1, 5):
         weight = st.slider(
             f"Вес этапа {i}",
-            min_value=0.1,
-            max_value=5.0,
-            value=[2.0, 3.5, 3.0, 1.5][i-1],  # дефолтные значения
+            min_value=0.0,
+            max_value=2.0,
+            value=default_weights[i-1],
             step=0.1,
             key=f"stage_slider_{i}"
         )
@@ -870,20 +873,18 @@ with st.sidebar:
     
     # Расчет коэффициентов
     total_weight = sum(stage_weights)
-    coefficients = [w/total_weight for w in stage_weights]
+    if total_weight > 0:
+        coefficients = [w/total_weight for w in stage_weights]
+    else:
+        coefficients = [0.25, 0.25, 0.25, 0.25]  # равные если все нули
+        st.warning("⚠️ Сумма весов = 0, используем равные коэффициенты")
     
     # Визуализация распределения
     st.write("**Распределение коэффициентов:**")
-    for i, coeff in enumerate(coefficients, 1):
-        st.progress(coeff, text=f"Этап {i}: {coeff:.1%}")
-    
-    # Отображение коэффициентов таблицей
-    coeff_data = pd.DataFrame({
-        'Этап': [1, 2, 3, 4],
-        'Вес': stage_weights,
-        'Коэффициент': coefficients
-    })
-    st.dataframe(coeff_data, use_container_width=True, hide_index=True)
+    cols = st.columns(4)
+    for i, (col, coeff) in enumerate(zip(cols, coefficients), 1):
+        with col:
+            st.metric(f"Этап {i}", f"{coeff:.1%}")
     
     # Сохраняем в session_state
     st.session_state['plan_calc_params'] = {
@@ -895,6 +896,7 @@ with st.sidebar:
     
     
     
+
 
 
 

@@ -853,34 +853,37 @@ with st.sidebar:
     st.markdown("---")
     st.subheader("📊 Коэффициенты этапов")
     
-    # Ввод весов этапов
-    st.write("**Вес каждого этапа (сумма автоматически нормируется):**")
+    # Слайдеры для весов этапов
+    st.write("**Распределение весов по этапам:**")
     
     stage_weights = []
-    cols = st.columns(4)
-    
-    for i, col in enumerate(cols, 1):
-        with col:
-            weight = st.number_input(
-                f"Этап {i}",
-                value=[2.0, 3.5, 3.0, 1.5][i-1],  # дефолтные значения
-                min_value=0.1,
-                max_value=10.0,
-                step=0.1,
-                key=f"stage_weight_{i}"
-            )
-            stage_weights.append(weight)
+    for i in range(1, 5):
+        weight = st.slider(
+            f"Вес этапа {i}",
+            min_value=0.1,
+            max_value=5.0,
+            value=[2.0, 3.5, 3.0, 1.5][i-1],  # дефолтные значения
+            step=0.1,
+            key=f"stage_slider_{i}"
+        )
+        stage_weights.append(weight)
     
     # Расчет коэффициентов
     total_weight = sum(stage_weights)
     coefficients = [w/total_weight for w in stage_weights]
     
-    # Отображение коэффициентов
-    st.write("**Коэффициенты (сумма = 1.0):**")
-    coeff_cols = st.columns(4)
-    for i, col in enumerate(coeff_cols, 1):
-        with col:
-            st.metric(f"Этап {i}", f"{coefficients[i-1]:.3f}")
+    # Визуализация распределения
+    st.write("**Распределение коэффициентов:**")
+    for i, coeff in enumerate(coefficients, 1):
+        st.progress(coeff, text=f"Этап {i}: {coeff:.1%}")
+    
+    # Отображение коэффициентов таблицей
+    coeff_data = pd.DataFrame({
+        'Этап': [1, 2, 3, 4],
+        'Вес': stage_weights,
+        'Коэффициент': coefficients
+    })
+    st.dataframe(coeff_data, use_container_width=True, hide_index=True)
     
     # Сохраняем в session_state
     st.session_state['plan_calc_params'] = {
@@ -892,6 +895,7 @@ with st.sidebar:
     
     
     
+
 
 
 

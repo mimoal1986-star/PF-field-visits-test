@@ -847,10 +847,52 @@ with st.sidebar:
         end_date = start_date.replace(day=28)  # Корректируем
     
     st.info(f"Период: {start_date.strftime('%d.%m.%Y')} - {end_date.strftime('%d.%m.%Y')}")
+
+    # Этапы
+    
+    st.markdown("---")
+    st.subheader("📊 Коэффициенты этапов")
+    
+    # Ввод весов этапов
+    st.write("**Вес каждого этапа (сумма автоматически нормируется):**")
+    
+    stage_weights = []
+    cols = st.columns(4)
+    
+    for i, col in enumerate(cols, 1):
+        with col:
+            weight = st.number_input(
+                f"Этап {i}",
+                value=[2.0, 3.5, 3.0, 1.5][i-1],  # дефолтные значения
+                min_value=0.1,
+                max_value=10.0,
+                step=0.1,
+                key=f"stage_weight_{i}"
+            )
+            stage_weights.append(weight)
+    
+    # Расчет коэффициентов
+    total_weight = sum(stage_weights)
+    coefficients = [w/total_weight for w in stage_weights]
+    
+    # Отображение коэффициентов
+    st.write("**Коэффициенты (сумма = 1.0):**")
+    coeff_cols = st.columns(4)
+    for i, col in enumerate(coeff_cols, 1):
+        with col:
+            st.metric(f"Этап {i}", f"{coefficients[i-1]:.3f}")
+    
+    # Сохраняем в session_state
+    st.session_state['plan_calc_params'] = {
+        'start_date': start_date,
+        'end_date': end_date,
+        'coefficients': coefficients
+    }
     
     
     
     
+
 
 
 

@@ -185,7 +185,7 @@ def process_field_projects_with_stats():
         if field_df is not None and not field_df.empty:
             try:
                 # Извлекаем базовые данные ТОЛЬКО из полевых проектов
-                base_data = visit_calculator.extract_base_data(field_df)
+                base_data = visit_calculator.extract_base_data(field_df, google_df)
                 
                 if not base_data.empty:
                     st.session_state['visit_report'] = {
@@ -851,6 +851,7 @@ with st.sidebar:
     
     
     
+
 
 
 

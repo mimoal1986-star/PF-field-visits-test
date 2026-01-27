@@ -8,22 +8,14 @@ from typing import Optional, Dict, Tuple, List
 import io
 
 # ==============================================
-# СЕКЦИЯ 1: БАЗОВЫЕ ПОЛЯ 
+# Расчет ПФ визитов
 # ==============================================
 
+"""Калькулятор плана/факта визитов (воспроизводит логику 'Датасет ПФ1')"""
 class VisitCalculator:
-    """Калькулятор плана/факта визитов (воспроизводит логику 'Датасет ПФ1')"""
     
+    """Извлекает базовые данные ТОЛЬКО из полевых проектов (столбцы A-H)"""
     def extract_base_data(self, field_projects_df):
-        """
-        Извлекает базовые данные ТОЛЬКО из полевых проектов (столбцы A-H).
-        
-        Параметры:
-        - field_projects_df: DataFrame ТОЛЬКО полевых проектов (уже отфильтровано)
-        
-        Возвращает:
-        - DataFrame с 8 базовыми колонками для отчета (уникальные по Названию проекта)
-        """
         try:
             if field_projects_df is None or field_projects_df.empty:
                 st.warning("⚠️ Нет полевых проектов для анализа")
@@ -54,7 +46,72 @@ class VisitCalculator:
         except Exception as e:
             st.error(f"❌ Ошибка извлечения базовых данных: {str(e)[:100]}")
             return pd.DataFrame()
+        # В utils/visit_calculator.py, после метода extract_base_data, вставляем:
 
+
+    """Рассчитывает план на каждый этап, день проекта. Возвращает план на дату"""
+    def calculate_plan_on_date_full(self, base_data, google_df, array_df, calc_params):
+        """Рассчитывает 'План на дату, шт.' по полной логике."""
+        
+        result = base_data.copy()
+        result['План на дату, шт.'] = 0.0
+        
+        start_date = calc_params['start_date']
+        end_date = calc_params['end_date']
+        coeffs = calc_params['coefficients']
+        
+        for idx, row in result.iterrows():
+            project_code = row['Код проекта']
+            project_name = row['Название проекта']
+            
+            # 1. План проекта = кол-во строк в массиве
+            mask = (
+                (array_df['Код анкеты'] == project_code) & 
+                (array_df['Название проекта'] == project_name)
+            )
+            plan_total = mask.sum()
+            
+            # 2. Даты проекта из google
+            google_mask = google_df['Код проекта RU00.000.00.01SVZ24'] == project_code
+            if google_mask.any():
+                proj_start = pd.to_datetime(google_df.loc[google_mask, 'Дата старта'].iloc[0])
+                proj_end = pd.to_datetime(google_df.loc[google_mask, 'Дата финиша с продлением'].iloc[0])
+                
+                # 3. 4 этапа (равные отрезки)
+                proj_duration = (proj_end - proj_start).days + 1
+                stage_days = proj_duration // 4
+                extra_days = proj_duration % 4
+                
+                stages = []
+                day_pointer = proj_start
+                
+                for i in range(4):
+                    days_in_stage = stage_days + (1 if i < extra_days else 0)
+                    stage_end = day_pointer + timedelta(days=days_in_stage - 1)
+                    
+                    # 4. План этапов 1-3
+                    if i < 3:
+                        stage_plan = plan_total * coeffs[i]
+                    else:  # Этап 4
+                        stage_plan = plan_total - sum(stages)
+                    
+                    stages.append(stage_plan)
+                    
+                    # 5. План по дням (равномерно)
+                    daily_plan = stage_plan / days_in_stage
+                    
+                    # 6. План на дату = сумма за период
+                    for day_offset in range(days_in_stage):
+                        current_day = day_pointer + timedelta(days=day_offset)
+                        if start_date <= current_day.date() <= end_date:
+                            result.at[idx, 'План на дату, шт.'] += daily_plan
+                    
+                    day_pointer = stage_end + timedelta(days=1)
+        
+        result['План на дату, шт.'] = result['План на дату, шт.'].round(1)
+        return result
+        
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 

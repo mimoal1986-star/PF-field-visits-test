@@ -18,6 +18,27 @@ class VisitCalculator:
     def extract_base_data(self, field_projects_df, google_df_clean):
         """Извлекает базовые данные только для проектов на Чеккере"""
         
+        # ========== ПРОВЕРКА КОЛОНОК ==========
+        portal_col = 'Портал на котором идет проект (для работы полевой команды)'
+        
+        if portal_col not in google_df_clean.columns:
+            # Если нет колонки ПО, возвращаем все проекты с меткой "Неизвестно"
+            base = pd.DataFrame()
+            base['Код проекта'] = field_projects_df['Код проекта']
+            base['Имя клиента'] = field_projects_df['Имя клиента']
+            base['Название проекта'] = field_projects_df['Название проекта']
+            base['ПО'] = 'Неизвестно'  # Ставим заглушку
+            base['ЗОД'] = field_projects_df['ЗОД']
+            base['АСС'] = field_projects_df['АСС']
+            base['ЭМ'] = field_projects_df['ЭМ']
+            base['Регион short'] = field_projects_df['Регион short']
+            base['Регион'] = field_projects_df['Регион']
+            return base
+        
+        # ========== ФИЛЬТРАЦИЯ ПО ЧЕККЕРУ ==========
+        checker_mask = google_df_clean[portal_col] == 'Чеккер'
+        checker_projects = google_df_clean[checker_mask]
+        
         # Создаем базовый датафрейм
         base = pd.DataFrame()
         
@@ -25,10 +46,6 @@ class VisitCalculator:
         base['Код проекта'] = field_projects_df['Код проекта']
         base['Имя клиента'] = field_projects_df['Имя клиента']
         base['Название проекта'] = field_projects_df['Название проекта']
-        
-        # Связываем с google_df_clean для получения ПО
-        checker_mask = google_df_clean['Портал на котором идет проект (для работы полевой команды)'] == 'Чеккер'
-        checker_projects = google_df_clean[checker_mask]
         
         # Создаем ключ для связывания
         base['key'] = base['Код проекта'] + '|' + base['Название проекта']
@@ -38,7 +55,7 @@ class VisitCalculator:
         )
         
         # Добавляем ПО
-        po_mapping = checker_projects.set_index('key')['Портал на котором идет проект (для работы полевой команды)'].to_dict()
+        po_mapping = checker_projects.set_index('key')[portal_col].to_dict()
         base['ПО'] = base['key'].map(po_mapping)
         
         # Фильтруем только проекты на Чеккере
@@ -208,6 +225,7 @@ class VisitCalculator:
     
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

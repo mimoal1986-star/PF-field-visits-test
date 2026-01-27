@@ -43,7 +43,7 @@ class VisitCalculator:
             result['Регион'] = field_projects_df['Регион']
             
             # Удаляем дубликаты по Названию проекта (как в Excel)
-            result = result.drop_duplicates(subset=['Название проекта'], keep='first')
+            result = result.drop_duplicates(subset=['Название проекта', 'Код проекта'], keep='first')
             
             st.info(f"📊 Извлечено базовых данных: {len(result)} уникальных полевых проектов")
             return result
@@ -57,3 +57,4 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+

@@ -681,13 +681,17 @@ if st.session_state.processing_complete:
                 st.metric("Полевых проектов готово к расчету", len(base_data))
             
             with col2:
-                # Кнопка скачивания
-                csv = base_data.to_csv(index=False, encoding='utf-8-sig')
+                # Кнопка скачивания В EXCEL формате
+                excel_buffer = BytesIO()
+                with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                    base_data.to_excel(writer, sheet_name='Базовые_данные', index=False)
+                
+                excel_buffer.seek(0)
                 st.download_button(
-                    label="⬇️ CSV",
-                    data=csv,
-                    file_name="базовые_данные_план_факт.csv",
-                    mime="text/csv",
+                    label="⬇️ Excel",
+                    data=excel_buffer,
+                    file_name="базовые_данные_план_факт.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     type="secondary",
                     use_container_width=True
                 )
@@ -811,6 +815,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

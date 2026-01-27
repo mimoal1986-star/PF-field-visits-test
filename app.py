@@ -97,13 +97,7 @@ def display_file_preview(df, title):
     """Отображение предпросмотра файла"""
     if df is not None and not df.empty:
         with st.expander(f"👀 {title}"):
-            # st.dataframe(df.head(10), use_container_width=True)
-            column_order = [
-                'Код проекта', 'Имя клиента', 'Название проекта',
-                'ЗОД', 'АСС', 'ЭМ', 'Регион short', 'Регион',
-                'План проекта, шт.', 'Факт проекта, шт.', '%ПФ проекта',
-                'План на дату, шт.', 'Факт на дату, шт.', '%ПФ на дату'
-            ]
+            st.dataframe(df.head(10), use_container_width=True)
             st.caption(f"Всего строк: {len(df):,}, колонок: {len(df.columns)}")
 
 def process_single_step(step_func, step_name, *args):
@@ -857,6 +851,7 @@ with st.sidebar:
     
     
     
+
 
 
 

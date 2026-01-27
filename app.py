@@ -881,10 +881,8 @@ with st.sidebar:
     
     # Визуализация распределения
     st.write("**Распределение коэффициентов:**")
-    cols = st.columns(4)
-    for i, (col, coeff) in enumerate(zip(cols, coefficients), 1):
-        with col:
-            st.metric(f"Этап {i}", f"{coeff:.1%}")
+    for i, coeff in enumerate(coefficients, 1):
+        st.progress(coeff, text=f"Этап {i}: {coeff:.1%}")
     
     # Сохраняем в session_state
     st.session_state['plan_calc_params'] = {
@@ -896,6 +894,7 @@ with st.sidebar:
     
     
     
+
 
 
 

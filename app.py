@@ -5,7 +5,7 @@ import pandas as pd
 import sys
 import os
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 
 # data_cleaner.py
@@ -816,8 +816,41 @@ with st.sidebar:
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
 
-
-
+    
+    st.markdown("---")
+    st.subheader("📅 Параметры расчета план/факта")
+    
+    # Календарь периода
+    st.write("**Период расчета:**")
+    today = datetime.now()
+    first_day = today.replace(day=1)
+    yesterday = today - timedelta(days=1)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        start_date = st.date_input(
+            "Дата начала",
+            value=first_day,
+            max_value=yesterday
+        )
+    with col2:
+        end_date = st.date_input(
+            "Дата окончания",
+            value=yesterday,
+            min_value=start_date,
+            max_value=yesterday
+        )
+    
+    # Проверка: даты в одном месяце
+    if start_date.month != end_date.month:
+        st.warning("⚠️ Даты должны быть в одном месяце")
+        end_date = start_date.replace(day=28)  # Корректируем
+    
+    st.info(f"Период: {start_date.strftime('%d.%m.%Y')} - {end_date.strftime('%d.%m.%Y')}")
+    
+    
+    
+    
 
 
 

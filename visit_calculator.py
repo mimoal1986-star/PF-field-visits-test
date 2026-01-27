@@ -15,63 +15,51 @@ import io
 class VisitCalculator:
     
     """Извлекает базовые данные ТОЛЬКО из полевых проектов (столбцы A-H)"""
-    def extract_base_data(self, field_projects_df, google_df_clean):
-        """Извлекает базовые данные только для проектов на Чеккере"""
+    def extract_base_data(self, field_projects_df, google_df_clean=None):
+        """Извлекает базовые данные с фильтрацией по ПО (Чеккер)"""
         
-        # ========== ПРОВЕРКА КОЛОНОК ==========
-        portal_col = 'Портал на котором идет проект (для работы полевой команды)'
-        
-        if portal_col not in google_df_clean.columns:
-            # Если нет колонки ПО, возвращаем все проекты с меткой "Неизвестно"
+        try:
+            if field_projects_df is None or field_projects_df.empty:
+                return pd.DataFrame()
+            
+            # Базовые колонки (всегда)
             base = pd.DataFrame()
             base['Код проекта'] = field_projects_df['Код проекта']
             base['Имя клиента'] = field_projects_df['Имя клиента']
             base['Название проекта'] = field_projects_df['Название проекта']
-            base['ПО'] = 'Неизвестно'  # Ставим заглушку
             base['ЗОД'] = field_projects_df['ЗОД']
             base['АСС'] = field_projects_df['АСС']
             base['ЭМ'] = field_projects_df['ЭМ']
             base['Регион short'] = field_projects_df['Регион short']
             base['Регион'] = field_projects_df['Регион']
+            
+            # Фильтрация по ПО (если есть google_df_clean)
+            if google_df_clean is not None and not google_df_clean.empty:
+                portal_col = 'Портал на котором идет проект (для работы полевой команды)'
+                
+                if portal_col in google_df_clean.columns:
+                    # Только проекты на Чеккере
+                    checker_mask = google_df_clean[portal_col] == 'Чеккер'
+                    checker_df = google_df_clean[checker_mask]
+                    
+                    # Связывание по коду и названию
+                    checker_codes = set(checker_df['Код проекта RU00.000.00.01SVZ24'])
+                    checker_names = set(checker_df['Название волны на Чекере/ином ПО'])
+                    
+                    base = base[
+                        base['Код проекта'].isin(checker_codes) & 
+                        base['Название проекта'].isin(checker_names)
+                    ]
+                
+                # Добавляем колонку ПО
+                base['ПО'] = 'Чеккер'
+            
+            # Удаляем дубликаты и возвращаем
+            base = base.drop_duplicates(subset=['Код проекта', 'Название проекта'], keep='first')
             return base
-        
-        # ========== ФИЛЬТРАЦИЯ ПО ЧЕККЕРУ ==========
-        checker_mask = google_df_clean[portal_col] == 'Чеккер'
-        checker_projects = google_df_clean[checker_mask]
-        
-        # Создаем базовый датафрейм
-        base = pd.DataFrame()
-        
-        # Базовые колонки из полевых проектов
-        base['Код проекта'] = field_projects_df['Код проекта']
-        base['Имя клиента'] = field_projects_df['Имя клиента']
-        base['Название проекта'] = field_projects_df['Название проекта']
-        
-        # Создаем ключ для связывания
-        base['key'] = base['Код проекта'] + '|' + base['Название проекта']
-        checker_projects['key'] = (
-            checker_projects['Код проекта RU00.000.00.01SVZ24'] + '|' + 
-            checker_projects['Название волны на Чекере/ином ПО']
-        )
-        
-        # Добавляем ПО
-        po_mapping = checker_projects.set_index('key')[portal_col].to_dict()
-        base['ПО'] = base['key'].map(po_mapping)
-        
-        # Фильтруем только проекты на Чеккере
-        base = base[base['ПО'] == 'Чеккер']
-        
-        # Добавляем остальные колонки
-        base['ЗОД'] = field_projects_df['ЗОД']
-        base['АСС'] = field_projects_df['АСС']
-        base['ЭМ'] = field_projects_df['ЭМ']
-        base['Регион short'] = field_projects_df['Регион short']
-        base['Регион'] = field_projects_df['Регион']
-        
-        # Удаляем временный ключ
-        base = base.drop('key', axis=1)
-        
-        return base
+            
+        except Exception:
+            return pd.DataFrame()
 
 
     """Рассчитывает план на каждый этап, день проекта. Возвращает план на дату"""
@@ -225,6 +213,7 @@ class VisitCalculator:
     
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

@@ -7,12 +7,21 @@ import os
 import traceback
 from datetime import datetime
 from io import BytesIO
+
+# data_cleaner.py
 try:
     from utils.data_cleaner import data_cleaner
 except ImportError:
     # Создаем экземпляр, если импорт не сработал
     from data_cleaner import DataCleaner
     data_cleaner = DataCleaner()
+    
+# visit_calculator.py
+try:
+    from utils.visit_calculator import visit_calculator
+except ImportError:
+    from visit_calculator import VisitCalculator
+    visit_calculator = VisitCalculator()
 
 # Настройка путей
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -34,7 +43,8 @@ DEFAULT_STATE = {
     'excel_files': {},
     'processing_complete': False,
     'processing_stats': {},
-    'last_error': None
+    'last_error': None,
+    'visit_report': {} 
 }
 
 for key, default_value in DEFAULT_STATE.items():
@@ -169,6 +179,24 @@ def process_field_projects_with_stats():
                 st.success("✅ Отчет создан успешно!")
             else:
                 st.warning("⚠️ Не удалось создать Excel файл")
+        # ============================================
+        # 🆕 ИЗВЛЕЧЕНИЕ БАЗОВЫХ ДАННЫХ ДЛЯ ПЛАН/ФАКТА
+        # ============================================
+        if field_df is not None and not field_df.empty:
+            try:
+                # Извлекаем базовые данные ТОЛЬКО из полевых проектов
+                base_data = visit_calculator.extract_base_data(field_df)
+                
+                if not base_data.empty:
+                    st.session_state['visit_report'] = {
+                        'base_data': base_data,  # ← Столбцы A-H
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    st.success(f"✅ Подготовлены базовые данные для {len(base_data)} полевых проектов")
+                else:
+                    st.warning("⚠️ Не удалось извлечь базовые данные")
+            except Exception as e:
+                st.warning(f"⚠️ Ошибка извлечения базовых данных: {str(e)[:100]}")
         
         # Показываем статистику
         col1, col2, col3 = st.columns(3)
@@ -636,6 +664,37 @@ if st.session_state.processing_complete:
                         use_container_width=True,
                         help="Только неполевые проекты (удалены дубликаты по Код/Клиент/Проект)"
                     )
+                    
+    # ============================================
+    # 🆕 БАЗОВЫЕ ДАННЫЕ ДЛЯ РАСЧЕТА ПЛАН/ФАКТА
+    # ============================================
+    if 'visit_report' in st.session_state and st.session_state.visit_report.get('base_data') is not None:
+        st.markdown("---")
+        st.subheader("📊 Базовые данные для расчета план/факта")
+        
+        base_data = st.session_state.visit_report['base_data']
+        
+        if not base_data.empty:
+            # Показываем метрику
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Полевых проектов готово к расчету", len(base_data))
+            
+            with col2:
+                # Кнопка скачивания
+                csv = base_data.to_csv(index=False, encoding='utf-8-sig')
+                st.download_button(
+                    label="⬇️ CSV",
+                    data=csv,
+                    file_name="базовые_данные_план_факт.csv",
+                    mime="text/csv",
+                    type="secondary",
+                    use_container_width=True
+                )
+            
+            # Просмотр таблицы
+            with st.expander("👀 Просмотреть таблицу", expanded=False):
+                st.dataframe(base_data, use_container_width=True, height=250)
     
     # Просмотр данных
     st.markdown("---")
@@ -752,6 +811,7 @@ with st.sidebar:
             for key, value in stats.items():
                 if key != 'timestamp':
                     st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+
 
 
 

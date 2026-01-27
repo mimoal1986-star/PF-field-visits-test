@@ -54,6 +54,7 @@ class VisitCalculator:
         """Рассчитывает 'План на дату, шт.' по полной логике."""
         
         result = base_data.copy()
+        result['План проекта, шт.'] = 0
         result['План на дату, шт.'] = 0.0
         
         start_date = calc_params['start_date']
@@ -70,6 +71,7 @@ class VisitCalculator:
                 (array_df['Название проекта'] == project_name)
             ]
             plan_total = len(project_rows)
+            result.at[idx, 'План проекта, шт.'] = plan_total
             
             # 2. Даты проекта из google
             google_mask = (
@@ -115,12 +117,11 @@ class VisitCalculator:
         result['План на дату, шт.'] = result['План на дату, шт.'].round(1)
         return result
     
-    
     def calculate_fact_on_date_full(self, base_data, google_df, array_df, calc_params):
         """Рассчитывает 'Факт на дату, шт.' и 'Факт проекта'."""
         
         result = base_data.copy()
-        result['Факт проекта, шт.'] = 0  # ← Новая колонка
+        result['Факт проекта, шт.'] = 0
         result['Факт на дату, шт.'] = 0
         
         start_date = calc_params['start_date']
@@ -128,8 +129,8 @@ class VisitCalculator:
         surrogate_date = pd.Timestamp('1900-01-01')
         
         for idx, row in result.iterrows():
-            project_code = row['Код проекта']
-            project_name = row['Название проекта']
+            project_code = row['Код проекта']  # ← ДОБАВИЛИ
+            project_name = row['Название проекта']  # ← ДОБАВИЛИ
             
             # Все фактические визиты проекта
             project_visits = array_df[
@@ -172,16 +173,34 @@ class VisitCalculator:
                         ]
                         
                         # 6. Считаем визиты в периоде календаря
-                        for visit_date in stage_visits['Дата визита']:
+                        for _, visit_row in stage_visits.iterrows():
+                            visit_date = visit_row['Дата визита']
                             if start_date <= visit_date.date() <= end_date:
                                 result.at[idx, 'Факт на дату, шт.'] += 1
                         
                         day_pointer = stage_end + timedelta(days=1)
         
-        return result
+        # 7. Добавляем % после расчета факта
+        result['%ПФ проекта'] = 0.0
+        result['%ПФ на дату'] = 0.0
+        
+        for idx, row in result.iterrows():
+            plan_project = row['План проекта, шт.']
+            fact_project = row['Факт проекта, шт.']
+            plan_date = row['План на дату, шт.']
+            fact_date = row['Факт на дату, шт.']
+            
+            if plan_project > 0:
+                result.at[idx, '%ПФ проекта'] = round((fact_project / plan_project) * 100, 1)
+            
+            if plan_date > 0:
+                result.at[idx, '%ПФ на дату'] = round((fact_date / plan_date) * 100, 1)
+        
+        return result 
     
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

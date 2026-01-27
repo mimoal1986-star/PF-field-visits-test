@@ -72,7 +72,11 @@ class VisitCalculator:
             plan_total = mask.sum()
             
             # 2. Даты проекта из google
-            google_mask = google_df['Код проекта RU00.000.00.01SVZ24'] == project_code
+            google_mask = (
+                (google_df['Код проекта RU00.000.00.01SVZ24'] == project_code) &
+                (google_df['Название волны на Чекере/ином ПО'] == project_name)
+            )
+            
             if google_mask.any():
                 proj_start = pd.to_datetime(google_df.loc[google_mask, 'Дата старта'].iloc[0])
                 proj_end = pd.to_datetime(google_df.loc[google_mask, 'Дата финиша с продлением'].iloc[0])
@@ -113,5 +117,6 @@ class VisitCalculator:
         
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 

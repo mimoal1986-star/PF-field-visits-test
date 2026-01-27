@@ -187,14 +187,34 @@ def process_field_projects_with_stats():
                 # Извлекаем базовые данные ТОЛЬКО из полевых проектов
                 base_data = visit_calculator.extract_base_data(field_df, google_df)
                 
+                # ========== ПРОВЕРКИ ==========
+                # 1. Проверка поля ПО в гугл таблице
+                portal_col = 'Портал на котором идет проект (для работы полевой команды)'
+                if portal_col in google_df.columns:
+                    checker_count = (google_df[portal_col] == 'Чеккер').sum()
+                    st.success(f"✅ 1. Поле '{portal_col}' найдено. Проектов на Чеккере: {checker_count}")
+                else:
+                    st.warning(f"⚠️ 1. Поле '{portal_col}' НЕ найдено в гугл таблице")
+                
+                # 2. Проверка загрузки в таблицу ПланФакт
                 if not base_data.empty:
+                    checker_projects_count = len(base_data)
+                    st.success(f"✅ 2. Загружено {checker_projects_count} проектов в таблицу ПланФакт")
+                    
+                    # Проверяем колонку ПО
+                    if 'ПО' in base_data.columns:
+                        po_values = base_data['ПО'].unique()
+                        st.write(f"   Колонка 'ПО' содержит: {list(po_values)}")
+                    else:
+                        st.warning("   ⚠️ Колонка 'ПО' отсутствует")
+                        
+                    # Сохраняем данные
                     st.session_state['visit_report'] = {
-                        'base_data': base_data,  # ← Столбцы A-H
+                        'base_data': base_data,
                         'timestamp': datetime.now().isoformat()
                     }
-                    st.success(f"✅ Подготовлены базовые данные для {len(base_data)} полевых проектов")
                 else:
-                    st.warning("⚠️ Не удалось извлечь базовые данные")
+                    st.warning("⚠️ 2. Не удалось загрузить проекты в таблицу ПланФакт")
             except Exception as e:
                 st.warning(f"⚠️ Ошибка извлечения базовых данных: {str(e)[:100]}")
         
@@ -851,6 +871,7 @@ with st.sidebar:
     
     
     
+
 
 
 

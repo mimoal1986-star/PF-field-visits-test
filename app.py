@@ -711,18 +711,25 @@ if st.session_state.processing_complete:
                 st.dataframe(display_data, use_container_width=True, height=250)
         
         # Кнопка расчета план/факта
-        if st.button("📊 Рассчитать план на дату", type="primary", use_container_width=True):
+        if st.button("📊 Рассчитать план/факт", type="primary", use_container_width=True):
             if 'plan_calc_params' in st.session_state and 'visit_report' in st.session_state:
                 base_data = st.session_state.visit_report['base_data']
                 google_df = st.session_state.cleaned_data['сервизория']
                 array_df = st.session_state.cleaned_data['портал']
                 params = st.session_state['plan_calc_params']
                 
-                result = visit_calculator.calculate_plan_on_date_full(
+                # 1. Считаем план
+                plan_result = visit_calculator.calculate_plan_on_date_full(
                     base_data, google_df, array_df, params
                 )
                 
-                st.session_state['visit_report']['calculated_data'] = result
+                # 2. Считаем факт
+                fact_result = visit_calculator.calculate_fact_on_date_full(
+                    plan_result, google_df, array_df, params
+                )
+                
+                # 3. Сохраняем объединенный результат
+                st.session_state['visit_report']['calculated_data'] = fact_result
                 st.rerun()
     
     # Просмотр данных
@@ -844,6 +851,7 @@ with st.sidebar:
     
     
     
+
 
 
 

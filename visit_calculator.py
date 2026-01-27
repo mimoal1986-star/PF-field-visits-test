@@ -65,11 +65,11 @@ class VisitCalculator:
             project_name = row['Название проекта']
             
             # 1. План проекта = кол-во строк в массиве
-            mask = (
+            project_rows = array_df[
                 (array_df['Код анкеты'] == project_code) & 
                 (array_df['Название проекта'] == project_name)
-            )
-            plan_total = mask.sum()
+            ]
+            plan_total = len(project_rows)
             
             # 2. Даты проекта из google
             google_mask = (
@@ -117,6 +117,7 @@ class VisitCalculator:
         
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

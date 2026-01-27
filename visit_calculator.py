@@ -114,72 +114,75 @@ class VisitCalculator:
         
         result['План на дату, шт.'] = result['План на дату, шт.'].round(1)
         return result
-
+    
+    
     def calculate_fact_on_date_full(self, base_data, google_df, array_df, calc_params):
-    """Рассчитывает 'Факт на дату, шт.' и 'Факт проекта'."""
-    
-    result = base_data.copy()
-    result['Факт проекта, шт.'] = 0  # ← Новая колонка
-    result['Факт на дату, шт.'] = 0
-    
-    start_date = calc_params['start_date']
-    end_date = calc_params['end_date']
-    surrogate_date = pd.Timestamp('1900-01-01')
-    
-    for idx, row in result.iterrows():
-        project_code = row['Код проекта']
-        project_name = row['Название проекта']
+        """Рассчитывает 'Факт на дату, шт.' и 'Факт проекта'."""
         
-        # Все фактические визиты проекта
-        project_visits = array_df[
-            (array_df['Код анкеты'] == project_code) &
-            (array_df['Название проекта'] == project_name) &
-            (array_df['Дата визита'] != surrogate_date)
-        ]
+        result = base_data.copy()
+        result['Факт проекта, шт.'] = 0  # ← Новая колонка
+        result['Факт на дату, шт.'] = 0
         
-        # 1. Факт проекта (все визиты)
-        fact_total = len(project_visits)
-        result.at[idx, 'Факт проекта, шт.'] = fact_total
+        start_date = calc_params['start_date']
+        end_date = calc_params['end_date']
+        surrogate_date = pd.Timestamp('1900-01-01')
         
-        if fact_total > 0:
-            # 2. Даты проекта из google (те же что для плана)
-            google_mask = (
-                (google_df['Код проекта RU00.000.00.01SVZ24'] == project_code) &
-                (google_df['Название волны на Чекере/ином ПО'] == project_name)
-            )
+        for idx, row in result.iterrows():
+            project_code = row['Код проекта']
+            project_name = row['Название проекта']
             
-            if google_mask.any():
-                proj_start = pd.to_datetime(google_df.loc[google_mask, 'Дата старта'].iloc[0])
-                proj_end = pd.to_datetime(google_df.loc[google_mask, 'Дата финиша с продлением'].iloc[0])
+            # Все фактические визиты проекта
+            project_visits = array_df[
+                (array_df['Код анкеты'] == project_code) &
+                (array_df['Название проекта'] == project_name) &
+                (array_df['Дата визита'] != surrogate_date)
+            ]
+            
+            # 1. Факт проекта (все визиты)
+            fact_total = len(project_visits)
+            result.at[idx, 'Факт проекта, шт.'] = fact_total
+            
+            if fact_total > 0:
+                # 2. Даты проекта из google (те же что для плана)
+                google_mask = (
+                    (google_df['Код проекта RU00.000.00.01SVZ24'] == project_code) &
+                    (google_df['Название волны на Чекере/ином ПО'] == project_name)
+                )
                 
-                # 3. Те же 4 этапа что для плана
-                proj_duration = (proj_end - proj_start).days + 1
-                stage_days = proj_duration // 4
-                extra_days = proj_duration % 4
-                
-                # 4. Распределяем визиты по этапам
-                day_pointer = proj_start
-                
-                for stage in range(4):
-                    days_in_stage = stage_days + (1 if stage < extra_days else 0)
-                    stage_end = day_pointer + timedelta(days=days_in_stage - 1)
+                if google_mask.any():
+                    proj_start = pd.to_datetime(google_df.loc[google_mask, 'Дата старта'].iloc[0])
+                    proj_end = pd.to_datetime(google_df.loc[google_mask, 'Дата финиша с продлением'].iloc[0])
                     
-                    # 5. Визиты в этом этапе
-                    stage_visits = project_visits[
-                        (project_visits['Дата визита'] >= day_pointer) &
-                        (project_visits['Дата визита'] <= stage_end)
-                    ]
+                    # 3. Те же 4 этапа что для плана
+                    proj_duration = (proj_end - proj_start).days + 1
+                    stage_days = proj_duration // 4
+                    extra_days = proj_duration % 4
                     
-                    # 6. Считаем визиты в периоде календаря
-                    for visit_date in stage_visits['Дата визита']:
-                        if start_date <= visit_date.date() <= end_date:
-                            result.at[idx, 'Факт на дату, шт.'] += 1
+                    # 4. Распределяем визиты по этапам
+                    day_pointer = proj_start
                     
-                    day_pointer = stage_end + timedelta(days=1)
+                    for stage in range(4):
+                        days_in_stage = stage_days + (1 if stage < extra_days else 0)
+                        stage_end = day_pointer + timedelta(days=days_in_stage - 1)
+                        
+                        # 5. Визиты в этом этапе
+                        stage_visits = project_visits[
+                            (project_visits['Дата визита'] >= day_pointer) &
+                            (project_visits['Дата визита'] <= stage_end)
+                        ]
+                        
+                        # 6. Считаем визиты в периоде календаря
+                        for visit_date in stage_visits['Дата визита']:
+                            if start_date <= visit_date.date() <= end_date:
+                                result.at[idx, 'Факт на дату, шт.'] += 1
+                        
+                        day_pointer = stage_end + timedelta(days=1)
+        
+        return result
     
-    return result
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

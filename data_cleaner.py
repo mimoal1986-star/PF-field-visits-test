@@ -1245,57 +1245,111 @@ class DataCleaner:
             return None
 
     def check_problematic_projects(self, google_df, autocoding_df, array_df):
-        """Проверка проблемных проектов"""
-        
+        """Проверка проблемных проектов - оптимизированная версия"""
         result = google_df.copy()
         
+        # Базовые проверки
+        code_col = 'Код проекта RU00.000.00.01SVZ24'
+        project_col = 'Проекты в  https://ru.checker-soft.com'
+        wave_col = 'Название волны на Чекере/ином ПО'
+        portal_col = 'Портал на котором идет проект (для работы полевой команды)'
+        
         # 1. Код проекта пусто
-        result['Код проекта пусто'] = (
-            result['Код проекта RU00.000.00.01SVZ24'].isna() | 
-            (result['Код проекта RU00.000.00.01SVZ24'].astype(str).str.strip() == '') |
-            (result['Код проекта RU00.000.00.01SVZ24'].astype(str).str.strip() == 'nan')
-        )
+        result['Код проекта пусто'] = result[code_col].isna() | (result[code_col].astype(str).str.strip() == '')
         
         # 2. Проекта нет в автокодификации
         if autocoding_df is not None:
-            ak_codes = set(autocoding_df['ИТОГО КОД'].dropna().astype(str).str.strip())
-            google_codes = set(result['Код проекта RU00.000.00.01SVZ24'].dropna().astype(str).str.strip())
-            result['Проекта в АК'] = result['Код проекта RU00.000.00.01SVZ24'].astype(str).str.strip().isin(ak_codes)
+            ak_code_col = 'ИТОГО КОД'
+            ak_project_col = 'Проекты в  https://ru.checker-soft.com'
+            
+            # Создаем уникальные ключи для сравнения
+            google_keys = set(zip(
+                result[code_col].astype(str).str.strip().fillna(''),
+                result[project_col].astype(str).str.strip().fillna('')
+            ))
+            
+            ak_keys = set(zip(
+                autocoding_df[ak_code_col].astype(str).str.strip().fillna(''),
+                autocoding_df[ak_project_col].astype(str).str.strip().fillna('')
+            ))
+            
+            # Проверяем совпадение пар (код + проект)
+            result_keys = list(zip(
+                result[code_col].astype(str).str.strip().fillna(''),
+                result[project_col].astype(str).str.strip().fillna('')
+            ))
+            result['Проекта в АК'] = [key in ak_keys for key in result_keys]
         else:
             result['Проекта в АК'] = False
         
-        # 3. Проект не полевой
-        if array_df is not None and 'Полевой' in array_df.columns:
+        # 3. Проект не полевой (есть в массиве но не помечен полевым)
+        if array_df is not None:
+            array_code_col = 'Код анкеты'
+            array_project_col = 'Название проекта'
+            
+            # Полевые проекты из массива
             field_mask = array_df['Полевой'] == 1
-            field_codes = set(array_df.loc[field_mask, 'Код анкеты'].dropna().astype(str).str.strip())
-            result['Проект не полевой'] = ~result['Код проекта RU00.000.00.01SVZ24'].astype(str).str.strip().isin(field_codes)
+            field_keys = set(zip(
+                array_df.loc[field_mask, array_code_col].astype(str).str.strip().fillna(''),
+                array_df.loc[field_mask, array_project_col].astype(str).str.strip().fillna('')
+            ))
+            
+            # Ключи из гугл таблицы
+            google_wave_keys = list(zip(
+                result[code_col].astype(str).str.strip().fillna(''),
+                result[wave_col].astype(str).str.strip().fillna('')
+            ))
+            
+            # Проверяем: проект есть в гугл, но его нет в полеых массива
+            result['проект не полевой'] = [key not in field_keys for key in google_wave_keys]
         else:
-            result['Проект не полевой'] = False
+            result['проект не полевой'] = False
         
         # 4. Проекта нет в массиве (только Чеккер)
         if array_df is not None:
-            checker_mask = (array_df['Портал на котором идет проект (для работы полевой команды)'] == 'Чеккер')
-            checker_codes = set(array_df.loc[checker_mask, 'Код анкеты'].dropna().astype(str).str.strip())
-            result['Проекта нет в массиве'] = ~result['Код проекта RU00.000.00.01SVZ24'].astype(str).str.strip().isin(checker_codes)
+            array_code_col = 'Код анкеты'
+            array_project_col = 'Название проекта'
+            
+            # Все проекты из массива
+            all_array_keys = set(zip(
+                array_df[array_code_col].astype(str).str.strip().fillna(''),
+                array_df[array_project_col].astype(str).str.strip().fillna('')
+            ))
+            
+            # Только чеккер проекты из гугл
+            checker_mask = result[portal_col] == 'Чеккер'
+            google_checker_keys = list(zip(
+                result.loc[checker_mask, code_col].astype(str).str.strip().fillna(''),
+                result.loc[checker_mask, wave_col].astype(str).str.strip().fillna('')
+            ))
+            
+            # Создаем серию для результата
+            result['проекта нет в массиве'] = False
+            result.loc[checker_mask, 'проекта нет в массиве'] = [
+                key not in all_array_keys for key in google_checker_keys
+            ]
         else:
-            result['Проекта нет в массиве'] = False
+            result['проекта нет в массиве'] = False
         
         # Выбираем нужные колонки
         columns = [
-            'ФИО ОМ', 'Проекты в  https://ru.checker-soft.com', 
-            'Сценарий, если разные квоты и сроки', 'Код проекта RU00.000.00.01SVZ24',
+            'ФИО ОМ', project_col, 
+            'Сценарий, если разные квоты и сроки', code_col,
             'Дата старта', 'Дата финиша с продлением',
             'вводные запрошены / вводные получены, готовится старт / стартовал',
-            'Портал на котором идет проект (для работы полевой команды)',
-            'Код проекта пусто', 'Проекта в АК', 'Проект не полевой', 'Проекта нет в массиве'
+            portal_col,
+            'Код проекта пусто', 'Проекта в АК', 'проект не полевой', 'проекта нет в массиве'
         ]
         
-        return result[[col for col in columns if col in result.columns]]
+        # Только существующие колонки
+        existing_cols = [col for col in columns if col in result.columns]
+        return result[existing_cols]
             
 
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

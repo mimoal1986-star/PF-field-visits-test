@@ -304,7 +304,7 @@ class VisitCalculator:
         # 11. РАСЧЕТ ДОПОЛНИТЕЛЬНЫХ ПОКАЗАТЕЛЕЙ
         result['Исполнение Проекта,%'] = 0.0
         result['Утилизация тайминга, %'] = 0.0
-        result['Ахтунг'] = 'Нет'
+        result['Фокус'] = 'Нет'
         
         for idx, row in result.iterrows():
             fact_date = row['Факт на дату, шт.']
@@ -320,16 +320,17 @@ class VisitCalculator:
             if duration_days > 0:
                 result.at[idx, 'Утилизация тайминга, %'] = round((days_spent / duration_days) * 100, 1)
             
-            # Ахтунг
+            # Фокус
             if (row['Исполнение Проекта,%'] < 80 and 
                 row['Утилизация тайминга, %'] > 80 and 
                 row['Утилизация тайминга, %'] < 100):
-                result.at[idx, 'Ахтунг'] = 'Да'
+                result.at[idx, 'Фокус'] = 'Да'
                     
         return result 
     
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

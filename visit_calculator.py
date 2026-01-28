@@ -229,10 +229,43 @@ class VisitCalculator:
                 result.at[idx, 'Прогноз на месяц, %'] = round(pf_percent, 1)
             # Если %ПФ = 0 или отрицательный, прогноз остается 0
         
+        # 9. ДОПОЛНИТЕЛЬНЫЕ РАСЧЕТЫ
+        result['Кол-во визитов до 100% плана, шт.'] = 0
+        result['Поручено'] = 0
+        result['Доля Поручено, %'] = 0.0
+        
+        for idx, row in result.iterrows():
+            plan_project = row['План проекта, шт.']
+            fact_project = row['Факт проекта, шт.']
+            
+            # 1. Кол-во визитов до 100% плана
+            visits_to_100 = max(0, plan_project - fact_project)
+            result.at[idx, 'Кол-во визитов до 100% плана, шт.'] = visits_to_100
+            
+            # 2. Поручено - считаем из array_df где Статус == 'Поручено'
+            project_code = row['Код проекта']
+            project_name = row['Название проекта']
+            
+            porucheno_count = 0
+            if project_code in array_df['Код анкеты'].values:
+                porucheno_mask = (
+                    (array_df['Код анкеты'] == project_code) &
+                    (array_df['Название проекта'] == project_name) &
+                    (array_df['Статус'] == 'Поручено')
+                )
+                porucheno_count = porucheno_mask.sum()
+            
+            result.at[idx, 'Поручено'] = porucheno_count
+            
+            # 3. Доля Поручено, %
+            if visits_to_100 > 0 and porucheno_count > 0:
+                result.at[idx, 'Доля Поручено, %'] = round((porucheno_count / visits_to_100) * 100, 1)
+        
         return result 
     
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

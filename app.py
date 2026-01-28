@@ -725,10 +725,22 @@ if st.session_state.processing_complete:
                     type="secondary",
                     use_container_width=True
                 )
-            
+
             # Просмотр таблицы
             with st.expander("👀 Просмотреть таблицу", expanded=False):
-                st.dataframe(display_data, use_container_width=True, height=250)
+                # Определить колонки для отображения
+                display_columns = [
+                    'Код проекта', 'Имя клиента', 'Название проекта', 'ПО',
+                    'ЗОД', 'АСС', 'ЭМ', 'Регион short', 'Регион',
+                    'План на дату, шт.', 'Факт на дату, шт.', '%ПФ на дату',
+                    'План проекта, шт.', 'Факт проекта, шт.', '%ПФ проекта',
+                    'Прогноз на месяц, шт.', 'Прогноз на месяц, %' 
+                ]
+                
+                # Оставить только существующие колонки
+                existing_cols = [col for col in display_columns if col in display_data.columns]
+                st.dataframe(display_data[existing_cols], use_container_width=True, height=250)
+
         
         # Кнопка расчета план/факта
         if st.button("📊 Рассчитать план/факт", type="primary", use_container_width=True):
@@ -871,6 +883,7 @@ with st.sidebar:
     
     
     
+
 
 
 

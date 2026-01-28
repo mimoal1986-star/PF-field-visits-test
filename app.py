@@ -812,43 +812,43 @@ if st.session_state.processing_complete:
 # ==============================================
 # САЙДБАР
 # ==============================================
-with st.sidebar:
-    st.header("ℹ️ Информация")
+# with st.sidebar:
+#     st.header("ℹ️ Информация")
     
-    st.metric("Загружено файлов", len(st.session_state.uploaded_files))
+#     st.metric("Загружено файлов", len(st.session_state.uploaded_files))
     
-    if st.session_state.uploaded_files:
-        with st.expander("📁 Детали файлов"):
-            for name, df in st.session_state.uploaded_files.items():
-                st.write(f"**{name}**: {len(df):,} строк")
+#     if st.session_state.uploaded_files:
+#         with st.expander("📁 Детали файлов"):
+#             for name, df in st.session_state.uploaded_files.items():
+#                 st.write(f"**{name}**: {len(df):,} строк")
     
-    st.markdown("---")
+#     st.markdown("---")
     
-    if st.session_state.processing_complete:
-        st.success("✅ Обработка завершена")
-        st.metric("Создано Excel", len(st.session_state.excel_files))
-    else:
-        st.info("⏳ Ожидание обработки")
+    # if st.session_state.processing_complete:
+    #     st.success("✅ Обработка завершена")
+    #     st.metric("Создано Excel", len(st.session_state.excel_files))
+    # else:
+    #     st.info("⏳ Ожидание обработки")
     
-    st.markdown("---")
+    # st.markdown("---")
     
-    if st.button("🗑️ Сбросить все данные", type="secondary", use_container_width=True):
-        for key in list(DEFAULT_STATE.keys()):
-            st.session_state[key] = DEFAULT_STATE[key]
-        st.rerun()
+    # if st.button("🗑️ Сбросить все данные", type="secondary", use_container_width=True):
+    #     for key in list(DEFAULT_STATE.keys()):
+    #         st.session_state[key] = DEFAULT_STATE[key]
+    #     st.rerun()
     
-    st.markdown("---")
+    # st.markdown("---")
     
-    if st.session_state.get('processing_stats'):
-        with st.expander("📈 Статистика обработки"):
-            stats = st.session_state.processing_stats
-            for key, value in stats.items():
-                if key != 'timestamp':
-                    st.write(f"**{key.replace('_', ' ').title()}**: {value}")
+    # if st.session_state.get('processing_stats'):
+    #     with st.expander("📈 Статистика обработки"):
+    #         stats = st.session_state.processing_stats
+    #         for key, value in stats.items():
+    #             if key != 'timestamp':
+    #                 st.write(f"**{key.replace('_', ' ').title()}**: {value}")
 
     
-    st.markdown("---")
-    st.subheader("📅 Параметры расчета план/факта")
+    # st.markdown("---")
+    # st.subheader("📅 Параметры расчета план/факта")
     
     # Календарь периода
     st.write("**Период расчета:**")
@@ -924,6 +924,7 @@ with st.sidebar:
     
     
     
+
 
 
 

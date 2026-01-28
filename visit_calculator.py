@@ -251,7 +251,7 @@ class VisitCalculator:
                 porucheno_mask = (
                     (array_df['Код анкеты'] == project_code) &
                     (array_df['Название проекта'] == project_name) &
-                    (array_df['Статус'] == 'Поручено')
+                    (array_df[' Статус'] == 'Поручено')
                 )
                 porucheno_count = porucheno_mask.sum()
             
@@ -265,6 +265,7 @@ class VisitCalculator:
     
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

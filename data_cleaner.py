@@ -1280,11 +1280,18 @@ class DataCleaner:
             ))
             
             # Проверяем совпадение пар (код + проект)
-            result_keys = list(zip(
-                result[code_col].astype(str).str.strip().fillna(''),
-                result[project_col].astype(str).str.strip().fillna('')
+            !
+            valid_mask = result[code_col].notna() & result[project_col].notna()
+            valid_keys = list(zip(
+                result.loc[valid_mask, code_col].astype(str).str.strip(),
+                result.loc[valid_mask, project_col].astype(str).str.strip()
             ))
-            result['Проекта в АК'] = [key in ak_keys for key in result_keys]
+            
+            # Инициализируем все как False
+            result['Проекта в АК'] = False
+            # Заполняем True только для валидных строк с совпадениями
+            result.loc[valid_mask, 'Проекта в АК'] = [key in ak_keys for key in valid_keys]
+            
         else:
             result['Проекта в АК'] = False
         
@@ -1356,6 +1363,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

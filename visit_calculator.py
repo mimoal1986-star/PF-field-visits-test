@@ -300,11 +300,37 @@ class VisitCalculator:
                 plan_project = row['План проекта, шт.']
                 if duration_days > 0:
                     result.at[idx, 'Ср. план на день для 100% плана'] = round(plan_project / duration_days, 1)
+                    
+        # 11. РАСЧЕТ ДОПОЛНИТЕЛЬНЫХ ПОКАЗАТЕЛЕЙ
+        result['Исполнение Проекта,%'] = 0.0
+        result['Утилизация тайминга, %'] = 0.0
+        result['Ахтунг'] = 'Нет'
         
+        for idx, row in result.iterrows():
+            fact_date = row['Факт на дату, шт.']
+            plan_month = row['План проекта, шт.']
+            days_spent = row['Дней потрачено']
+            duration_days = row['Длительность проекта, кол-во дней']
+            
+            # Исполнение Проекта
+            if plan_month > 0:
+                result.at[idx, 'Исполнение Проекта,%'] = round((fact_date / plan_month) * 100, 1)
+            
+            # Утилизация тайминга
+            if duration_days > 0:
+                result.at[idx, 'Утилизация тайминга, %'] = round((days_spent / duration_days) * 100, 1)
+            
+            # Ахтунг
+            if (row['Исполнение Проекта,%'] < 80 and 
+                row['Утилизация тайминга, %'] > 80 and 
+                row['Утилизация тайминга, %'] < 100):
+                result.at[idx, 'Ахтунг'] = 'Да'
+                    
         return result 
     
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

@@ -326,10 +326,13 @@ class VisitCalculator:
                 row['Утилизация тайминга, %'] < 100):
                 result.at[idx, 'Фокус'] = 'Да'
                     
+        result['△План/Факт, шт.'] = result['План на дату, шт.'] - result['Факт на дату, шт.']
+                    
         return result 
     
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

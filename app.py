@@ -12,8 +12,7 @@ from io import BytesIO
 try:
     from utils.data_cleaner import data_cleaner
 except ImportError:
-    # Создаем экземпляр, если импорт не сработал
-    from utils.data_cleaner import DataCleaner
+    from data_cleaner import DataCleaner
     data_cleaner = DataCleaner()
     
 # visit_calculator.py
@@ -925,6 +924,7 @@ with st.sidebar:
     
     
     
+
 
 
 

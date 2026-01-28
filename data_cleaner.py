@@ -1294,16 +1294,22 @@ class DataCleaner:
         else:
             result['Проекта НЕТ в АК'] = True
         
-        # 3. Проект не полевой (есть в массиве но не помечен полевым)
+        # 3. Проект не полевой (есть в массиве и помечен как неполевой)
         if array_df is not None:
             array_code_col = 'Код анкеты'
             array_project_col = 'Название проекта'
             
-            # Полевые проекты из массива
-            field_mask = array_df['Полевой'] == 1
-            field_keys = set(zip(
-                array_df.loc[field_mask, array_code_col].astype(str).str.strip().fillna(''),
-                array_df.loc[field_mask, array_project_col].astype(str).str.strip().fillna('')
+            # Все проекты из массива
+            all_array_keys = set(zip(
+                array_df[array_code_col].astype(str).str.strip().fillna(''),
+                array_df[array_project_col].astype(str).str.strip().fillna('')
+            ))
+            
+            # Неполевые проекты из массива
+            non_field_mask = array_df['Полевой'] == 0
+            non_field_keys = set(zip(
+                array_df.loc[non_field_mask, array_code_col].astype(str).str.strip().fillna(''),
+                array_df.loc[non_field_mask, array_project_col].astype(str).str.strip().fillna('')
             ))
             
             # Ключи из гугл таблицы
@@ -1312,8 +1318,11 @@ class DataCleaner:
                 result[project_col].astype(str).str.strip().fillna('')
             ))
             
-            # Проверяем: проект есть в гугл, но его нет в полеых массива
-            result['проект не полевой'] = [key not in field_keys for key in google_project_keys]
+            # Проверяем: проект есть в массиве И он неполевой
+            result['Проект не полевой'] = [
+                key in all_array_keys and key in non_field_keys 
+                for key in google_project_keys
+            ]
         else:
             result['Проект не полевой'] = False
         
@@ -1362,6 +1371,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

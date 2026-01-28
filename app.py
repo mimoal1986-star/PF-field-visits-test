@@ -714,7 +714,9 @@ if st.session_state.processing_complete:
                 # Кнопка скачивания Excel
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                    display_data.to_excel(writer, sheet_name='Данные_план_факт', index=False)
+                    columns_to_remove = ['ЗОД', 'АСС', 'ЭМ']
+                    export_data = display_data.drop(columns=columns_to_remove, errors='ignore')
+                    export_data.to_excel(writer, sheet_name='Данные_план_факт', index=False)
                 excel_buffer.seek(0)
                 
                 st.download_button(
@@ -731,7 +733,7 @@ if st.session_state.processing_complete:
                 # Определить колонки для отображения
                 display_columns = [
                     'Код проекта', 'Имя клиента', 'Название проекта', 'ПО',
-                    'ЗОД', 'АСС', 'ЭМ', 'Регион short', 'Регион',
+                    'Регион short', 'Регион',
                     'План на дату, шт.', 'Факт на дату, шт.', '%ПФ на дату',
                     'План проекта, шт.', 'Факт проекта, шт.', '%ПФ проекта',
                     'Прогноз на месяц, шт.', 'Прогноз на месяц, %',
@@ -886,6 +888,7 @@ with st.sidebar:
     
     
     
+
 
 
 

@@ -1277,7 +1277,6 @@ class DataCleaner:
             ))
        
             # Проверяем совпадение пар (код + проект)
-            !
             valid_mask = result[code_col].notna() & result[project_col].notna()
             valid_keys = list(zip(
                 result.loc[valid_mask, code_col].astype(str).str.strip(),
@@ -1360,6 +1359,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

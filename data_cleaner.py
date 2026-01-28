@@ -1259,9 +1259,16 @@ class DataCleaner:
         project_col = 'Проекты в  https://ru.checker-soft.com'
         wave_col = 'Название волны на Чекере/ином ПО'
         portal_col = 'Портал на котором идет проект (для работы полевой команды)'
-        
+
         # 1. Код проекта пусто
-        result['Код проекта пусто'] = result[code_col].isna() | (result[code_col].astype(str).str.strip() == '')
+        result['Код проекта пусто'] = (
+            result[code_col].isna() |                     # стандартный pandas NaN
+            (result[code_col].astype(str).str.strip() == 'nan') |   # текстовый 'nan'
+            (result[code_col].astype(str).str.strip() == 'NaN') |   # текстовый 'NaN' (заглавные)
+            (result[code_col].astype(str).str.strip() == 'None') |  # текстовый 'None'
+            (result[code_col].astype(str).str.strip() == 'null') |  # текстовый 'null'
+            (result[code_col].astype(str).str.strip() == '')        # пустая строка
+        )
         
         # 2. Проекта нет в автокодификации
         if autocoding_df is not None:
@@ -1371,6 +1378,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

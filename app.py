@@ -812,7 +812,7 @@ if st.session_state.processing_complete:
 # ==============================================
 # САЙДБАР
 # ==============================================
-# with st.sidebar:
+with st.sidebar:
 #     st.header("ℹ️ Информация")
     
 #     st.metric("Загружено файлов", len(st.session_state.uploaded_files))
@@ -924,6 +924,7 @@ if st.session_state.processing_complete:
     
     
     
+
 
 
 

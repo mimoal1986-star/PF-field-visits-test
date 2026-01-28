@@ -1267,18 +1267,15 @@ class DataCleaner:
         if autocoding_df is not None:
             ak_code_col = 'ИТОГО КОД'
             ak_project_col = 'Проекты в  https://ru.checker-soft.com'
-            
+
             # Создаем уникальные ключи для сравнения
-            google_keys = set(zip(
-                result[code_col].astype(str).str.strip().fillna(''),
-                result[project_col].astype(str).str.strip().fillna('')
-            ))
-            
+            # ТОЛЬКО непустые пары из АК
+            ak_valid_mask = autocoding_df[ak_code_col].notna() & autocoding_df[ak_project_col].notna()
             ak_keys = set(zip(
-                autocoding_df[ak_code_col].astype(str).str.strip().fillna(''),
-                autocoding_df[ak_project_col].astype(str).str.strip().fillna('')
+                autocoding_df.loc[ak_valid_mask, ak_code_col].astype(str).str.strip(),
+                autocoding_df.loc[ak_valid_mask, ak_project_col].astype(str).str.strip()
             ))
-            
+       
             # Проверяем совпадение пар (код + проект)
             !
             valid_mask = result[code_col].notna() & result[project_col].notna()
@@ -1363,6 +1360,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

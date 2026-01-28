@@ -779,7 +779,8 @@ if st.session_state.processing_complete:
             
             google_df = st.session_state.cleaned_data['сервизория']
             autocoding_df = st.session_state.uploaded_files.get('автокодификация')
-            array_df = st.session_state.cleaned_data.get('портал_с_полем') or st.session_state.cleaned_data.get('портал')
+            array_df = st.session_state.cleaned_data.get('портал_с_полем', 
+                   st.session_state.cleaned_data.get('портал'))
     
             problematic_projects = data_cleaner.check_problematic_projects(
                 google_df, autocoding_df, array_df
@@ -924,6 +925,7 @@ with st.sidebar:
     
     
     
+
 
 
 

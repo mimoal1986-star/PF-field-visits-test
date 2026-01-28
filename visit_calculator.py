@@ -208,11 +208,32 @@ class VisitCalculator:
             
             if plan_date > 0:
                 result.at[idx, '%ПФ на дату'] = round((fact_date / plan_date) * 100, 1)
+    
+        # 8. РАСЧЕТ ПРОГНОЗА НА МЕСЯЦ
+        result['Прогноз на месяц, шт.'] = 0.0
+        result['Прогноз на месяц, %'] = 0.0
+        
+        for idx, row in result.iterrows():
+            pf_percent = row['%ПФ проекта']
+            plan_project = row['План проекта, шт.']
+            
+            if pf_percent > 100:
+                # Если %ПФ > 100%, прогноз = план
+                result.at[idx, 'Прогноз на месяц, шт.'] = plan_project
+                result.at[idx, 'Прогноз на месяц, %'] = 100.0
+            elif pf_percent > 0:
+                # Прогноз = %ПФ × План проекта
+                forecast = (pf_percent / 100) * plan_project
+                if forecast > 0:
+                    result.at[idx, 'Прогноз на месяц, шт.'] = round(forecast, 1)
+                result.at[idx, 'Прогноз на месяц, %'] = round(pf_percent, 1)
+            # Если %ПФ = 0 или отрицательный, прогноз остается 0
         
         return result 
     
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

@@ -166,14 +166,20 @@ class DataCleaner:
         
         # === ШАГ 5: Заполнить пустые даты ===
         st.write("**5️⃣ Заполняю пустые даты...**")
+
+        # ТОЛЬКО эти 2 колонки обрабатываем как даты
+        date_cols_to_process = []
+        for col_name in ['Дата старта', 'Дата финиша с продлением']:
+            if col_name in df_clean.columns:
+                date_cols_to_process.append(col_name)
+            else:
+                # Ищем возможные варианты названий
+                found = self._find_column(df_clean, [col_name])
+                if found:
+                    date_cols_to_process.append(found)
         
-        date_patterns = ['дата', 'date', 'срок', 'time', 'начал', 'старт', 'финиш', 'конец', 'заверш']
-        date_cols = []
-        
-        for col in df_clean.columns:
-            col_lower = str(col).lower()
-            if any(pattern in col_lower for pattern in date_patterns):
-                date_cols.append(col)
+        date_cols = date_cols_to_process
+
         
         if date_cols:
             date_fixes = 0
@@ -1349,6 +1355,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -9,12 +9,13 @@ from datetime import datetime, timedelta
 from io import BytesIO
 
 # data_cleaner.py
-try:
-    from utils.data_cleaner import data_cleaner
-except ImportError:
-    # Создаем экземпляр, если импорт не сработал
-    from data_cleaner import DataCleaner
-    data_cleaner = DataCleaner()
+from data_cleaner import DataCleaner
+# try:
+#     from utils.data_cleaner import data_cleaner
+# except ImportError:
+#     # Создаем экземпляр, если импорт не сработал
+#     from data_cleaner import DataCleaner
+#     data_cleaner = DataCleaner()
     
 # visit_calculator.py
 try:
@@ -925,6 +926,7 @@ with st.sidebar:
     
     
     
+
 
 
 

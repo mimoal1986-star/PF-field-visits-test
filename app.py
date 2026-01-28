@@ -769,6 +769,41 @@ if st.session_state.processing_complete:
                 # 3. Сохраняем объединенный результат
                 st.session_state['visit_report']['calculated_data'] = fact_result
                 st.rerun()
+        
+        # ============================================
+        # 🆕 ПРОВЕРКА ПРОБЛЕМНЫХ ПРОЕКТОВ
+        # ============================================
+        if 'cleaned_data' in st.session_state and 'сервизория' in st.session_state.cleaned_data:
+            st.markdown("---")
+            st.subheader("🔴 Проблемные проекты")
+            
+            google_df = st.session_state.cleaned_data['сервизория']
+            autocoding_df = st.session_state.uploaded_files.get('автокодификация')
+            array_df = st.session_state.cleaned_data.get('портал')
+            
+            problematic_projects = data_cleaner.check_problematic_projects(
+                google_df, autocoding_df, array_df
+            )
+            
+            if not problematic_projects.empty:
+                st.dataframe(problematic_projects, use_container_width=True)
+                
+                # Экспорт в Excel
+                excel_buffer = BytesIO()
+                with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                    problematic_projects.to_excel(writer, sheet_name='Проблемные_проекты', index=False)
+                excel_buffer.seek(0)
+                
+                st.download_button(
+                    label="⬇️ Скачать проблемные проекты",
+                    data=excel_buffer,
+                    file_name="проблемные_проекты.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="secondary",
+                    use_container_width=True
+                )
+            else:
+                st.info("✅ Проблемных проектов не найдено")
     
     # Просмотр данных
     st.markdown("---")
@@ -889,6 +924,7 @@ with st.sidebar:
     
     
     
+
 
 
 

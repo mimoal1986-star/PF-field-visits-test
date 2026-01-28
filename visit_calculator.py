@@ -261,10 +261,51 @@ class VisitCalculator:
             if visits_to_100 > 0 and porucheno_count > 0:
                 result.at[idx, 'Доля Поручено, %'] = round((porucheno_count / visits_to_100) * 100, 1)
         
+        # 10. РАСЧЕТ ПОКАЗАТЕЛЕЙ ПО ДНЯМ
+        result['Длительность проекта, кол-во дней'] = 0
+        result['Дней потрачено'] = 0
+        result['Дней до конца проекта'] = 0
+        result['Ср. план на день для 100% плана'] = 0.0
+        
+        # Даты из параметров
+        end_date_period = calc_params['end_date']
+        
+        for idx, row in result.iterrows():
+            project_code = row['Код проекта']
+            project_name = row['Название проекта']
+            
+            # Находим даты проекта из google_df
+            google_mask = (
+                (google_df['Код проекта RU00.000.00.01SVZ24'] == project_code) &
+                (google_df['Название волны на Чекере/ином ПО'] == project_name)
+            )
+            
+            if google_mask.any():
+                start_date = pd.to_datetime(google_df.loc[google_mask, 'Дата старта'].iloc[0])
+                finish_date = pd.to_datetime(google_df.loc[google_mask, 'Дата финиша с продлением'].iloc[0])
+                
+                # Длительность проекта
+                duration_days = (finish_date - start_date).days + 1
+                result.at[idx, 'Длительность проекта, кол-во дней'] = duration_days
+                
+                # Дней потрачено
+                days_spent = (end_date_period - start_date.date()).days + 1
+                result.at[idx, 'Дней потрачено'] = max(0, min(days_spent, duration_days))
+                
+                # Дней до конца проекта
+                days_left = (finish_date.date() - end_date_period).days
+                result.at[idx, 'Дней до конца проекта'] = max(0, days_left)
+                
+                # Средний план на день
+                plan_project = row['План проекта, шт.']
+                if duration_days > 0:
+                    result.at[idx, 'Ср. план на день для 100% плана'] = round(plan_project / duration_days, 1)
+        
         return result 
     
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

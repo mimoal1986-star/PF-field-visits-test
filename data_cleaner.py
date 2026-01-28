@@ -1307,13 +1307,13 @@ class DataCleaner:
             ))
             
             # Ключи из гугл таблицы
-            google_wave_keys = list(zip(
+            google_project_keys = list(zip( 
                 result[code_col].astype(str).str.strip().fillna(''),
-                result[wave_col].astype(str).str.strip().fillna('')
+                result[project_col].astype(str).str.strip().fillna('')
             ))
             
             # Проверяем: проект есть в гугл, но его нет в полеых массива
-            result['Проект не полевой'] = [key not in field_keys for key in google_wave_keys]
+            result['проект не полевой'] = [key not in field_keys for key in google_project_keys]
         else:
             result['Проект не полевой'] = False
         
@@ -1362,6 +1362,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

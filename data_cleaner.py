@@ -1283,13 +1283,16 @@ class DataCleaner:
                 result.loc[valid_mask, project_col].astype(str).str.strip()
             ))
             
-            # Инициализируем все как False
-            result['Проекта в АК'] = False
-            # Заполняем True только для валидных строк с совпадениями
-            result.loc[valid_mask, 'Проекта в АК'] = [key in ak_keys for key in valid_keys]
+            # Инициализируем все как True
+            result['Проекта НЕТ в АК'] = True
+            # Для валидных строк проверяем
+            if valid_mask.any():
+                # key in ak_keys → найден → меняем на False
+                found_mask = [key in ak_keys for key in valid_keys]
+                result.loc[valid_mask, 'Проекта НЕТ в АК'] = [not found for found in found_mask]
             
         else:
-            result['Проекта в АК'] = False
+            result['Проекта НЕТ в АК'] = True
         
         # 3. Проект не полевой (есть в массиве но не помечен полевым)
         if array_df is not None:
@@ -1359,6 +1362,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

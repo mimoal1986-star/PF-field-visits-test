@@ -110,31 +110,22 @@ class DataCleaner:
             st.warning("   ⚠️ Колонка с кодом проекта не найдена")
         
         # === ШАГ 3: Заполнить пустые коды проектов ===
-        st.write("**3️⃣ Заполняю пустые коды проектов...**")
+        st.write("**3️⃣ Проверяю пустые коды проектов...**")
         
         if code_col:
-            name_col = self._find_column(df_clean, ['Проекты в  https://ru.checker-soft.com'])
+            empty_mask = (
+                df_clean[code_col].isna() | 
+                (df_clean[code_col].astype(str).str.strip() == '') |
+                (df_clean[code_col].astype(str).str.strip() == 'nan') |
+                (df_clean[code_col].astype(str).str.strip() == 'None')
+            )
             
-            if name_col:
-                # Определяем пустые коды
-                empty_mask = (
-                    df_clean[code_col].isna() | 
-                    (df_clean[code_col].astype(str).str.strip() == '') |
-                    (df_clean[code_col].astype(str).str.strip() == 'nan') |
-                    (df_clean[code_col].astype(str).str.strip() == 'None')
-                )
-                
-                empty_count = empty_mask.sum()
-                
-                if empty_count > 0:
-                    # Базовая логика: Код проекта = Имя проекта
-                    df_clean.loc[empty_mask, code_col] = df_clean.loc[empty_mask, name_col]
-                    st.success(f"   ✅ Заполнено {empty_count} пустых кодов (временное решение)")
-                    st.info("   ⚠️ Полная логика требует объединения с массивом")
-                else:
-                    st.info("   ℹ️ Пустых кодов не найдено")
+            empty_count = empty_mask.sum()
+            if empty_count > 0:
+                st.warning(f"   ⚠️ Найдено {empty_count} проектов без кода")
             else:
-                st.warning("   ⚠️ Колонка с именем проекта не найдена")
+                st.info("   ℹ️ Пустых кодов не найдено")
+                
         
         # === ШАГ 4: Форматировать Пилоты/Семплы/Мультикоды ===
         st.write("**4️⃣ Форматирую Пилоты/Семплы/Мультикоды...**")
@@ -1253,8 +1244,59 @@ class DataCleaner:
             st.error(f"❌ Ошибка при создании Excel (неполевые): {str(e)[:100]}")
             return None
 
+    def check_problematic_projects(self, google_df, autocoding_df, array_df):
+        """Проверка проблемных проектов"""
+        
+        result = google_df.copy()
+        
+        # 1. Код проекта пусто
+        result['Код проекта пусто'] = (
+            result['Код проекта RU00.000.00.01SVZ24'].isna() | 
+            (result['Код проекта RU00.000.00.01SVZ24'].astype(str).str.strip() == '') |
+            (result['Код проекта RU00.000.00.01SVZ24'].astype(str).str.strip() == 'nan')
+        )
+        
+        # 2. Проекта нет в автокодификации
+        if autocoding_df is not None:
+            ak_codes = set(autocoding_df['ИТОГО КОД'].dropna().astype(str).str.strip())
+            google_codes = set(result['Код проекта RU00.000.00.01SVZ24'].dropna().astype(str).str.strip())
+            result['Проекта в АК'] = result['Код проекта RU00.000.00.01SVZ24'].astype(str).str.strip().isin(ak_codes)
+        else:
+            result['Проекта в АК'] = False
+        
+        # 3. Проект не полевой
+        if array_df is not None and 'Полевой' in array_df.columns:
+            field_mask = array_df['Полевой'] == 1
+            field_codes = set(array_df.loc[field_mask, 'Код анкеты'].dropna().astype(str).str.strip())
+            result['Проект не полевой'] = ~result['Код проекта RU00.000.00.01SVZ24'].astype(str).str.strip().isin(field_codes)
+        else:
+            result['Проект не полевой'] = False
+        
+        # 4. Проекта нет в массиве (только Чеккер)
+        if array_df is not None:
+            checker_mask = (array_df['Портал на котором идет проект (для работы полевой команды)'] == 'Чеккер')
+            checker_codes = set(array_df.loc[checker_mask, 'Код анкеты'].dropna().astype(str).str.strip())
+            result['Проекта нет в массиве'] = ~result['Код проекта RU00.000.00.01SVZ24'].astype(str).str.strip().isin(checker_codes)
+        else:
+            result['Проекта нет в массиве'] = False
+        
+        # Выбираем нужные колонки
+        columns = [
+            'ФИО ОМ', 'Проекты в  https://ru.checker-soft.com', 
+            'Сценарий, если разные квоты и сроки', 'Код проекта RU00.000.00.01SVZ24',
+            'Дата старта', 'Дата финиша с продлением',
+            'вводные запрошены / вводные получены, готовится старт / стартовал',
+            'Портал на котором идет проект (для работы полевой команды)',
+            'Код проекта пусто', 'Проекта в АК', 'Проект не полевой', 'Проекта нет в массиве'
+        ]
+        
+        return result[[col for col in columns if col in result.columns]]
+            
+
+
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

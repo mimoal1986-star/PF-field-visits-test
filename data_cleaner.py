@@ -1341,12 +1341,13 @@ class DataCleaner:
         columns = [
             'ФИО ОМ', project_col, 
             'Сценарий, если разные квоты и сроки', code_col,
+            wave_col,
             'Дата старта', 'Дата финиша с продлением',
             'вводные запрошены / вводные получены, готовится старт / стартовал',
             portal_col,
             'Код проекта пусто', 'Проекта в АК', 'проект не полевой', 'проекта нет в массиве'
         ]
-        
+
         # Только существующие колонки
         existing_cols = [col for col in columns if col in result.columns]
         return result[existing_cols]
@@ -1355,6 +1356,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

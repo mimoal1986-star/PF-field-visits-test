@@ -55,9 +55,33 @@ class DataVisualizer:
             df_with_totals = pd.concat([df_display, total_row], ignore_index=True)
             
             # 6. Отображаем таблицу
+            st.markdown("""
+            <style>
+                div[data-testid="stDataFrame"] {
+                    font-size: 12px !important;
+                }
+                div[data-testid="stDataFrame"] table {
+                    table-layout: fixed !important;
+                    width: 100% !important;
+                }
+                div[data-testid="stDataFrame"] th, 
+                div[data-testid="stDataFrame"] td {
+                    padding: 4px 6px !important;
+                    word-wrap: break-word !important;
+                    white-space: normal !important;
+                    max-width: 150px !important;
+                }
+            </style>
+            """, unsafe_allow_html=True)
+            
             table_height = min(800, max(300, 35 * len(df_with_totals) + 50))
-            st.dataframe(df_with_totals, use_container_width=True, height=table_height)
-    
+            st.dataframe(
+                df_with_totals,
+                use_container_width=True,
+                height=table_height,
+                hide_index=True
+            )
+
     def _calculate_totals(self, df):
         """Создает строку Итого"""
         total_row = {}
@@ -116,6 +140,7 @@ class DataVisualizer:
 # Глобальный экземпляр
 
 dataviz = DataVisualizer()
+
 
 
 

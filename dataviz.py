@@ -85,7 +85,8 @@ class DataVisualizer:
             df_with_totals = pd.concat([df_display, total_row], ignore_index=True)
             
             # 6. Отображаем таблицу
-            st.dataframe(df_with_totals, use_container_width=True, height=800)
+            table_height = min(800, max(300, 35 * len(df_with_totals) + 50))
+            st.dataframe(df_with_totals, use_container_width=True, height=table_height)
     
     def _calculate_totals(self, df):
         """Создает строку Итого"""
@@ -145,5 +146,6 @@ class DataVisualizer:
 # Глобальный экземпляр
 
 dataviz = DataVisualizer()
+
 
 

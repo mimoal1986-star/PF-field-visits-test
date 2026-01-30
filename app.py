@@ -242,6 +242,96 @@ def process_field_projects_with_stats():
         st.error(f"Детали: {traceback.format_exc()[:500]}")
         return False
 
+# ==============================================
+# САЙДБАР
+# ==============================================
+with st.sidebar:
+    st.header("📊 Навигация")
+    page = st.radio(
+        "Выберите раздел:",
+        ["📤 Загрузка данных", "📈 Отчеты"]
+    )
+    st.markdown("---")
+    
+    if st.button("🗑️ Сбросить все данные", type="secondary", use_container_width=True):
+        for key in list(DEFAULT_STATE.keys()):
+            st.session_state[key] = DEFAULT_STATE[key]
+        st.rerun()
+     
+    st.markdown("---")
+    st.subheader("📅 Параметры расчета план/факта")
+    
+    # Календарь периода
+    st.write("**Период расчета:**")
+    today = datetime.now()
+    first_day = today.replace(day=1)
+    yesterday = today - timedelta(days=1)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        start_date = st.date_input(
+            "Дата начала",
+            value=first_day,
+            max_value=yesterday
+        )
+    with col2:
+        end_date = st.date_input(
+            "Дата окончания",
+            value=yesterday,
+            min_value=start_date,
+            max_value=yesterday
+        )
+    
+    # Проверка: даты в одном месяце
+    if start_date.month != end_date.month:
+        st.warning("⚠️ Даты должны быть в одном месяце")
+        end_date = start_date.replace(day=28)  # Корректируем
+    
+    st.info(f"Период: {start_date.strftime('%d.%m.%Y')} - {end_date.strftime('%d.%m.%Y')}")
+
+    # Этапы
+    
+    
+    st.markdown("---")
+    st.subheader("📊 Коэффициенты этапов")
+    
+    # Слайдеры для весов этапов с ограничением 0-2
+    st.write("**Распределение весов по этапам (0-2):**")
+    
+    stage_weights = []
+    default_weights = [0.8, 1.2, 1.0, 0.9]  # новые дефолтные значения
+    
+    for i in range(1, 5):
+        weight = st.slider(
+            f"Вес этапа {i}",
+            min_value=0.0,
+            max_value=2.0,
+            value=default_weights[i-1],
+            step=0.1,
+            key=f"stage_slider_{i}"
+        )
+        stage_weights.append(weight)
+    
+    # Расчет коэффициентов
+    total_weight = sum(stage_weights)
+    if total_weight > 0:
+        coefficients = [w/total_weight for w in stage_weights]
+    else:
+        coefficients = [0.25, 0.25, 0.25, 0.25]  # равные если все нули
+        st.warning("⚠️ Сумма весов = 0, используем равные коэффициенты")
+    
+    # Визуализация распределения
+    st.write("**Распределение коэффициентов:**")
+    for i, coeff in enumerate(coefficients, 1):
+        st.progress(coeff, text=f"Этап {i}: {coeff:.1%}")
+    
+    # Сохраняем в session_state
+    st.session_state['plan_calc_params'] = {
+        'start_date': start_date,
+        'end_date': end_date,
+        'coefficients': coefficients
+    }
+
 # Основной интерфейс
 if page == "📤 Загрузка данных":
     st.title("📤 Загрузка исходных данных")
@@ -833,95 +923,7 @@ elif page == "📈 Отчеты":
         with tab2:
             st.info("Другие отчеты в разработке")
 
-# ==============================================
-# САЙДБАР
-# ==============================================
-with st.sidebar:
-    st.header("📊 Навигация")
-    page = st.radio(
-        "Выберите раздел:",
-        ["📤 Загрузка данных", "📈 Отчеты"]
-    )
-    st.markdown("---")
-    
-    if st.button("🗑️ Сбросить все данные", type="secondary", use_container_width=True):
-        for key in list(DEFAULT_STATE.keys()):
-            st.session_state[key] = DEFAULT_STATE[key]
-        st.rerun()
-     
-    st.markdown("---")
-    st.subheader("📅 Параметры расчета план/факта")
-    
-    # Календарь периода
-    st.write("**Период расчета:**")
-    today = datetime.now()
-    first_day = today.replace(day=1)
-    yesterday = today - timedelta(days=1)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        start_date = st.date_input(
-            "Дата начала",
-            value=first_day,
-            max_value=yesterday
-        )
-    with col2:
-        end_date = st.date_input(
-            "Дата окончания",
-            value=yesterday,
-            min_value=start_date,
-            max_value=yesterday
-        )
-    
-    # Проверка: даты в одном месяце
-    if start_date.month != end_date.month:
-        st.warning("⚠️ Даты должны быть в одном месяце")
-        end_date = start_date.replace(day=28)  # Корректируем
-    
-    st.info(f"Период: {start_date.strftime('%d.%m.%Y')} - {end_date.strftime('%d.%m.%Y')}")
 
-    # Этапы
-    
-    
-    st.markdown("---")
-    st.subheader("📊 Коэффициенты этапов")
-    
-    # Слайдеры для весов этапов с ограничением 0-2
-    st.write("**Распределение весов по этапам (0-2):**")
-    
-    stage_weights = []
-    default_weights = [0.8, 1.2, 1.0, 0.9]  # новые дефолтные значения
-    
-    for i in range(1, 5):
-        weight = st.slider(
-            f"Вес этапа {i}",
-            min_value=0.0,
-            max_value=2.0,
-            value=default_weights[i-1],
-            step=0.1,
-            key=f"stage_slider_{i}"
-        )
-        stage_weights.append(weight)
-    
-    # Расчет коэффициентов
-    total_weight = sum(stage_weights)
-    if total_weight > 0:
-        coefficients = [w/total_weight for w in stage_weights]
-    else:
-        coefficients = [0.25, 0.25, 0.25, 0.25]  # равные если все нули
-        st.warning("⚠️ Сумма весов = 0, используем равные коэффициенты")
-    
-    # Визуализация распределения
-    st.write("**Распределение коэффициентов:**")
-    for i, coeff in enumerate(coefficients, 1):
-        st.progress(coeff, text=f"Этап {i}: {coeff:.1%}")
-    
-    # Сохраняем в session_state
-    st.session_state['plan_calc_params'] = {
-        'start_date': start_date,
-        'end_date': end_date,
-        'coefficients': coefficients
-    }
 
 
 

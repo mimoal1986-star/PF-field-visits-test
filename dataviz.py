@@ -57,18 +57,43 @@ class DataVisualizer:
             # 6. Отображаем таблицу
             st.markdown("""
             <style>
+                /* Основные стили для таблицы */
                 div[data-testid="stDataFrame"] {
-                    font-size: 12px !important;
+                    font-size: 11px !important;
                 }
+                
+                /* Заставляем таблицу растягиваться на всю ширину */
                 div[data-testid="stDataFrame"] table {
-                    table-layout: fixed !important;
                     width: 100% !important;
+                    table-layout: auto !important;  /* Авто ширина по содержимому */
                 }
-                div[data-testid="stDataFrame"] th, 
-                div[data-testid="stDataFrame"] td {
-                    padding: 4px 6px !important;
-                    word-wrap: break-word !important;
+                
+                /* Заголовки колонок - перенос по словам */
+                div[data-testid="stDataFrame"] th {
                     white-space: normal !important;
+                    word-wrap: break-word !important;
+                    word-break: break-word !important;
+                    max-width: 120px !important;
+                    min-width: 60px !important;
+                    padding: 3px 5px !important;
+                    font-size: 10px !important;
+                    text-align: center !important;
+                    line-height: 1.2 !important;
+                }
+                
+                /* Ячейки данных - минимальный отступ */
+                div[data-testid="stDataFrame"] td {
+                    padding: 2px 4px !important;
+                    white-space: nowrap !important;
+                    overflow: hidden !important;
+                    text-overflow: ellipsis !important;
+                    max-width: 100px !important;
+                }
+                
+                /* Особо длинные названия проектов */
+                div[data-testid="stDataFrame"] td:nth-child(3) {  /* Название проекта */
+                    white-space: normal !important;
+                    word-wrap: break-word !important;
                     max-width: 150px !important;
                 }
             </style>
@@ -79,8 +104,20 @@ class DataVisualizer:
                 df_with_totals,
                 use_container_width=True,
                 height=table_height,
-                hide_index=True
+                hide_index=True,
+                column_config={
+                    # Ключевые колонки с адаптивной шириной
+                    "Код проекта": st.column_config.TextColumn(width="small"),
+                    "Имя клиента": st.column_config.TextColumn(width="medium"),
+                    "Название проекта": st.column_config.TextColumn(width="large"),
+                    "ПО": st.column_config.TextColumn(width="small"),
+                    # Числовые колонки минимальной ширины
+                    **{col: st.column_config.NumberColumn(width="small") 
+                       for col in df_with_totals.columns 
+                       if "План" in col or "Факт" in col or "шт" in col or "%" in col}
+                }
             )
+
 
     def _calculate_totals(self, df):
         """Создает строку Итого"""
@@ -140,6 +177,7 @@ class DataVisualizer:
 # Глобальный экземпляр
 
 dataviz = DataVisualizer()
+
 
 
 

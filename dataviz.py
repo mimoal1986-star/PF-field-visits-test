@@ -23,7 +23,7 @@ class DataVisualizer:
             'Исполнение Проекта,%', 'Потребление времени, %', 'Фокус',
             'План на дату, шт.', 'Факт на дату, шт.', '△План/Факт на дату, шт.', '%ПФ на дату',
             'План проекта, шт.', 'Прогноз на месяц, шт.','Прогноз на месяц, %',
-            'ПКол-во визитов до 100% плана, шт.', 'Поручено', 'Доля Поручено, %',
+            'Кол-во визитов до 100% плана, шт.', 'Поручено', 'Доля Поручено, %',
             'Дней до конца проекта', 'Ср. план на день для 100% плана, шт.'
         ]
         
@@ -34,35 +34,6 @@ class DataVisualizer:
         # 3. Фильтры
         st.sidebar.header("Фильтры")
         
-        # Связанные фильтры ЗОД → АСС
-        if hierarchy_df is not None and 'ЗОД' in hierarchy_df.columns and 'АСС' in hierarchy_df.columns:
-            all_zod = df_display['ЗОД'].dropna().unique()
-            selected_zod = st.sidebar.multiselect("ЗОД", all_zod)
-            
-            if selected_zod:
-                # Фильтруем АСС по выбранным ЗОД
-                filtered_ass = hierarchy_df[hierarchy_df['ЗОД'].isin(selected_zod)]['АСС'].unique()
-                df_display = df_display[df_display['ЗОД'].isin(selected_zod)]
-            else:
-                filtered_ass = df_display['АСС'].dropna().unique()
-        else:
-            selected_zod = []
-            filtered_ass = df_display['АСС'].dropna().unique()
-        
-        selected_ass = st.sidebar.multiselect("АСС", filtered_ass)
-        if selected_ass:
-            df_display = df_display[df_display['АСС'].isin(selected_ass)]
-        
-        # Остальные фильтры
-        all_clients = df_display['Имя клиента'].dropna().unique()
-        selected_clients = st.sidebar.multiselect("Имя клиента", all_clients)
-        if selected_clients:
-            df_display = df_display[df_display['Имя клиента'].isin(selected_clients)]
-        
-        all_regions = df_display['Регион'].dropna().unique()
-        selected_regions = st.sidebar.multiselect("Регион", all_regions)
-        if selected_regions:
-            df_display = df_display[df_display['Регион'].isin(selected_regions)]
         
         # 4. KPI сверху
         col1, col2, col3 = st.columns(3)
@@ -126,8 +97,8 @@ class DataVisualizer:
                     total_row[col] = 0
                     
             elif col == 'Доля Поручено, %':
-                if 'ПКол-во визитов до 100% плана, шт.' in df.columns and 'Поручено' in df.columns:
-                    need = df['ПКол-во визитов до 100% плана, шт.'].sum()
+                if 'Кол-во визитов до 100% плана, шт.' in df.columns and 'Поручено' in df.columns:
+                    need = df['Кол-во визитов до 100% плана, шт.'].sum()
                     assigned = df['Поручено'].sum()
                     total_row[col] = (assigned / need * 100) if need != 0 else 0
                 else:
@@ -145,6 +116,7 @@ class DataVisualizer:
 # Глобальный экземпляр
 
 dataviz = DataVisualizer()
+
 
 
 

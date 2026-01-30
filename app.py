@@ -828,10 +828,10 @@ with st.sidebar:
     
     # st.markdown("---")
     
-    # if st.button("🗑️ Сбросить все данные", type="secondary", use_container_width=True):
-    #     for key in list(DEFAULT_STATE.keys()):
-    #         st.session_state[key] = DEFAULT_STATE[key]
-    #     st.rerun()
+    if st.button("🗑️ Сбросить все данные", type="secondary", use_container_width=True):
+        for key in list(DEFAULT_STATE.keys()):
+            st.session_state[key] = DEFAULT_STATE[key]
+        st.rerun()
     
     # st.markdown("---")
     
@@ -920,6 +920,7 @@ with st.sidebar:
     
     
     
+
 
 
 

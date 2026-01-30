@@ -113,10 +113,6 @@ def process_single_step(step_func, step_name, *args):
         }
         return None, error_msg
 
-def create_status_container():
-    """Создание контейнера для отображения статуса"""
-    return st.status("📊 **Подготовка к обработке...**", expanded=True)
-
 def process_field_projects_with_stats():
     """Основная функция обработки полевых проектов"""
     try:
@@ -352,16 +348,16 @@ if st.session_state.uploaded_files:
                 try:
                     from data_cleaner import data_cleaner
                     
-                    with create_status_container() as status:
+                    with st.expander("📊 **Ход обработки**", expanded=False):
                         # ЭТАП 1: Проверка
-                        status.write("🔍 **1. Проверка файлов...**")
+                        st.write("🔍 **1. Проверка файлов...**")
                         missing_files = [f for f in required_files if f not in st.session_state.uploaded_files]
                         if missing_files:
                             raise ValueError(f"Отсутствуют файлы: {', '.join(missing_files)}")
-                        status.write("✅ Все файлы проверены")
+                        st.write("✅ Все файлы проверены")
                         
                         # ЭТАП 2: Очистка портала
-                        status.write("🧹 **2. Очистка портала...**")
+                        st.write("🧹 **2. Очистка портала...**")
                         portal_raw = st.session_state.uploaded_files['портал']
                         portal_cleaned, portal_error = process_single_step(
                             data_cleaner.clean_array, "Очистка портала", portal_raw
@@ -372,10 +368,10 @@ if st.session_state.uploaded_files:
                             portal_cleaned = portal_raw
                         
                         st.session_state.cleaned_data['портал'] = portal_cleaned
-                        status.write(f"✅ Очищено: {len(portal_cleaned):,} строк")
+                        st.write(f"✅ Очищено: {len(portal_cleaned):,} строк")
                         
                         # ЭТАП 3: Очистка проектов
-                        status.write("🧹 **3. Очистка проектов...**")
+                        st.write("🧹 **3. Очистка проектов...**")
                         projects_raw = st.session_state.uploaded_files['сервизория']
                         projects_cleaned, projects_error = process_single_step(
                             data_cleaner.clean_google, "Очистка проектов", projects_raw
@@ -386,10 +382,10 @@ if st.session_state.uploaded_files:
                             projects_cleaned = projects_raw
                         
                         st.session_state.cleaned_data['сервизория'] = projects_cleaned
-                        status.write(f"✅ Очищено: {len(projects_cleaned):,} строк")
+                        st.write(f"✅ Очищено: {len(projects_cleaned):,} строк")
                         
                         # ЭТАП 4: Обогащение массива
-                        status.write("🔗 **4. Обогащение массива...**")
+                        st.write("🔗 **4. Обогащение массива...**")
                         if 'портал' in st.session_state.cleaned_data and 'сервизория' in st.session_state.cleaned_data:
                             enriched_result, enrich_error = process_single_step(
                                 data_cleaner.enrich_array_with_project_codes,
@@ -411,10 +407,10 @@ if st.session_state.uploaded_files:
                                     st.session_state['array_discrepancies'] = discrepancy_df
                                     st.session_state['discrepancy_stats'] = stats
                             
-                            status.write(f"✅ Обогащено кодов: {stats.get('filled', 0):,}")
+                            st.write(f"✅ Обогащено кодов: {stats.get('filled', 0):,}")
 
                         # ЭТАП 4.5: Добавление ЗОД в массив
-                        status.write("👥 **4.5. Добавление ЗОД из справочника...**")
+                        st.write("👥 **4.5. Добавление ЗОД из справочника...**")
                         if 'портал' in st.session_state.cleaned_data and 'иерархия' in st.session_state.uploaded_files:
                             hierarchy_df = st.session_state.uploaded_files['иерархия']
                             array_with_zod, zod_error = process_single_step(
@@ -428,26 +424,26 @@ if st.session_state.uploaded_files:
                                 st.warning(f"⚠️ {zod_error}")
                             elif array_with_zod is not None:
                                 st.session_state.cleaned_data['портал'] = array_with_zod
-                                status.write(f"✅ ЗОД добавлен в массив")
+                                st.write(f"✅ ЗОД добавлен в массив")
                                 
                         # ЭТАП 5: Разделение на полевые/неполевые проекты
-                        status.write("🎯 **5. Разделение на полевые/неполевые проекты...**")
+                        st.write("🎯 **5. Разделение на полевые/неполевые проекты...**")
                         
                         field_success = False
                         try:
                             field_success = process_field_projects_with_stats()
                         except Exception as e:
-                            status.write(f"⚠️ Ошибка: {str(e)[:100]}")
+                            st.write(f"⚠️ Ошибка: {str(e)[:100]}")
                         
                         if field_success:
-                            status.write("✅ Проекты разделены")
+                            st.write("✅ Проекты разделены")
                             if 'разделенный_массив' in st.session_state.excel_files:
-                                status.write("📁 Файл 'разделенный_массив.xlsx' создан")
+                                st.write("📁 Файл 'разделенный_массив.xlsx' создан")
                         else:
-                            status.write("⚠️ Разделение не удалось")
+                            st.write("⚠️ Разделение не удалось")
                             
                         # ЭТАП 6: Выгрузка в Excel
-                        status.write("📊 **6. Выгрузка в Excel...**")
+                        st.write("📊 **6. Выгрузка в Excel...**")
                         
                         # Массив
                         if 'портал' in st.session_state.cleaned_data:
@@ -460,9 +456,9 @@ if st.session_state.uploaded_files:
                             
                             if array_excel:
                                 st.session_state.excel_files['массив'] = array_excel
-                                status.write("   ✅ Файл 'очищенный_массив.xlsx' создан")
+                                st.write("   ✅ Файл 'очищенный_массив.xlsx' создан")
                             elif array_export_error:
-                                status.write(f"   ⚠️ {array_export_error}")
+                                st.write(f"   ⚠️ {array_export_error}")
                         
                         # Проекты
                         if 'сервизория' in st.session_state.cleaned_data:
@@ -476,9 +472,9 @@ if st.session_state.uploaded_files:
                             
                             if projects_excel:
                                 st.session_state.excel_files['проекты'] = projects_excel
-                                status.write("   ✅ Файл 'очищенные_проекты.xlsx' создан")
+                                st.write("   ✅ Файл 'очищенные_проекты.xlsx' создан")
                             elif projects_export_error:
-                                status.write(f"   ⚠️ {projects_export_error}")
+                                st.write(f"   ⚠️ {projects_export_error}")
                         
                         # Сохранение статистики
                         st.session_state.processing_stats = {
@@ -489,7 +485,7 @@ if st.session_state.uploaded_files:
                             'enriched_codes': stats.get('filled', 0) if 'stats' in locals() else 0
                         }
                         
-                        status.update(label="✅ **Обработка завершена!**", state="complete")
+                        st.success("✅ **Обработка завершена!**")
                         st.session_state.processing_complete = True
                         
                 except ImportError as e:
@@ -924,6 +920,7 @@ with st.sidebar:
     
     
     
+
 
 
 

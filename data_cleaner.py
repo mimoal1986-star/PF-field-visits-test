@@ -1251,11 +1251,60 @@ class DataCleaner:
         else:
             # Если нет колонок с проверками - возвращаем пустой DataFrame
             return pd.DataFrame()
-            
 
+    def add_portal_to_array(self, array_df, google_df):
+        """
+        Добавляет колонку 'ПО' в массив из гугл таблицы
+        Сопоставление: Код анкеты (массив) → Код проекта (гугл) → ПО
+        """
+        try:
+            array_df = array_df.copy()
+            
+            # Ищем колонку Код анкеты
+            array_code_col = None
+            for col in array_df.columns:
+                if 'код' in str(col).lower() and 'анкет' in str(col).lower():
+                    array_code_col = col
+                    break
+            
+            if not array_code_col:
+                array_df['ПО'] = 'не определено'
+                return array_df
+                
+            # Колонки в гугл
+            google_code_col = 'Код проекта RU00.000.00.01SVZ24'
+            google_portal_col = 'Портал на котором идет проект (для работы полевой команды)'
+            
+            # Создаем словарь {код_проекта: ПО}
+            portal_mapping = {}
+            for _, row in google_df.iterrows():
+                code = str(row.get(google_code_col, '')).strip()
+                portal = str(row.get(google_portal_col, '')).strip()
+                
+                if code and code.lower() not in ['nan', 'none', 'null', '']:
+                    portal_mapping[code] = portal
+            
+            # Добавляем колонку ПО
+            def get_portal(code):
+                if pd.isna(code):
+                    return 'не определено'
+                clean_code = str(code).strip()
+                return portal_mapping.get(clean_code, 'не определено')
+            
+            array_df['ПО'] = array_df[array_code_col].apply(get_portal)
+            
+            defined_count = (array_df['ПО'] != 'не определено').sum()
+            st.success(f"✅ Добавлено ПО: определено для {defined_count} из {len(array_df)} записей")
+            
+            return array_df
+            
+        except Exception as e:
+            st.error(f"Ошибка в add_portal_to_array: {e}")
+            return array_df
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

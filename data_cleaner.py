@@ -803,7 +803,11 @@ class DataCleaner:
                     parts = code_str.split('.')
                     if len(parts) >= 4:
                         country = parts[0]  # RU00
-                        direction = parts[2][:3] if len(parts[2]) >= 3 else ''  # .01 или .02
+                        # Получаем направление как .01 или .02
+                        if len(parts[2]) >= 2:
+                            direction = '.' + parts[2][:2]  # .01 или .02
+                        else:
+                            direction = ''
                         
                         if country == 'RU00' and direction in ['.01', '.02']:
                             return 1
@@ -811,6 +815,7 @@ class DataCleaner:
                     return 0
                 except:
                     return 0
+                            
             
             google_df['Полевой'] = google_df[code_col].apply(is_field_project)
             
@@ -1257,6 +1262,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

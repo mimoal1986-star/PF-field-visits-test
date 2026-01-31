@@ -1143,7 +1143,8 @@ class DataCleaner:
             ak_codes = set()
             for code in autocoding_df[ak_code_col].astype(str).str.strip():
                 if code and code.lower() not in ['nan', 'none', 'null', '']:
-                    ak_codes.add(code)
+                    if code.startswith('RU'):
+                        ak_codes.add(code)
             
             # Проверяем коды проектов
             result['Проекта НЕТ в АК'] = [
@@ -1253,6 +1254,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

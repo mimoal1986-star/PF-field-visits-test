@@ -771,257 +771,102 @@ class DataCleaner:
     # Подготовка Массива для финального датасета
     # ============================================
     
-    def update_field_projects_flag(self, google_df, autocoding_df):
+    def update_field_projects_flag(self, google_df):
         """
         Обновляет поле 'Полевой' в гугл таблице
-        Полевой = 1 если код есть в АК И направление .01/.02
+        Полевой = 1 если код проекта соответствует правилам:
+        - RU00 (Страна) + .01/.02 (Направление)
         """
         try:
-            if google_df is None or google_df.empty:
-                st.warning("⚠️ Гугл таблица пустая")
-                return google_df
-                
-            if autocoding_df is None or autocoding_df.empty:
-                st.warning("⚠️ Автокодификация пустая")
-                return google_df
+            google_df = google_df.copy()
             
-            google_df_clean = google_df.copy()
-            autocoding_df_clean = autocoding_df.copy()
+            # Убеждаемся, что есть колонка 'Код проекта RU00.000.00.01SVZ24'
+            code_col = 'Код проекта RU00.000.00.01SVZ24'
             
-            # Находим ключевые колонки
-            google_code_col = self._find_column(google_df_clean, [
-                'Код проекта RU00.000.00.01SVZ24',
-                'Код проекта',
-                'Project Code',
-                'Код'
-            ])
-            
-            if not google_code_col:
-                st.error("❌ В гугл таблице не найдена колонка с кодом проекта")
-                st.info(f"Доступные колонки: {list(google_df_clean.columns[:5])}...")
+            if code_col not in google_df.columns:
                 return google_df
             
-            ak_code_col = self._find_column(autocoding_df_clean, [
-                'ИТОГО КОД',
-                'ИтогоКод',
-                'Код проекта',
-                'Код'
-            ])
-            
-            ak_direction_col = self._find_column(autocoding_df_clean, [
-                'Направление',
-                'Direction',
-                'Напр'
-            ])
-            
-            # Находим ВСЕ колонки "Направление"
-            all_dir_cols = [col for col in autocoding_df_clean.columns 
-                           if str(col).strip().lower() == 'направление']
-            
-            # Если колонок нет вообще
-            if not all_dir_cols:
-                st.error("❌ В АК нет колонки 'Направление'")
-                return google_df
-            
-            # Проверяем каждую на наличие .01
-            valid_dir_cols = []
-            for col in all_dir_cols:
-                values = autocoding_df_clean[col].astype(str).str.strip()
-                if values.isin(['.01', '.02']).any():
-                    valid_dir_cols.append(col)
-            
-            # Выбираем колонку
-            if len(valid_dir_cols) == 1:
-                ak_direction_col = valid_dir_cols[0]
-            elif len(valid_dir_cols) > 1:
-                st.error(f"❌ Найдено {len(valid_dir_cols)} колонок 'Направление' с .01/.02: {valid_dir_cols}")
-                return google_df
-            else:
-                # Если ни одна не содержит .01/.02 - ОШИБКА
-                st.error("❌ Ни одна колонка 'Направление' не содержит значений.01 или .02")
-                st.error(f"   Колонки 'Направление': {all_dir_cols}")
-                st.error(f"   Пример значений: {autocoding_df_clean[all_dir_cols[0]].head().tolist()}")
-                return google_df
-
-            
-            # Предварительная очистка данных
-            autocoding_df_clean[ak_code_col] = autocoding_df_clean[ak_code_col].astype(str).str.strip()
-            autocoding_df_clean[ak_direction_col] = autocoding_df_clean[ak_direction_col].astype(str).str.strip()
-            google_df_clean[google_code_col] = google_df_clean[google_code_col].astype(str).str.strip()
-            
-            # Создаем множество разрешенных направлений
-            allowed_directions = {'.01', '.02'}
-            
-            # Создаем словарь для быстрого поиска {код: является_полевым}
-            field_codes = set()
-            
-            for _, row in autocoding_df_clean.iterrows():
+            # Функция проверки кода
+            def is_field_project(code):
                 try:
-                    code = str(row[ak_code_col])
-                    direction = str(row[ak_direction_col])
+                    if pd.isna(code):
+                        return 0
+                    code_str = str(code).strip()
                     
-                    if code and code.lower() not in ['nan', 'none', 'null', '']:
-                        # Проверяем направление
-                        if direction in allowed_directions:
-                            field_codes.add(code)
-                except Exception:
-                    continue
-            
-            st.info(f"🔍 Найдено {len(field_codes)} полевых кодов в автокодификации")
-
-            #ПРОВЕРКА
-            # 1. Сколько всего проектов в автокодификации
-            ak_total = len(autocoding_df_clean)
-            ak_direction_counts = autocoding_df_clean[ak_direction_col].value_counts()
-            
-            st.info("📊 Статистика автокодификации:")
-            st.info(f"   • Всего проектов в АК: {ak_total}")
-            st.info(f"   • Направление .01: {ak_direction_counts.get('.01', 0)} проектов")
-            st.info(f"   • Направление .02: {ak_direction_counts.get('.02', 0)} проектов")
-            st.info(f"   • Другие направления: {ak_total - ak_direction_counts.get('.01', 0) - ak_direction_counts.get('.02', 0)}")
-            
-            # 2. Сколько полевых проектов в АК
-            ak_field_count = sum(1 for _, row in autocoding_df_clean.iterrows() 
-                                if str(row.get(ak_direction_col, '')).strip() in allowed_directions)
-            st.success(f"   ✅ Полевых проектов в АК (направление .01/.02): {ak_field_count}")
-            #ПРОВЕРКА
-            
-            # Инициализируем/обновляем колонку 'Полевой'
-            if 'Полевой' not in google_df_clean.columns:
-                google_df_clean['Полевой'] = 0
-            
-            # Векторизированная проверка (быстрее чем цикл)
-            google_codes = google_df_clean[google_code_col].astype(str)
-            
-            # Функция для проверки кода
-            def check_field(code):
-                if pd.isna(code) or str(code).lower() in ['nan', 'none', 'null', '']:
+                    # Проверяем формат RU00.001.06.01SVZ24
+                    parts = code_str.split('.')
+                    if len(parts) >= 4:
+                        country = parts[0]  # RU00
+                        direction = parts[3][:3]  # .01 или .02 (первые 3 символа)
+                        
+                        # Проверка: RU00 и (.01 или .02)
+                        if country == 'RU00' and direction in ['.01', '.02']:
+                            return 1
                     return 0
-                return 1 if str(code) in field_codes else 0
+                except:
+                    return 0
             
-            # Применяем проверку
-            google_df_clean['Полевой'] = google_codes.apply(check_field).astype(int)
+            # Добавляем/обновляем колонку
+            google_df['Полевой'] = google_df[code_col].apply(is_field_project)
             
-            updated_count = (google_df_clean['Полевой'] == 1).sum()
-            st.success(f"✅ Обновлено поле 'Полевой': {updated_count} полевых проектов")
+            field_count = google_df['Полевой'].sum()
+            st.info(f"🔍 Определено {field_count} полевых проектов по формату кода")
             
-            return google_df_clean
+            return google_df
             
         except Exception as e:
-            st.error(f"❌ Критическая ошибка в update_field_projects_flag: {str(e)[:100]}")
-            import traceback
-            st.error(f"Детали: {traceback.format_exc()[:300]}")
+            st.error(f"Ошибка в update_field_projects_flag: {e}")
             return google_df
     
     
-    def add_field_flag_to_array(self, array_df, google_df):
+    def add_field_flag_to_array(self, array_df):
         """
-        Добавляет 'Полевой' в массив на основе гугл таблицы
+        Добавляет 'Полевой' в массив на основе кода анкеты
+        Полевой = 1 если код анкеты соответствует правилам:
+        - RU00 (Страна) + .01/.02 (Направление)
         """
         try:
-            if array_df is None or array_df.empty:
-                st.warning("⚠️ Массив пустой")
-                return array_df
-                
-            if google_df is None or google_df.empty:
-                st.warning("⚠️ Гугл таблица пустая")
-                return array_df
+            array_df = array_df.copy()
             
-            array_df_clean = array_df.copy()
-            google_df_clean = google_df.copy()
+            # Ищем колонку с кодом анкеты
+            code_col = None
+            for col in array_df.columns:
+                if 'код' in str(col).lower() and 'анкет' in str(col).lower():
+                    code_col = col
+                    break
             
-            # Находим колонки с кодами
-            array_code_col = self._find_column(array_df_clean, [
-                'Код анкеты',
-                'Код проекта',
-                'Project Code',
-                'Код'
-            ])
-            
-            google_code_col = self._find_column(google_df_clean, [
-                'Код проекта RU00.000.00.01SVZ24',
-                'Код проекта',
-                'Project Code',
-                'Код'
-            ])
-            
-            if not array_code_col:
-                st.error("❌ В массиве не найдена колонка 'Код анкеты'")
-                st.info(f"Доступные колонки: {list(array_df_clean.columns[:5])}...")
-                return array_df
-                
-            if not google_code_col:
-                st.error("❌ В гугл таблице не найдена колонка с кодом проекта")
+            if not code_col:
+                st.warning("⚠️ Не найдена колонка 'Код анкеты'")
                 return array_df
             
-            if 'Полевой' not in google_df_clean.columns:
-                st.warning("⚠️ В гугл таблице нет колонки 'Полевой', создаю нулевую")
-                google_df_clean['Полевой'] = 0
-            
-            # Очистка данных
-            array_df_clean[array_code_col] = array_df_clean[array_code_col].astype(str).str.strip()
-            google_df_clean[google_code_col] = google_df_clean[google_code_col].astype(str).str.strip()
-            
-            # Создаем словарь сопоставления {код: полевое_значение}
-            code_to_field = {}
-            
-            for idx, row in google_df_clean.iterrows():
+            # Та же функция проверки кода
+            def is_field_project(code):
                 try:
-                    code = str(row[google_code_col])
-                    if code and code.lower() not in ['nan', 'none', 'null', '']:
-                        # Безопасное получение значения
-                        field_val = row.get('Полевой', 0)
-                        try:
-                            code_to_field[code] = int(field_val) if not pd.isna(field_val) else 0
-                        except (ValueError, TypeError):
-                            code_to_field[code] = 0
-                except Exception:
-                    continue
-            
-            st.info(f"🔍 Загружено {len(code_to_field)} сопоставлений кодов")
-
-            #ПРОВЕРКА
-            # 2. Считаем совпадения массива с гугл
-            array_codes = array_df_clean[array_code_col].astype(str).str.strip()
-            valid_codes = array_codes[(array_codes != '') & (array_codes != 'nan') & (array_codes != 'None')]
-            
-            # Уникальные коды в массиве
-            unique_codes = set(valid_codes.unique())
-            array_total = len(unique_codes)
-            
-            # Совпадения с гугл
-            matched_google = sum(1 for code in unique_codes if code in code_to_field)
-            
-            st.success(f"📊 2. Совпадения массива с гугл: {matched_google:,} из {array_total:,}")
-            
-            # 3. Считаем совпадения массива с АК (если есть доступ)
-            if hasattr(google_df_clean, 'attrs') and 'ak_field_codes' in google_df_clean.attrs:
-                ak_field_codes = google_df_clean.attrs['ak_field_codes']
-                matched_ak = sum(1 for code in unique_codes if code in ak_field_codes)
-                st.success(f"📊 3. Совпадения массива с АК: {matched_ak:,} из {array_total:,}")
-             #ПРОВЕРКА
-            
-
-            
-            # Функция для поиска значения
-            def get_field_value(code):
-                if pd.isna(code) or str(code).lower() in ['nan', 'none', 'null', '']:
+                    if pd.isna(code):
+                        return 0
+                    code_str = str(code).strip()
+                    
+                    parts = code_str.split('.')
+                    if len(parts) >= 4:
+                        country = parts[0]  # RU00
+                        direction = parts[3][:3]  # .01 или .02
+                        
+                        if country == 'RU00' and direction in ['.01', '.02']:
+                            return 1
                     return 0
-                return code_to_field.get(str(code), 0)
+                except:
+                    return 0
             
-            # Векторизированное применение
-            array_codes = array_df_clean[array_code_col].astype(str)
-            array_df_clean['Полевой'] = array_codes.apply(get_field_value).astype(int)
+            # Добавляем колонку
+            array_df['Полевой'] = array_df[code_col].apply(is_field_project)
             
-            filled_count = (array_df_clean['Полевой'] == 1).sum()
-            st.success(f"✅ Добавлен 'Полевой' в массив: {filled_count} полевых записей")
+            field_count = array_df['Полевой'].sum()
+            st.success(f"✅ Добавлен 'Полевой' в массив: {field_count} полевых записей")
             
-            return array_df_clean
+            return array_df
             
         except Exception as e:
-            st.error(f"❌ Критическая ошибка в add_field_flag_to_array: {str(e)[:100]}")
-            import traceback
-            st.error(f"Детали: {traceback.format_exc()[:300]}")
+            st.error(f"Ошибка в add_field_flag_to_array: {e}")
             return array_df
     
     def split_array_by_field_flag(self, array_df):
@@ -1400,6 +1245,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

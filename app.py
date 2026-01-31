@@ -161,9 +161,12 @@ def process_field_projects_with_stats():
         st.write("### 🎯 Шаг 2: Добавление признака в массив")
         with st.spinner("Сопоставляю коды проектов..."):
             array_updated = data_cleaner.add_field_flag_to_array(array_df)
+            array_with_portal = data_cleaner.add_portal_to_array(array_updated, google_updated)
+            array_updated = array_with_portal
             if array_updated is None:
                 return False
             st.session_state.cleaned_data['портал_с_полем'] = array_updated
+
         
         st.write("### 🎯 Шаг 3: Разделение на полевые/неполевые")
         with st.spinner("Фильтрую данные..."):
@@ -922,6 +925,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

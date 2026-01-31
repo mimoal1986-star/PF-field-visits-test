@@ -152,7 +152,7 @@ def process_field_projects_with_stats():
         
         st.write("### 🎯 Шаг 1: Определение полевых проектов")
         with st.spinner("Анализирую автокодификацию..."):
-            google_updated = data_cleaner.update_field_projects_flag(google_df, autocoding_df)
+            google_updated = data_cleaner.update_field_projects_flag(google_df)
             if google_updated is None:
                 return False
             st.session_state.cleaned_data['сервизория_с_полем'] = google_updated
@@ -160,7 +160,7 @@ def process_field_projects_with_stats():
         
         st.write("### 🎯 Шаг 2: Добавление признака в массив")
         with st.spinner("Сопоставляю коды проектов..."):
-            array_updated = data_cleaner.add_field_flag_to_array(array_df, google_updated)
+            array_updated = data_cleaner.add_field_flag_to_array(array_df)
             if array_updated is None:
                 return False
             st.session_state.cleaned_data['портал_с_полем'] = array_updated
@@ -922,6 +922,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

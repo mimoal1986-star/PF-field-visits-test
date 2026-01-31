@@ -809,7 +809,7 @@ class DataCleaner:
                         else:
                             direction = ''
                         
-                        if country == 'RU00' and direction in ['.01', '.02']:
+                        if country in ['RU00', 'RU01', 'RU02', 'RU03', 'RU04'] and direction in ['.01', '.02']:
                             return 1
                             
                     return 0
@@ -871,7 +871,7 @@ class DataCleaner:
                         else:
                             direction = ''
                         
-                        if country == 'RU00' and direction in ['.01', '.02']:
+                        if country in ['RU00', 'RU01', 'RU02', 'RU03', 'RU04'] and direction in ['.01', '.02']:
                             return 1
                             
                     return 0
@@ -1265,6 +1265,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

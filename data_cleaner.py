@@ -866,7 +866,10 @@ class DataCleaner:
                     parts = code_str.split('.')
                     if len(parts) >= 4:
                         country = parts[0]  # RU00
-                        direction = parts[2][:3] if len(parts[2]) >= 3 else ''  # .01 или .02
+                        if len(parts[2]) >= 2:
+                            direction = '.' + parts[2][:2]  # '.' + '02' = '.02'
+                        else:
+                            direction = ''
                         
                         if country == 'RU00' and direction in ['.01', '.02']:
                             return 1
@@ -1262,6 +1265,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

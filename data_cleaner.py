@@ -1148,7 +1148,9 @@ class DataCleaner:
             
             # Проверяем коды проектов
             result['Проекта НЕТ в АК'] = [
-                str(code).strip() not in ak_codes 
+                (str(code).strip() not in ak_codes) 
+                if pd.notna(code) and str(code).strip().startswith('RU')
+                else False
                 for code in result[code_col]
             ]
        
@@ -1254,6 +1256,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -1138,31 +1138,19 @@ class DataCleaner:
         # 2. Проекта нет в автокодификации
         if autocoding_df is not None:
             ak_code_col = 'ИТОГО КОД'
-            ak_project_col = 'Проекты в  https://ru.checker-soft.com'
-
-            # Создаем уникальные ключи для сравнения
-            # ТОЛЬКО непустые пары из АК
-            ak_valid_mask = autocoding_df[ak_code_col].notna() & autocoding_df[ak_project_col].notna()
-            ak_keys = set(zip(
-                autocoding_df.loc[ak_valid_mask, ak_code_col].astype(str).str.strip(),
-                autocoding_df.loc[ak_valid_mask, ak_project_col].astype(str).str.strip()
-            ))
+            
+            # Создаем множество уникальных кодов из АК
+            ak_codes = set()
+            for code in autocoding_df[ak_code_col].astype(str).str.strip():
+                if code and code.lower() not in ['nan', 'none', 'null', '']:
+                    ak_codes.add(code)
+            
+            # Проверяем коды проектов
+            result['Проекта НЕТ в АК'] = [
+                str(code).strip() not in ak_codes 
+                for code in result[code_col]
+            ]
        
-            # Проверяем совпадение пар (код + проект)
-            valid_mask = result[code_col].notna() & result[project_col].notna()
-            valid_keys = list(zip(
-                result.loc[valid_mask, code_col].astype(str).str.strip(),
-                result.loc[valid_mask, project_col].astype(str).str.strip()
-            ))
-            
-            # Инициализируем все как True
-            result['Проекта НЕТ в АК'] = True
-            # Для валидных строк проверяем
-            if valid_mask.any():
-                # key in ak_keys → найден → меняем на False
-                found_mask = [key in ak_keys for key in valid_keys]
-                result.loc[valid_mask, 'Проекта НЕТ в АК'] = [not found for found in found_mask]
-            
         else:
             result['Проекта НЕТ в АК'] = True
         
@@ -1265,6 +1253,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -1253,6 +1253,257 @@ class DataCleaner:
             # Если нет колонок с проверками - возвращаем пустой DataFrame
             return pd.DataFrame()
 
+    
+    def clean_cxway(self, df, hierarchy_df, google_df):
+        """Очистка файла CXWAY и приведение к структуре полевых проектов"""
+        if df is None or df.empty:
+            return pd.DataFrame()
+        
+        df_clean = df.copy()
+        
+        # 1. Базовые колонки
+        column_mapping = {
+            'Код проекта': ['Код проекта', 'Project Code', 'Код', 'Code'],
+            'Имя клиента': ['Клиент', 'Client', 'Имя клиента', 'Клиент имя'],
+            'Название проекта': ['Проект', 'Wave Name', 'Название проекта', 'Название', 'Wave'],
+            'АСС': ['АСС', 'ACC', 'Аккаунт'],
+            'ЭМ': ['ЭМ', 'EM', 'ЭМ рег', 'Эксперт', 'Эксперт менеджер'],
+            'Регион short': ['Регион short', 'Регион кратко', 'Region short', 'Регион']
+        }
+        
+        # Создаем стандартный DataFrame
+        result = pd.DataFrame()
+        
+        for std_col, possible_names in column_mapping.items():
+            source_col = self._find_column(df_clean, possible_names)
+            if source_col:
+                result[std_col] = df_clean[source_col].astype(str).fillna('')
+            else:
+                result[std_col] = ''
+        
+        # 2. Определение "Полевой" (логика как в массиве)
+        if 'Код проекта' in result.columns and not result.empty:
+            result['Полевой'] = result['Код проекта'].apply(self._is_field_project)
+            # Оставляем только полевые проекты
+            result = result[result['Полевой'] == 1]
+        else:
+            result['Полевой'] = 1
+        
+        # 3. Добавление ЗОД из справочника (по АСС)
+        if hierarchy_df is not None and 'АСС' in result.columns:
+            zodiac_col = self._find_column(hierarchy_df, ['ЗОД', 'zod', 'ZOD'])
+            acc_col = self._find_column(hierarchy_df, ['АСС', 'acc', 'ACC'])
+            
+            if zodiac_col and acc_col:
+                zod_mapping = {}
+                for _, row in hierarchy_df.iterrows():
+                    acc_val = str(row[acc_col]).strip()
+                    zod_val = str(row[zodiac_col]).strip()
+                    if acc_val:
+                        zod_mapping[acc_val] = zod_val
+                
+                def get_zod_by_acc(acc_value):
+                    if pd.isna(acc_value) or str(acc_value).strip() == '':
+                        return ''
+                    clean_acc = str(acc_value).strip()
+                    return zod_mapping.get(clean_acc, '')
+                
+                result['ЗОД'] = result['АСС'].apply(get_zod_by_acc)
+            else:
+                result['ЗОД'] = ''
+        else:
+            result['ЗОД'] = ''
+        
+        # 4. Добавление ПО из гугла (по коду проекта)
+        if google_df is not None and 'Код проекта' in result.columns:
+            google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
+            google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+            
+            if google_code_col and google_portal_col:
+                portal_mapping = {}
+                for _, row in google_df.iterrows():
+                    code = str(row[google_code_col]).strip()
+                    portal = str(row[google_portal_col]).strip()
+                    if code:
+                        portal_mapping[code] = portal
+                
+                def get_portal(code_value):
+                    if pd.isna(code_value) or str(code_value).strip() == '':
+                        return 'не определено'
+                    clean_code = str(code_value).strip()
+                    return portal_mapping.get(clean_code, 'не определено')
+                
+                result['ПО'] = result['Код проекта'].apply(get_portal)
+            else:
+                result['ПО'] = 'не определено'
+        else:
+            result['ПО'] = 'не определено'
+        
+        # 5. Добавление полного региона из справочника
+        
+        region_mapping = {
+            'AD': 'Республика Адыгея',
+            'AL': 'Алтайский край',
+            'AM': 'Амурская область',
+            'AR': 'Архангельская область',
+            'AS': 'Астраханская область',
+            'BK': 'Республика Башкортостан',
+            'BL': 'Белгородская область',
+            'BR': 'Брянская область',
+            'BU': 'Республика Бурятия',
+            'CK': 'Чукотский автономный округ',
+            'CL': 'Челябинская область',
+            'CN': 'Чеченская Республика',
+            'CV': 'Чувашская Республика',
+            'DA': 'Республика Дагестан',
+            'DN': 'Донецкая Народная Республика',
+            'GA': 'Республика Алтай',
+            'IN': 'Республика Ингушетия',
+            'IR': 'Иркутская область',
+            'IV': 'Ивановская область',
+            'KA': 'Камчатский край',
+            'KB': 'Кабардино-Балкарская Республика',
+            'KC': 'Карачаево-Черкесская Республика',
+            'KD': 'Краснодарский край',
+            'KE': 'Кемеровская область',
+            'KG': 'Калужская область',
+            'KH': 'Хабаровский край',
+            'KI': 'Республика Карелия',
+            'KK': 'Республика Хакасия',
+            'KL': 'Республика Калмыкия',
+            'KM': 'Ханты-Мансийский автономный округ',
+            'KN': 'Калининградская область',
+            'KO': 'Республика Коми',
+            'KS': 'Курская область',
+            'KT': 'Костромская область',
+            'KU': 'Курганская область',
+            'KV': 'Кировская область',
+            'KY': 'Красноярский край',
+            'LG': 'Луганская Народная Республика',
+            'LN': 'Ленинградская область',
+            'LP': 'Липецкая область',
+            'ME': 'Республика Марий Эл',
+            'MG': 'Магаданская область',
+            'MM': 'Мурманская область',
+            'MR': 'Республика Мордовия',
+            'MS': 'Московская область',
+            'NG': 'Новгородская область',
+            'NN': 'Ненецкий автономный округ',
+            'NO': 'Республика Северная Осетия',
+            'NS': 'Новосибирская область',
+            'NZ': 'Нижегородская область',
+            'OB': 'Оренбургская область',
+            'OL': 'Орловская область',
+            'OM': 'Омская область',
+            'PE': 'Пермский край',
+            'PR': 'Приморский край',
+            'PS': 'Псковская область',
+            'PZ': 'Пензенская область',
+            'RK': 'Республика Крым',
+            'RO': 'Ростовская область',
+            'RZ': 'Рязанская область',
+            'SA': 'Самарская область',
+            'SK': 'Республика Саха (Якутия)',
+            'SL': 'Сахалинская область',
+            'SM': 'Смоленская область',
+            'SR': 'Саратовская область',
+            'ST': 'Ставропольский край',
+            'SV': 'Свердловская область',
+            'TB': 'Тамбовская область',
+            'TL': 'Тульская область',
+            'TO': 'Томская область',
+            'TT': 'Республика Татарстан',
+            'TU': 'Республика Тыва',
+            'TV': 'Тверская область',
+            'TY': 'Тюменская область',
+            'UD': 'Удмуртская Республика',
+            'UL': 'Ульяновская область',
+            'VG': 'Волгоградская область',
+            'VL': 'Владимирская область',
+            'VO': 'Вологодская область',
+            'VR': 'Воронежская область',
+            'YN': 'Ямало-Ненецкий автономный округ',
+            'YS': 'Ярославская область',
+            'YV': 'Еврейская автономная область',
+            'ZO': 'Запорожская область',
+            'ZK': 'Забайкальский край'
+        }
+    
+    # Использование в функции:
+    if 'Регион short' in result.columns:
+        def get_full_region(short):
+            if pd.isna(short) or str(short).strip() == '':
+                return 'не определен'
+            short_clean = str(short).strip().upper()
+            return region_mapping.get(short_clean, 'не определен')
+        
+        result['Регион'] = result['Регион short'].apply(get_full_region)
+    else:
+        result['Регион'] = 'не определен'
+        
+        if 'Регион short' in result.columns:
+            def get_full_region(short):
+                if pd.isna(short) or str(short).strip() == '':
+                    return 'не определен'
+                short_clean = str(short).strip().upper()
+                return region_mapping.get(short_clean, 'не определен')
+            
+            result['Регион'] = result['Регион short'].apply(get_full_region)
+        else:
+            result['Регион'] = 'не определен'
+        
+        # 6. Метаданные
+        result['Источник'] = 'CXWAY'
+        
+        return result
+    
+    def _is_field_project(self, code):
+        """Логика определения полевого проекта (как в массиве)"""
+        try:
+            if pd.isna(code):
+                return 0
+                
+            code_str = str(code).strip()
+            lower_code = code_str.lower()
+            
+            # Проверка на мультикод/пилот/семпл
+            if any(word in lower_code for word in ['мультикод', 'пилот', 'семпл']):
+                return 1
+            
+            # Проверка формата RU00.001.06.01SVZ24
+            parts = code_str.split('.')
+            if len(parts) >= 4:
+                country = parts[0]  # RU00
+                if len(parts[2]) >= 2:
+                    direction = '.' + parts[2][:2]  # .01 или .02
+                else:
+                    direction = ''
+                
+                if country in ['RU00', 'RU01', 'RU02', 'RU03', 'RU04'] and direction in ['.01', '.02']:
+                    return 1
+                    
+            return 0
+        except:
+            return 0
+
+    def merge_field_projects(self, array_field_df, cxway_field_df):
+        """Объединяет полевые проекты из массива и CXWAY (без удаления дублей)"""
+        try:
+            if array_field_df is None or array_field_df.empty:
+                return cxway_field_df if cxway_field_df is not None else pd.DataFrame()
+            
+            if cxway_field_df is None or cxway_field_df.empty:
+                return array_field_df
+            
+            # Объединяем DataFrames вертикально
+            combined = pd.concat([array_field_df, cxway_field_df], ignore_index=True)
+            
+            return combined
+        
+    except Exception as e:
+        st.error(f"Ошибка объединения полевых проектов: {e}")
+        return array_field_df
+        
     def add_portal_to_array(self, array_df, google_df):
         """
         Добавляет колонку 'ПО' в массив из гугл таблицы
@@ -1305,6 +1556,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

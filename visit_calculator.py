@@ -195,20 +195,38 @@ class VisitCalculator:
             
             # 1. Факт проекта из ВСЕХ источников
             fact_total = 0
+            project_visits_array = None  # для расчета факта на дату
             
             # ФАКТ из МАССИВА (только для проектов на Чеккере или не определено ПО)
             if project_po in ['Чеккер', 'не определено']:
-                project_visits_array = array_df[
-                    (array_df['Код анкеты'] == project_code) &
-                    (array_df['Название проекта'] == project_name) &
-                    (array_df['Дата визита'] != surrogate_date)
-                ]
-                fact_total += len(project_visits_array)
+                # Определяем правильное название колонки статуса
+                status_col_array = None
+                if 'Статус' in array_df.columns:
+                    status_col_array = 'Статус'
+                elif 'Status' in array_df.columns:
+                    status_col_array = 'Status'
+                elif ' Статус' in array_df.columns:  # с пробелом в начале
+                    status_col_array = ' Статус'
+                
+                if status_col_array:
+                    project_visits_array = array_df[
+                        (array_df['Код анкеты'] == project_code) &
+                        (array_df['Название проекта'] == project_name) &
+                        (array_df[status_col_array] == 'Выполнено')
+                    ]
+                    fact_total += len(project_visits_array)
+                else:
+                    # Если нет колонки статуса, используем старую логику (дата визита)
+                    project_visits_array = array_df[
+                        (array_df['Код анкеты'] == project_code) &
+                        (array_df['Название проекта'] == project_name) &
+                        (array_df['Дата визита'] != surrogate_date)
+                    ]
+                    fact_total += len(project_visits_array)
             
             # ФАКТ из CXWAY (только для проектов на CXWAY или не определено ПО)
             if project_po in ['CXWAY', 'не определено'] and cxway_df is not None:
                 # Ищем записи в CXWAY со статусом 'Выполнено'
-                # Проверяем название колонки со статусом
                 status_col = None
                 if 'Status' in cxway_df.columns:
                     status_col = 'Status'
@@ -229,11 +247,7 @@ class VisitCalculator:
             result.at[idx, 'Факт проекта, шт.'] = fact_total
             
             # 2. Распределяем факт по датам (только для массива)
-            # CXWAY факт на дату считаем по-другому - нужны даты визитов в CXWAY
-            # Пока считаем только факт из массива на дату
-            if project_po in ['Чеккер', 'не определено'] and 'project_visits_array' in locals():
-                project_visits = project_visits_array
-                
+            if project_po in ['Чеккер', 'не определено'] and project_visits_array is not None:
                 # Находим даты проекта из Google
                 google_mask = (
                     (google_df['Код проекта RU00.000.00.01SVZ24'] == project_code) &
@@ -257,9 +271,9 @@ class VisitCalculator:
                         stage_end = day_pointer + timedelta(days=days_in_stage - 1)
                         
                         # Визиты в этом этапе
-                        stage_visits = project_visits[
-                            (project_visits['Дата визита'] >= day_pointer) &
-                            (project_visits['Дата визита'] <= stage_end)
+                        stage_visits = project_visits_array[
+                            (project_visits_array['Дата визита'] >= day_pointer) &
+                            (project_visits_array['Дата визита'] <= stage_end)
                         ]
                         
                         # Считаем визиты в периоде календаря
@@ -304,7 +318,6 @@ class VisitCalculator:
                 if forecast > 0:
                     result.at[idx, 'Прогноз на месяц, шт.'] = round(forecast, 1)
                 result.at[idx, 'Прогноз на месяц, %'] = round(pf_percent, 1)
-            # Если %ПФ = 0 или отрицательный, прогноз остается 0
         
         # 5. ДОПОЛНИТЕЛЬНЫЕ РАСЧЕТЫ
         result['Кол-во визитов до 100% плана, шт.'] = 0
@@ -325,12 +338,20 @@ class VisitCalculator:
             
             porucheno_count = 0
             if project_code in array_df['Код анкеты'].values:
-                porucheno_mask = (
-                    (array_df['Код анкеты'] == project_code) &
-                    (array_df['Название проекта'] == project_name) &
-                    (array_df[' Статус'] == 'Поручено')
-                )
-                porucheno_count = porucheno_mask.sum()
+                # Определяем колонку статуса для Поручено
+                status_col_array = None
+                if 'Статус' in array_df.columns:
+                    status_col_array = 'Статус'
+                elif ' Статус' in array_df.columns:
+                    status_col_array = ' Статус'
+                
+                if status_col_array:
+                    porucheno_mask = (
+                        (array_df['Код анкеты'] == project_code) &
+                        (array_df['Название проекта'] == project_name) &
+                        (array_df[status_col_array] == 'Поручено')
+                    )
+                    porucheno_count = porucheno_mask.sum()
             
             result.at[idx, 'Поручено'] = porucheno_count
             
@@ -343,9 +364,6 @@ class VisitCalculator:
         result['Дней потрачено'] = 0
         result['Дней до конца проекта'] = 0
         result['Ср. план на день для 100% плана'] = 0.0
-        
-        # Даты из параметров
-        end_date_period = calc_params['end_date']
         
         for idx, row in result.iterrows():
             project_code = row['Код проекта']
@@ -377,7 +395,7 @@ class VisitCalculator:
                 plan_project = row['План проекта, шт.']
                 if duration_days > 0:
                     result.at[idx, 'Ср. план на день для 100% плана'] = round(plan_project / duration_days, 1)
-                    
+        
         # 7. РАСЧЕТ ДОПОЛНИТЕЛЬНЫХ ПОКАЗАТЕЛЕЙ
         result['Исполнение Проекта,%'] = 0.0
         result['Утилизация тайминга, %'] = 0.0
@@ -402,13 +420,16 @@ class VisitCalculator:
                 row['Утилизация тайминга, %'] > 80 and 
                 row['Утилизация тайминга, %'] < 100):
                 result.at[idx, 'Фокус'] = 'Да'
-                    
+        
+        # 8. ДЕЛЬТЫ
         result['△План/Факт на дату, шт.'] = result['План на дату, шт.'] - result['Факт на дату, шт.']
         result['△План/Факт проекта, шт.'] = result['План проекта, шт.'] - result['Факт проекта, шт.']
-                    
+        
         return result
+        
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

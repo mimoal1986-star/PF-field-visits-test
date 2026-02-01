@@ -344,36 +344,31 @@ class VisitCalculator:
                 
             result.at[idx, 'Факт проекта, шт.'] = fact_total
             
-            # 2. Распределяем факт по датам (только для массива)
+            # 2. ФАКТ НА ДАТУ: визиты от 1-го числа месяца до вчера
             if project_po in ['Чеккер', 'не определено'] and project_visits_array is not None:
-                # Используем даты из base_data
-                if pd.isna(start_date) or pd.isna(finish_date) or duration_days <= 0:
+                # Даты из extract_base_data
+                if pd.isna(start_date):
                     continue
-                    
-                # Те же 4 этапа что для плана
-                stage_days = duration_days // 4
-                extra_days = duration_days % 4
                 
-                # Распределяем визиты по этапам
-                day_pointer = start_date
+                # 1. Первый день месяца проекта
+                first_day = pd.Timestamp(start_date.year, start_date.month, 1)
                 
-                for stage in range(4):
-                    days_in_stage = stage_days + (1 if stage < extra_days else 0)
-                    stage_end = day_pointer + timedelta(days=days_in_stage - 1)
-                    
-                    # Визиты в этом этапе
-                    stage_visits = project_visits_array[
-                        (project_visits_array['Дата визита'] >= day_pointer) &
-                        (project_visits_array['Дата визита'] <= stage_end)
-                    ]
-                    
-                    # Считаем визиты в периоде календаря
-                    for _, visit_row in stage_visits.iterrows():
-                        visit_date = visit_row['Дата визита']
-                        if start_date_period <= visit_date.date() <= end_date_period:
-                            result.at[idx, 'Факт на дату, шт.'] += 1
-                    
-                    day_pointer = stage_end + timedelta(days=1)
+                # 2. Вчерашний день
+                yesterday = pd.Timestamp.now() - pd.Timedelta(days=1)
+                
+                # 3. Последний день месяца проекта
+                last_day = pd.Timestamp(start_date.year, start_date.month, 1) + pd.offsets.MonthEnd(1)
+                
+                # 4. Ограничиваем период
+                end_date = yesterday if yesterday <= last_day else last_day
+                
+                # 5. Считаем визиты в этом периоде
+                period_visits = project_visits_array[
+                    (project_visits_array['Дата визита'] >= first_day) &
+                    (project_visits_array['Дата визита'] <= end_date)
+                ]
+                
+                result.at[idx, 'Факт на дату, шт.'] = len(period_visits)
         
         # 3. Добавляем % после расчета факта
         result['%ПФ проекта'] = 0.0
@@ -507,6 +502,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

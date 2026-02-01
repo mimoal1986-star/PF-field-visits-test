@@ -939,7 +939,7 @@ if page == "📤 Загрузка данных":
                     
                     # 2. Считаем факт
                     fact_result = visit_calculator.calculate_fact_on_date_full(
-                        plan_result, google_df, array_df, params
+                        plan_result, google_df, array_df, cxway_df, params
                     )
                     
                     # 3. Сохраняем объединенный результат
@@ -1003,6 +1003,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

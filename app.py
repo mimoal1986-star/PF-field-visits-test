@@ -401,6 +401,18 @@ if page == "📤 Загрузка данных":
             st.session_state.uploaded_files['иерархия'] = hierarchy_df
             st.success(f"✅ Иерархия загружена: {len(hierarchy_df):,} строк")
             display_file_preview(hierarchy_df, "Просмотр иерархии")
+
+        st.subheader("5. 📡 CXWAY (дополнительно)")
+        cxway_file = st.file_uploader(
+            "Загрузите файл CXWAY.xlsx",
+            type=['xlsx', 'xls'],
+            key="cxway"
+        )
+        cxway_df = validate_file_upload(cxway_file, "CXWAY.xlsx")
+        if cxway_df is not None:
+            st.session_state.uploaded_files['cxway'] = cxway_df
+            st.success(f"✅ CXWAY загружен: {len(cxway_df):,} строк")
+            display_file_preview(cxway_df, "Просмотр данных CXWAY")
     
     # ==============================================
     # СЕКЦИЯ 2: СТАТУС И ОБРАБОТКА
@@ -929,6 +941,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

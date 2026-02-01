@@ -270,6 +270,10 @@ with st.sidebar:
     first_day = date(today.year, today.month, 1)
     yesterday = today - timedelta(days=1)
     
+    # Если yesterday раньше first_day (первый день месяца)
+    if yesterday < first_day:
+        yesterday = first_day
+    
     col1, col2 = st.columns(2)
     with col1:
         start_date = st.date_input(
@@ -925,6 +929,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

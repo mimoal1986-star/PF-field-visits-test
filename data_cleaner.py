@@ -1472,24 +1472,38 @@ class DataCleaner:
             return 0
         except:
             return 0
-
+    
     def merge_field_projects(self, array_field_df, cxway_field_df):
-        """Объединяет полевые проекты из массива и CXWAY (без удаления дублей)"""
         try:
-            if array_field_df is None or array_field_df.empty:
-                return cxway_field_df if cxway_field_df is not None else pd.DataFrame()
+            # 1. Фильтруем массив
+            if array_field_df is not None and not array_field_df.empty:
+                mask_array = (array_field_df['ПО'] == 'Чеккер') | (array_field_df['ПО'] == 'не определено')
+                array_filtered = array_field_df[mask_array].copy()
+            else:
+                array_filtered = pd.DataFrame()
             
-            if cxway_field_df is None or cxway_field_df.empty:
-                return array_field_df
+            # 2. Фильтруем CXWAY
+            if cxway_field_df is not None and not cxway_field_df.empty:
+                mask_cxway = (cxway_field_df['ПО'] == 'CXWAY') | (cxway_field_df['ПО'] == 'не определено')
+                cxway_filtered = cxway_field_df[mask_cxway].copy()
+            else:
+                cxway_filtered = pd.DataFrame()
             
-            # Объединяем DataFrames вертикально
-            combined = pd.concat([array_field_df, cxway_field_df], ignore_index=True)
+            # 3. Объединяем
+            if not array_filtered.empty and not cxway_filtered.empty:
+                combined = pd.concat([array_filtered, cxway_filtered], ignore_index=True)
+            elif not array_filtered.empty:
+                combined = array_filtered
+            elif not cxway_filtered.empty:
+                combined = cxway_filtered
+            else:
+                combined = pd.DataFrame()
             
             return combined
-        
+            
         except Exception as e:
-            st.error(f"Ошибка объединения полевых проектов: {e}")
-            return array_field_df
+            st.error(f"Ошибка объединения: {e}")
+            return array_field_df if array_field_df is not None else pd.DataFrame()
         
     def add_portal_to_array(self, array_df, google_df):
         """
@@ -1543,6 +1557,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

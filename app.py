@@ -5,7 +5,7 @@ import pandas as pd
 import sys
 import os
 import traceback
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from io import BytesIO
 
 # data_cleaner.py
@@ -925,6 +925,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

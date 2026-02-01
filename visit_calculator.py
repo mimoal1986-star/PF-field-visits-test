@@ -47,6 +47,31 @@ class VisitCalculator:
             else:
                 base['ПО'] = 'не определено'
             
+            # ====== ПЕРЕСТАНОВКА КОЛОНОК ======
+            # Желаемый порядок
+            desired_order = [
+                'Код проекта',
+                'Имя клиента',
+                'Название проекта',
+                'ЗОД',
+                'АСС',
+                'ЭМ',
+                'Регион short',
+                'Регион',
+                'ПО',
+                'Дата старта',           # ← сюда
+                'Дата финиша с продлением'  # ← сюда
+            ]
+            
+            # Оставляем только существующие колонки
+            existing_cols = [col for col in desired_order if col in base.columns]
+            other_cols = [col for col in base.columns if col not in existing_cols]
+            final_order = existing_cols + other_cols
+            
+            # Применяем новый порядок
+            base = base[final_order]
+            # =================================
+            
             # Удаляем дубликаты и возвращаем
             base = base.drop_duplicates(subset=['Код проекта', 'Название проекта'], keep='first')
             return base
@@ -445,4 +470,5 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 

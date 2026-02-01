@@ -114,6 +114,8 @@ class VisitCalculator:
         result = base_data.copy()
         result['План проекта, шт.'] = 0
         result['План на дату, шт.'] = 0.0
+        result['Дата старта проекта'] = None
+        result['Дата финиша проекта'] = None
         
         start_period = calc_params['start_date']
         end_period = calc_params['end_date']
@@ -126,6 +128,10 @@ class VisitCalculator:
             
             # 1. Ищем даты проекта в Google ТОЛЬКО ПО КОДУ
             start_date, end_date = self._get_project_dates(project_code, google_df)
+            
+            # ✅ СОХРАНЯЕМ ДАТЫ В РЕЗУЛЬТАТ
+            result.at[idx, 'Дата старта проекта'] = start_date
+            result.at[idx, 'Дата финиша проекта'] = end_date
             
             if start_date is None or end_date is None:
                 # Если дат нет - пропускаем проект
@@ -191,9 +197,11 @@ class VisitCalculator:
         result['Факт проекта, шт.'] = 0
         result['Факт на дату, шт.'] = 0
         
-        # ✅ ДОБАВЛЯЕМ КОЛОНКИ ДАТ
-        result['Дата старта проекта'] = None
-        result['Дата финиша проекта'] = None
+        # ✅ УБЕДИМСЯ ЧТО КОЛОНКИ ДАТ ЕСТЬ
+        if 'Дата старта проекта' not in result.columns:
+            result['Дата старта проекта'] = None
+        if 'Дата финиша проекта' not in result.columns:
+            result['Дата финиша проекта'] = None
         
         start_date_period = calc_params['start_date']
         end_date_period = calc_params['end_date']
@@ -204,26 +212,18 @@ class VisitCalculator:
             project_name = row['Название проекта']
             project_po = row['ПО']
             
-            # ✅ СОХРАНЯЕМ ДАТЫ ПРОЕКТА ИЗ GOOGLE
-            google_mask = (
-                (google_df['Код проекта RU00.000.00.01SVZ24'] == project_code) &
-                (google_df['Название волны на Чекере/ином ПО'] == project_name)
-            )
-            
-            if google_mask.any():
-                try:
-                    start_date = pd.to_datetime(google_df.loc[google_mask, 'Дата старта'].iloc[0])
-                    finish_date = pd.to_datetime(google_df.loc[google_mask, 'Дата финиша с продлением'].iloc[0])
-                    
-                    # Сохраняем даты в результат
+            # ✅ ЕСЛИ ДАТЫ ЕЩЕ НЕ СОХРАНЕНЫ - ИЩЕМ ИХ
+            if pd.isna(row['Дата старта проекта']) or pd.isna(row['Дата финиша проекта']):
+                start_date, finish_date = self._get_project_dates(project_code, google_df)
+                
+                if start_date is not None and finish_date is not None:
                     result.at[idx, 'Дата старта проекта'] = start_date
                     result.at[idx, 'Дата финиша проекта'] = finish_date
                     
                     # Длительность проекта (для расчета)
                     duration_days = (finish_date - start_date).days + 1
                     result.at[idx, 'Длительность проекта, кол-во дней'] = duration_days
-                    
-                except Exception:
+                else:
                     result.at[idx, 'Дата старта проекта'] = None
                     result.at[idx, 'Дата финиша проекта'] = None
                     result.at[idx, 'Длительность проекта, кол-во дней'] = 0
@@ -445,3 +445,4 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+

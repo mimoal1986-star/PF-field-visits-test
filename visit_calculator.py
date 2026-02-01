@@ -191,6 +191,10 @@ class VisitCalculator:
         result['Факт проекта, шт.'] = 0
         result['Факт на дату, шт.'] = 0
         
+        # ✅ ДОБАВЛЯЕМ КОЛОНКИ ДАТ
+        result['Дата старта проекта'] = None
+        result['Дата финиша проекта'] = None
+        
         start_date_period = calc_params['start_date']
         end_date_period = calc_params['end_date']
         surrogate_date = pd.Timestamp('1900-01-01')
@@ -200,11 +204,35 @@ class VisitCalculator:
             project_name = row['Название проекта']
             project_po = row['ПО']
             
+            # ✅ СОХРАНЯЕМ ДАТЫ ПРОЕКТА ИЗ GOOGLE
+            google_mask = (
+                (google_df['Код проекта RU00.000.00.01SVZ24'] == project_code) &
+                (google_df['Название волны на Чекере/ином ПО'] == project_name)
+            )
+            
+            if google_mask.any():
+                try:
+                    start_date = pd.to_datetime(google_df.loc[google_mask, 'Дата старта'].iloc[0])
+                    finish_date = pd.to_datetime(google_df.loc[google_mask, 'Дата финиша с продлением'].iloc[0])
+                    
+                    # Сохраняем даты в результат
+                    result.at[idx, 'Дата старта проекта'] = start_date
+                    result.at[idx, 'Дата финиша проекта'] = finish_date
+                    
+                    # Длительность проекта (для расчета)
+                    duration_days = (finish_date - start_date).days + 1
+                    result.at[idx, 'Длительность проекта, кол-во дней'] = duration_days
+                    
+                except Exception:
+                    result.at[idx, 'Дата старта проекта'] = None
+                    result.at[idx, 'Дата финиша проекта'] = None
+                    result.at[idx, 'Длительность проекта, кол-во дней'] = 0
+            
             # 1. Факт проекта из ВСЕХ источников
             fact_total = 0
             project_visits_array = None  # для расчета факта на дату
             
-            # ФАКТ из МАССИВА (только для проектов на Чеккере или не определено ПО)
+            # ФАКТ из МАССИВА (только для проектов на Чеккер или не определено ПО)
             if project_po in ['Чеккер', 'не определено']:
                 # Определяем правильное название колонки статуса
                 status_col_array = None
@@ -255,23 +283,18 @@ class VisitCalculator:
             
             # 2. Распределяем факт по датам (только для массива)
             if project_po in ['Чеккер', 'не определено'] and project_visits_array is not None:
-                # Находим даты проекта из Google
-                google_mask = (
-                    (google_df['Код проекта RU00.000.00.01SVZ24'] == project_code) &
-                    (google_df['Название волны на Чекере/ином ПО'] == project_name)
-                )
+                # Находим даты проекта из Google (уже сохранены выше)
+                start_date = result.at[idx, 'Дата старта проекта']
+                finish_date = result.at[idx, 'Дата финиша проекта']
                 
-                if google_mask.any():
-                    proj_start = pd.to_datetime(google_df.loc[google_mask, 'Дата старта'].iloc[0])
-                    proj_end = pd.to_datetime(google_df.loc[google_mask, 'Дата финиша с продлением'].iloc[0])
-                    
+                if pd.notna(start_date) and pd.notna(finish_date):
                     # Те же 4 этапа что для плана
-                    proj_duration = (proj_end - proj_start).days + 1
+                    proj_duration = (finish_date - start_date).days + 1
                     stage_days = proj_duration // 4
                     extra_days = proj_duration % 4
                     
                     # Распределяем визиты по этапам
-                    day_pointer = proj_start
+                    day_pointer = start_date
                     
                     for stage in range(4):
                         days_in_stage = stage_days + (1 if stage < extra_days else 0)
@@ -366,30 +389,17 @@ class VisitCalculator:
             if visits_to_100 > 0 and porucheno_count > 0:
                 result.at[idx, 'Доля Поручено, %'] = round((porucheno_count / visits_to_100) * 100, 1)
         
-        # 6. РАСЧЕТ ПОКАЗАТЕЛЕЙ ПО ДНЯМ
-        result['Длительность проекта, кол-во дней'] = 0
+        # 6. РАСЧЕТ ДОПОЛНИТЕЛЬНЫХ ПОКАЗАТЕЛЕЙ ПО ДНЯМ (используем сохраненные даты)
         result['Дней потрачено'] = 0
         result['Дней до конца проекта'] = 0
         result['Ср. план на день для 100% плана'] = 0.0
         
         for idx, row in result.iterrows():
-            project_code = row['Код проекта']
-            project_name = row['Название проекта']
+            start_date = row['Дата старта проекта']
+            finish_date = row['Дата финиша проекта']
+            duration_days = row['Длительность проекта, кол-во дней']
             
-            # Находим даты проекта из google_df
-            google_mask = (
-                (google_df['Код проекта RU00.000.00.01SVZ24'] == project_code) &
-                (google_df['Название волны на Чекере/ином ПО'] == project_name)
-            )
-            
-            if google_mask.any():
-                start_date = pd.to_datetime(google_df.loc[google_mask, 'Дата старта'].iloc[0])
-                finish_date = pd.to_datetime(google_df.loc[google_mask, 'Дата финиша с продлением'].iloc[0])
-                
-                # Длительность проекта
-                duration_days = (finish_date - start_date).days + 1
-                result.at[idx, 'Длительность проекта, кол-во дней'] = duration_days
-                
+            if pd.notna(start_date) and pd.notna(finish_date) and duration_days > 0:
                 # Дней потрачено
                 days_spent = (end_date_period - start_date.date()).days + 1
                 result.at[idx, 'Дней потрачено'] = max(0, min(days_spent, duration_days))
@@ -400,8 +410,7 @@ class VisitCalculator:
                 
                 # Средний план на день
                 plan_project = row['План проекта, шт.']
-                if duration_days > 0:
-                    result.at[idx, 'Ср. план на день для 100% плана'] = round(plan_project / duration_days, 1)
+                result.at[idx, 'Ср. план на день для 100% плана'] = round(plan_project / duration_days, 1)
         
         # 7. РАСЧЕТ ДОПОЛНИТЕЛЬНЫХ ПОКАЗАТЕЛЕЙ
         result['Исполнение Проекта,%'] = 0.0

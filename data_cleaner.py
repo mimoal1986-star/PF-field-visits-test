@@ -1340,7 +1340,6 @@ class DataCleaner:
             result['ПО'] = 'не определено'
         
         # 5. Добавление полного региона из справочника
-        
         region_mapping = {
             'AD': 'Республика Адыгея',
             'AL': 'Алтайский край',
@@ -1428,19 +1427,17 @@ class DataCleaner:
             'ZO': 'Запорожская область',
             'ZK': 'Забайкальский край'
         }
-    
-    # Использование в функции:
-    if 'Регион short' in result.columns:
-        def get_full_region(short):
-            if pd.isna(short) or str(short).strip() == '':
-                return 'не определен'
-            short_clean = str(short).strip().upper()
-            return region_mapping.get(short_clean, 'не определен')
         
-        result['Регион'] = result['Регион short'].apply(get_full_region)
-    else:
-        result['Регион'] = 'не определен'
-        
+        if 'Регион short' in result.columns:
+            def get_full_region(short):
+                if pd.isna(short) or str(short).strip() == '':
+                    return 'не определен'
+                short_clean = str(short).strip().upper()
+                return region_mapping.get(short_clean, 'не определен')
+            
+            result['Регион'] = result['Регион short'].apply(get_full_region)
+        else:
+            result['Регион'] = 'не определен'
         
         # 6. Метаданные
         result['Источник'] = 'CXWAY'
@@ -1546,6 +1543,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

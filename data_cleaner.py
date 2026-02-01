@@ -164,8 +164,8 @@ class DataCleaner:
         else:
             st.warning("   ⚠️ Колонка с кодом проекта не найдена")
         
-        # === ШАГ 5: Заполнить пустые даты ===
-        st.write("**5️⃣ Заполняю пустые даты...**")
+        # === ШАГ 5: Оставляем пустые даты как есть (ТОЛЬКО конвертация) ===
+        st.write("**5️⃣ Конвертирую даты...**")
 
         # ТОЛЬКО эти 2 колонки обрабатываем как даты
         date_cols_to_process = []
@@ -186,33 +186,18 @@ class DataCleaner:
             
             for col in date_cols:
                 try:
+                    # ТОЛЬКО конвертация, БЕЗ заполнения пустых!
                     df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
                     empty_dates = df_clean[col].isna().sum()
                     
                     if empty_dates > 0:
-                        col_lower = str(col).lower()
-                        is_start_date = any(word in col_lower for word in ['старт', 'начал', 'start'])
-                        is_end_date = any(word in col_lower for word in ['финиш', 'конец', 'end', 'заверш'])
-                        current_date = pd.Timestamp.now()
-                        
-                        for idx in df_clean[df_clean[col].isna()].index:
-                            if is_start_date:
-                                df_clean.at[idx, col] = current_date.replace(day=1)
-                            elif is_end_date:
-                                next_month = current_date.replace(day=28) + timedelta(days=4)
-                                df_clean.at[idx, col] = next_month - timedelta(days=next_month.day)
-                            else:
-                                df_clean.at[idx, col] = current_date
-                        
-                        date_fixes += empty_dates
-                        st.info(f"   Заполнено {empty_dates} пустых дат в '{col}'")
+                        # ВАЖНО: НЕ заполняем пустые даты!
+                        st.warning(f"   ⚠️ В колонке '{col}': {empty_dates} ПУСТЫХ дат")
+                        st.warning(f"      Проекты с пустыми датами БУДУТ ПРОПУЩЕНЫ в расчетах")
                 except Exception as e:
                     st.warning(f"   Ошибка в колонке '{col}': {str(e)[:100]}")
             
-            if date_fixes > 0:
-                st.success(f"   ✅ Заполнено {date_fixes} пустых дат")
-            else:
-                st.info("   ℹ️ Пустых дат не найдено")
+            st.success(f"   ✅ Даты сконвертированы")
         else:
             st.warning("   ⚠️ Колонки с датами не найдены")
         
@@ -1557,6 +1542,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

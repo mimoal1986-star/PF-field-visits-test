@@ -97,80 +97,6 @@ class VisitCalculator:
         
         return stages_plan, stages_days
 
-    def calculate_plan_on_date_full(self, base_data, google_df, array_df, calc_params):
-        """Рассчитывает 'План на дату, шт.' для всех проектов"""
-        
-        result = base_data.copy()
-        result['План проекта, шт.'] = 0
-        result['План на дату, шт.'] = 0.0
-        
-        start_period = calc_params['start_date']
-        end_period = calc_params['end_date']
-        coeffs = calc_params['coefficients']
-        
-        # Считаем план для каждого проекта
-        for idx, row in result.iterrows():
-            project_code = row['Код проекта']
-            project_name = row['Название проекта']
-            
-            # 1. Ищем даты проекта в Google
-            start_date, end_date = self._get_project_dates(project_code, project_name, google_df)
-            
-            if start_date is None or end_date is None:
-                # Проекта нет в Google - пропускаем
-                continue
-            
-            # 2. Считаем общий план проекта
-            total_plan = 0
-            
-            # Смотрим в массиве (для проектов на Чеккере или не определено ПО)
-            if row['ПО'] in ['Чеккер', 'не определено']:
-                project_rows = array_df[
-                    (array_df['Код анкеты'] == project_code) & 
-                    (array_df['Название проекта'] == project_name)
-                ]
-                total_plan += len(project_rows)
-            
-            # TODO: Здесь можно добавить логику для CXWAY
-            # if row['ПО'] in ['CXWAY', 'не определено']:
-            #     cxway_plan = len(cxway_rows)  # Нужен доступ к данным CXWAY
-            #     total_plan += cxway_plan
-            
-            if total_plan == 0:
-                continue
-                
-            result.at[idx, 'План проекта, шт.'] = total_plan
-            
-            # 3. Считаем длительность проекта
-            duration_days = (end_date - start_date).days + 1
-            
-            # 4. Распределяем план по этапам
-            stages_plan, stages_days = self._calculate_stages_plan(total_plan, duration_days, coeffs)
-            
-            # 5. Считаем план на дату (распределение по дням)
-            plan_on_date = 0.0
-            current_date = start_date
-            
-            for stage_idx in range(4):
-                stage_plan = stages_plan[stage_idx]
-                stage_days = stages_days[stage_idx]
-                
-                if stage_plan > 0 and stage_days > 0:
-                    daily_plan = stage_plan / stage_days
-                    
-                    # Для каждого дня этапа
-                    for day_offset in range(stage_days):
-                        current_day = current_date + timedelta(days=day_offset)
-                        
-                        # Если день в периоде расчета
-                        if start_period <= current_day.date() <= end_period:
-                            plan_on_date += daily_plan
-                
-                current_date += timedelta(days=stage_days)
-            
-            result.at[idx, 'План на дату, шт.'] = round(plan_on_date, 1)
-        
-        return result
     
     def calculate_plan_on_date_full(self, base_data, google_df, array_df, cxway_df, calc_params):
     """Рассчитывает 'План на дату, шт.' для всех проектов (Массив + CXWAY)"""
@@ -253,4 +179,5 @@ class VisitCalculator:
  
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 

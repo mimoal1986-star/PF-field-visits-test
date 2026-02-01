@@ -1487,9 +1487,9 @@ class DataCleaner:
             
             return combined
         
-    except Exception as e:
-        st.error(f"Ошибка объединения полевых проектов: {e}")
-        return array_field_df
+        except Exception as e:
+            st.error(f"Ошибка объединения полевых проектов: {e}")
+            return array_field_df
         
     def add_portal_to_array(self, array_df, google_df):
         """
@@ -1543,6 +1543,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

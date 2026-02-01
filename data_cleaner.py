@@ -216,19 +216,19 @@ class DataCleaner:
                 
             col_lower = str(col).lower()
             
-            # if any(word in col_lower for word in ['старт', 'начал', 'start']):
-            #     try:
-            #         if df_clean[col].dtype != 'datetime64[ns]':
-            #             df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+            if any(word in col_lower for word in ['старт', 'начал', 'start']):
+                try:
+                    if df_clean[col].dtype != 'datetime64[ns]':
+                        df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
                     
-            #         mask = df_clean[col] < first_day_current_month
+                    mask = df_clean[col] < first_day_current_month
                     
-            #         if mask.any():
-            #             df_clean.loc[mask, col] = first_day_current_month
-            #             date_rules_applied += mask.sum()
-            #             st.info(f"   Исправлено {mask.sum()} дат старта")
-            #     except Exception as e:
-            #         st.warning(f"   Не удалось обработать даты старта в '{col}': {str(e)[:100]}")
+                    if mask.any():
+                        df_clean.loc[mask, col] = first_day_current_month
+                        date_rules_applied += mask.sum()
+                        st.info(f"   Исправлено {mask.sum()} дат старта")
+                except Exception as e:
+                    st.warning(f"   Не удалось обработать даты старта в '{col}': {str(e)[:100]}")
             
             elif any(word in col_lower for word in ['финиш', 'конец', 'end']):
                 try:
@@ -1542,6 +1542,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

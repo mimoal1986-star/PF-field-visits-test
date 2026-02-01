@@ -932,6 +932,8 @@ if page == "📤 Загрузка данных":
                     array_df = st.session_state.cleaned_data['портал']
                     params = st.session_state['plan_calc_params']
 
+                    cxway_df = st.session_state.uploaded_files.get('cxway')
+                    
                     # 1. Считаем план
                     plan_result = visit_calculator.calculate_plan_on_date_full(
                         base_data, google_df, array_df, cxway_df, params
@@ -1003,6 +1005,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

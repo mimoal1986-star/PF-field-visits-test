@@ -282,8 +282,8 @@ class DataCleaner:
                         try:
                             # Находим строки где год сильно отличается от целевого
                             mask_year_error = (
-                                (abs(df_clean[start_col].dt.year - target_year) > 1) |
-                                (abs(df_clean[end_col].dt.year - target_year) > 1)
+                                (df_clean[start_col].dt.year != target_year) | 
+                                (df_clean[end_col].dt.year != target_year)
                             )
                             
                             if mask_year_error.any():
@@ -1617,6 +1617,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

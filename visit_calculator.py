@@ -136,8 +136,8 @@ class VisitCalculator:
             # ПЛАН из CXWAY (только для проектов на CXWAY или не определено ПО)
             if project_po in ['CXWAY', 'не определено'] and cxway_df is not None:
                 project_rows_cxway = cxway_df[
-                    (cxway_df['Код проекта'] == project_code) &
-                    (cxway_df['Название проекта'] == project_name)
+                    (cxway_df['Project Code'] == project_code) &
+                    (cxway_df['Project Name'] == project_name)
                 ]
                 total_plan += len(project_rows_cxway)
             
@@ -179,6 +179,7 @@ class VisitCalculator:
  
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

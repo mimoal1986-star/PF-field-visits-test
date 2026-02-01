@@ -146,6 +146,11 @@ def process_field_projects_with_stats():
             
         autocoding_df = st.session_state.uploaded_files.get('автокодификация')
         
+        hierarchy_df = st.session_state.uploaded_files.get('иерархия')
+        if hierarchy_df is None:
+            st.warning("Файл иерархии не загружен, CXWAY не будет обработан")
+            cxway_processed = None
+        
         if google_df is None or array_df is None or autocoding_df is None:
             st.error("❌ Не удалось получить все необходимые данные")
             return False
@@ -998,6 +1003,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

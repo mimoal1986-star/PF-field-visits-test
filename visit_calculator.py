@@ -169,13 +169,11 @@ class VisitCalculator:
         return stages_plan, stages_days
     
     def calculate_plan_on_date_full(self, base_data, google_df, array_df, cxway_df, calc_params):
-        """Рассчитывает 'План на дату, шт.' для всех проектов"""
+        """Рассчитывает 'План на дату, шт.' для всех проектов - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
         
         result = base_data.copy()
         result['План проекта, шт.'] = 0
         result['План на дату, шт.'] = 0.0
-        result['Дата старта проекта'] = None
-        result['Дата финиша проекта'] = None
         
         start_period = calc_params['start_date']
         end_period = calc_params['end_date']
@@ -186,16 +184,16 @@ class VisitCalculator:
             project_name = row['Название проекта']
             project_po = row['ПО']
             
-            # 1. Ищем даты проекта в Google ТОЛЬКО ПО КОДУ
-            start_date, end_date = self._get_project_dates(project_code, google_df)
+            # ✅ ИСПРАВЛЕНИЕ: Берем даты ИЗ БАЗОВЫХ ДАННЫХ
+            start_date = row.get('Дата старта')
+            end_date = row.get('Дата финиша с продлением')
             
-            # ✅ СОХРАНЯЕМ ДАТЫ В РЕЗУЛЬТАТ
-            result.at[idx, 'Дата старта проекта'] = start_date
-            result.at[idx, 'Дата финиша проекта'] = end_date
-            
-            if start_date is None or end_date is None:
+            if pd.isna(start_date) or pd.isna(end_date):
                 # Если дат нет - пропускаем проект
                 continue
+            
+            # ✅ Длительность уже рассчитана в base_data
+            duration_days = row.get('Длительность проекта, кол-во дней', 0)
             
             # 2. Считаем общий план проекта из всех источников
             total_plan = 0
@@ -221,9 +219,10 @@ class VisitCalculator:
                     
             result.at[idx, 'План проекта, шт.'] = total_plan
             
-            # 3. Считаем длительность проекта
-            duration_days = (end_date - start_date).days + 1
-            
+            # 3. Используем длительность из base_data (уже рассчитана)
+            if duration_days <= 0:
+                continue
+                
             # 4. Распределяем план по этапам
             stages_plan, stages_days = self._calculate_stages_plan(total_plan, duration_days, coeffs)
             
@@ -272,21 +271,25 @@ class VisitCalculator:
             project_name = row['Название проекта']
             project_po = row['ПО']
             
-            # ✅ ЕСЛИ ДАТЫ ЕЩЕ НЕ СОХРАНЕНЫ - ИЩЕМ ИХ
-            if pd.isna(row['Дата старта проекта']) or pd.isna(row['Дата финиша проекта']):
-                start_date, finish_date = self._get_project_dates(project_code, google_df)
-                
-                if start_date is not None and finish_date is not None:
-                    result.at[idx, 'Дата старта проекта'] = start_date
-                    result.at[idx, 'Дата финиша проекта'] = finish_date
-                    
-                    # Длительность проекта (для расчета)
+            # ✅ ИСПРАВЛЕНИЕ: Берем даты ИЗ БАЗОВЫХ ДАННЫХ (из extract_base_data)
+            start_date = row.get('Дата старта')
+            finish_date = row.get('Дата финиша с продлением')
+            duration_days = row.get('Длительность проекта, кол-во дней', 0)
+            
+            # Сохраняем в старые колонки для обратной совместимости
+            if pd.notna(start_date):
+                result.at[idx, 'Дата старта проекта'] = start_date
+            if pd.notna(finish_date):
+                result.at[idx, 'Дата финиша проекта'] = finish_date
+            
+            # Если дат нет в новых колонках, используем старые
+            if pd.isna(start_date):
+                start_date = row.get('Дата старта проекта')
+            if pd.isna(finish_date):
+                finish_date = row.get('Дата финиша проекта')
+            if duration_days == 0:
+                if pd.notna(start_date) and pd.notna(finish_date):
                     duration_days = (finish_date - start_date).days + 1
-                    result.at[idx, 'Длительность проекта, кол-во дней'] = duration_days
-                else:
-                    result.at[idx, 'Дата старта проекта'] = None
-                    result.at[idx, 'Дата финиша проекта'] = None
-                    result.at[idx, 'Длительность проекта, кол-во дней'] = 0
             
             # 1. Факт проекта из ВСЕХ источников
             fact_total = 0
@@ -343,36 +346,34 @@ class VisitCalculator:
             
             # 2. Распределяем факт по датам (только для массива)
             if project_po in ['Чеккер', 'не определено'] and project_visits_array is not None:
-                # Находим даты проекта из Google (уже сохранены выше)
-                start_date = result.at[idx, 'Дата старта проекта']
-                finish_date = result.at[idx, 'Дата финиша проекта']
+                # Используем даты из base_data
+                if pd.isna(start_date) or pd.isna(finish_date) or duration_days <= 0:
+                    continue
+                    
+                # Те же 4 этапа что для плана
+                stage_days = duration_days // 4
+                extra_days = duration_days % 4
                 
-                if pd.notna(start_date) and pd.notna(finish_date):
-                    # Те же 4 этапа что для плана
-                    proj_duration = (finish_date - start_date).days + 1
-                    stage_days = proj_duration // 4
-                    extra_days = proj_duration % 4
+                # Распределяем визиты по этапам
+                day_pointer = start_date
+                
+                for stage in range(4):
+                    days_in_stage = stage_days + (1 if stage < extra_days else 0)
+                    stage_end = day_pointer + timedelta(days=days_in_stage - 1)
                     
-                    # Распределяем визиты по этапам
-                    day_pointer = start_date
+                    # Визиты в этом этапе
+                    stage_visits = project_visits_array[
+                        (project_visits_array['Дата визита'] >= day_pointer) &
+                        (project_visits_array['Дата визита'] <= stage_end)
+                    ]
                     
-                    for stage in range(4):
-                        days_in_stage = stage_days + (1 if stage < extra_days else 0)
-                        stage_end = day_pointer + timedelta(days=days_in_stage - 1)
-                        
-                        # Визиты в этом этапе
-                        stage_visits = project_visits_array[
-                            (project_visits_array['Дата визита'] >= day_pointer) &
-                            (project_visits_array['Дата визита'] <= stage_end)
-                        ]
-                        
-                        # Считаем визиты в периоде календаря
-                        for _, visit_row in stage_visits.iterrows():
-                            visit_date = visit_row['Дата визита']
-                            if start_date_period <= visit_date.date() <= end_date_period:
-                                result.at[idx, 'Факт на дату, шт.'] += 1
-                        
-                        day_pointer = stage_end + timedelta(days=1)
+                    # Считаем визиты в периоде календаря
+                    for _, visit_row in stage_visits.iterrows():
+                        visit_date = visit_row['Дата визита']
+                        if start_date_period <= visit_date.date() <= end_date_period:
+                            result.at[idx, 'Факт на дату, шт.'] += 1
+                    
+                    day_pointer = stage_end + timedelta(days=1)
         
         # 3. Добавляем % после расчета факта
         result['%ПФ проекта'] = 0.0
@@ -455,9 +456,10 @@ class VisitCalculator:
         result['Ср. план на день для 100% плана'] = 0.0
         
         for idx, row in result.iterrows():
-            start_date = row['Дата старта проекта']
-            finish_date = row['Дата финиша проекта']
-            duration_days = row['Длительность проекта, кол-во дней']
+            # Используем даты из base_data (новые или старые колонки)
+            start_date = row.get('Дата старта') or row.get('Дата старта проекта')
+            finish_date = row.get('Дата финиша с продлением') or row.get('Дата финиша проекта')
+            duration_days = row.get('Длительность проекта, кол-во дней', 0)
             
             if pd.notna(start_date) and pd.notna(finish_date) and duration_days > 0:
                 # Дней потрачено
@@ -505,6 +507,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

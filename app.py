@@ -268,7 +268,7 @@ with st.sidebar:
     st.write("**Период расчета:**")
     today = date.today()
     first_day = date(today.year, today.month, 1)
-    yesterday = date(today.year, today.month, today.day - 1) if today.day > 1 else date(today.year, today.month - 1 if today.month > 1 else 12, 28)
+    yesterday = today - timedelta(days=1)
     
     col1, col2 = st.columns(2)
     with col1:
@@ -925,6 +925,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

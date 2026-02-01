@@ -47,6 +47,40 @@ class VisitCalculator:
             else:
                 base['ПО'] = 'не определено'
             
+            # ====== ДОБАВЛЯЕМ ДАТЫ СТАРТА И ФИНИША ======
+            base['Дата старта'] = None
+            base['Дата финиша с продлением'] = None
+            base['Длительность проекта, кол-во дней'] = 0
+            
+            if google_df_clean is not None and not google_df_clean.empty:
+                # Колонки с датами в Google таблице
+                start_col = 'Дата старта'
+                end_col = 'Дата финиша с продлением'
+                code_col = 'Код проекта RU00.000.00.01SVZ24'
+                
+                if start_col in google_df_clean.columns and end_col in google_df_clean.columns:
+                    for idx, row in base.iterrows():
+                        mask = google_df_clean[code_col] == row['Код проекта']
+                        if mask.any():
+                            # Берем ПЕРВУЮ найденную запись
+                            start_date = pd.to_datetime(
+                                google_df_clean.loc[mask, start_col].iloc[0], 
+                                errors='coerce'
+                            )
+                            end_date = pd.to_datetime(
+                                google_df_clean.loc[mask, end_col].iloc[0], 
+                                errors='coerce'
+                            )
+                            
+                            if pd.notna(start_date) and pd.notna(end_date):
+                                base.at[idx, 'Дата старта'] = start_date
+                                base.at[idx, 'Дата финиша с продлением'] = end_date
+                                
+                                # РАСЧЕТ ДЛИТЕЛЬНОСТИ ПРОЕКТА
+                                duration_days = (end_date - start_date).days + 1
+                                base.at[idx, 'Длительность проекта, кол-во дней'] = max(0, duration_days)
+            # =============================================
+            
             # ====== ПЕРЕСТАНОВКА КОЛОНОК ======
             # Желаемый порядок
             desired_order = [
@@ -59,8 +93,9 @@ class VisitCalculator:
                 'Регион short',
                 'Регион',
                 'ПО',
-                'Дата старта',           # ← сюда
-                'Дата финиша с продлением'  # ← сюда
+                'Дата старта',           # ← теперь эти колонки есть
+                'Дата финиша с продлением',
+                'Длительность проекта, кол-во дней'  # ← добавляем длительность тоже
             ]
             
             # Оставляем только существующие колонки
@@ -470,5 +505,6 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 

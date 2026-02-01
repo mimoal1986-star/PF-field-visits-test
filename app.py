@@ -176,8 +176,48 @@ def process_field_projects_with_stats():
             
             st.session_state.cleaned_data['полевые_проекты'] = field_df
             st.session_state.cleaned_data['неполевые_проекты'] = non_field_df
+
         
-        st.write("### 🎯 Шаг 4: Создание отчета")
+        st.write("### 🎯 Шаг 4: Обработка CXWAY (если есть)")
+        
+        # Проверяем есть ли файл CXWAY
+        cxway_df = st.session_state.uploaded_files.get('cxway')
+        cxway_processed = None
+        
+        if cxway_df is not None:
+            with st.spinner("Обрабатываю CXWAY..."):
+                # Очищаем и преобразуем CXWAY
+                cxway_processed = data_cleaner.clean_cxway(
+                    cxway_df, 
+                    hierarchy_df, 
+                    google_updated
+                )
+                
+                if cxway_processed is not None and not cxway_processed.empty:
+                    st.success(f"✅ CXWAY обработан: {len(cxway_processed)} полевых проектов")
+                    
+                    # Объединяем с полевыми проектами из массива
+                    if field_df is not None and not field_df.empty:
+                        combined_field_projects = data_cleaner.merge_field_projects(
+                            field_df, 
+                            cxway_processed
+                        )
+                        
+                        # Обновляем поле field_df объединенными данными
+                        field_df = combined_field_projects
+                        st.session_state.cleaned_data['полевые_проекты'] = field_df
+                        st.success(f"✅ Объединено с CXWAY: {len(field_df)} полевых проектов")
+                    else:
+                        # Если в массиве не было полевых, используем только CXWAY
+                        field_df = cxway_processed
+                        st.session_state.cleaned_data['полевые_проекты'] = field_df
+                        st.success(f"✅ Используем только CXWAY: {len(field_df)} проектов")
+                else:
+                    st.info("ℹ️ CXWAY не содержит полевых проектов или пуст")
+        else:
+            st.info("ℹ️ Файл CXWAY не загружен, пропускаем")
+        
+        st.write("### 🎯 Шаг 5: Создание отчета")
         with st.spinner("Формирую Excel файл..."):
             excel_output = data_cleaner.export_split_array_to_excel(field_df, non_field_df)
             if excel_output:
@@ -185,6 +225,7 @@ def process_field_projects_with_stats():
                 st.success("✅ Отчет создан успешно!")
             else:
                 st.warning("⚠️ Не удалось создать Excel файл")
+                
         # ============================================
         # 🆕 ИЗВЛЕЧЕНИЕ БАЗОВЫХ ДАННЫХ ДЛЯ ПЛАН/ФАКТА
         # ============================================
@@ -225,17 +266,33 @@ def process_field_projects_with_stats():
                 st.warning(f"⚠️ Ошибка извлечения базовых данных: {str(e)[:100]}")
         
         # Показываем статистику
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Полевые проекты", 
-                     len(field_df) if field_df is not None else 0)
-        with col2:
-            st.metric("Неполевые проекты", 
-                     len(non_field_df) if non_field_df is not None else 0)
-        with col3:
-            total = (len(field_df) if field_df is not None else 0) + \
-                   (len(non_field_df) if non_field_df is not None else 0)
-            st.metric("Всего", total)
+        st.write("### 📊 Статистика после обработки")
+        
+        cols = st.columns(4)
+        with cols[0]:
+            total_field = len(field_df) if field_df is not None else 0
+            st.metric("Полевые проекты", total_field)
+            
+        with cols[1]:
+            total_non_field = len(non_field_df) if non_field_df is not None else 0
+            st.metric("Неполевые проекты", total_non_field)
+            
+        with cols[2]:
+            total_all = total_field + total_non_field
+            st.metric("Всего проектов", total_all)
+            
+        with cols[3]:
+            if cxway_processed is not None and not cxway_processed.empty:
+                cxway_count = len(cxway_processed)
+                source_text = f"Из CXWAY: {cxway_count}"
+            else:
+                source_text = "CXWAY: нет"
+            st.metric("Источник", source_text)
+        
+        # Дополнительная информация
+        if cxway_processed is not None and not cxway_processed.empty:
+            field_from_array = total_field - cxway_count
+            st.info(f"📊 Детали: {cxway_count} проектов из CXWAY + {field_from_array} из Массива")
         
         return True
         
@@ -941,6 +998,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

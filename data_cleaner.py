@@ -1441,16 +1441,6 @@ class DataCleaner:
     else:
         result['Регион'] = 'не определен'
         
-        if 'Регион short' in result.columns:
-            def get_full_region(short):
-                if pd.isna(short) or str(short).strip() == '':
-                    return 'не определен'
-                short_clean = str(short).strip().upper()
-                return region_mapping.get(short_clean, 'не определен')
-            
-            result['Регион'] = result['Регион short'].apply(get_full_region)
-        else:
-            result['Регион'] = 'не определен'
         
         # 6. Метаданные
         result['Источник'] = 'CXWAY'
@@ -1556,6 +1546,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

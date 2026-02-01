@@ -1,5 +1,5 @@
 # app.py
-# draft 1.8
+# draft 1.9
 import streamlit as st
 import pandas as pd
 import sys
@@ -995,6 +995,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

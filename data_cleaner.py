@@ -202,99 +202,116 @@ class DataCleaner:
             st.warning("   ⚠️ Колонки с датами не найдены")
         
         # === ШАГ 6: Исправить даты по бизнес-правилам ===
+
         st.write("**6️⃣ Применяю бизнес-правила для дат...**")
         
         date_rules_applied = 0
-        today = pd.Timestamp.now()
-        first_day_current_month = today.replace(day=1, hour=0, minute=0, second=0)
-        next_month = today.replace(day=28) + timedelta(days=4)
-        last_day_current_month = next_month - timedelta(days=next_month.day)
+        
+        # АНАЛИЗ ВСЕХ ДАТ В ДАННЫХ
+        st.info("   🔍 Анализирую все даты в проектах...")
+        
+        # Собираем ВСЕ даты старта и финиша
+        all_dates = []
+        all_years = []
         
         for col in date_cols:
             if col not in df_clean.columns:
                 continue
+            
+            try:
+                # Убедимся что колонка в datetime формате
+                if df_clean[col].dtype != 'datetime64[ns]':
+                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
                 
-            col_lower = str(col).lower()
+                # Собираем валидные даты (не NaT)
+                valid_dates = df_clean[col].dropna()
+                all_dates.extend(valid_dates.tolist())
+                all_years.extend(valid_dates.dt.year.tolist())
+                
+            except Exception as e:
+                st.warning(f"   Не удалось проанализировать колонку '{col}': {str(e)[:100]}")
+        
+        # Находим максимальный месяц среди ВСЕХ дат
+        if all_dates:
+            max_date = max(all_dates)
+            max_year = max(all_years) if all_years else max_date.year
+            max_month = max_date.month
             
-            if any(word in col_lower for word in ['старт', 'начал', 'start']):
-                try:
-                    if df_clean[col].dtype != 'datetime64[ns]':
-                        df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
-                    
-                    mask = df_clean[col] < first_day_current_month
-                    
-                    if mask.any():
-                        df_clean.loc[mask, col] = first_day_current_month
-                        date_rules_applied += mask.sum()
-                        st.info(f"   Исправлено {mask.sum()} дат старта")
-                except Exception as e:
-                    st.warning(f"   Не удалось обработать даты старта в '{col}': {str(e)[:100]}")
+            st.info(f"   📅 Максимальная дата в данных: {max_date.strftime('%d.%m.%Y')}")
+            st.info(f"   📊 Максимальный месяц: {max_month}/{max_year}")
             
-            elif any(word in col_lower for word in ['финиш', 'конец', 'end']):
-                try:
-                    if df_clean[col].dtype != 'datetime64[ns]':
-                        df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+            # Определяем границы для бизнес-правил
+            first_day_max_month = pd.Timestamp(year=max_year, month=max_month, day=1)
+            
+            # Последний день максимального месяца
+            if max_month == 12:
+                next_month_first = pd.Timestamp(year=max_year+1, month=1, day=1)
+            else:
+                next_month_first = pd.Timestamp(year=max_year, month=max_month+1, day=1)
+            
+            last_day_max_month = next_month_first - pd.Timedelta(days=1)
+            
+            st.info(f"   📆 Период для бизнес-правил: с {first_day_max_month.strftime('%d.%m.%Y')} по {last_day_max_month.strftime('%d.%m.%Y')}")
+            
+            # ПРИМЕНЯЕМ БИЗНЕС-ПРАВИЛА
+            for col in date_cols:
+                if col not in df_clean.columns:
+                    continue
                     
-                    mask = df_clean[col] > last_day_current_month
-                    
-                    if mask.any():
-                        df_clean.loc[mask, col] = last_day_current_month
-                        date_rules_applied += mask.sum()
-                        st.info(f"   Исправлено {mask.sum()} дат финиша")
-                except Exception as e:
-                    st.warning(f"   Не удалось обработать даты финиша в '{col}': {str(e)[:100]}")
-
-        # === Проверка ошибок в годе ===
-        st.info("   🔍 Проверяю ошибки в годе дат...")
-        
-        # Ищем колонки старта и финиша
-        start_date_cols = []
-        end_date_cols = []
-        
-        for col in date_cols:
-            col_lower = str(col).lower()
-            if any(word in col_lower for word in ['старт', 'начал', 'start']):
-                start_date_cols.append(col)
-            elif any(word in col_lower for word in ['финиш', 'конец', 'end']):
-                end_date_cols.append(col)
-        
-        # Если нашли обе колонки
-        if start_date_cols and end_date_cols:
-            for start_col in start_date_cols:
-                for end_col in end_date_cols:
+                col_lower = str(col).lower()
+                
+                # БИЗНЕС-ПРАВИЛО ДЛЯ ДАТ СТАРТА
+                if any(word in col_lower for word in ['старт', 'начал', 'start']):
                     try:
-                        # Убедимся что обе колонки - datetime
-                        if (df_clean[start_col].dtype == 'datetime64[ns]' and 
-                            df_clean[end_col].dtype == 'datetime64[ns]'):
+                        if df_clean[col].dtype != 'datetime64[ns]':
+                            df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                        
+                        # Находим даты старта, которые раньше первого дня максимального месяца
+                        mask = df_clean[col] < first_day_max_month
+                        
+                        if mask.any():
+                            st.info(f"   ⚠️ Найдено {mask.sum()} дат старта раньше {first_day_max_month.strftime('%d.%m.%Y')}")
                             
-                            # Находим строки где финиш раньше старта
-                            mask = df_clean[end_col] < df_clean[start_col]
+                            # Примеры изменяемых дат (первые 3)
+                            example_indices = df_clean[mask].index[:3]
+                            for idx in example_indices:
+                                old_date = df_clean.at[idx, col]
+                                st.info(f"     Строка {idx}: {old_date.strftime('%d.%m.%Y')} → {first_day_max_month.strftime('%d.%m.%Y')}")
                             
-                            if mask.any():
-                                corrected_count = 0
-                                
-                                for idx in df_clean[mask].index:
-                                    start_date = df_clean.at[idx, start_col]
-                                    end_date = df_clean.at[idx, end_col]
-                                    
-                                    # Проверяем разницу (в днях)
-                                    diff_days = (start_date - end_date).days
-                                    
-                                    # Если разница от 1 до 365 дней
-                                    # → считаем что ошибка в годе
-                                    if 1 <= diff_days <= 365:
-                                        # Исправляем год финиша = год старта
-                                        corrected_date = end_date.replace(year=start_date.year)
-                                        df_clean.at[idx, end_col] = corrected_date
-                                        corrected_count += 1
-                                        st.info(f"      Строка {idx+1}: {end_date.date()} → {corrected_date.date()}")
-                                
-                                if corrected_count > 0:
-                                    st.success(f"   ✅ Исправлено {corrected_count} ошибок в годе")
-                                    date_rules_applied += corrected_count
-                                    
+                            # Применяем правило
+                            df_clean.loc[mask, col] = first_day_max_month
+                            date_rules_applied += mask.sum()
+                            
                     except Exception as e:
-                        st.warning(f"   Ошибка проверки '{start_col}' и '{end_col}': {str(e)[:50]}")
+                        st.warning(f"   Не удалось обработать даты старта в '{col}': {str(e)[:100]}")
+                
+                # БИЗНЕС-ПРАВИЛО ДЛЯ ДАТ ФИНИША
+                elif any(word in col_lower for word in ['финиш', 'конец', 'end']):
+                    try:
+                        if df_clean[col].dtype != 'datetime64[ns]':
+                            df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                        
+                        # Находим даты финиша, которые позже последнего дня максимального месяца
+                        mask = df_clean[col] > last_day_max_month
+                        
+                        if mask.any():
+                            st.info(f"   ⚠️ Найдено {mask.sum()} дат финиша позже {last_day_max_month.strftime('%d.%m.%Y')}")
+                            
+                            # Примеры изменяемых дат (первые 3)
+                            example_indices = df_clean[mask].index[:3]
+                            for idx in example_indices:
+                                old_date = df_clean.at[idx, col]
+                                st.info(f"     Строка {idx}: {old_date.strftime('%d.%m.%Y')} → {last_day_max_month.strftime('%d.%m.%Y')}")
+                            
+                            # Применяем правило
+                            df_clean.loc[mask, col] = last_day_max_month
+                            date_rules_applied += mask.sum()
+                            
+                    except Exception as e:
+                        st.warning(f"   Не удалось обработать даты финиша в '{col}': {str(e)[:100]}")
+                        
+        else:
+            st.warning("   ⚠️ Не найдено валидных дат для анализа")
         
         # === ИТОГИ ===
         if date_rules_applied > 0:
@@ -1542,6 +1559,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

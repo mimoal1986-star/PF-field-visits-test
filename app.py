@@ -336,11 +336,18 @@ with st.sidebar:
     st.write("**Период расчета:**")
     today = date.today()
     first_day = date(today.year, today.month, 1)
-    yesterday = today - timedelta(days=1)
     
-    # Если yesterday раньше first_day (первый день месяца)
-    if yesterday < first_day:
-        yesterday = first_day
+    # сохраняем дату окончания
+    if "yesterday_fixed" not in st.session_state:
+        yesterday = today - timedelta(days=1)
+        # Если yesterday раньше first_day (первый день месяца)
+        if yesterday < first_day:
+            yesterday = first_day
+        # Сохраняем эту дату
+        st.session_state["yesterday_fixed"] = yesterday
+    else:
+        # Используем сохраненную дату
+        yesterday = st.session_state["yesterday_fixed"]
     
     col1, col2 = st.columns(2)
     with col1:
@@ -993,6 +1000,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

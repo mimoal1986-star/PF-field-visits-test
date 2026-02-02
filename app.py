@@ -343,8 +343,7 @@ with st.sidebar:
         # Если yesterday раньше first_day (первый день месяца)
         if yesterday < first_day:
             yesterday = first_day
-        # Сохраняем эту дату
-        st.session_state["yesterday_fixed"] = yesterday
+
     else:
         # Используем сохраненную дату
         yesterday = st.session_state["yesterday_fixed"]
@@ -1002,6 +1001,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

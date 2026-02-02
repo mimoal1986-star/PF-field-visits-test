@@ -332,6 +332,7 @@ with st.sidebar:
     st.markdown("---")
     st.subheader("📅 Параметры расчета план/факта")
     
+
     # Календарь периода
     st.write("**Период расчета:**")
     today = date.today()
@@ -343,7 +344,8 @@ with st.sidebar:
         # Если yesterday раньше first_day (первый день месяца)
         if yesterday < first_day:
             yesterday = first_day
-
+        # ✅ СОХРАНЯЕМ ПРИ ПЕРВОМ ЗАПУСКЕ
+        st.session_state["yesterday_fixed"] = yesterday
     else:
         # Используем сохраненную дату
         yesterday = st.session_state["yesterday_fixed"]
@@ -363,7 +365,7 @@ with st.sidebar:
         # ✅ СОХРАНЯЕМ выбранную дату окончания (ОДНА СТРОЧКА)
         st.session_state["yesterday_fixed"] = end_date
     
-    # Проверка: даты в одном месяце
+    # Проверка: даты в одном месяце ← ТЕПЕРЬ ЗДЕСЬ!
     if start_date.month != end_date.month:
         st.warning("⚠️ Даты должны быть в одном месяце")
         end_date = start_date.replace(day=28)  # Корректируем
@@ -879,33 +881,35 @@ if page == "📤 Загрузка данных":
 
         # Кнопка расчета план/факт
         if st.button("📊 Рассчитать план/факт", type="primary", use_container_width=True):
-            if 'plan_calc_params' in st.session_state and 'visit_report' in st.session_state:
-                # 1. ПРОВЕРКА - все ли есть для расчета
-                required_keys = ['сервизория', 'портал']
-                missing_keys = [k for k in required_keys if k not in st.session_state.cleaned_data]
+            # ОБЪЕДИНЕННАЯ ПРОВЕРКА ВСЕГО
+            if ('plan_calc_params' in st.session_state and 
+                'visit_report' in st.session_state and 
+                'base_data' in st.session_state.visit_report and
+                'сервизория' in st.session_state.cleaned_data and
+                'портал' in st.session_state.cleaned_data):
                 
-                if missing_keys:
-                    st.error(f"❌ Отсутствуют данные: {', '.join(missing_keys)}. Сначала запустите обработку.")
-                else:
-                    # 2. Получаем все данные
-                    base_data = st.session_state.visit_report['base_data']
-                    cleaned_array = st.session_state.cleaned_data['портал']
-                    params = st.session_state['plan_calc_params']
-                    cxway_df = st.session_state.uploaded_files.get('cxway')
-                    
-                    # 3. Считаем план
-                    plan_result = visit_calculator.calculate_plan_on_date_full(
-                        base_data, cleaned_array, cxway_df, params
-                    )
-                    
-                    # 4. Считаем факт
-                    fact_result = visit_calculator.calculate_fact_on_date_full(
-                        plan_result, cleaned_array, cxway_df, params
-                    )
-                    
-                    # 5. Сохраняем результат
-                    st.session_state['visit_report']['calculated_data'] = fact_result
-                    st.rerun()
+                # 2. Получаем все данные
+                base_data = st.session_state.visit_report['base_data']
+                cleaned_array = st.session_state.cleaned_data['портал']
+                params = st.session_state['plan_calc_params']
+                cxway_df = st.session_state.uploaded_files.get('cxway')
+                
+                # 3. Считаем план
+                plan_result = visit_calculator.calculate_plan_on_date_full(
+                    base_data, cleaned_array, cxway_df, params
+                )
+                
+                # 4. Считаем факт
+                fact_result = visit_calculator.calculate_fact_on_date_full(
+                    plan_result, cleaned_array, cxway_df, params
+                )
+                
+                # 5. Сохраняем результат
+                st.session_state['visit_report']['calculated_data'] = fact_result
+                st.rerun()
+            
+            else:
+                st.error("❌ Сначала запустите обработку данных (кнопка 'ЗАПУСТИТЬ ОБРАБОТКУ')")
             
         # ============================================
         # ПОКАЗ РЕЗУЛЬТАТОВ РАСЧЕТА (ДОБАВЬТЕ ЭТО!)
@@ -1001,6 +1005,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

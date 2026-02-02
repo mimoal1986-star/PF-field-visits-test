@@ -10,108 +10,74 @@ import io
 class VisitCalculator:
     
     def extract_base_data(self, field_projects_df, google_df_clean=None):
-        """Извлекает базовые данные из полевых проектов (ВСЕХ, не только Чеккер)"""
+        """Извлекает базовые данные из полевых проектов с ПРАВИЛЬНЫМИ датами"""
         
         try:
             if field_projects_df is None or field_projects_df.empty:
                 return pd.DataFrame()
             
-            # Базовые колонки (всегда)
+            # 1. Создаем базовую таблицу
             base = pd.DataFrame()
             base['Код проекта'] = field_projects_df['Код проекта']
             base['Имя клиента'] = field_projects_df['Имя клиента']
             base['Название проекта'] = field_projects_df['Название проекта']
-            base['ЗОД'] = field_projects_df['ЗОД']
-            base['АСС'] = field_projects_df['АСС']
-            base['ЭМ'] = field_projects_df['ЭМ']
-            base['Регион short'] = field_projects_df['Регион short']
-            base['Регион'] = field_projects_df['Регион']
+            base['ПО'] = field_projects_df['ПО']
             
-            # ПО из исходных данных (если есть)
-            if 'ПО' in field_projects_df.columns:
-                base['ПО'] = field_projects_df['ПО']
-            elif google_df_clean is not None and not google_df_clean.empty:
-                # Пытаемся определить ПО из Google
-                base['ПО'] = 'не определено'
-                portal_col = 'Портал на котором идет проект (для работы полевой команды)'
-                if portal_col in google_df_clean.columns:
-                    # Для каждого проекта ищем ПО в Google
-                    for idx, row in base.iterrows():
-                        mask = (
-                            google_df_clean['Код проекта RU00.000.00.01SVZ24'] == row['Код проекта']
-                        )
-                        if mask.any():
-                            po_value = google_df_clean.loc[mask, portal_col].iloc[0]
-                            if pd.notna(po_value):
-                                base.at[idx, 'ПО'] = po_value
-            else:
-                base['ПО'] = 'не определено'
-            
-            # ====== ДОБАВЛЯЕМ ДАТЫ СТАРТА И ФИНИША ======
+            # 2. Добавляем колонки для дат (пока пустые)
             base['Дата старта'] = None
             base['Дата финиша с продлением'] = None
             base['Длительность проекта, кол-во дней'] = 0
             
+            # 3. Если Google таблица есть - заполняем даты ПРАВИЛЬНО
             if google_df_clean is not None and not google_df_clean.empty:
-                # Колонки с датами в Google таблице
+                # Убедимся, что названия колонок правильные
+                google_code_col = 'Код проекта RU00.000.00.01SVZ24'
                 start_col = 'Дата старта'
                 end_col = 'Дата финиша с продлением'
-                code_col = 'Код проекта RU00.000.00.01SVZ24'
                 
-                if start_col in google_df_clean.columns and end_col in google_df_clean.columns:
+                if all(col in google_df_clean.columns for col in [google_code_col, start_col, end_col]):
+                    
+                    # 4. Для КАЖДОГО проекта находим ВСЕ записи в Google
                     for idx, row in base.iterrows():
-                        mask = google_df_clean[code_col] == row['Код проекта']
+                        project_code = str(row['Код проекта']).strip()
+                        
+                        # Находим ВСЕ строки с этим кодом
+                        mask = google_df_clean[google_code_col].astype(str).str.strip() == project_code
+                        
                         if mask.any():
-                            # Берем ПЕРВУЮ найденную запись
-                            start_date = pd.to_datetime(
-                                google_df_clean.loc[mask, start_col].iloc[0], 
-                                errors='coerce'
-                            )
-                            end_date = pd.to_datetime(
-                                google_df_clean.loc[mask, end_col].iloc[0], 
-                                errors='coerce'
-                            )
+                            # Берем ВСЕ совпадающие строки
+                            matching_rows = google_df_clean[mask]
                             
-                            if pd.notna(start_date) and pd.notna(end_date):
-                                base.at[idx, 'Дата старта'] = start_date
-                                base.at[idx, 'Дата финиша с продлением'] = end_date
+                            # 5. Находим САМУЮ РАННЮЮ дату старта
+                            all_start_dates = pd.to_datetime(
+                                matching_rows[start_col], 
+                                errors='coerce'
+                            )
+                            earliest_start = all_start_dates.min()  # самая ранняя
+                            
+                            # 6. Находим САМУЮ ПОЗДНЮЮ дату финиша  
+                            all_end_dates = pd.to_datetime(
+                                matching_rows[end_col], 
+                                errors='coerce'
+                            )
+                            latest_end = all_end_dates.max()  # самая поздняя
+                            
+                            # 7. Сохраняем если обе даты найдены
+                            if pd.notna(earliest_start) and pd.notna(latest_end):
+                                base.at[idx, 'Дата старта'] = earliest_start
+                                base.at[idx, 'Дата финиша с продлением'] = latest_end
                                 
-                                # РАСЧЕТ ДЛИТЕЛЬНОСТИ ПРОЕКТА
-                                duration_days = (end_date - start_date).days + 1
+                                # 8. Считаем длительность
+                                duration_days = (latest_end - earliest_start).days + 1
                                 base.at[idx, 'Длительность проекта, кол-во дней'] = max(0, duration_days)
-            # =============================================
-            
-            # ====== ПЕРЕСТАНОВКА КОЛОНОК ======
-            # Желаемый порядок
-            desired_order = [
-                'Код проекта',
-                'Имя клиента',
-                'Название проекта',
-                'ЗОД',
-                'АСС',
-                'ЭМ',
-                'Регион short',
-                'Регион',
-                'ПО',
-                'Дата старта',           # ← теперь эти колонки есть
-                'Дата финиша с продлением',
-                'Длительность проекта, кол-во дней'  # ← добавляем длительность тоже
-            ]
-            
-            # Оставляем только существующие колонки
-            existing_cols = [col for col in desired_order if col in base.columns]
-            other_cols = [col for col in base.columns if col not in existing_cols]
-            final_order = existing_cols + other_cols
-            
-            # Применяем новый порядок
-            base = base[final_order]
-            # =================================
-            
-            # Удаляем дубликаты и возвращаем
+                                
+            # 9. Удаляем дубликаты
             base = base.drop_duplicates(subset=['Код проекта', 'Название проекта'], keep='first')
+            
             return base
             
-        except Exception:
+        except Exception as e:
+            st.error(f"❌ Ошибка в extract_base_data: {str(e)[:200]}")
             return pd.DataFrame()
 
     def _get_project_dates(self, project_code, google_df):
@@ -256,7 +222,7 @@ class VisitCalculator:
         result['Факт проекта, шт.'] = 0
         result['Факт на дату, шт.'] = 0
         
-        # ✅ УБЕДИМСЯ ЧТО КОЛОНКИ ДАТ ЕСТЬ
+        # ✅ УБЕДИМСЯ ЧТО КОЛОНКИ ДАТ ЕСТЬ (КОСЯК!!!)
         if 'Дата старта проекта' not in result.columns:
             result['Дата старта проекта'] = None
         if 'Дата финиша проекта' not in result.columns:
@@ -502,6 +468,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

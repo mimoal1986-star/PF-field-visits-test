@@ -450,5 +450,3 @@ visit_calculator = VisitCalculator()
 
 
 
-
-

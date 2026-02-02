@@ -864,79 +864,37 @@ if page == "📤 Загрузка данных":
         # ============================================
         # 🆕 ДАННЫЕ ДЛЯ РАСЧЕТА ПЛАН/ФАКТА
         # ============================================
-        if 'visit_report' in st.session_state and st.session_state.visit_report.get('base_data') is not None:
-            st.markdown("---")
-            st.subheader("📊 Данные для расчета план/факта")
-            
-            base_data = st.session_state.visit_report['base_data']
-            calculated_data = st.session_state.visit_report.get('calculated_data')
-            
-            # Используем calculated_data если есть расчет
-            display_data = calculated_data if calculated_data is not None else base_data
-            
-            if not display_data.empty:
-                # Показываем статус
-                if calculated_data is not None:
-                    planned_count = (calculated_data['План на дату, шт.'] > 0).sum()
-                    st.success(f"✅ Рассчитан план для {planned_count} из {len(calculated_data)} проектов")
-                else:
-                    st.info(f"📋 {len(base_data)} проектов готовы к расчету")
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.metric("Проектов", len(display_data))
-                
-                with col2:
-                    # Кнопка скачивания Excel
-                    excel_buffer = BytesIO()
-                    with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                        columns_to_remove = ['ЗОД', 'АСС', 'ЭМ']
-                        export_data = display_data.drop(columns=columns_to_remove, errors='ignore')
-                        export_data.to_excel(writer, sheet_name='Данные_план_факт', index=False)
-                    excel_buffer.seek(0)
-                    
-                    st.download_button(
-                        label="⬇️ Excel",
-                        data=excel_buffer,
-                        file_name="данные_план_факт.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        type="secondary",
-                        use_container_width=True
-                    )
-    
-                # Просмотр таблицы
-                with st.expander("👀 Просмотреть таблицу", expanded=False):
-                    # Показываем ТОЧНО ТЕ ЖЕ данные, что будут в Excel
-                    excel_preview_data = display_data.copy()
-                    columns_to_remove = ['ЗОД', 'АСС', 'ЭМ']
-                    excel_preview_data = excel_preview_data.drop(columns=columns_to_remove, errors='ignore')
-                    
-                    st.dataframe(excel_preview_data, use_container_width=True, height=250)
-    
-            
-            # Кнопка расчета план/факта
-            if st.button("📊 Рассчитать план/факт", type="primary", use_container_width=True):
-                if 'plan_calc_params' in st.session_state and 'visit_report' in st.session_state:
-                    base_data = st.session_state.visit_report['base_data']
-                    google_df = st.session_state.cleaned_data['сервизория']
-                    array_df = st.session_state.cleaned_data['портал']
-                    params = st.session_state['plan_calc_params']
 
-                    cxway_df = st.session_state.uploaded_files.get('cxway')
-                    
-                    # 1. Считаем план
-                    plan_result = visit_calculator.calculate_plan_on_date_full(
-                        base_data, array_df, cxway_df, params
-                    )
-                    
-                    # 2. Считаем факт
-                    fact_result = visit_calculator.calculate_fact_on_date_full(
-                        plan_result, google_df, array_df, cxway_df, params
-                    )
-                    
-                    # 3. Сохраняем объединенный результат
-                    st.session_state['visit_report']['calculated_data'] = fact_result
-                    st.rerun()
+        # Кнопка расчета план/факта
+        if st.button("📊 Рассчитать план/факт", type="primary", use_container_width=True):
+            if 'plan_calc_params' in st.session_state and 'visit_report' in st.session_state:
+                # 1. ПРОВЕРКА - все ли есть для расчета
+                required_keys = ['сервизория', 'портал']
+                missing_keys = [k for k in required_keys if k not in st.session_state.cleaned_data]
+                
+                if missing_keys:
+                    st.error(f"❌ Отсутствуют данные: {', '.join(missing_keys)}. Сначала запустите обработку.")
+                    return
+                
+                # 2. Получаем все данные (используем ТОЛЬКО очищенные из cleaned_data)
+                base_data = st.session_state.visit_report['base_data']
+                cleaned_array = st.session_state.cleaned_data['портал']  # ← ОЧИЩЕННЫЙ массив
+                params = st.session_state['plan_calc_params']
+                cxway_df = st.session_state.uploaded_files.get('cxway')
+                
+                # 3. Считаем план (передаем cleaned_array)
+                plan_result = visit_calculator.calculate_plan_on_date_full(
+                    base_data, cleaned_array, cxway_df, params
+                )
+                
+                # 4. Считаем факт (тоже передаем cleaned_array, БЕЗ google_df)
+                fact_result = visit_calculator.calculate_fact_on_date_full(
+                    plan_result, cleaned_array, cxway_df, params
+                )
+                
+                # 5. Сохраняем объединенный результат
+                st.session_state['visit_report']['calculated_data'] = fact_result
+                st.rerun()
             
             # ============================================
             # 🆕 ПРОВЕРКА ПРОБЛЕМНЫХ ПРОЕКТОВ
@@ -995,6 +953,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

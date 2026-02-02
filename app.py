@@ -893,41 +893,79 @@ if page == "📤 Загрузка данных":
                     st.session_state['visit_report']['calculated_data'] = fact_result
                     st.rerun()
             
-            # ============================================
-            # 🆕 ПРОВЕРКА ПРОБЛЕМНЫХ ПРОЕКТОВ
-            # ============================================
-            if 'cleaned_data' in st.session_state and 'сервизория' in st.session_state.cleaned_data:
-                st.markdown("---")
-                st.subheader("🔴 Проблемные проекты")
+        # ============================================
+        # ПОКАЗ РЕЗУЛЬТАТОВ РАСЧЕТА (ДОБАВЬТЕ ЭТО!)
+        # ============================================
+        if 'visit_report' in st.session_state and st.session_state.visit_report.get('calculated_data') is not None:
+            st.markdown("---")
+            st.subheader("📊 Результаты расчета план/факт")
+            
+            calculated_data = st.session_state.visit_report['calculated_data']
+            
+            if not calculated_data.empty:
+                # 1. Показать таблицу
+                with st.expander("👀 Просмотреть таблицу ПланФакт", expanded=True):
+                    st.dataframe(calculated_data, use_container_width=True, height=300)
                 
-                google_df = st.session_state.cleaned_data['сервизория']
-                autocoding_df = st.session_state.uploaded_files.get('автокодификация')
-                array_df = st.session_state.cleaned_data.get('портал_с_полем', 
-                       st.session_state.cleaned_data.get('портал'))
-        
-                problematic_projects = data_cleaner.check_problematic_projects(
-                    google_df, autocoding_df, array_df
-                )
+                # 2. Кнопка выгрузки в Excel
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("Проектов", len(calculated_data))
+                    planned_count = (calculated_data['План на дату, шт.'] > 0).sum()
+                    st.metric("С расчетом плана", planned_count)
                 
-                if not problematic_projects.empty:
-                    st.dataframe(problematic_projects, use_container_width=True)
-                    
-                    # Экспорт в Excel
+                with col2:
                     excel_buffer = BytesIO()
                     with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                        problematic_projects.to_excel(writer, sheet_name='Проблемные_проекты', index=False)
+                        columns_to_remove = ['ЗОД', 'АСС', 'ЭМ']
+                        export_data = calculated_data.drop(columns=columns_to_remove, errors='ignore')
+                        export_data.to_excel(writer, sheet_name='Данные_план_факт', index=False)
                     excel_buffer.seek(0)
                     
                     st.download_button(
-                        label="⬇️ Скачать проблемные проекты",
+                        label="⬇️ Скачать Excel",
                         data=excel_buffer,
-                        file_name="проблемные_проекты.xlsx",
+                        file_name="данные_план_факт.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        type="secondary",
-                        use_container_width=True
+                        type="primary",
+                        use_container_width=True,
+                        help="Таблица План/Факт в формате Excel"
                     )
-                else:
-                    st.info("✅ Проблемных проектов не найдено")
+        # ============================================
+        # 🆕 ПРОВЕРКА ПРОБЛЕМНЫХ ПРОЕКТОВ
+        # ============================================
+        if 'cleaned_data' in st.session_state and 'сервизория' in st.session_state.cleaned_data:
+            st.markdown("---")
+            st.subheader("🔴 Проблемные проекты")
+            
+            google_df = st.session_state.cleaned_data['сервизория']
+            autocoding_df = st.session_state.uploaded_files.get('автокодификация')
+            array_df = st.session_state.cleaned_data.get('портал_с_полем', 
+                   st.session_state.cleaned_data.get('портал'))
+    
+            problematic_projects = data_cleaner.check_problematic_projects(
+                google_df, autocoding_df, array_df
+            )
+            
+            if not problematic_projects.empty:
+                st.dataframe(problematic_projects, use_container_width=True)
+                
+                # Экспорт в Excel
+                excel_buffer = BytesIO()
+                with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                    problematic_projects.to_excel(writer, sheet_name='Проблемные_проекты', index=False)
+                excel_buffer.seek(0)
+                
+                st.download_button(
+                    label="⬇️ Скачать проблемные проекты",
+                    data=excel_buffer,
+                    file_name="проблемные_проекты.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="secondary",
+                    use_container_width=True
+                )
+            else:
+                st.info("✅ Проблемных проектов не найдено")
         
         # Просмотр данных
         st.markdown("---")
@@ -950,6 +988,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

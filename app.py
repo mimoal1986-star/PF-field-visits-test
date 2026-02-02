@@ -318,9 +318,15 @@ with st.sidebar:
     )
     st.markdown("---")
     
-    if st.button("🗑️ Сбросить все данные", type="secondary", use_container_width=True):
-        for key in list(DEFAULT_STATE.keys()):
-            st.session_state[key] = DEFAULT_STATE[key]
+    if st.button("🔄 Перезапустить расчет", type="primary", use_container_width=True):
+        # Сбрасываем ТОЛЬКО флаг обработки
+        st.session_state['processing_complete'] = False
+        st.session_state['excel_files'] = {}
+        
+        # Сообщение пользователю
+        st.success("✅ Расчет сброшен! Теперь можно нажать 'ЗАПУСТИТЬ ОБРАБОТКУ'")
+        
+        # Автоматический ререндер
         st.rerun()
      
     st.markdown("---")
@@ -987,6 +993,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

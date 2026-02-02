@@ -881,30 +881,26 @@ if page == "📤 Загрузка данных":
 
         # Кнопка расчета план/факт
         if st.button("📊 Рассчитать план/факт", type="primary", use_container_width=True):
-            # ОБЪЕДИНЕННАЯ ПРОВЕРКА ВСЕГО
-            if ('plan_calc_params' in st.session_state and 
-                'visit_report' in st.session_state and 
-                'base_data' in st.session_state.visit_report and
-                'сервизория' in st.session_state.cleaned_data and
-                'портал' in st.session_state.cleaned_data):
+            # ПРОСТАЯ ПРОВЕРКА
+            if st.session_state.get('processing_complete'):
                 
-                # 2. Получаем все данные
+                # Получаем все данные
                 base_data = st.session_state.visit_report['base_data']
                 cleaned_array = st.session_state.cleaned_data['портал']
                 params = st.session_state['plan_calc_params']
                 cxway_df = st.session_state.uploaded_files.get('cxway')
                 
-                # 3. Считаем план
+                # Считаем план
                 plan_result = visit_calculator.calculate_plan_on_date_full(
                     base_data, cleaned_array, cxway_df, params
                 )
                 
-                # 4. Считаем факт
+                # Считаем факт
                 fact_result = visit_calculator.calculate_fact_on_date_full(
                     plan_result, cleaned_array, cxway_df, params
                 )
                 
-                # 5. Сохраняем результат
+                # Сохраняем результат
                 st.session_state['visit_report']['calculated_data'] = fact_result
                 st.rerun()
             
@@ -1005,6 +1001,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

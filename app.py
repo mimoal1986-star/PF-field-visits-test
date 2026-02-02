@@ -865,7 +865,7 @@ if page == "📤 Загрузка данных":
         # 🆕 ДАННЫЕ ДЛЯ РАСЧЕТА ПЛАН/ФАКТА
         # ============================================
 
-        # Кнопка расчета план/факта
+        # Кнопка расчета план/факт
         if st.button("📊 Рассчитать план/факт", type="primary", use_container_width=True):
             if 'plan_calc_params' in st.session_state and 'visit_report' in st.session_state:
                 # 1. ПРОВЕРКА - все ли есть для расчета
@@ -874,27 +874,26 @@ if page == "📤 Загрузка данных":
                 
                 if missing_keys:
                     st.error(f"❌ Отсутствуют данные: {', '.join(missing_keys)}. Сначала запустите обработку.")
-                    return
-                
-                # 2. Получаем все данные (используем ТОЛЬКО очищенные из cleaned_data)
-                base_data = st.session_state.visit_report['base_data']
-                cleaned_array = st.session_state.cleaned_data['портал']  # ← ОЧИЩЕННЫЙ массив
-                params = st.session_state['plan_calc_params']
-                cxway_df = st.session_state.uploaded_files.get('cxway')
-                
-                # 3. Считаем план (передаем cleaned_array)
-                plan_result = visit_calculator.calculate_plan_on_date_full(
-                    base_data, cleaned_array, cxway_df, params
-                )
-                
-                # 4. Считаем факт (тоже передаем cleaned_array, БЕЗ google_df)
-                fact_result = visit_calculator.calculate_fact_on_date_full(
-                    plan_result, cleaned_array, cxway_df, params
-                )
-                
-                # 5. Сохраняем объединенный результат
-                st.session_state['visit_report']['calculated_data'] = fact_result
-                st.rerun()
+                else:
+                    # 2. Получаем все данные
+                    base_data = st.session_state.visit_report['base_data']
+                    cleaned_array = st.session_state.cleaned_data['портал']
+                    params = st.session_state['plan_calc_params']
+                    cxway_df = st.session_state.uploaded_files.get('cxway')
+                    
+                    # 3. Считаем план
+                    plan_result = visit_calculator.calculate_plan_on_date_full(
+                        base_data, cleaned_array, cxway_df, params
+                    )
+                    
+                    # 4. Считаем факт
+                    fact_result = visit_calculator.calculate_fact_on_date_full(
+                        plan_result, cleaned_array, cxway_df, params
+                    )
+                    
+                    # 5. Сохраняем результат
+                    st.session_state['visit_report']['calculated_data'] = fact_result
+                    st.rerun()
             
             # ============================================
             # 🆕 ПРОВЕРКА ПРОБЛЕМНЫХ ПРОЕКТОВ
@@ -953,6 +952,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

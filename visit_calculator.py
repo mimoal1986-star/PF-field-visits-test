@@ -138,30 +138,22 @@ class VisitCalculator:
             # 2. Считаем общий план проекта из всех источников
             total_plan = 0
             
-            # ПЛАН из МАССИВА (для проектов на Чеккере)
-            if project_po in ['Чеккер', 'не определено']:
+            # Для ВСЕХ проектов (Чеккер, CXWAY, не определено) считаем в очищенном массиве
+            if project_po in ['Чеккер', 'CXWAY', 'не определено']:
                 project_rows_array = array_df[
                     (array_df['Код анкеты'] == project_code) & 
                     (array_df['Название проекта'] == project_name)
                 ]
-                total_plan += len(project_rows_array)
-            
-            # ПЛАН из CXWAY (для проектов на CXWAY)
-            if project_po in ['CXWAY', 'не определено'] and cxway_df is not None:
-                project_rows_cxway = cxway_df[
-                    (cxway_df['Project Code'] == project_code) &
-                    (cxway_df['Project Name'] == project_name)
-                ]
-                total_plan += len(project_rows_cxway)
+                total_plan = len(project_rows_array)  # ← ТОЛЬКО из массива!
             
             if total_plan == 0:
                 continue
-                    
+                
             result.at[idx, 'План проекта, шт.'] = total_plan
-            
-            # 3. Используем длительность из base_data (уже рассчитана)
-            if duration_days <= 0:
-                continue
+                        
+                        # 3. Используем длительность из base_data (уже рассчитана)
+                        if duration_days <= 0:
+                            continue
                 
             # 4. Распределяем план по этапам
             stages_plan, stages_days = self._calculate_stages_plan(total_plan, duration_days, coeffs)
@@ -442,6 +434,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

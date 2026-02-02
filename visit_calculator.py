@@ -228,48 +228,15 @@ class VisitCalculator:
             project_visits_array = None  # для расчета факта на дату
             
             # ФАКТ из МАССИВА (только для проектов на Чеккер или не определено ПО)
-            if project_po in ['Чеккер', 'не определено']:
-                # Определяем правильное название колонки статуса
-                status_col_array = None
-                if 'Статус' in array_df.columns:
-                    status_col_array = 'Статус'
-                elif 'Status' in array_df.columns:
-                    status_col_array = 'Status'
-                elif ' Статус' in array_df.columns:  # с пробелом в начале
-                    status_col_array = ' Статус'
-                
-                if status_col_array:
-                    project_visits_array = array_df[
-                        (array_df['Код анкеты'] == project_code) &
-                        (array_df['Название проекта'] == project_name) &
-                        (array_df[status_col_array] == 'Выполнено')
-                    ]
-                    fact_total += len(project_visits_array)
-                else:
-                    # Если нет колонки статуса, используем старую логику (дата визита)
-                    project_visits_array = array_df[
-                        (array_df['Код анкеты'] == project_code) &
-                        (array_df['Название проекта'] == project_name) &
-                        (array_df['Дата визита'] != surrogate_date)
-                    ]
-                    fact_total += len(project_visits_array)
-            
-            # ФАКТ из CXWAY (только для проектов на CXWAY или не определено ПО)
-            if project_po in ['CXWAY', 'не определено'] and cxway_df is not None:
-                # Ищем записи в CXWAY со статусом 'Выполнено'
-                status_col = None
-                if 'Status' in cxway_df.columns:
-                    status_col = 'Status'
-                elif 'Статус' in cxway_df.columns:
-                    status_col = 'Статус'
-                
-                if status_col:
-                    project_visits_cxway = cxway_df[
-                        (cxway_df['Project Code'] == project_code) &
-                        (cxway_df['Project Name'] == project_name) &
-                        (cxway_df[status_col] == 'Выполнено')
-                    ]
-                    fact_total += len(project_visits_cxway)
+            if project_po in ['Чеккер', 'CXWAY', 'не определено']:
+                project_visits_array = array_df[
+                    (array_df['Код анкеты'] == project_code) &
+                    (array_df['Название проекта'] == project_name) &
+                    (array_df['Статус'] == 'Выполнено') &
+                    (array_df['ПО'] == project_po)  # ← ДОБАВИТЬ фильтр по ПО
+                ]
+                fact_total = len(project_visits_array)
+    
             
             if fact_total == 0:
                 continue
@@ -277,7 +244,7 @@ class VisitCalculator:
             result.at[idx, 'Факт проекта, шт.'] = fact_total
             
             # 2. ФАКТ НА ДАТУ: визиты от 1-го числа месяца до вчера
-            if project_po in ['Чеккер', 'не определено'] and project_visits_array is not None:
+            if project_po in ['Чеккер', 'CXWAY', 'не определено'] and project_visits_array is not None:
                 # Даты из extract_base_data
                 if pd.isna(start_date):
                     continue
@@ -434,6 +401,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

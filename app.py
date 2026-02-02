@@ -338,16 +338,16 @@ with st.sidebar:
     
     col1, col2 = st.columns(2)
     with col1:
-            start_date = st.date_input(
-                "Дата начала",
-                value=first_day,
-            )
-        with col2:
-            end_date = st.date_input(
-                "Дата окончания",
-                value=yesterday,
-                min_value=start_date,
-            )
+        start_date = st.date_input(
+            "Дата начала",
+            value=first_day,
+        )
+    with col2:
+        end_date = st.date_input(
+            "Дата окончания",
+            value=yesterday,
+            min_value=start_date,
+        )
     
     # Проверка: даты в одном месяце
     if start_date.month != end_date.month:
@@ -950,6 +950,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

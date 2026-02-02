@@ -881,29 +881,36 @@ if page == "📤 Загрузка данных":
 
         # Кнопка расчета план/факт
         if st.button("📊 Рассчитать план/факт", type="primary", use_container_width=True):
-            # ПРОСТАЯ ПРОВЕРКА
+            # ПРОВЕРКА НАЛИЧИЯ ДАННЫХ
             if st.session_state.get('processing_complete'):
-                
-                # Получаем все данные
-                base_data = st.session_state.visit_report['base_data']
-                cleaned_array = st.session_state.cleaned_data['портал']
-                params = st.session_state['plan_calc_params']
-                cxway_df = st.session_state.uploaded_files.get('cxway')
-                
-                # Считаем план
-                plan_result = visit_calculator.calculate_plan_on_date_full(
-                    base_data, cleaned_array, cxway_df, params
-                )
-                
-                # Считаем факт
-                fact_result = visit_calculator.calculate_fact_on_date_full(
-                    plan_result, cleaned_array, cxway_df, params
-                )
-                
-                # Сохраняем результат
-                st.session_state['visit_report']['calculated_data'] = fact_result
-                st.rerun()
-            
+                # Проверяем наличие базовых данных
+                if ('visit_report' in st.session_state and 
+                    'base_data' in st.session_state.visit_report and
+                    not st.session_state.visit_report['base_data'].empty):
+                    
+                    base_data = st.session_state.visit_report['base_data']
+                    cleaned_array = st.session_state.cleaned_data.get('портал', pd.DataFrame())
+                    params = st.session_state.get('plan_calc_params', {})
+                    cxway_df = st.session_state.uploaded_files.get('cxway')
+                    
+                    # Считаем план
+                    if not base_data.empty:
+                        plan_result = visit_calculator.calculate_plan_on_date_full(
+                            base_data, cleaned_array, cxway_df, params
+                        )
+                        
+                        # Считаем факт
+                        fact_result = visit_calculator.calculate_fact_on_date_full(
+                            plan_result, cleaned_array, cxway_df, params
+                        )
+                        
+                        # Сохраняем результат
+                        st.session_state['visit_report']['calculated_data'] = fact_result
+                        st.rerun()
+                    else:
+                        st.error("❌ Базовые данные пусты")
+                else:
+                    st.error("❌ Нет базовых данных для расчета. Сначала запустите обработку данных.")
             else:
                 st.error("❌ Сначала запустите обработку данных (кнопка 'ЗАПУСТИТЬ ОБРАБОТКУ')")
             
@@ -1001,6 +1008,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

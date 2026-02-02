@@ -926,7 +926,7 @@ if page == "📤 Загрузка данных":
                     
                     # 1. Считаем план
                     plan_result = visit_calculator.calculate_plan_on_date_full(
-                        base_data, google_df, array_df, cxway_df, params
+                        base_data, array_df, cxway_df, params
                     )
                     
                     # 2. Считаем факт
@@ -995,6 +995,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

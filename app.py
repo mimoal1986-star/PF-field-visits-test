@@ -361,6 +361,8 @@ with st.sidebar:
             value=yesterday,
             min_value=start_date,
         )
+        # ✅ СОХРАНЯЕМ выбранную дату окончания (ОДНА СТРОЧКА)
+        st.session_state["yesterday_fixed"] = end_date
     
     # Проверка: даты в одном месяце
     if start_date.month != end_date.month:
@@ -1000,6 +1002,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

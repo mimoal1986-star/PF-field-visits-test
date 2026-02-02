@@ -874,7 +874,7 @@ if page == "📤 Загрузка данных":
                     st.error(f"❌ Отсутствуют данные: {', '.join(missing_keys)}. Сначала запустите обработку.")
                 else:
                     # 2. Получаем все данные
-                    base_data = st.session_state.visit_report.get('base_data', pd.DataFrame())
+                    base_data = st.session_state.visit_report['base_data']
                     cleaned_array = st.session_state.cleaned_data['портал']
                     params = st.session_state['plan_calc_params']
                     cxway_df = st.session_state.uploaded_files.get('cxway')
@@ -917,6 +917,7 @@ if page == "📤 Загрузка данных":
                 with col2:
                     excel_buffer = BytesIO()
                     with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                        columns_to_remove = ['ЗОД', 'АСС', 'ЭМ']
                         export_data = calculated_data.drop(columns=columns_to_remove, errors='ignore')
                         export_data.to_excel(writer, sheet_name='Данные_план_факт', index=False)
                     excel_buffer.seek(0)
@@ -987,8 +988,6 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
-
-
 
 
 

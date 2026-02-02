@@ -22,10 +22,6 @@ class VisitCalculator:
             base['Имя клиента'] = field_projects_df['Имя клиента']
             base['Название проекта'] = field_projects_df['Название проекта']
             base['ПО'] = field_projects_df['ПО']
-            base['DSM'] = field_projects_df['ЗОД']
-            base['ASM'] = field_projects_df['АСС']
-            base['RS'] = field_projects_df['ЭМ рег']
-            base['Регион'] = field_projects_df['Регион']
             
             # 2. Добавляем колонки для дат (пока пустые)
             base['Дата старта'] = None
@@ -438,7 +434,6 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
-
 
 
 

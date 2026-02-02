@@ -318,37 +318,23 @@ with st.sidebar:
     )
     st.markdown("---")
     
-    if st.button("🔄 Перезапустить расчет", type="primary", use_container_width=True):
-        # Сбрасываем ТОЛЬКО флаг обработки
-        st.session_state['processing_complete'] = False
-        st.session_state['excel_files'] = {}
-        
-        # Сообщение пользователю
-        st.success("✅ Расчет сброшен! Теперь можно нажать 'ЗАПУСТИТЬ ОБРАБОТКУ'")
-        
-        # Автоматический ререндер
+    if st.button("🗑️ Сбросить все данные", type="secondary", use_container_width=True):
+        for key in list(DEFAULT_STATE.keys()):
+            st.session_state[key] = DEFAULT_STATE[key]
         st.rerun()
      
     st.markdown("---")
     st.subheader("📅 Параметры расчета план/факта")
     
-
     # Календарь периода
     st.write("**Период расчета:**")
     today = date.today()
     first_day = date(today.year, today.month, 1)
+    yesterday = today - timedelta(days=1)
     
-    # сохраняем дату окончания
-    if "yesterday_fixed" not in st.session_state:
-        yesterday = today - timedelta(days=1)
-        # Если yesterday раньше first_day (первый день месяца)
-        if yesterday < first_day:
-            yesterday = first_day
-        # ✅ СОХРАНЯЕМ ПРИ ПЕРВОМ ЗАПУСКЕ
-        st.session_state["yesterday_fixed"] = yesterday
-    else:
-        # Используем сохраненную дату
-        yesterday = st.session_state["yesterday_fixed"]
+    # Если yesterday раньше first_day (первый день месяца)
+    if yesterday < first_day:
+        yesterday = first_day
     
     col1, col2 = st.columns(2)
     with col1:
@@ -360,10 +346,8 @@ with st.sidebar:
         end_date = st.date_input(
             "Дата окончания",
             value=yesterday,
-            # БЕЗ min_value - можно выбирать любой месяц
+            min_value=start_date,
         )
-        # ✅ СОХРАНЯЕМ выбранную дату окончания
-        st.session_state["yesterday_fixed"] = end_date
     
     # Проверка: даты в одном месяце
     if start_date.month != end_date.month:
@@ -881,38 +865,33 @@ if page == "📤 Загрузка данных":
 
         # Кнопка расчета план/факт
         if st.button("📊 Рассчитать план/факт", type="primary", use_container_width=True):
-            # ПРОВЕРКА НАЛИЧИЯ ДАННЫХ
-            if st.session_state.get('processing_complete'):
-                # Проверяем наличие базовых данных
-                if ('visit_report' in st.session_state and 
-                    'base_data' in st.session_state.visit_report and
-                    not st.session_state.visit_report['base_data'].empty):
-                    
+            if 'plan_calc_params' in st.session_state and 'visit_report' in st.session_state:
+                # 1. ПРОВЕРКА - все ли есть для расчета
+                required_keys = ['сервизория', 'портал']
+                missing_keys = [k for k in required_keys if k not in st.session_state.cleaned_data]
+                
+                if missing_keys:
+                    st.error(f"❌ Отсутствуют данные: {', '.join(missing_keys)}. Сначала запустите обработку.")
+                else:
+                    # 2. Получаем все данные
                     base_data = st.session_state.visit_report['base_data']
-                    cleaned_array = st.session_state.cleaned_data.get('портал', pd.DataFrame())
-                    params = st.session_state.get('plan_calc_params', {})
+                    cleaned_array = st.session_state.cleaned_data['портал']
+                    params = st.session_state['plan_calc_params']
                     cxway_df = st.session_state.uploaded_files.get('cxway')
                     
-                    # Считаем план
-                    if not base_data.empty:
-                        plan_result = visit_calculator.calculate_plan_on_date_full(
-                            base_data, cleaned_array, cxway_df, params
-                        )
-                        
-                        # Считаем факт
-                        fact_result = visit_calculator.calculate_fact_on_date_full(
-                            plan_result, cleaned_array, cxway_df, params
-                        )
-                        
-                        # Сохраняем результат
-                        st.session_state['visit_report']['calculated_data'] = fact_result
-                        st.rerun()
-                    else:
-                        st.error("❌ Базовые данные пусты")
-                else:
-                    st.error("❌ Нет базовых данных для расчета. Сначала запустите обработку данных.")
-            else:
-                st.error("❌ Сначала запустите обработку данных (кнопка 'ЗАПУСТИТЬ ОБРАБОТКУ')")
+                    # 3. Считаем план
+                    plan_result = visit_calculator.calculate_plan_on_date_full(
+                        base_data, cleaned_array, cxway_df, params
+                    )
+                    
+                    # 4. Считаем факт
+                    fact_result = visit_calculator.calculate_fact_on_date_full(
+                        plan_result, cleaned_array, cxway_df, params
+                    )
+                    
+                    # 5. Сохраняем результат
+                    st.session_state['visit_report']['calculated_data'] = fact_result
+                    st.rerun()
             
         # ============================================
         # ПОКАЗ РЕЗУЛЬТАТОВ РАСЧЕТА (ДОБАВЬТЕ ЭТО!)
@@ -1008,79 +987,6 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

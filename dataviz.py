@@ -26,6 +26,7 @@ class DataVisualizer:
             'Дней до конца проекта', 'Ср. план на день для 100% плана, шт.'
         ]
         
+        
         # Оставляем только существующие
         existing_cols = [col for col in display_columns if col in df.columns]
         df_display = df[existing_cols]
@@ -140,6 +141,7 @@ class DataVisualizer:
 # Глобальный экземпляр
 
 dataviz = DataVisualizer()
+
 
 
 

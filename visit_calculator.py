@@ -80,32 +80,6 @@ class VisitCalculator:
             st.error(f"❌ Ошибка в extract_base_data: {str(e)[:200]}")
             return pd.DataFrame()
 
-    # def _get_project_dates(self, project_code, google_df):
-    #     """Находит даты проекта в Google ТОЛЬКО по коду"""
-    #     try:
-    #         # Ищем ВСЕ записи с этим кодом
-    #         mask = google_df['Код проекта RU00.000.00.01SVZ24'] == project_code
-            
-    #         if not mask.any():
-    #             return None, None
-            
-    #         # Берем все совпадающие строки
-    #         matching_rows = google_df[mask]
-            
-    #         # Преобразуем даты
-    #         start_dates = pd.to_datetime(matching_rows['Дата старта'], errors='coerce')
-    #         end_dates = pd.to_datetime(matching_rows['Дата финиша с продлением'], errors='coerce')
-            
-    #         # Находим самую раннюю дату старта
-    #         min_start = start_dates.min() if not start_dates.isna().all() else None
-            
-    #         # Находим самую позднюю дату финиша
-    #         max_end = end_dates.max() if not end_dates.isna().all() else None
-            
-    #         return min_start, max_end
-            
-    #     except Exception:
-    #         return None, None
 
     def _calculate_stages_plan(self, total_plan, duration_days, coefficients):
         """Рассчитывает план по этапам"""
@@ -215,7 +189,7 @@ class VisitCalculator:
         
         return result
     
-    def calculate_fact_on_date_full(self, base_data, google_df, array_df, cxway_df, calc_params):
+    def calculate_fact_on_date_full(self, base_data, array_df, cxway_df, calc_params):
         """Рассчитывает 'Факт на дату, шт.' и 'Факт проекта' (Массив + CXWAY)."""
         
         result = base_data.copy()
@@ -468,6 +442,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

@@ -124,7 +124,7 @@ class VisitCalculator:
             project_name = row['Название проекта']
             project_po = row['ПО']
             
-            # ✅ ИСПРАВЛЕНИЕ: Берем даты ИЗ БАЗОВЫХ ДАННЫХ
+            # ✅  Берем даты ИЗ БАЗОВЫХ ДАННЫХ
             start_date = row.get('Дата старта')
             end_date = row.get('Дата финиша с продлением')
             
@@ -151,9 +151,9 @@ class VisitCalculator:
                 
             result.at[idx, 'План проекта, шт.'] = total_plan
                         
-                        # 3. Используем длительность из base_data (уже рассчитана)
-                        if duration_days <= 0:
-                            continue
+            # 3. Используем длительность из base_data (уже рассчитана)
+            if duration_days <= 0:
+                continue
                 
             # 4. Распределяем план по этапам
             stages_plan, stages_days = self._calculate_stages_plan(total_plan, duration_days, coeffs)
@@ -434,6 +434,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

@@ -874,7 +874,7 @@ if page == "📤 Загрузка данных":
                     st.error(f"❌ Отсутствуют данные: {', '.join(missing_keys)}. Сначала запустите обработку.")
                 else:
                     # 2. Получаем все данные
-                    base_data = st.session_state.visit_report['base_data']
+                    base_data = st.session_state.visit_report.get('base_data', pd.DataFrame())
                     cleaned_array = st.session_state.cleaned_data['портал']
                     params = st.session_state['plan_calc_params']
                     cxway_df = st.session_state.uploaded_files.get('cxway')
@@ -987,6 +987,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

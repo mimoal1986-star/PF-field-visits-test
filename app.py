@@ -882,17 +882,24 @@ with tab1:
                     plan_result = visit_calculator.calculate_hierarchical_plan_on_date(
                         hierarchy, 
                         cleaned_array, 
-                        calc_params
+                        params
                     )
 
                     # 4. Считаем факт
-                    fact_result = visit_calculator.calculate_fact_on_date_full(
-                        plan_result, cleaned_array, cxway_df, params
+                    fact_result = visit_calculator.calculate_hierarchical_fact_on_date(
+                        plan_result, 
+                        cleaned_array, 
+                        params
                     )
-                    
-                    # 5. Сохраняем результат
-                    st.session_state['visit_report']['calculated_data'] = fact_result
-                    st.rerun()
+                    # 5. Рассчитываем метрики
+                    final_result = visit_calculator._calculate_metrics(fact_result, params)
+
+                    # 6. Сохраняем результат
+                    st.session_state['visit_report'] = {
+                        'calculated_data': final_result,
+                        'hierarchy': hierarchy,
+                        'timestamp': datetime.now().isoformat()
+                    }
             
         # ============================================
         # ПОКАЗ РЕЗУЛЬТАТОВ РАСЧЕТА (ДОБАВЬТЕ ЭТО!)
@@ -993,6 +1000,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

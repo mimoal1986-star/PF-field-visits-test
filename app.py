@@ -314,10 +314,37 @@ def process_field_projects_with_stats():
 if 'page' not in st.session_state:
     st.session_state.page = "📤 Загрузка данных"
 
+# Инициализируем сохраненные файлы
+if 'saved_files' not in st.session_state:
+    st.session_state.saved_files = {}
+
+# ==============================================
+# САЙДБАР
+# ==============================================
+# Инициализируем переменную page если её нет
+if 'page' not in st.session_state:
+    st.session_state.page = "📤 Загрузка данных"
+
+# Инициализируем сохраненные файлы
+if 'saved_files' not in st.session_state:
+    st.session_state.saved_files = {}
+
 page = st.session_state.page  # Используем сохраненную страницу
 
 with st.sidebar:
     st.header("📊 Навигация")
+
+    # Сохраняем загруженные файлы
+    if 'uploaded_files' in st.session_state:
+        for key, value in st.session_state.uploaded_files.items():
+            st.session_state.saved_files[key] = value
+    
+    # Восстанавливаем файлы при возврате на страницу загрузки
+    if page == "📤 Загрузка данных":
+        if 'saved_files' in st.session_state and st.session_state.saved_files:
+            for key, value in st.session_state.saved_files.items():
+                st.session_state.uploaded_files[key] = value
+    
     col1, col2 = st.columns(2)
     with col1:
         data_btn = st.button("📤 Данные", use_container_width=True, 
@@ -339,6 +366,7 @@ with st.sidebar:
     if st.button("🗑️ Сбросить все данные", type="secondary", use_container_width=True):
         for key in list(DEFAULT_STATE.keys()):
             st.session_state[key] = DEFAULT_STATE[key]
+        st.session_state.saved_files = {}  # Очищаем сохраненные файлы
         st.rerun()
      
     st.markdown("---")
@@ -1005,6 +1033,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

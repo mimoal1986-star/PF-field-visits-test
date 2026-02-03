@@ -916,9 +916,8 @@ if page == "📤 Загрузка данных":
                 with col2:
                     excel_buffer = BytesIO()
                     with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                        # columns_to_remove = ['ЗОД', 'АСС', 'ЭМ']
-                        export_data = calculated_data.drop(columns=columns_to_remove, errors='ignore')
-                        export_data.to_excel(writer, sheet_name='Данные_план_факт', index=False)
+                        # Экспортируем все колонки (убираем ошибку columns_to_remove)
+                        calculated_data.to_excel(writer, sheet_name='Данные_план_факт', index=False)
                     excel_buffer.seek(0)
                     
                     st.download_button(
@@ -930,6 +929,7 @@ if page == "📤 Загрузка данных":
                         use_container_width=True,
                         help="Таблица План/Факт в формате Excel"
                     )
+                    
         # ============================================
         # 🆕 ПРОВЕРКА ПРОБЛЕМНЫХ ПРОЕКТОВ
         # ============================================
@@ -987,6 +987,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

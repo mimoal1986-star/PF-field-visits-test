@@ -37,7 +37,7 @@ if utils_path not in sys.path:
 
 # Настройка страницы
 st.set_page_config(
-    page_title="ИУ Аудиты - Аналитика",
+    page_title="ИУ Аудиты - Аналитика Тест",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -311,6 +311,7 @@ def process_field_projects_with_stats():
 # САЙДБАР
 # ==============================================
 with st.sidebar:
+    st.header("📊 Тест")
     st.header("📊 Навигация")
     st.markdown("---")
     
@@ -989,6 +990,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

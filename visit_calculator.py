@@ -226,7 +226,7 @@ class VisitCalculator:
                 project_visits_array = array_df[
                     (array_df['Код анкеты'] == project_code) &
                     (array_df['Название проекта'] == project_name) &
-                    (array_df['Статус'] == 'Выполнено')
+                    (array_df[' Статус'] == 'Выполнено')
                 ]
                 fact_total = len(project_visits_array)
     
@@ -394,6 +394,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

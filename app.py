@@ -310,13 +310,30 @@ def process_field_projects_with_stats():
 # ==============================================
 # САЙДБАР
 # ==============================================
+# Инициализируем переменную page если её нет
+if 'page' not in st.session_state:
+    st.session_state.page = "📤 Загрузка данных"
+
+page = st.session_state.page  # Используем сохраненную страницу
+
 with st.sidebar:
     st.header("📊 Навигация")
-    page = st.radio(
-        "Выберите раздел:",
-        ["📤 Загрузка данных", "📈 Отчеты"],
-        key='nav_page'
-    )
+    col1, col2 = st.columns(2)
+    with col1:
+        data_btn = st.button("📤 Данные", use_container_width=True, 
+                           type="primary" if page == "📤 Загрузка данных" else "secondary")
+    with col2:
+        reports_btn = st.button("📈 Отчеты", use_container_width=True,
+                              type="primary" if page == "📈 Отчеты" else "secondary")
+    
+    # Меняем страницу при клике
+    if data_btn:
+        st.session_state.page = "📤 Загрузка данных"
+        st.rerun()
+    if reports_btn:
+        st.session_state.page = "📈 Отчеты"
+        st.rerun()    
+        
     st.markdown("---")
     
     if st.button("🗑️ Сбросить все данные", type="secondary", use_container_width=True):
@@ -988,6 +1005,7 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

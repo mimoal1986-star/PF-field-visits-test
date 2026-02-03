@@ -45,6 +45,7 @@ st.set_page_config(
 
 # Инициализация session_state
 DEFAULT_STATE = {
+    'uploaded_files': {},
     'cleaned_data': {},
     'excel_files': {},
     'processing_complete': False,
@@ -52,9 +53,6 @@ DEFAULT_STATE = {
     'last_error': None,
     'visit_report': {} 
 }
-# Отдельно инициализируем uploaded_files
-if 'uploaded_files' not in st.session_state:
-    st.session_state.uploaded_files = {}
 
 for key, default_value in DEFAULT_STATE.items():
     if key not in st.session_state:
@@ -309,46 +307,20 @@ def process_field_projects_with_stats():
         st.error(f"Детали: {traceback.format_exc()[:500]}")
         return False
 
-
 # ==============================================
 # САЙДБАР
 # ==============================================
-# Инициализируем переменную page если её нет
-if 'page' not in st.session_state:
-    st.session_state.page = "📤 Загрузка данных"
-
-# Инициализируем сохраненные файлы
-if 'saved_files' not in st.session_state:
-    st.session_state.saved_files = {}
-
-page = st.session_state.page  # Используем сохраненную страницу
-
 with st.sidebar:
     st.header("📊 Навигация")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        data_btn = st.button("📤 Данные", use_container_width=True, 
-                           type="primary" if page == "📤 Загрузка данных" else "secondary")
-    with col2:
-        reports_btn = st.button("📈 Отчеты", use_container_width=True,
-                              type="primary" if page == "📈 Отчеты" else "secondary")
-    
-    # Меняем страницу при клике
-    if data_btn:
-        st.session_state.page = "📤 Загрузка данных"
-        st.rerun()
-    if reports_btn:
-        st.session_state.page = "📈 Отчеты"
-        st.rerun()    
-        
+    page = st.radio(
+        "Выберите раздел:",
+        ["📤 Загрузка данных", "📈 Отчеты"]
+    )
     st.markdown("---")
     
     if st.button("🗑️ Сбросить все данные", type="secondary", use_container_width=True):
         for key in list(DEFAULT_STATE.keys()):
             st.session_state[key] = DEFAULT_STATE[key]
-        st.session_state.uploaded_files = {} 
-        st.session_state.saved_files = {}  # Очищаем сохраненные файлы
         st.rerun()
      
     st.markdown("---")
@@ -1015,17 +987,5 @@ elif page == "📈 Отчеты":
         
         with tab2:
             st.info("Другие отчеты в разработке")
-
-
-
-
-
-
-
-
-
-
-
-
 
 

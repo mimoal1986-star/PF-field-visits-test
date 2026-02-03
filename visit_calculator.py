@@ -25,7 +25,7 @@ class VisitCalculator:
             
             base['DSM'] = field_projects_df['ЗОД']
             base['ASM'] = field_projects_df['АСС']
-            base['RS'] = field_projects_df['ЭМ рег']
+            base['RS'] = field_projects_df['ЭМ']
             base['Регион'] = field_projects_df['Регион short']
             
             # 2. Добавляем колонки для дат (пока пустые)
@@ -399,6 +399,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

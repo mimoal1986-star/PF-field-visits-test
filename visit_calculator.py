@@ -188,12 +188,6 @@ class VisitCalculator:
         result['Факт проекта, шт.'] = 0
         result['Факт на дату, шт.'] = 0
         
-        # ✅ УБЕДИМСЯ ЧТО КОЛОНКИ ДАТ ЕСТЬ (КОСЯК!!!)
-        if 'Дата старта проекта' not in result.columns:
-            result['Дата старта проекта'] = None
-        if 'Дата финиша проекта' not in result.columns:
-            result['Дата финиша проекта'] = None
-        
         start_date_period = calc_params['start_date']
         end_date_period = calc_params['end_date']
         surrogate_date = pd.Timestamp('1900-01-01')
@@ -232,8 +226,7 @@ class VisitCalculator:
                 project_visits_array = array_df[
                     (array_df['Код анкеты'] == project_code) &
                     (array_df['Название проекта'] == project_name) &
-                    (array_df['Статус'] == 'Выполнено') &
-                    (array_df['ПО'] == project_po)  # ← ДОБАВИТЬ фильтр по ПО
+                    (array_df['Статус'] == 'Выполнено')
                 ]
                 fact_total = len(project_visits_array)
     
@@ -401,6 +394,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

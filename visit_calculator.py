@@ -9,182 +9,233 @@ import io
 
 class VisitCalculator:
     
-    def extract_base_data(self, field_projects_df, google_df_clean=None):
-        """Извлекает базовые данные из полевых проектов с ПРАВИЛЬНЫМИ датами"""
-        
+    def extract_hierarchical_data(self, array_df, google_df=None):
+        """
+        Создаёт полную иерархию Проект→Клиент→Волна→Регион→DSM→ASM→RS
+        с базовой информацией о проекте
+        """
         try:
-            if field_projects_df is None or field_projects_df.empty:
-                return pd.DataFrame()
+            # 1. Создаём иерархию из array_df (уникальные цепочки)
+            hierarchy = pd.DataFrame({
+                'Проект': array_df['Код анкеты'].fillna('Не указано'),
+                'Клиент': array_df['Имя клиента'].fillna('Не указано'),
+                'Волна': array_df['Название проекта'].fillna('Не указано'),
+                'Регион': array_df['Регион'].fillna('Не указано'),
+                'DSM': array_df['ЗОД'].fillna('Не указано'),
+                'ASM': array_df['АСС'].fillna('Не указано'),
+                'RS': array_df['ЭМ рег'].fillna('Не указано')
+            })
             
-            # 1. Создаем базовую таблицу
-            base = pd.DataFrame()
-            base['Код проекта'] = field_projects_df['Код проекта']
-            base['Имя клиента'] = field_projects_df['Имя клиента']
-            base['Название проекта'] = field_projects_df['Название проекта']
-            base['ПО'] = field_projects_df['ПО']
+            # Удаляем полные дубликаты
+            hierarchy = hierarchy.drop_duplicates().reset_index(drop=True)
             
-            base['DSM'] = field_projects_df['ЗОД']
-            base['ASM'] = field_projects_df['АСС']
-            base['RS'] = field_projects_df['ЭМ']
-            base['Регион'] = field_projects_df['Регион short']
+            # 2. Добавляем базовую информацию
+            # ПО - по умолчанию
+            hierarchy['ПО'] = 'не определено'
             
-            # 2. Добавляем колонки для дат (пока пустые)
-            base['Дата старта'] = None
-            base['Дата финиша с продлением'] = None
-            base['Длительность проекта, кол-во дней'] = 0
+            # Даты - по умолчанию пустые
+            hierarchy['Дата старта'] = pd.NaT
+            hierarchy['Дата финиша'] = pd.NaT
             
-            # 3. Если Google таблица есть - заполняем даты ПРАВИЛЬНО
-            if google_df_clean is not None and not google_df_clean.empty:
-                # Убедимся, что названия колонок правильные
-                google_code_col = 'Код проекта RU00.000.00.01SVZ24'
-                start_col = 'Дата старта'
-                end_col = 'Дата финиша с продлением'
-                
-                if all(col in google_df_clean.columns for col in [google_code_col, start_col, end_col]):
+            # 3. Обогащаем данными из google_df если есть
+            if google_df is not None and not google_df.empty:
+                try:
+                    # Создаём маппинги
+                    portal_mapping = {}
+                    start_mapping = {}
+                    finish_mapping = {}
                     
-                    # 4. Для КАЖДОГО проекта находим ВСЕ записи в Google
-                    for idx, row in base.iterrows():
-                        project_code = str(row['Код проекта']).strip()
-                        
-                        # Находим ВСЕ строки с этим кодом
-                        mask = google_df_clean[google_code_col].astype(str).str.strip() == project_code
-                        
-                        if mask.any():
-                            # Берем ВСЕ совпадающие строки
-                            matching_rows = google_df_clean[mask]
+                    # Проходим по гугл таблице
+                    for idx, row in google_df.iterrows():
+                        code = str(row.get('Код проекта RU00.000.00.01SVZ24', '')).strip()
+                        if code and code not in ['nan', '']:
+                            # ПО
+                            portal = str(row.get('Портал на котором идет проект (для работы полевой команды)', '')).strip()
+                            if portal:
+                                portal_mapping[code] = portal
                             
-                            # 5. Находим САМУЮ РАННЮЮ дату старта
-                            all_start_dates = pd.to_datetime(
-                                matching_rows[start_col], 
-                                errors='coerce'
-                            )
-                            earliest_start = all_start_dates.min()  # самая ранняя
+                            # Даты
+                            start_date = row.get('Дата старта')
+                            finish_date = row.get('Дата финиша с продлением')
                             
-                            # 6. Находим САМУЮ ПОЗДНЮЮ дату финиша  
-                            all_end_dates = pd.to_datetime(
-                                matching_rows[end_col], 
-                                errors='coerce'
-                            )
-                            latest_end = all_end_dates.max()  # самая поздняя
-                            
-                            # 7. Сохраняем если обе даты найдены
-                            if pd.notna(earliest_start) and pd.notna(latest_end):
-                                base.at[idx, 'Дата старта'] = earliest_start
-                                base.at[idx, 'Дата финиша с продлением'] = latest_end
-                                
-                                # 8. Считаем длительность
-                                duration_days = (latest_end - earliest_start).days + 1
-                                base.at[idx, 'Длительность проекта, кол-во дней'] = max(0, duration_days)
-                                
-            # 9. Удаляем дубликаты
-            base = base.drop_duplicates(subset=['Код проекта', 'Название проекта'], keep='first')
+                            if pd.notna(start_date):
+                                start_mapping[code] = start_date
+                            if pd.notna(finish_date):
+                                finish_mapping[code] = finish_date
+                    
+                    # Применяем маппинги
+                    hierarchy['ПО'] = hierarchy['Проект'].map(portal_mapping).fillna('не определено')
+                    hierarchy['Дата старта'] = hierarchy['Проект'].map(start_mapping)
+                    hierarchy['Дата финиша'] = hierarchy['Проект'].map(finish_mapping)
+                    
+                except Exception as e:
+                    st.warning(f"⚠️ Не удалось обогатить данными из гугл таблицы: {str(e)[:100]}")
             
-            return base
+            # 4. Рассчитываем длительность (в днях)
+            hierarchy['Длительность'] = 0
+            mask_valid_dates = hierarchy['Дата старта'].notna() & hierarchy['Дата финиша'].notna()
+            
+            if mask_valid_dates.any():
+                hierarchy.loc[mask_valid_dates, 'Длительность'] = (
+                    hierarchy.loc[mask_valid_dates, 'Дата финиша'] - 
+                    hierarchy.loc[mask_valid_dates, 'Дата старта']
+                ).dt.days + 1
+            
+            # 5. Сортируем для удобства
+            hierarchy = hierarchy.sort_values(['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM', 'RS'])
+            
+            return hierarchy
+            
+        except KeyError as e:
+            # Если нет какой-то колонки в array_df
+            missing_col = str(e).replace("'", "")
+            st.error(f"❌ В массиве отсутствует колонка: '{missing_col}'")
+            # Возвращаем пустой DataFrame
+            return pd.DataFrame()
             
         except Exception as e:
-            st.error(f"❌ Ошибка в extract_base_data: {str(e)[:200]}")
+            st.error(f"❌ Ошибка создания иерархии: {str(e)[:200]}")
             return pd.DataFrame()
 
-
-    def _calculate_stages_plan(self, total_plan, duration_days, coefficients):
-        """Рассчитывает план по этапам"""
-        if total_plan == 0 or duration_days == 0:
-            return [], []
+def calculate_hierarchical_plan_on_date(self, hierarchy_df, array_df, calc_params):
+    """
+    Рассчитывает план на дату для всей иерархии
+    """
+    try:
+        if hierarchy_df.empty or array_df.empty:
+            return pd.DataFrame()
         
-        # Делим на 4 этапа
-        stage_days = duration_days // 4
-        extra_days = duration_days % 4
-        
-        stages_plan = []
-        stages_days = []
-        
-        # Первые 3 этапа
-        for i in range(3):
-            days_in_stage = stage_days + (1 if i < extra_days else 0)
-            stage_plan = total_plan * coefficients[i]
-            stages_plan.append(stage_plan)
-            stages_days.append(days_in_stage)
-        
-        # 4-й этап (остаток)
-        days_in_stage = stage_days + (1 if 3 < extra_days else 0)
-        stage_plan = total_plan - sum(stages_plan)
-        stages_plan.append(stage_plan)
-        stages_days.append(days_in_stage)
-        
-        return stages_plan, stages_days
-    
-    def calculate_plan_on_date_full(self, base_data, array_df, cxway_df, calc_params):
-        """Рассчитывает 'План на дату, шт.' для всех проектов - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
-        
-        result = base_data.copy()
-        result['План проекта, шт.'] = 0
-        result['План на дату, шт.'] = 0.0
-        
+        # Параметры
         start_period = calc_params['start_date']
         end_period = calc_params['end_date']
-        coeffs = calc_params['coefficients']
+        coefficients = calc_params['coefficients']
+        total_coeff = sum(coefficients)
+        norm_coeff = [c/total_coeff for c in coefficients]
         
-        for idx, row in result.iterrows():
-            project_code = row['Код проекта']
-            project_name = row['Название проекта']
-            project_po = row['ПО']
+        # Планы проектов
+        project_plans = array_df.groupby('Код анкеты').size()
+        
+        results = []
+        
+        # Для каждой уникальной RS
+        for _, row in hierarchy_df.iterrows():
+            project_code = row['Проект']
             
-            # ✅  Берем даты ИЗ БАЗОВЫХ ДАННЫХ
-            start_date = row.get('Дата старта')
-            end_date = row.get('Дата финиша с продлением')
-            
-            if pd.isna(start_date) or pd.isna(end_date):
-                # Если дат нет - пропускаем проект
+            # План проекта
+            if project_code in project_plans.index:
+                total_plan = project_plans[project_code]
+            else:
                 continue
             
-            # ✅ Длительность уже рассчитана в base_data
-            duration_days = row.get('Длительность проекта, кол-во дней', 0)
+            # Даты
+            start_date = row['Дата старта']
+            finish_date = row['Дата финиша']
+            duration = row['Длительность']
             
-            # 2. Считаем общий план проекта из всех источников
-            total_plan = 0
-            
-            # Для ВСЕХ проектов (Чеккер, CXWAY, не определено) считаем в очищенном массиве
-            if project_po in ['Чеккер', 'CXWAY', 'не определено']:
-                project_rows_array = array_df[
-                    (array_df['Код анкеты'] == project_code) & 
-                    (array_df['Название проекта'] == project_name)
-                ]
-                total_plan = len(project_rows_array)  # ← ТОЛЬКО из массива!
-            
-            if total_plan == 0:
+            if pd.isna(start_date) or pd.isna(finish_date) or duration <= 0:
                 continue
-                
-            result.at[idx, 'План проекта, шт.'] = total_plan
-                        
-            # 3. Используем длительность из base_data (уже рассчитана)
-            if duration_days <= 0:
-                continue
-                
-            # 4. Распределяем план по этапам
-            stages_plan, stages_days = self._calculate_stages_plan(total_plan, duration_days, coeffs)
             
-            # 5. Считаем план на дату
+            # Распределение по этапам
+            stage_days = [duration // 4] * 3
+            stage_days.append(duration - sum(stage_days))
+            
+            stage_plans = [total_plan * coeff for coeff in norm_coeff[:3]]
+            stage_plans.append(total_plan - sum(stage_plans))
+            
+            # План на дату
             plan_on_date = 0.0
             current_date = start_date
             
-            for stage_idx in range(4):
-                stage_plan = stages_plan[stage_idx]
-                stage_days = stages_days[stage_idx]
-                
-                if stage_plan > 0 and stage_days > 0:
-                    daily_plan = stage_plan / stage_days
+            for i in range(4):
+                if stage_plans[i] > 0 and stage_days[i] > 0:
+                    daily_plan = stage_plans[i] / stage_days[i]
                     
-                    for day_offset in range(stage_days):
-                        current_day = current_date + timedelta(days=day_offset)
-                        
-                        if start_period <= current_day.date() <= end_period:
+                    for day in range(stage_days[i]):
+                        check_date = current_date + timedelta(days=day)
+                        if start_period <= check_date.date() <= end_period:
                             plan_on_date += daily_plan
                 
-                current_date += timedelta(days=stage_days)
+                current_date += timedelta(days=stage_days[i])
             
-            result.at[idx, 'План на дату, шт.'] = round(plan_on_date, 1)
+            # Запись
+            results.append({
+                'Проект': row['Проект'],
+                'Клиент': row['Клиент'],
+                'Волна': row['Волна'],
+                'Регион': row['Регион'],
+                'DSM': row['DSM'],
+                'ASM': row['ASM'],
+                'RS': row['RS'],
+                'ПО': row.get('ПО', 'не определено'),
+                'Уровень': 'RS',
+                'План проекта, шт.': float(total_plan),
+                'План на дату, шт.': round(plan_on_date, 1),
+                'Длительность': int(duration),
+                'Дата старта': start_date,
+                'Дата финиша': finish_date
+            })
         
-        return result
+        if not results:
+            return pd.DataFrame()
+        
+        # Создаём DataFrame
+        plan_df = pd.DataFrame(results)
+        
+        # Автоагрегация вверх
+        levels = [
+            ('ASM', ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM']),
+            ('DSM', ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM']),
+            ('Регион', ['Проект', 'Клиент', 'Волна', 'Регион']),
+            ('Волна', ['Проект', 'Клиент', 'Волна']),
+            ('Клиент', ['Проект', 'Клиент']),
+            ('Проект', ['Проект'])
+        ]
+        
+        all_results = plan_df.to_dict('records')
+        
+        for level_name, group_cols in levels:
+            # Группировка
+            grouped = plan_df.groupby(group_cols, as_index=False).agg({
+                'План проекта, шт.': 'sum',
+                'План на дату, шт.': 'sum',
+                'Длительность': 'first',
+                'Дата старта': 'first',
+                'Дата финиша': 'first'
+            })
+            
+            # Округление
+            grouped['План на дату, шт.'] = grouped['План на дату, шт.'].round(1)
+            grouped['План проекта, шт.'] = grouped['План проекта, шт.'].round(1)
+            
+            # Заполняем остальные колонки
+            for col in ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM', 'RS', 'ПО']:
+                if col not in group_cols:
+                    if col == 'ПО':
+                        # Самое частое ПО в группе
+                        po_mode = plan_df[plan_df['ПО'] != 'не определено']['ПО'].mode()
+                        grouped['ПО'] = po_mode.iloc[0] if not po_mode.empty else 'не определено'
+                    else:
+                        grouped[col] = 'Итого'
+            
+            grouped['Уровень'] = level_name
+            all_results.extend(grouped.to_dict('records'))
+        
+        # Финальный DataFrame
+        final_df = pd.DataFrame(all_results)
+        
+        # Проверка
+        if not final_df.empty:
+            rs_sum = final_df[final_df['Уровень'] == 'RS']['План на дату, шт.'].sum()
+            project_sum = final_df[final_df['Уровень'] == 'Проект']['План на дату, шт.'].sum()
+            
+            if abs(rs_sum - project_sum) > 0.01:
+                st.warning(f"⚠️ Расхождение: RS={rs_sum:.1f}, Проекты={project_sum:.1f}")
+        
+        return final_df
+        
+    except Exception as e:
+        st.error(f"❌ Ошибка в calculate_hierarchical_plan_on_date: {str(e)[:200]}")
+        return pd.DataFrame()
     
     def calculate_fact_on_date_full(self, base_data, array_df, cxway_df, calc_params):
         """Рассчитывает 'Факт на дату, шт.' и 'Факт проекта' (Массив + CXWAY)."""
@@ -399,6 +450,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

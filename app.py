@@ -237,7 +237,7 @@ def process_field_projects_with_stats():
         if field_df is not None and not field_df.empty:
             try:
                 # Извлекаем базовые данные ТОЛЬКО из полевых проектов
-                base_data = visit_calculator.extract_base_data(field_df, google_df)
+                base_data = visit_calculator.extract_hierarchical_data(field_df, google_df)
                 
                 # ========== ПРОВЕРКИ ==========
                 # 1. Проверка поля ПО в гугл таблице
@@ -878,10 +878,13 @@ with tab1:
                     cxway_df = st.session_state.uploaded_files.get('cxway')
                     
                     # 3. Считаем план
-                    plan_result = visit_calculator.calculate_plan_on_date_full(
-                        base_data, cleaned_array, cxway_df, params
+                    hierarchy = visit_calculator.extract_hierarchical_data(field_df, google_df)
+                    plan_result = visit_calculator.calculate_hierarchical_plan_on_date(
+                        hierarchy, 
+                        cleaned_array, 
+                        calc_params
                     )
-                    
+
                     # 4. Считаем факт
                     fact_result = visit_calculator.calculate_fact_on_date_full(
                         plan_result, cleaned_array, cxway_df, params
@@ -990,6 +993,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

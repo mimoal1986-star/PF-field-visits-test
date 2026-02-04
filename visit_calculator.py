@@ -356,6 +356,10 @@ class VisitCalculator:
         Упрощённый расчёт метрик (как в исходном коде)
         """
         df = df.copy()
+
+        # ПРОСТАЯ ПРОВЕРКА:
+        print("=== КОЛОНКИ в df ===")  # Это появится в логах консоли
+        print(df.columns.tolist())
         
         # 1. Базовые метрики
         df['%ПФ на дату'] = 0.0
@@ -426,6 +430,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

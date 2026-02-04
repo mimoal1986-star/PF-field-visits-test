@@ -17,7 +17,7 @@ class VisitCalculator:
         try:
             # 1. Создаём иерархию из array_df (уникальные цепочки)
             hierarchy = pd.DataFrame({
-                'Проект': array_df['Код анкеты'].fillna('Не указано'),
+                'Проект': array_df['Код проекта'].fillna('Не указано'),
                 'Клиент': array_df['Имя клиента'].fillna('Не указано'),
                 'Волна': array_df['Название проекта'].fillna('Не указано'),
                 'Регион': array_df['Регион'].fillna('Не указано'),
@@ -426,6 +426,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

@@ -235,9 +235,8 @@ def process_field_projects_with_stats():
         # 🆕 ИЗВЛЕЧЕНИЕ БАЗОВЫХ ДАННЫХ ДЛЯ ПЛАН/ФАКТА
         # ============================================
         if field_df is not None and not field_df.empty:
-            try:
-                # Извлекаем базовые данные ТОЛЬКО из полевых проектов
-                base_data = visit_calculator.extract_hierarchical_data(field_df, google_df)
+            base_data = visit_calculator.extract_hierarchical_data(field_df, google_df)
+            st.session_state['visit_report'] = {'base_data': base_data}
                 
                 # ========== ПРОВЕРКИ ==========
                 # 1. Проверка поля ПО в гугл таблице
@@ -1000,6 +999,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

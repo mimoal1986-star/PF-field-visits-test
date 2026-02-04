@@ -18,13 +18,13 @@ class VisitCalculator:
         try:
             # 1. Создаём иерархию из array_df (уникальные цепочки)
             hierarchy = pd.DataFrame({
-                'Проект': array_df['Код анкеты'].fillna('Не указано'),
+                'Проект': array_df['Код проекта'].fillna('Не указано'),
                 'Клиент': array_df['Имя клиента'].fillna('Не указано'),
                 'Волна': array_df['Название проекта'].fillna('Не указано'),
                 'Регион': array_df['Регион'].fillna('Не указано'),
                 'DSM': array_df['ЗОД'].fillna('Не указано'),
                 'ASM': array_df['АСС'].fillna('Не указано'),
-                'RS': array_df['ЭМ рег'].fillna('Не указано')
+                'RS': array_df['ЭМ'].fillna('Не указано')
             })
             
             # Удаляем полные дубликаты
@@ -259,7 +259,7 @@ class VisitCalculator:
             result_df = plan_df.copy()
             
             # 1. Определяем колонку статуса
-            status_col = 'Статус' if 'Статус' in array_df.columns else ' Статус'
+            status_col = ' Статус' if ' Статус' in array_df.columns else 'Статус'
             
             # 2. Фильтр: выполненные визиты в периоде
             completed_mask = (
@@ -436,6 +436,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

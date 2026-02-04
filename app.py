@@ -73,7 +73,7 @@ def check_required_columns():
     # 2. Проверяем колонки в массиве (портал)
     if 'портал' in st.session_state.cleaned_data:
         portal_df = st.session_state.cleaned_data['портал']
-        portal_required = ['Код анкеты', 'Статус', 'Дата визита']
+        portal_required = ['Код анкеты', 'Дата визита']
         for col in portal_required:
             if col not in portal_df.columns:
                 errors.append(f"❌ В массиве нет колонки: '{col}'")
@@ -936,7 +936,11 @@ with tab1:
                     st.error(f"❌ Отсутствуют данные: {', '.join(missing_keys)}. Сначала запустите обработку.")
                 else:
                     # 2. Получаем все данные
+                    if 'base_data' not in st.session_state.visit_report:
+                        st.error("❌ Нет базовых данных для расчёта. Сначала запустите обработку.")
+                        return
                     base_data = st.session_state.visit_report['base_data']
+                    
                     cleaned_array = st.session_state.cleaned_data['портал']
                     params = st.session_state['plan_calc_params']
                     
@@ -962,44 +966,33 @@ with tab1:
                         'hierarchy': base_data,
                         'timestamp': datetime.now().isoformat()
                     }
-            
-        # ============================================
-        # ПОКАЗ РЕЗУЛЬТАТОВ РАСЧЕТА (ДОБАВЬТЕ ЭТО!)
-        # ============================================
-        if 'visit_report' in st.session_state and st.session_state.visit_report.get('calculated_data') is not None:
-            st.markdown("---")
-            st.subheader("📊 Результаты расчета план/факт")
-            
-            calculated_data = st.session_state.visit_report['calculated_data']
-            
-            if not calculated_data.empty:
-                # 1. Показать таблицу
-                with st.expander("👀 Просмотреть таблицу ПланФакт", expanded=True):
-                    st.dataframe(calculated_data, use_container_width=True, height=300)
-                
-                # 2. Кнопка выгрузки в Excel
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.metric("Проектов", len(calculated_data))
-                    planned_count = (calculated_data['План на дату, шт.'] > 0).sum()
-                    st.metric("С расчетом плана", planned_count)
-                
-                with col2:
-                    excel_buffer = BytesIO()
-                    with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                        # Экспортируем все колонки (убираем ошибку columns_to_remove)
-                        calculated_data.to_excel(writer, sheet_name='Данные_план_факт', index=False)
-                    excel_buffer.seek(0)
+
+                    # 7. СРАЗУ ПОКАЗЫВАЕМ РЕЗУЛЬТАТ
+                    st.markdown("---")
+                    st.subheader("📊 Результаты расчета план/факт")
                     
-                    st.download_button(
-                        label="⬇️ Скачать Excel",
-                        data=excel_buffer,
-                        file_name="данные_план_факт.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        type="primary",
-                        use_container_width=True,
-                        help="Таблица План/Факт в формате Excel"
-                    )
+                    if not final_result.empty:
+                        # Показать таблицу
+                        with st.expander("👀 Просмотреть таблицу ПланФакт", expanded=True):
+                            st.dataframe(final_result, use_container_width=True, height=300)
+                        
+                        # Кнопка выгрузки
+                        excel_buffer = BytesIO()
+                        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                            final_result.to_excel(writer, sheet_name='Данные_план_факт', index=False)
+                        excel_buffer.seek(0)
+                        
+                        st.download_button(
+                            label="⬇️ Скачать Excel",
+                            data=excel_buffer,
+                            file_name="данные_план_факт.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            type="primary",
+                            use_container_width=True,
+                            help="Таблица План/Факт в формате Excel"
+                        )
+                    else:
+                        st.warning("Нет данных для отображения")
                     
         # ============================================
         # 🆕 ПРОВЕРКА ПРОБЛЕМНЫХ ПРОЕКТОВ
@@ -1078,6 +1071,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

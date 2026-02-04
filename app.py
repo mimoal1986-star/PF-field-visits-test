@@ -875,12 +875,10 @@ with tab1:
                     base_data = st.session_state.visit_report['base_data']
                     cleaned_array = st.session_state.cleaned_data['портал']
                     params = st.session_state['plan_calc_params']
-                    cxway_df = st.session_state.uploaded_files.get('cxway')
                     
                     # 3. Считаем план
-                    hierarchy = visit_calculator.extract_hierarchical_data(field_df, google_df)
                     plan_result = visit_calculator.calculate_hierarchical_plan_on_date(
-                        hierarchy, 
+                        base_data,
                         cleaned_array, 
                         params
                     )
@@ -897,7 +895,7 @@ with tab1:
                     # 6. Сохраняем результат
                     st.session_state['visit_report'] = {
                         'calculated_data': final_result,
-                        'hierarchy': hierarchy,
+                        'hierarchy': base_data,
                         'timestamp': datetime.now().isoformat()
                     }
             
@@ -1000,5 +998,6 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 

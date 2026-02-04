@@ -14,6 +14,11 @@ class VisitCalculator:
         Создаёт полную иерархию Проект→Клиент→Волна→Регион→DSM→ASM→RS
         с базовой информацией о проекте
         """
+        
+        # ПРОВЕРКА ВРЕМЕННАЯ
+        st.write(f"**Колонки ({len(array_df.columns)}):** {', '.join(array_df.columns)}")
+        # ПРОВЕРКА ВРЕМЕННАЯ
+        
         try:
             # 1. Создаём иерархию из array_df (уникальные цепочки)
             hierarchy = pd.DataFrame({
@@ -426,6 +431,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

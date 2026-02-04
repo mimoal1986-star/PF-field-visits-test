@@ -160,14 +160,14 @@ def process_field_projects_with_stats():
             google_updated = data_cleaner.update_field_projects_flag(google_df)
             if google_updated is None:
                 return False
+            st.session_state.cleaned_data['сервизория_с_полем'] = google_updated
             st.session_state.cleaned_data['сервизория'] = google_updated 
         
         st.write("### 🎯 Шаг 2: Добавление признака в массив")
         with st.spinner("Сопоставляю коды проектов..."):
-            array_updated = data_cleaner.add_portal_to_array(
-                data_cleaner.add_field_flag_to_array(array_df), 
-                google_updated
-            )
+            array_updated = data_cleaner.add_field_flag_to_array(array_df)
+            array_with_portal = data_cleaner.add_portal_to_array(array_updated, google_updated)
+            array_updated = array_with_portal
             if array_updated is None:
                 return False
             st.session_state.cleaned_data['портал_с_полем'] = array_updated
@@ -863,53 +863,43 @@ with tab1:
 
         # Кнопка расчета план/факт
         if st.button("📊 Рассчитать план/факт", type="primary", use_container_width=True):
-            if 'plan_calc_params' in st.session_state:
+            if 'plan_calc_params' in st.session_state and 'visit_report' in st.session_state:
                 # 1. ПРОВЕРКА - все ли есть для расчета
-                required_keys = ['сервизория', 'портал', 'полевые_проекты']
+                required_keys = ['сервизория', 'портал']
                 missing_keys = [k for k in required_keys if k not in st.session_state.cleaned_data]
                 
                 if missing_keys:
                     st.error(f"❌ Отсутствуют данные: {', '.join(missing_keys)}. Сначала запустите обработку.")
                 else:
                     # 2. Получаем все данные
-                    field_df = st.session_state.cleaned_data['полевые_проекты']
-                    google_df = st.session_state.cleaned_data['сервизория']
+                    base_data = st.session_state.visit_report['base_data']
                     cleaned_array = st.session_state.cleaned_data['портал']
                     params = st.session_state['plan_calc_params']
+                    cxway_df = st.session_state.uploaded_files.get('cxway')
                     
-                    # 3. Создаём/берём иерархию
-                    # Вариант А: Берём из visit_report если есть
-                    hierarchy = st.session_state.visit_report.get('hierarchy')
-                    
-                    # Вариант Б: Или создаём заново
-                    if hierarchy is None or hierarchy.empty:
-                        hierarchy = visit_calculator.extract_hierarchical_data(field_df, google_df)
-                    
-                    # 4. Считаем план
+                    # 3. Считаем план
+                    hierarchy = visit_calculator.extract_hierarchical_data(field_df, google_df)
                     plan_result = visit_calculator.calculate_hierarchical_plan_on_date(
                         hierarchy, 
                         cleaned_array, 
                         params
                     )
-        
-                    # 5. Считаем факт
+
+                    # 4. Считаем факт
                     fact_result = visit_calculator.calculate_hierarchical_fact_on_date(
                         plan_result, 
                         cleaned_array, 
                         params
                     )
-                    
-                    # 6. Рассчитываем метрики
+                    # 5. Рассчитываем метрики
                     final_result = visit_calculator._calculate_metrics(fact_result, params)
-        
-                    # 7. Сохраняем результат
+
+                    # 6. Сохраняем результат
                     st.session_state['visit_report'] = {
                         'calculated_data': final_result,
                         'hierarchy': hierarchy,
                         'timestamp': datetime.now().isoformat()
                     }
-                    
-                    st.success("✅ Расчёт план/факта завершён!")
             
         # ============================================
         # ПОКАЗ РЕЗУЛЬТАТОВ РАСЧЕТА (ДОБАВЬТЕ ЭТО!)
@@ -1010,7 +1000,5 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
-
-
 
 

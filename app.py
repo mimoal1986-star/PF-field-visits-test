@@ -8,6 +8,7 @@ import traceback
 from datetime import date, datetime, timedelta
 from io import BytesIO
 
+
 # data_cleaner.py
 try:
     from utils.data_cleaner import data_cleaner
@@ -214,6 +215,23 @@ def process_field_projects_with_stats():
             
             st.session_state.cleaned_data['полевые_проекты'] = field_df
             st.session_state.cleaned_data['неполевые_проекты'] = non_field_df
+        
+        # ПРОВЕРКА ВРЕМЕННАЯ
+        st.write("### 🔍 Проверка field_df")
+        st.write(f"Колонки в field_df: {list(field_df.columns)}")
+        
+        # Выгрузка в Excel
+        excel_buffer = BytesIO()
+        field_df.to_excel(excel_buffer, index=False)
+        excel_buffer.seek(0)
+        
+        st.download_button(
+            label="⬇️ Скачать field_df",
+            data=excel_buffer,
+            file_name="field_df_проверка.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        # ПРОВЕРКА ВРЕМЕННАЯ
 
         
         st.write("### 🎯 Шаг 4: Обработка CXWAY (если есть)")
@@ -1062,6 +1080,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

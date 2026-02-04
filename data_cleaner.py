@@ -1011,7 +1011,7 @@ class DataCleaner:
                 non_field_projects = non_field_projects.rename(columns=reverse_mapping)
             
             # Правильный порядок колонок
-            final_columns = ['Код проекта', 'Имя клиента', 'Название проекта', 
+            final_columns = ['Код анкеты', 'Имя клиента', 'Название проекта', 
                            'ЗОД', 'АСС', 'ЭМ', 'Регион short', 'Регион', 'ПО', 'Полевой']
             
             # Реорганизуем колонки
@@ -1617,6 +1617,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

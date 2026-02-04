@@ -15,10 +15,6 @@ class VisitCalculator:
         с базовой информацией о проекте
         """
         
-        # ПРОВЕРКА ВРЕМЕННАЯ
-        st.write(f"**Колонки ({len(array_df.columns)}):** {', '.join(array_df.columns)}")
-        # ПРОВЕРКА ВРЕМЕННАЯ
-        
         try:
             # 1. Создаём иерархию из array_df (уникальные цепочки)
             hierarchy = pd.DataFrame({
@@ -92,11 +88,20 @@ class VisitCalculator:
             return hierarchy
             
         except KeyError as e:
-            # Если нет какой-то колонки в array_df
             missing_col = str(e).replace("'", "")
+            
+            # 🔴 ПОКАЗЫВАЕМ ОШИБКУ И КОЛОНКИ
             st.error(f"❌ В массиве отсутствует колонка: '{missing_col}'")
-            # Возвращаем пустой DataFrame
-            return pd.DataFrame()
+            
+            # 🔍 ПОКАЗЫВАЕМ КАКИЕ КОЛОНКИ ЕСТЬ
+            st.write("📋 **Какие колонки есть в массиве:**")
+            st.write(f"Всего колонок: **{len(array_df.columns)}**")
+            
+            # ПРОСТОЙ СПИСОК КОЛОНОК
+            cols_list = ", ".join(array_df.columns)
+            st.write(f"`{cols_list}`")
+            
+            return pd.DataFrame()  # Возвращаем пустой DataFrame
             
         except Exception as e:
             st.error(f"❌ Ошибка создания иерархии: {str(e)[:200]}")
@@ -431,6 +436,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

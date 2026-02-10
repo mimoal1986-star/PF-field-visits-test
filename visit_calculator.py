@@ -9,13 +9,12 @@ import io
 
 class VisitCalculator:
     
-    def _calculate_rs_weights_fixed(self, array_df, project_code):
+    def _calculate_rs_weights_fixed(self, array_df, project_code, wave_name):
         """
-        НОВЫЙ: Корректный расчет долей RS
-        Доля = все визиты RS в проекте / все визиты проекта
+        НОВЫЙ: Доли RS = визиты RS в проекте+волне / все визиты проекта+волне
         """
         try:
-            # Ищем колонку RS (может называться по-разному)
+            # Ищем колонку RS
             rs_col = None
             for col in array_df.columns:
                 if any(name in str(col).lower() for name in ['эм', 'rs']):
@@ -25,15 +24,18 @@ class VisitCalculator:
             if not rs_col:
                 return {}
             
-            # Все визиты проекта
-            project_mask = array_df['Код анкеты'] == project_code
-            project_visits = array_df[project_mask]
+            # Все визиты проекта+волны
+            project_wave_mask = (
+                (array_df['Код анкеты'] == project_code) &
+                (array_df['Название проекта'] == wave_name)
+            )
+            project_wave_visits = array_df[project_wave_mask]
             
-            if project_visits.empty:
+            if project_wave_visits.empty:
                 return {}
             
             # Визиты по RS
-            rs_counts = project_visits.groupby(rs_col).size()
+            rs_counts = project_wave_visits.groupby(rs_col).size()
             total_visits = rs_counts.sum()
             
             if total_visits == 0:
@@ -176,7 +178,7 @@ class VisitCalculator:
     
     def calculate_hierarchical_plan_on_date(self, hierarchy_df, array_df, calc_params):
         """
-        УСОВЕРШЕНСТВОВАННЫЙ: с фиксами долей RS и коротких проектов
+        УСОВЕРШЕНСТВОВАННЫЙ: с учетом волн в проекте
         """
         try:
             if hierarchy_df.empty or array_df.empty:
@@ -186,19 +188,23 @@ class VisitCalculator:
             end_period = calc_params['end_date']
             coefficients = calc_params['coefficients']
             
-            # Планы проектов (сколько визитов в массиве)
-            project_plans = array_df.groupby('Код анкеты').size()
+            # Планы проектов+волн
+            project_wave_plans = array_df.groupby(['Код анкеты', 'Название проекта']).size()
             
             results = []
             
             for _, row in hierarchy_df.iterrows():
                 project_code = row['Проект']
+                wave_name = row['Волна']
                 
-                # План проекта
-                if project_code in project_plans.index:
-                    total_plan = project_plans[project_code]
+                # Ключ для поиска плана
+                plan_key = (project_code, wave_name)
+                
+                # План проекта+волны
+                if plan_key in project_wave_plans.index:
+                    total_plan = project_wave_plans.loc[plan_key]
                 else:
-                    continue  # Нет визитов в массиве
+                    continue  # Нет визитов в этой волне
                 
                 # Проверка дат
                 start_date = row['Дата старта']
@@ -206,13 +212,13 @@ class VisitCalculator:
                 duration = row['Длительность']
                 
                 if pd.isna(start_date) or pd.isna(finish_date) or duration <= 0:
-                    continue  # Пропускаем проекты без дат
+                    continue
                 
                 # Проверка периода
                 if end_period < start_date.date() or start_period > finish_date.date():
-                    continue  # Период вне проекта
+                    continue
                 
-                # НОВЫЙ: Распределение по этапам
+                # Распределение по этапам
                 stage_days, stage_plans = self._calculate_stage_distribution(
                     total_plan, duration, coefficients
                 )
@@ -241,8 +247,8 @@ class VisitCalculator:
                     
                     current_date += timedelta(days=stage_days[i])
                 
-                # НОВЫЙ: Корректные доли RS
-                rs_weights = self._calculate_rs_weights_fixed(array_df, project_code)
+                # Доли RS для этой волны
+                rs_weights = self._calculate_rs_weights_fixed(array_df, project_code, wave_name)
                 rs_name = row['RS']
                 
                 if rs_name in rs_weights and rs_weights[rs_name] > 0:
@@ -252,9 +258,9 @@ class VisitCalculator:
                 
                 # Запись результата
                 results.append({
-                    'Проект': row['Проект'],
+                    'Проект': project_code,
                     'Клиент': row['Клиент'],
-                    'Волна': row['Волна'],
+                    'Волна': wave_name,
                     'Регион': row['Регион'],
                     'DSM': row['DSM'],
                     'ASM': row['ASM'],
@@ -335,16 +341,15 @@ class VisitCalculator:
         
     def calculate_hierarchical_fact_on_date(self, plan_df, array_df, calc_params):
         """
-        ОПТИМИЗИРОВАННЫЙ: считает факт за один проход
+        ОПТИМИЗИРОВАННЫЙ: считает факт за один проход с учетом волн
         """
         try:
             if plan_df.empty or array_df.empty:
                 return pd.DataFrame()
             
-            # 1. Копируем план
             result_df = plan_df.copy()
             
-            # 2. Ищем колонку статуса и RS
+            # Ищем колонки
             status_col = ' Статус' if ' Статус' in array_df.columns else 'Статус'
             
             rs_col = None
@@ -358,7 +363,7 @@ class VisitCalculator:
                 result_df['Факт на дату, шт.'] = 0
                 return result_df
             
-            # 3. ФИЛЬТРЫ
+            # ФИЛЬТРЫ
             completed_mask = array_df[status_col] == 'Выполнено'
             start_date = pd.Timestamp(calc_params['start_date'])
             end_date = pd.Timestamp(calc_params['end_date'])
@@ -367,24 +372,34 @@ class VisitCalculator:
                 (array_df['Дата визита'] <= end_date)
             )
             
-            # 4. СЧИТАЕМ ФАКТЫ
+            # СЧИТАЕМ ФАКТЫ С УЧЕТОМ ВОЛН
             completed_df = array_df[completed_mask]
-            rs_facts_total = completed_df.groupby(['Код анкеты', rs_col]).size().to_dict()
+            rs_facts_total = completed_df.groupby([
+                'Код анкеты',          # Проект
+                'Название проекта',    # Волна
+                rs_col                 # RS
+            ]).size().to_dict()
             
             completed_in_period = array_df[completed_mask & period_mask]
-            rs_facts_period = completed_in_period.groupby(['Код анкеты', rs_col]).size().to_dict()
+            rs_facts_period = completed_in_period.groupby([
+                'Код анкеты',
+                'Название проекта', 
+                rs_col
+            ]).size().to_dict()
             
-            # 5. ДОБАВЛЯЕМ ФАКТЫ К RS
+            # ДОБАВЛЯЕМ ФАКТЫ К RS УРОВНЮ
             for idx in result_df[result_df['Уровень'] == 'RS'].index:
                 row = result_df.loc[idx]
                 project = str(row['Проект']).strip()
+                wave = str(row['Волна']).strip()
                 rs = str(row['RS']).strip()
                 
-                key = (project, rs)
+                key = (project, wave, rs)
+                
                 result_df.at[idx, 'Факт проекта, шт.'] = rs_facts_total.get(key, 0)
                 result_df.at[idx, 'Факт на дату, шт.'] = rs_facts_period.get(key, 0)
             
-            # 6. АГРЕГИРУЕМ ВВЕРХ
+            # АГРЕГАЦИЯ ВВЕРХ
             levels = ['ASM', 'DSM', 'Регион', 'Волна', 'Клиент', 'Проект']
             
             for level in levels:
@@ -499,6 +514,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

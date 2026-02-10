@@ -9,6 +9,73 @@ import io
 
 class VisitCalculator:
     
+    def _calculate_rs_weights_fixed(self, array_df, project_code):
+        """
+        НОВЫЙ: Корректный расчет долей RS
+        Доля = все визиты RS в проекте / все визиты проекта
+        """
+        try:
+            # Ищем колонку RS (может называться по-разному)
+            rs_col = None
+            for col in array_df.columns:
+                if any(name in str(col).lower() for name in ['эм', 'rs']):
+                    rs_col = col
+                    break
+            
+            if not rs_col:
+                return {}
+            
+            # Все визиты проекта
+            project_mask = array_df['Код анкеты'] == project_code
+            project_visits = array_df[project_mask]
+            
+            if project_visits.empty:
+                return {}
+            
+            # Визиты по RS
+            rs_counts = project_visits.groupby(rs_col).size()
+            total_visits = rs_counts.sum()
+            
+            if total_visits == 0:
+                return {}
+            
+            # Доли
+            rs_weights = (rs_counts / total_visits).to_dict()
+            return rs_weights
+            
+        except Exception as e:
+            print(f"[DEBUG] Ошибка расчета долей RS: {e}")
+            return {}
+    
+    def _calculate_stage_distribution(self, total_visits, duration_days, coefficients):
+        """
+        НОВЫЙ: Распределение плана по этапам
+        """
+        if total_visits == 0 or duration_days <= 0:
+            return [], []
+        
+        # Короткие проекты (<4 дней)
+        if duration_days < 4:
+            stage_days = [duration_days]
+            stage_visits = [total_visits]
+            return stage_days, stage_visits
+        
+        # Нормализация коэффициентов
+        total_coeff = sum(coefficients)
+        if total_coeff == 0:
+            return [], []
+        
+        norm_coeff = [c/total_coeff for c in coefficients]
+        
+        # Распределение дней
+        base_days = duration_days // 4
+        stage_days = [base_days, base_days, base_days, duration_days - 3*base_days]
+        
+        # Распределение визитов
+        stage_visits = [total_visits * coeff for coeff in norm_coeff]
+        
+        return stage_days, stage_visits
+    
     def extract_hierarchical_data(self, array_df, google_df=None):
         """
         Создаёт полную иерархию Проект→Клиент→Волна→Регион→DSM→ASM→RS
@@ -109,25 +176,21 @@ class VisitCalculator:
     
     def calculate_hierarchical_plan_on_date(self, hierarchy_df, array_df, calc_params):
         """
-        Рассчитывает план на дату для всей иерархии
+        УСОВЕРШЕНСТВОВАННЫЙ: с фиксами долей RS и коротких проектов
         """
         try:
             if hierarchy_df.empty or array_df.empty:
                 return pd.DataFrame()
             
-            # Параметры
             start_period = calc_params['start_date']
             end_period = calc_params['end_date']
             coefficients = calc_params['coefficients']
-            total_coeff = sum(coefficients)
-            norm_coeff = [c/total_coeff for c in coefficients]
             
-            # Планы проектов
+            # Планы проектов (сколько визитов в массиве)
             project_plans = array_df.groupby('Код анкеты').size()
             
             results = []
             
-            # Для каждой уникальной RS
             for _, row in hierarchy_df.iterrows():
                 project_code = row['Проект']
                 
@@ -135,39 +198,59 @@ class VisitCalculator:
                 if project_code in project_plans.index:
                     total_plan = project_plans[project_code]
                 else:
-                    continue
+                    continue  # Нет визитов в массиве
                 
-                # Даты
+                # Проверка дат
                 start_date = row['Дата старта']
                 finish_date = row['Дата финиша']
                 duration = row['Длительность']
                 
                 if pd.isna(start_date) or pd.isna(finish_date) or duration <= 0:
+                    continue  # Пропускаем проекты без дат
+                
+                # Проверка периода
+                if end_period < start_date.date() or start_period > finish_date.date():
+                    continue  # Период вне проекта
+                
+                # НОВЫЙ: Распределение по этапам
+                stage_days, stage_plans = self._calculate_stage_distribution(
+                    total_plan, duration, coefficients
+                )
+                
+                if not stage_days:
                     continue
                 
-                # Распределение по этапам
-                stage_days = [duration // 4] * 3
-                stage_days.append(duration - sum(stage_days))
-                
-                stage_plans = [total_plan * coeff for coeff in norm_coeff[:3]]
-                stage_plans.append(total_plan - sum(stage_plans))
+                # Дневные планы
+                daily_plans = []
+                for i in range(len(stage_days)):
+                    if stage_days[i] > 0:
+                        daily_plans.append(stage_plans[i] / stage_days[i])
+                    else:
+                        daily_plans.append(0)
                 
                 # План на дату
                 plan_on_date = 0.0
                 current_date = start_date
                 
-                for i in range(4):
-                    if stage_plans[i] > 0 and stage_days[i] > 0:
-                        daily_plan = stage_plans[i] / stage_days[i]
-                        
+                for i in range(len(stage_days)):
+                    if stage_days[i] > 0 and daily_plans[i] > 0:
                         for day in range(stage_days[i]):
                             check_date = current_date + timedelta(days=day)
                             if start_period <= check_date.date() <= end_period:
-                                plan_on_date += daily_plan
+                                plan_on_date += daily_plans[i]
                     
                     current_date += timedelta(days=stage_days[i])
                 
-                # Запись
+                # НОВЫЙ: Корректные доли RS
+                rs_weights = self._calculate_rs_weights_fixed(array_df, project_code)
+                rs_name = row['RS']
+                
+                if rs_name in rs_weights and rs_weights[rs_name] > 0:
+                    rs_plan = plan_on_date * rs_weights[rs_name]
+                else:
+                    rs_plan = 0
+                
+                # Запись результата
                 results.append({
                     'Проект': row['Проект'],
                     'Клиент': row['Клиент'],
@@ -175,11 +258,11 @@ class VisitCalculator:
                     'Регион': row['Регион'],
                     'DSM': row['DSM'],
                     'ASM': row['ASM'],
-                    'RS': row['RS'],
+                    'RS': rs_name,
                     'ПО': row.get('ПО', 'не определено'),
                     'Уровень': 'RS',
                     'План проекта, шт.': float(total_plan),
-                    'План на дату, шт.': round(plan_on_date, 1),
+                    'План на дату, шт.': round(rs_plan, 1),
                     'Длительность': int(duration),
                     'Дата старта': start_date,
                     'Дата финиша': finish_date
@@ -191,6 +274,7 @@ class VisitCalculator:
             # Создаём DataFrame
             plan_df = pd.DataFrame(results)
             
+            # ⚠️ ВАЖНО: ДОБАВИТЬ ЭТУ ЛОГИКУ АГРЕГАЦИИ:
             # Автоагрегация вверх
             levels = [
                 ('ASM', ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM']),
@@ -239,12 +323,14 @@ class VisitCalculator:
                 project_sum = final_df[final_df['Уровень'] == 'Проект']['План на дату, шт.'].sum()
                 
                 if abs(rs_sum - project_sum) > 0.01:
-                    st.warning(f"⚠️ Расхождение: RS={rs_sum:.1f}, Проекты={project_sum:.1f}")
+                    print(f"⚠️ Расхождение: RS={rs_sum:.1f}, Проекты={project_sum:.1f}")
             
             return final_df
             
         except Exception as e:
-            st.error(f"❌ Ошибка в calculate_hierarchical_plan_on_date: {str(e)[:200]}")
+            print(f"❌ Ошибка в calculate_hierarchical_plan_on_date: {e}")
+            import traceback
+            print(traceback.format_exc())
             return pd.DataFrame()
         
     def calculate_hierarchical_fact_on_date(self, plan_df, array_df, calc_params):
@@ -436,6 +522,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

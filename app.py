@@ -938,7 +938,8 @@ with tab1:
                     # 2. Получаем все данные
                     if 'base_data' not in st.session_state.visit_report:
                         st.error("❌ Нет базовых данных для расчёта. Сначала запустите обработку.")
-                        return
+                        st.stop() 
+    
                     base_data = st.session_state.visit_report['base_data']
                     
                     cleaned_array = st.session_state.cleaned_data['портал']
@@ -1071,6 +1072,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

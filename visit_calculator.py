@@ -311,9 +311,43 @@ class VisitCalculator:
                 for col in ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM', 'RS', 'ПО']:
                     if col not in group_cols:
                         if col == 'ПО':
-                            # Самое частое ПО в группе
-                            po_mode = plan_df[plan_df['ПО'] != 'не определено']['ПО'].mode()
-                            grouped['ПО'] = po_mode.iloc[0] if not po_mode.empty else 'не определено'
+                            # Определяем ПО для КАЖДОГО ПРОЕКТА в группе
+                            
+                            # 1. Получаем список проектов в группе
+                            # Используем .iloc[0] для безопасности
+                            if len(grouped) == 1:
+                                # Одна строка в grouped
+                                projects_list = [grouped['Проект'].iloc[0]]
+                            else:
+                                # Несколько строк
+                                projects_list = grouped['Проект'].unique()
+                            
+                            # 2. Для каждого проекта берем его ПО
+                            project_po_mapping = {}
+                            for project in projects_list:
+                                project_mask = plan_df['Проект'] == project
+                                if project_mask.any():
+                                    project_po = plan_df.loc[project_mask, 'ПО'].mode()
+                                    if not project_po.empty and project_po.iloc[0] != 'не определено':
+                                        project_po_mapping[project] = project_po.iloc[0]
+                            
+                            # 3. Заполняем ПО
+                            if project_po_mapping:
+                                if len(project_po_mapping) == 1:
+                                    # Если один проект в группе - его ПО для всей группы
+                                    grouped['ПО'] = list(project_po_mapping.values())[0]
+                                else:
+                                    # Если разные проекты с разным ПО
+                                    # Определяем самое частое ПО среди проектов в группе
+                                    all_pos = list(project_po_mapping.values())
+                                    from collections import Counter
+                                    most_common_po = Counter(all_pos).most_common(1)
+                                    if most_common_po:
+                                        grouped['ПО'] = most_common_po[0][0]
+                                    else:
+                                        grouped['ПО'] = 'не определено'
+                            else:
+                                grouped['ПО'] = 'не определено'
                         else:
                             grouped[col] = 'Итого'
                 
@@ -514,6 +548,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

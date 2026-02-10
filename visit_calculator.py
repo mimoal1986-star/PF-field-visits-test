@@ -335,114 +335,91 @@ class VisitCalculator:
         
     def calculate_hierarchical_fact_on_date(self, plan_df, array_df, calc_params):
         """
-        Рассчитывает факт на дату для всей иерархии
-        Возвращает DataFrame с колонками: 'Факт на дату, шт.', 'Факт проекта, шт.'
+        ОПТИМИЗИРОВАННЫЙ: считает факт за один проход
         """
         try:
             if plan_df.empty or array_df.empty:
                 return pd.DataFrame()
             
+            # 1. Копируем план
             result_df = plan_df.copy()
             
-            # 1. Определяем колонку статуса
+            # 2. Ищем колонку статуса и RS
             status_col = ' Статус' if ' Статус' in array_df.columns else 'Статус'
             
-            # 2. Фильтр: выполненные визиты в периоде
-            completed_mask = (
-                (array_df[status_col] == 'Выполнено') &
-                (array_df['Дата визита'] >= pd.Timestamp(calc_params['start_date'])) &
-                (array_df['Дата визита'] <= pd.Timestamp(calc_params['end_date']))
-            )
+            rs_col = None
+            for col in array_df.columns:
+                if any(name in str(col).lower() for name in ['эм', 'rs']):
+                    rs_col = col
+                    break
             
-            completed_df = array_df[completed_mask]
-            
-            # 3. Если нет выполненных - все факты = 0
-            if completed_df.empty:
-                result_df['Факт на дату, шт.'] = 0
+            if not rs_col:
                 result_df['Факт проекта, шт.'] = 0
+                result_df['Факт на дату, шт.'] = 0
                 return result_df
             
-            # 4. Факт проекта (ВСЕ выполненные визиты проекта)
-            project_facts = {}
-            for project in result_df['Проект'].unique():
-                if project != 'Итого':
-                    project_mask = (
-                        (array_df['Код анкеты'] == project) &
-                        (array_df[status_col] == 'Выполнено')
-                    )
-                    project_facts[project] = array_df[project_mask].shape[0]
+            # 3. ФИЛЬТРЫ
+            completed_mask = array_df[status_col] == 'Выполнено'
+            start_date = pd.Timestamp(calc_params['start_date'])
+            end_date = pd.Timestamp(calc_params['end_date'])
+            period_mask = (
+                (array_df['Дата визита'] >= start_date) &
+                (array_df['Дата визита'] <= end_date)
+            )
             
-            # 5. Группируем выполненные визиты для RS
-            fact_counts = completed_df.groupby([
-                'Код анкеты', 'Имя клиента', 'Название проекта',
-                'Регион', 'ЗОД', 'АСС', 'ЭМ рег'
-            ]).size().reset_index(name='Факт_RS')
+            # 4. СЧИТАЕМ ФАКТЫ
+            completed_df = array_df[completed_mask]
+            rs_facts_total = completed_df.groupby(['Код анкеты', rs_col]).size().to_dict()
             
-            # 6. Сопоставляем факты с RS строками
-            rs_mask = result_df['Уровень'] == 'RS'
+            completed_in_period = array_df[completed_mask & period_mask]
+            rs_facts_period = completed_in_period.groupby(['Код анкеты', rs_col]).size().to_dict()
             
-            for idx in result_df[rs_mask].index:
+            # 5. ДОБАВЛЯЕМ ФАКТЫ К RS
+            for idx in result_df[result_df['Уровень'] == 'RS'].index:
                 row = result_df.loc[idx]
+                project = str(row['Проект']).strip()
+                rs = str(row['RS']).strip()
                 
-                # Ищем совпадение
-                match = fact_counts[
-                    (fact_counts['Код анкеты'] == row['Проект']) &
-                    (fact_counts['Имя клиента'] == row['Клиент']) &
-                    (fact_counts['Название проекта'] == row['Волна']) &
-                    (fact_counts['Регион'] == row['Регион']) &
-                    (fact_counts['ЗОД'] == row['DSM']) &
-                    (fact_counts['АСС'] == row['ASM']) &
-                    (fact_counts['ЭМ рег'] == row['RS'])
-                ]
-                
-                # Факт на дату для RS
-                result_df.at[idx, 'Факт на дату, шт.'] = match['Факт_RS'].iloc[0] if not match.empty else 0
-                
-                # Факт проекта для RS
-                project_code = row['Проект']
-                if project_code != 'Итого':
-                    result_df.at[idx, 'Факт проекта, шт.'] = project_facts.get(project_code, 0)
+                key = (project, rs)
+                result_df.at[idx, 'Факт проекта, шт.'] = rs_facts_total.get(key, 0)
+                result_df.at[idx, 'Факт на дату, шт.'] = rs_facts_period.get(key, 0)
             
-            # 7. Автоагрегация фактов вверх по уровням
-            levels = [
-                ('ASM', ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM']),
-                ('DSM', ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM']),
-                ('Регион', ['Проект', 'Клиент', 'Волна', 'Регион']),
-                ('Волна', ['Проект', 'Клиент', 'Волна']),
-                ('Клиент', ['Проект', 'Клиент']),
-                ('Проект', ['Проект'])
-            ]
+            # 6. АГРЕГИРУЕМ ВВЕРХ
+            levels = ['ASM', 'DSM', 'Регион', 'Волна', 'Клиент', 'Проект']
             
-            for level_name, group_cols in levels:
-                level_mask = result_df['Уровень'] == level_name
-                
-                for idx in result_df[level_mask].index:
-                    # Находим дочерние RS строки
+            for level in levels:
+                for idx in result_df[result_df['Уровень'] == level].index:
                     child_mask = (result_df['Уровень'] == 'RS')
-                    row_values = result_df.loc[idx]
+                    row = result_df.loc[idx]
                     
-                    for col in group_cols:
-                        child_mask = child_mask & (result_df[col] == row_values[col])
+                    # Фильтруем по уровню
+                    if level == 'ASM':
+                        cols = ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM']
+                    elif level == 'DSM':
+                        cols = ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM']
+                    elif level == 'Регион':
+                        cols = ['Проект', 'Клиент', 'Волна', 'Регион']
+                    elif level == 'Волна':
+                        cols = ['Проект', 'Клиент', 'Волна']
+                    elif level == 'Клиент':
+                        cols = ['Проект', 'Клиент']
+                    else:
+                        cols = ['Проект']
                     
-                    # Суммируем факты дочерних
+                    for col in cols:
+                        child_mask = child_mask & (result_df[col] == row[col])
+                    
                     if child_mask.any():
-                        fact_sum = result_df.loc[child_mask, 'Факт на дату, шт.'].sum()
-                        result_df.at[idx, 'Факт на дату, шт.'] = fact_sum
-                        
-                        # Факт проекта для агрегированных уровней
-                        if 'Проект' in group_cols:
-                            project_code = row_values['Проект']
-                            if project_code != 'Итого':
-                                result_df.at[idx, 'Факт проекта, шт.'] = project_facts.get(project_code, 0)
-            
-            # 8. Заполняем пропуски нулями
-            result_df['Факт на дату, шт.'] = result_df['Факт на дату, шт.'].fillna(0)
-            result_df['Факт проекта, шт.'] = result_df['Факт проекта, шт.'].fillna(0)
+                        result_df.at[idx, 'Факт проекта, шт.'] = result_df.loc[child_mask, 'Факт проекта, шт.'].sum()
+                        result_df.at[idx, 'Факт на дату, шт.'] = result_df.loc[child_mask, 'Факт на дату, шт.'].sum()
+                    else:
+                        result_df.at[idx, 'Факт проекта, шт.'] = 0
+                        result_df.at[idx, 'Факт на дату, шт.'] = 0
             
             return result_df
             
         except Exception as e:
-            st.error(f"❌ Ошибка в calculate_hierarchical_fact_on_date: {str(e)[:200]}")
+            print(f"❌ Ошибка: {e}")
             return pd.DataFrame()
 
 
@@ -522,6 +499,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

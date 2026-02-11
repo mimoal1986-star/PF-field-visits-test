@@ -61,12 +61,15 @@ class VisitCalculator:
         """
         
         try:
-            # 1. Создаём иерархию из array_df (уникальные цепочки)
+            # 1. Определяем колонку региона
+            region_col = 'Регион short' if 'Регион short' in array_df.columns else 'Регион'
+            
+            # Создаём иерархию из array_df (уникальные цепочки)
             hierarchy = pd.DataFrame({
                 'Проект': array_df['Код проекта'].fillna('Не указано'),
                 'Клиент': array_df['Имя клиента'].fillna('Не указано'),
                 'Волна': array_df['Название проекта'].fillna('Не указано'),
-                'Регион': array_df['Регион'].fillna('Не указано'),
+                'Регион': array_df[region_col].fillna('Не указано'),
                 'DSM': array_df['ЗОД'].fillna('Не указано'),
                 'ASM': array_df['АСС'].fillna('Не указано'),
                 'RS': array_df['ЭМ'].fillna('Не указано')
@@ -182,7 +185,6 @@ class VisitCalculator:
                 wave_name = row['Волна']
                 
                 # План проекта+волны
-                region = row['Регион']
                 plan_key = (project_code, wave_name, region)
                 if plan_key not in project_wave_region_plans.index:
                     continue
@@ -407,6 +409,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

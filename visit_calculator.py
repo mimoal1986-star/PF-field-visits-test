@@ -125,6 +125,7 @@ class VisitCalculator:
             
             # 5. Сортируем для удобства
             hierarchy = hierarchy.sort_values(['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM', 'RS'])
+            hierarchy = hierarchy[hierarchy['RS'] != 'Итого']
             
             return hierarchy
             
@@ -391,6 +392,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

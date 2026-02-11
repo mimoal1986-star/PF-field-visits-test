@@ -1,5 +1,5 @@
 # app.py
-# draft 2.1 
+# draft 2.0 
 import streamlit as st
 import pandas as pd
 import sys
@@ -1072,12 +1072,3 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
-
-
-
-
-
-
-
-
-

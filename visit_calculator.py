@@ -228,7 +228,6 @@ class VisitCalculator:
                     'RS': rs_name,
                     'ПО': row.get('ПО', 'не определено'),
                     'Уровень': 'RS',
-                    'План проекта, шт.': float(total_plan),
                     'План на дату, шт.': round(rs_plan_on_date, 1),
                     'Длительность': int(duration),
                     'Дата старта': start_date,
@@ -392,6 +391,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

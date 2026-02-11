@@ -1,5 +1,5 @@
 # utils/dataviz.py
-# draft 2.1 
+# draft 2.0
 import pandas as pd
 import streamlit as st
 
@@ -143,9 +143,6 @@ class DataVisualizer:
 # Глобальный экземпляр
 
 dataviz = DataVisualizer()
-
-
-
 
 
 

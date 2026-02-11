@@ -407,6 +407,7 @@ class DataCleaner:
             return None
         
         df_clean = df.copy()
+        df_clean.columns = df_clean.columns.str.strip()
         original_rows = len(df_clean)
         original_cols = len(df_clean.columns)
         
@@ -1604,6 +1605,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

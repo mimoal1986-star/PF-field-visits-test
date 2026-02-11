@@ -232,40 +232,19 @@ class DataCleaner:
         if all_dates:
             # Берем период из настроек пользователя
             if 'plan_calc_params' in st.session_state:
+                start_date = st.session_state['plan_calc_params']['start_date']
                 end_date = st.session_state['plan_calc_params']['end_date']
-                max_date = end_date
+                
+                # Для бизнес-правил - ГОД и МЕСЯЦ из периода
                 max_year = end_date.year
                 max_month = end_date.month
                 
+                # Границы МЕСЯЦА
                 first_day = pd.Timestamp(year=max_year, month=max_month, day=1)
-                last_day = first_day + pd.offsets.MonthEnd(1)
-            else:
-                st.error("❌ Сначала выберите период расчета в сайдбаре!")
-                return None
+                last_day = first_day + pd.offsets.MonthEnd(1)  # последний день МЕСЯЦА
+                
+            st.success(f"   ✅ Период: {start_date.strftime('%d.%m.%Y')} - {end_date.strftime('%d.%m.%Y')}")
             
-            st.success(f"   ✅ Максимальная дата в данных: {max_date.strftime('%d.%m.%Y')}")
-            
-            # Находим наиболее частый год (для исправления ошибок)
-            from collections import Counter
-            if all_years:
-                year_counts = Counter(all_years)
-                target_year, target_count = year_counts.most_common(1)[0]
-                st.success(f"   🎯 Наиболее частый год: {target_year} ({target_count} дат)")
-            else:
-                target_year = max_year
-                st.info(f"   🎯 Использую максимальный год как целевой: {target_year}")
-            
-            # 2. ВЫЧИСЛЯЕМ ГРАНИЦЫ МАКСИМАЛЬНОГО МЕСЯЦА
-            # Первый день максимального месяца
-            first_day = pd.Timestamp(year=max_year, month=max_month, day=1)
-            
-            # Последний день максимального месяца
-            if max_month == 12:
-                next_month = pd.Timestamp(year=max_year+1, month=1, day=1)
-            else:
-                next_month = pd.Timestamp(year=max_year, month=max_month+1, day=1)
-            
-            last_day = next_month - pd.Timedelta(days=1)
             
             st.info(f"   📅 Период для бизнес-правил: {first_day.strftime('%d.%m.%Y')} - {last_day.strftime('%d.%m.%Y')}")
             
@@ -1625,6 +1604,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

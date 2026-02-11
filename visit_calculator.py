@@ -9,9 +9,9 @@ import io
 
 class VisitCalculator:
     
-    def _calculate_rs_weights(self, array_df, project_code, wave_name):
+    def _calculate_rs_weights(self, array_df, project_code, wave_name, region):
         """
-        НОВЫЙ: Доли RS = визиты RS в проекте+волне / все визиты проекта+волне
+        Доли RS = визиты RS в проекте+волне+регионе / все визиты проекта+волны+региона
         """
         try:
             # Ищем колонку RS
@@ -24,18 +24,22 @@ class VisitCalculator:
             if not rs_col:
                 return {}
             
-            # Все визиты проекта+волны
-            project_wave_mask = (
-                (array_df['Код анкеты'] == project_code) &
-                (array_df['Название проекта'] == wave_name)
-            )
-            project_wave_visits = array_df[project_wave_mask]
+            # Определяем колонку региона
+            region_col = 'Регион short' if 'Регион short' in array_df.columns else 'Регион'
             
-            if project_wave_visits.empty:
+            # Все визиты проекта+волны+региона
+            project_wave_region_mask = (
+                (array_df['Код анкеты'] == project_code) &
+                (array_df['Название проекта'] == wave_name) &
+                (array_df[region_col] == region)
+            )
+            filtered_visits = array_df[project_wave_region_mask]
+            
+            if filtered_visits.empty:
                 return {}
             
             # Визиты по RS
-            rs_counts = project_wave_visits.groupby(rs_col).size()
+            rs_counts = filtered_visits.groupby(rs_col).size()
             total_visits = rs_counts.sum()
             
             if total_visits == 0:
@@ -162,20 +166,27 @@ class VisitCalculator:
             end_period = calc_params['end_date']
             coefficients = calc_params['coefficients']
             
-            # Планы проектов+волн
-            project_wave_plans = array_df.groupby(['Код анкеты', 'Название проекта']).size()
+            # Планы проектов+волн+регионов
+            region_col = 'Регион short' if 'Регион short' in array_df.columns else 'Регион'
+            project_wave_region_plans = array_df.groupby([
+                'Код анкеты', 
+                'Название проекта',
+                region_col
+            ]).size()
             
             results = []
             
             for _, row in hierarchy_df.iterrows():
+                region = row['Регион']
                 project_code = row['Проект']
                 wave_name = row['Волна']
                 
                 # План проекта+волны
-                plan_key = (project_code, wave_name)
-                if plan_key not in project_wave_plans.index:
+                region = row['Регион']
+                plan_key = (project_code, wave_name, region)
+                if plan_key not in project_wave_region_plans.index:
                     continue
-                total_plan = project_wave_plans.loc[plan_key]
+                total_plan = project_wave_region_plans.loc[plan_key]
                 
                 # Проверка дат
                 start_date = row['Дата старта']
@@ -204,7 +215,7 @@ class VisitCalculator:
                 daily_plan_wave = total_plan / duration
                 
                 # ДОЛИ RS
-                rs_weights = self._calculate_rs_weights(array_df, project_code, wave_name)
+                rs_weights = self._calculate_rs_weights(array_df, project_code, wave_name, region)
                 rs_name = row['RS']
                 
                 if rs_name not in rs_weights or rs_weights[rs_name] <= 0:
@@ -257,6 +268,7 @@ class VisitCalculator:
                 return pd.DataFrame()
             
             result_df = plan_df.copy()
+            region_col = 'Регион short' if 'Регион short' in array_df.columns else 'Регион'
             
             # Ищем колонки
             status_col = ' Статус' if ' Статус' in array_df.columns else 'Статус'
@@ -286,6 +298,7 @@ class VisitCalculator:
             rs_facts_total = completed_df.groupby([
                 'Код анкеты',          # Проект
                 'Название проекта',    # Волна
+                region_col,            # Регион
                 rs_col                 # RS
             ]).size().to_dict()
             
@@ -293,6 +306,7 @@ class VisitCalculator:
             rs_facts_period = completed_in_period.groupby([
                 'Код анкеты',
                 'Название проекта', 
+                region_col,         
                 rs_col
             ]).size().to_dict()
             
@@ -301,9 +315,10 @@ class VisitCalculator:
                 row = result_df.loc[idx]
                 project = str(row['Проект']).strip()
                 wave = str(row['Волна']).strip()
+                region = str(row['Регион']).strip() 
                 rs = str(row['RS']).strip()
                 
-                key = (project, wave, rs)
+                key = (project, wave, region, rs)
                 
                 result_df.at[idx, 'Факт проекта, шт.'] = rs_facts_total.get(key, 0)
                 result_df.at[idx, 'Факт на дату, шт.'] = rs_facts_period.get(key, 0)
@@ -392,6 +407,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

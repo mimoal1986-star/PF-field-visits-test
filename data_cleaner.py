@@ -319,7 +319,7 @@ class DataCleaner:
                     try:
                         mask = df_clean[col] < first_day
                         if mask.any():
-                            df_clean.loc[mask, col] = first_day
+                            df_clean.loc[mask, col] = pd.to_datetime(first_day)
                             date_rules_applied += mask.sum()
                             st.info(f"   ⚙️ Исправлено {mask.sum()} дат старта (были раньше {first_day.strftime('%d.%m.%Y')})")
                     except Exception as e:
@@ -1605,6 +1605,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

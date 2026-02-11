@@ -230,10 +230,18 @@ class DataCleaner:
                     continue
         
         if all_dates:
-            # Находим максимальную дату (для бизнес-правил)
-            max_date = max(all_dates)
-            max_year = max_date.year
-            max_month = max_date.month
+            # Берем период из настроек пользователя
+            if 'plan_calc_params' in st.session_state:
+                end_date = st.session_state['plan_calc_params']['end_date']
+                max_date = end_date
+                max_year = end_date.year
+                max_month = end_date.month
+                
+                first_day = pd.Timestamp(year=max_year, month=max_month, day=1)
+                last_day = first_day + pd.offsets.MonthEnd(1)
+            else:
+                st.error("❌ Сначала выберите период расчета в сайдбаре!")
+                return None
             
             st.success(f"   ✅ Максимальная дата в данных: {max_date.strftime('%d.%m.%Y')}")
             
@@ -1617,6 +1625,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

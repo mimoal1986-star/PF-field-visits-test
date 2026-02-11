@@ -1,5 +1,5 @@
 # utils/visit_calculator.py
-# draft 2.1
+# draft 2.0 
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -384,7 +384,7 @@ class VisitCalculator:
             result_df = plan_df.copy()
             
             # Ищем колонки
-            status_col = 'Статус' if 'Статус' in array_df.columns else 'Статус'
+            status_col = ' Статус' if ' Статус' in array_df.columns else 'Статус'
             
             rs_col = None
             for col in array_df.columns:
@@ -548,9 +548,6 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
-
-
-
 
 
 

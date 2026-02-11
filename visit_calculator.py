@@ -9,7 +9,7 @@ import io
 
 class VisitCalculator:
     
-    def _calculate_rs_weights_fixed(self, array_df, project_code, wave_name):
+    def _calculate_rs_weights(self, array_df, project_code, wave_name):
         """
         НОВЫЙ: Доли RS = визиты RS в проекте+волне / все визиты проекта+волне
         """
@@ -49,34 +49,6 @@ class VisitCalculator:
             print(f"[DEBUG] Ошибка расчета долей RS: {e}")
             return {}
     
-    def _calculate_stage_distribution(self, total_visits, duration_days, coefficients):
-        """
-        НОВЫЙ: Распределение плана по этапам
-        """
-        if total_visits == 0 or duration_days <= 0:
-            return [], []
-        
-        # Короткие проекты (<4 дней)
-        if duration_days < 4:
-            stage_days = [duration_days]
-            stage_visits = [total_visits]
-            return stage_days, stage_visits
-        
-        # Нормализация коэффициентов
-        total_coeff = sum(coefficients)
-        if total_coeff == 0:
-            return [], []
-        
-        norm_coeff = [c/total_coeff for c in coefficients]
-        
-        # Распределение дней
-        base_days = duration_days // 4
-        stage_days = [base_days, base_days, base_days, duration_days - 3*base_days]
-        
-        # Распределение визитов
-        stage_visits = [total_visits * coeff for coeff in norm_coeff]
-        
-        return stage_days, stage_visits
     
     def extract_hierarchical_data(self, array_df, google_df=None):
         """
@@ -178,7 +150,8 @@ class VisitCalculator:
     
     def calculate_hierarchical_plan_on_date(self, hierarchy_df, array_df, calc_params):
         """
-        УСОВЕРШЕНСТВОВАННЫЙ: с учетом волн в проекте
+        РАССЧИТЫВАЕТ ПЛАН ТОЛЬКО ДЛЯ УРОВНЯ RS
+        Ключевое исправление: распределение ДНЕВНОГО плана по долям RS
         """
         try:
             if hierarchy_df.empty or array_df.empty:
@@ -197,14 +170,11 @@ class VisitCalculator:
                 project_code = row['Проект']
                 wave_name = row['Волна']
                 
-                # Ключ для поиска плана
-                plan_key = (project_code, wave_name)
-                
                 # План проекта+волны
-                if plan_key in project_wave_plans.index:
-                    total_plan = project_wave_plans.loc[plan_key]
-                else:
-                    continue  # Нет визитов в этой волне
+                plan_key = (project_code, wave_name)
+                if plan_key not in project_wave_plans.index:
+                    continue
+                total_plan = project_wave_plans.loc[plan_key]
                 
                 # Проверка дат
                 start_date = row['Дата старта']
@@ -214,47 +184,38 @@ class VisitCalculator:
                 if pd.isna(start_date) or pd.isna(finish_date) or duration <= 0:
                     continue
                 
-                # Проверка периода
+                # Проверка пересечения с периодом
                 if end_period < start_date.date() or start_period > finish_date.date():
                     continue
                 
-                # Распределение по этапам
-                stage_days, stage_plans = self._calculate_stage_distribution(
-                    total_plan, duration, coefficients
-                )
+                # ДНИ ПРОЕКТА, ПОПАДАЮЩИЕ В ПЕРИОД
+                days_in_period = 0
+                current_date = start_date
+                for day in range(duration):
+                    check_date = current_date + timedelta(days=day)
+                    if start_period <= check_date.date() <= end_period:
+                        days_in_period += 1
                 
-                if not stage_days:
+                if days_in_period == 0:
                     continue
                 
-                # Дневные планы
-                daily_plans = []
-                for i in range(len(stage_days)):
-                    if stage_days[i] > 0:
-                        daily_plans.append(stage_plans[i] / stage_days[i])
-                    else:
-                        daily_plans.append(0)
+                # ДНЕВНОЙ ПЛАН ВОЛНЫ (равномерное распределение)
+                daily_plan_wave = total_plan / duration
                 
-                # План на дату
-                plan_on_date = 0.0
-                current_date = start_date
-                
-                for i in range(len(stage_days)):
-                    if stage_days[i] > 0 and daily_plans[i] > 0:
-                        for day in range(stage_days[i]):
-                            check_date = current_date + timedelta(days=day)
-                            if start_period <= check_date.date() <= end_period:
-                                plan_on_date += daily_plans[i]
-                    
-                    current_date += timedelta(days=stage_days[i])
-                
-                # Доли RS для этой волны
-                rs_weights = self._calculate_rs_weights_fixed(array_df, project_code, wave_name)
+                # ДОЛИ RS
+                rs_weights = self._calculate_rs_weights(array_df, project_code, wave_name)
                 rs_name = row['RS']
                 
-                if rs_name in rs_weights and rs_weights[rs_name] > 0:
-                    rs_plan = plan_on_date * rs_weights[rs_name]
-                else:
-                    rs_plan = 0
+                if rs_name not in rs_weights or rs_weights[rs_name] <= 0:
+                    continue
+                
+                rs_weight = rs_weights[rs_name]
+                
+                # ✅ ПРАВИЛЬНО: дневной план RS = дневной план волны × доля RS
+                rs_daily_plan = daily_plan_wave * rs_weight
+                
+                # ✅ ПРАВИЛЬНО: план RS на дату = дневной план × дни в периоде
+                rs_plan_on_date = rs_daily_plan * days_in_period
                 
                 # Запись результата
                 results.append({
@@ -268,107 +229,21 @@ class VisitCalculator:
                     'ПО': row.get('ПО', 'не определено'),
                     'Уровень': 'RS',
                     'План проекта, шт.': float(total_plan),
-                    'План на дату, шт.': round(rs_plan, 1),
+                    'План на дату, шт.': round(rs_plan_on_date, 1),
                     'Длительность': int(duration),
                     'Дата старта': start_date,
-                    'Дата финиша': finish_date
+                    'Дата финиша': finish_date,
+                    'Дней в периоде': days_in_period,
+                    'Дневной план RS, шт.': round(rs_daily_plan, 2)
                 })
             
             if not results:
                 return pd.DataFrame()
             
-            # Создаём DataFrame
-            plan_df = pd.DataFrame(results)
-            
-            # ⚠️ ВАЖНО: ДОБАВИТЬ ЭТУ ЛОГИКУ АГРЕГАЦИИ:
-            # Автоагрегация вверх
-            levels = [
-                ('ASM', ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM']),
-                ('DSM', ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM']),
-                ('Регион', ['Проект', 'Клиент', 'Волна', 'Регион']),
-                ('Волна', ['Проект', 'Клиент', 'Волна']),
-                ('Клиент', ['Проект', 'Клиент']),
-                ('Проект', ['Проект'])
-            ]
-            
-            all_results = plan_df.to_dict('records')
-            
-            for level_name, group_cols in levels:
-                # Группировка
-                grouped = plan_df.groupby(group_cols, as_index=False).agg({
-                    'План проекта, шт.': 'sum',
-                    'План на дату, шт.': 'sum',
-                    'Длительность': 'first',
-                    'Дата старта': 'first',
-                    'Дата финиша': 'first'
-                })
-                
-                # Округление
-                grouped['План на дату, шт.'] = grouped['План на дату, шт.'].round(1)
-                grouped['План проекта, шт.'] = grouped['План проекта, шт.'].round(1)
-                
-                # Заполняем остальные колонки
-                for col in ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM', 'RS', 'ПО']:
-                    if col not in group_cols:
-                        if col == 'ПО':
-                            # Определяем ПО для КАЖДОГО ПРОЕКТА в группе
-                            
-                            # 1. Получаем список проектов в группе
-                            # Используем .iloc[0] для безопасности
-                            if len(grouped) == 1:
-                                # Одна строка в grouped
-                                projects_list = [grouped['Проект'].iloc[0]]
-                            else:
-                                # Несколько строк
-                                projects_list = grouped['Проект'].unique()
-                            
-                            # 2. Для каждого проекта берем его ПО
-                            project_po_mapping = {}
-                            for project in projects_list:
-                                project_mask = plan_df['Проект'] == project
-                                if project_mask.any():
-                                    project_po = plan_df.loc[project_mask, 'ПО'].mode()
-                                    if not project_po.empty and project_po.iloc[0] != 'не определено':
-                                        project_po_mapping[project] = project_po.iloc[0]
-                            
-                            # 3. Заполняем ПО
-                            if project_po_mapping:
-                                if len(project_po_mapping) == 1:
-                                    # Если один проект в группе - его ПО для всей группы
-                                    grouped['ПО'] = list(project_po_mapping.values())[0]
-                                else:
-                                    # Если разные проекты с разным ПО
-                                    # Определяем самое частое ПО среди проектов в группе
-                                    all_pos = list(project_po_mapping.values())
-                                    from collections import Counter
-                                    most_common_po = Counter(all_pos).most_common(1)
-                                    if most_common_po:
-                                        grouped['ПО'] = most_common_po[0][0]
-                                    else:
-                                        grouped['ПО'] = 'не определено'
-                            else:
-                                grouped['ПО'] = 'не определено'
-                        else:
-                            grouped[col] = 'Итого'
-                
-                grouped['Уровень'] = level_name
-                all_results.extend(grouped.to_dict('records'))
-            
-            # Финальный DataFrame
-            final_df = pd.DataFrame(all_results)
-            
-            # Проверка
-            if not final_df.empty:
-                rs_sum = final_df[final_df['Уровень'] == 'RS']['План на дату, шт.'].sum()
-                project_sum = final_df[final_df['Уровень'] == 'Проект']['План на дату, шт.'].sum()
-                
-                if abs(rs_sum - project_sum) > 0.01:
-                    print(f"⚠️ Расхождение: RS={rs_sum:.1f}, Проекты={project_sum:.1f}")
-            
-            return final_df
+            return pd.DataFrame(results)
             
         except Exception as e:
-            print(f"❌ Ошибка в calculate_hierarchical_plan_on_date: {e}")
+            print(f"❌ Ошибка: {e}")
             import traceback
             print(traceback.format_exc())
             return pd.DataFrame()
@@ -433,37 +308,6 @@ class VisitCalculator:
                 result_df.at[idx, 'Факт проекта, шт.'] = rs_facts_total.get(key, 0)
                 result_df.at[idx, 'Факт на дату, шт.'] = rs_facts_period.get(key, 0)
             
-            # АГРЕГАЦИЯ ВВЕРХ
-            levels = ['ASM', 'DSM', 'Регион', 'Волна', 'Клиент', 'Проект']
-            
-            for level in levels:
-                for idx in result_df[result_df['Уровень'] == level].index:
-                    child_mask = (result_df['Уровень'] == 'RS')
-                    row = result_df.loc[idx]
-                    
-                    # Фильтруем по уровню
-                    if level == 'ASM':
-                        cols = ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM']
-                    elif level == 'DSM':
-                        cols = ['Проект', 'Клиент', 'Волна', 'Регион', 'DSM']
-                    elif level == 'Регион':
-                        cols = ['Проект', 'Клиент', 'Волна', 'Регион']
-                    elif level == 'Волна':
-                        cols = ['Проект', 'Клиент', 'Волна']
-                    elif level == 'Клиент':
-                        cols = ['Проект', 'Клиент']
-                    else:
-                        cols = ['Проект']
-                    
-                    for col in cols:
-                        child_mask = child_mask & (result_df[col] == row[col])
-                    
-                    if child_mask.any():
-                        result_df.at[idx, 'Факт проекта, шт.'] = result_df.loc[child_mask, 'Факт проекта, шт.'].sum()
-                        result_df.at[idx, 'Факт на дату, шт.'] = result_df.loc[child_mask, 'Факт на дату, шт.'].sum()
-                    else:
-                        result_df.at[idx, 'Факт проекта, шт.'] = 0
-                        result_df.at[idx, 'Факт на дату, шт.'] = 0
             
             return result_df
             
@@ -548,6 +392,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

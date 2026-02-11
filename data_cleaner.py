@@ -184,22 +184,22 @@ class DataCleaner:
         if date_cols:
             date_fixes = 0
             
-            for col in date_cols:
+            for col in date_cols_to_process:
                 try:
-                    # ТОЛЬКО конвертация, БЕЗ заполнения пустых!
-                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
-                    empty_dates = df_clean[col].isna().sum()
+                    # Сначала пробуем ISO формат (YYYY-MM-DD)
+                    df_clean[col] = pd.to_datetime(df_clean[col], format='%Y-%m-%d', errors='coerce')
                     
+                    # Если все NaT - пробуем с dayfirst
+                    if df_clean[col].isna().all():
+                        df_clean[col] = pd.to_datetime(df_clean[col], dayfirst=True, errors='coerce')
+                        
+                    # ПРОВЕРКА ПУСТЫХ ДАТ
+                    empty_dates = df_clean[col].isna().sum()
                     if empty_dates > 0:
-                        # ВАЖНО: НЕ заполняем пустые даты!
                         st.warning(f"   ⚠️ В колонке '{col}': {empty_dates} ПУСТЫХ дат")
-                        st.warning(f"      Проекты с пустыми датами БУДУТ ПРОПУЩЕНЫ в расчетах")
+                        
                 except Exception as e:
                     st.warning(f"   Ошибка в колонке '{col}': {str(e)[:100]}")
-            
-            st.success(f"   ✅ Даты сконвертированы")
-        else:
-            st.warning("   ⚠️ Колонки с датами не найдены")
         
 
         # === ШАГ 6: Исправить даты по бизнес-правилам ===
@@ -1605,6 +1605,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

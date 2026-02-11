@@ -384,7 +384,7 @@ class VisitCalculator:
             result_df = plan_df.copy()
             
             # Ищем колонки
-            status_col = ' Статус' if ' Статус' in array_df.columns else 'Статус'
+            status_col = 'Статус' if 'Статус' in array_df.columns else 'Статус'
             
             rs_col = None
             for col in array_df.columns:
@@ -548,6 +548,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

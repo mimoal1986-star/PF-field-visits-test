@@ -1100,20 +1100,20 @@ with tab1:
         st.markdown("---")
         st.subheader("🔍 Просмотр данных")
         
-        # ПРОВЕРКА ВРЕМЕННАЯ
-        # Быстрая проверка готовности
-        st.markdown("### 🔍 Проверка готовности к расчёту")
+        # # ПРОВЕРКА ВРЕМЕННАЯ
+        # # Быстрая проверка готовности
+        # st.markdown("### 🔍 Проверка готовности к расчёту")
         
-        check_ready = check_required_columns()
+        # check_ready = check_required_columns()
         
-        if check_ready:
-            st.error("❌ **Есть проблемы:**")
-            for problem in check_ready:
-                st.write(f"- {problem}")
-        else:
-            st.success("✅ **Всё готово к расчёту!**")
-            st.write("Настройте параметры в сайдбаре и нажмите кнопку ниже")
-        # ПРОВЕРКА ВРЕМЕННАЯ
+        # if check_ready:
+        #     st.error("❌ **Есть проблемы:**")
+        #     for problem in check_ready:
+        #         st.write(f"- {problem}")
+        # else:
+        #     st.success("✅ **Всё готово к расчёту!**")
+        #     st.write("Настройте параметры в сайдбаре и нажмите кнопку ниже")
+        # # ПРОВЕРКА ВРЕМЕННАЯ
 
     
 # ==============================================
@@ -1137,6 +1137,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

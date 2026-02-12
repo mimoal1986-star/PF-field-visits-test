@@ -66,43 +66,38 @@ class VisitCalculator:
             
             # Создаём иерархию из array_df (уникальные цепочки)
             hierarchy = pd.DataFrame({
-                'Проект': array_df['Код проекта'].fillna('Не указано'),
+                'Проект': array_df['Код анкеты'].fillna('Не указано'),
                 'Клиент': array_df['Имя клиента'].fillna('Не указано'),
                 'Волна': array_df['Название проекта'].fillna('Не указано'),
                 'Регион': array_df[region_col].fillna('Не указано'),
                 'DSM': array_df['ЗОД'].fillna('Не указано'),
                 'ASM': array_df['АСС'].fillna('Не указано'),
-                'RS': array_df['ЭМ'].fillna('Не указано')
+                'RS': array_df['ЭМ'].fillna('Не указано'),
+                'ПО': array_df['ПО'].fillna('не определено'),           # ✅ Берем ПО из массива
+                'Полевой': array_df['Полевой']                          # Для фильтрации
             })
             
-            # Удаляем полные дубликаты
-            hierarchy = hierarchy.drop_duplicates().reset_index(drop=True)
+            # 🔴 ТОЛЬКО ПОЛЕВЫЕ ПРОЕКТЫ
+            hierarchy = hierarchy[hierarchy['Полевой'] == 1]
+            hierarchy = hierarchy.drop('Полевой', axis=1)
             
-            # 2. Добавляем базовую информацию
-            # ПО - по умолчанию
-            hierarchy['ПО'] = 'не определено'
+            # Удаляем дубликаты
+            hierarchy = hierarchy.drop_duplicates().reset_index(drop=True)
             
             # Даты - по умолчанию пустые
             hierarchy['Дата старта'] = pd.NaT
             hierarchy['Дата финиша'] = pd.NaT
             
-            # 3. Обогащаем данными из google_df если есть
+            # 3. Обогащаем ТОЛЬКО датами из google_df
             if google_df is not None and not google_df.empty:
                 try:
-                    # Создаём маппинги
-                    portal_mapping = {}
+                    # Маппинги ТОЛЬКО для дат
                     start_mapping = {}
                     finish_mapping = {}
                     
-                    # Проходим по гугл таблице
                     for idx, row in google_df.iterrows():
                         code = str(row.get('Код проекта RU00.000.00.01SVZ24', '')).strip()
                         if code and code not in ['nan', '']:
-                            # ПО
-                            portal = str(row.get('Портал на котором идет проект (для работы полевой команды)', '')).strip()
-                            if portal:
-                                portal_mapping[code] = portal
-                            
                             # Даты
                             start_date = row.get('Дата старта')
                             finish_date = row.get('Дата финиша с продлением')
@@ -112,15 +107,14 @@ class VisitCalculator:
                             if pd.notna(finish_date):
                                 finish_mapping[code] = finish_date
                     
-                    # Применяем маппинги
-                    hierarchy['ПО'] = hierarchy['Проект'].map(portal_mapping).fillna('не определено')
+                    # Применяем маппинги ТОЛЬКО для дат
                     hierarchy['Дата старта'] = hierarchy['Проект'].map(start_mapping)
                     hierarchy['Дата финиша'] = hierarchy['Проект'].map(finish_mapping)
                     
                 except Exception as e:
-                    st.warning(f"⚠️ Не удалось обогатить данными из гугл таблицы: {str(e)[:100]}")
+                    st.warning(f"⚠️ Не удалось обогатить датами из гугл таблицы: {str(e)[:100]}")
             
-            # 4. Рассчитываем длительность (в днях)
+            # 4. Рассчитываем длительность
             hierarchy['Длительность'] = 0
             mask_valid_dates = hierarchy['Дата старта'].notna() & hierarchy['Дата финиша'].notna()
             
@@ -130,7 +124,7 @@ class VisitCalculator:
                     hierarchy.loc[mask_valid_dates, 'Дата старта']
                 ).dt.days + 1
             
-            # 5. Сортируем для удобства
+            # 5. Сортируем
             hierarchy = hierarchy.sort_values(['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM', 'RS'])
             hierarchy = hierarchy[hierarchy['RS'] != 'Итого']
             
@@ -138,19 +132,11 @@ class VisitCalculator:
             
         except KeyError as e:
             missing_col = str(e).replace("'", "")
-            
-            # 🔴 ПОКАЗЫВАЕМ ОШИБКУ И КОЛОНКИ
             st.error(f"❌ В массиве отсутствует колонка: '{missing_col}'")
-            
-            # 🔍 ПОКАЗЫВАЕМ КАКИЕ КОЛОНКИ ЕСТЬ
             st.write("📋 **Какие колонки есть в массиве:**")
-            st.write(f"Всего колонок: **{len(array_df.columns)}**")
-            
-            # ПРОСТОЙ СПИСОК КОЛОНОК
             cols_list = ", ".join(array_df.columns)
             st.write(f"`{cols_list}`")
-            
-            return pd.DataFrame()  # Возвращаем пустой DataFrame
+            return pd.DataFrame()
             
         except Exception as e:
             st.error(f"❌ Ошибка создания иерархии: {str(e)[:200]}")
@@ -410,6 +396,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

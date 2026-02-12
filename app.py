@@ -984,7 +984,7 @@ with tab1:
                     # 3. Считаем план
                     plan_result = visit_calculator.calculate_hierarchical_plan_on_date(
                         base_data,
-                        cleaned_array, 
+                        st.session_state.cleaned_data['полевые_проекты'],
                         params
                     )
                     
@@ -1143,6 +1143,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

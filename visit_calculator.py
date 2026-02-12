@@ -24,14 +24,12 @@ class VisitCalculator:
             if not rs_col:
                 return {}
             
-            # Определяем колонку региона
-            region_col = 'Регион short' if 'Регион short' in array_df.columns else 'Регион'
             
             # Все визиты проекта+волны+региона
             project_wave_region_mask = (
                 (array_df['Код анкеты'] == project_code) &
                 (array_df['Название проекта'] == wave_name) &
-                (array_df[region_col] == region)
+                (array_df['Регион'] == region)
             )
             filtered_visits = array_df[project_wave_region_mask]
             
@@ -156,11 +154,10 @@ class VisitCalculator:
             coefficients = calc_params['coefficients']
             
             # Планы проектов+волн+регионов
-            region_col = 'Регион short' if 'Регион short' in array_df.columns else 'Регион'
             project_wave_region_plans = array_df.groupby([
                 'Код анкеты', 
                 'Название проекта',
-                region_col
+                'Регион'
             ]).size()
             
             results = []
@@ -170,7 +167,7 @@ class VisitCalculator:
                 project_code = row['Проект']
                 wave_name = row['Волна']
                 
-                # План проекта+волны
+                # План проекта+волны+регион
                 plan_key = (project_code, wave_name, region)
                 if plan_key not in project_wave_region_plans.index:
                     continue
@@ -396,6 +393,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

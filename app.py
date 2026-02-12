@@ -263,6 +263,20 @@ def process_field_projects_with_stats():
                         field_df = combined_field_projects
                         st.session_state.cleaned_data['полевые_проекты'] = field_df
                         st.success(f"✅ Объединено с CXWAY: {len(field_df)} полевых проектов")
+              
+                        # 🔴 Выгрузка visits_df
+                        visits_df = st.session_state.cleaned_data.get('полевые_проекты')
+                        if visits_df is not None and not visits_df.empty:
+                            excel_buffer = BytesIO()
+                            visits_df.to_excel(excel_buffer, index=False)
+                            excel_buffer.seek(0)
+                            st.download_button(
+                                label="📥 СКАЧАТЬ visits_df (полевые_проекты)",
+                                data=excel_buffer,
+                                file_name=f"visits_df_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            )
+                        
                     else:
                         # Если в массиве не было полевых, используем только CXWAY
                         field_df = cxway_processed
@@ -1144,6 +1158,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

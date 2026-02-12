@@ -281,26 +281,32 @@ def process_field_projects_with_stats():
                 st.success("✅ Отчет создан успешно!")
             else:
                 st.warning("⚠️ Не удалось создать Excel файл")
-                
+
         # ============================================
         # 🆕 ИЗВЛЕЧЕНИЕ БАЗОВЫХ ДАННЫХ ДЛЯ ПЛАН/ФАКТА
         # ============================================
         if field_df is not None and not field_df.empty:
             try:
-                # Берем портал_с_полем (весь массив с признаком Полевой)
-                portal_df = st.session_state.cleaned_data.get('портал_с_полем')
-                if portal_df is not None:
-                    base_data = visit_calculator.extract_hierarchical_data(portal_df, google_df)
-                    # 🔴 СОХРАНЯЕМ base_data В visit_report
-                    if 'visit_report' not in st.session_state:
-                        st.session_state.visit_report = {}
-                    
-                    st.session_state.visit_report['base_data'] = base_data
-                    st.session_state.visit_report['timestamp'] = datetime.now().isoformat()
-            
+                # Берем полевые_проекты (уже с CXWAY!)
+                field_projects_df = st.session_state.cleaned_data.get('полевые_проекты')
+                
+                if field_projects_df is not None and not field_projects_df.empty:
+                    base_data = visit_calculator.extract_hierarchical_data(field_projects_df, google_df)
                 else:
-                    st.error("❌ Нет портал_с_полем. Сначала запустите обработку.")
-                    base_data = pd.DataFrame()
+                    # fallback на портал_с_полем если полевых нет
+                    portal_df = st.session_state.cleaned_data.get('портал_с_полем')
+                    base_data = visit_calculator.extract_hierarchical_data(portal_df, google_df)
+                
+                # 🔴 СОХРАНЯЕМ base_data В visit_report (ЭТО ВНЕ ELSE!)
+                if 'visit_report' not in st.session_state:
+                    st.session_state.visit_report = {}
+                
+                st.session_state.visit_report['base_data'] = base_data
+                st.session_state.visit_report['timestamp'] = datetime.now().isoformat()
+                
+            except Exception as e:
+                st.warning(f"⚠️ Ошибка извлечения базовых данных: {str(e)[:100]}")
+                base_data = pd.DataFrame()
 
                 # ========== ВЫГРУЗКА HIERARCHY_DF ==========
                 if not base_data.empty:
@@ -1137,6 +1143,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

@@ -59,38 +59,38 @@ for key, default_value in DEFAULT_STATE.items():
     if key not in st.session_state:
         st.session_state[key] = default_value
 
-# ПРОВЕРКА ВРЕМЕННАЯ
-def check_required_columns():
-    """Простая проверка всех необходимых колонок"""
-    errors = []
+# # ПРОВЕРКА ВРЕМЕННАЯ
+# def check_required_columns():
+#     """Простая проверка всех необходимых колонок"""
+#     errors = []
     
-    # 1. Проверяем основные данные
-    required_data = ['портал', 'сервизория', 'полевые_проекты']
-    for key in required_data:
-        if key not in st.session_state.cleaned_data:
-            errors.append(f"❌ Нет данных: '{key}'")
+#     # 1. Проверяем основные данные
+#     required_data = ['портал', 'сервизория', 'полевые_проекты']
+#     for key in required_data:
+#         if key not in st.session_state.cleaned_data:
+#             errors.append(f"❌ Нет данных: '{key}'")
     
-    # 2. Проверяем колонки в массиве (портал)
-    if 'портал' in st.session_state.cleaned_data:
-        portal_df = st.session_state.cleaned_data['портал']
-        portal_required = ['Код анкеты', 'Дата визита']
-        for col in portal_required:
-            if col not in portal_df.columns:
-                errors.append(f"❌ В массиве нет колонки: '{col}'")
+#     # 2. Проверяем колонки в массиве (портал)
+#     if 'портал' in st.session_state.cleaned_data:
+#         portal_df = st.session_state.cleaned_data['портал']
+#         portal_required = ['Код анкеты', 'Дата визита']
+#         for col in portal_required:
+#             if col not in portal_df.columns:
+#                 errors.append(f"❌ В массиве нет колонки: '{col}'")
     
-    # 3. Проверяем visit_report
-    if 'visit_report' not in st.session_state:
-        errors.append("❌ Нет visit_report (не запущен расчёт иерархии)")
-    elif 'base_data' not in st.session_state.visit_report:
-        errors.append("❌ В visit_report нет base_data")
+#     # 3. Проверяем visit_report
+#     if 'visit_report' not in st.session_state:
+#         errors.append("❌ Нет visit_report (не запущен расчёт иерархии)")
+#     elif 'base_data' not in st.session_state.visit_report:
+#         errors.append("❌ В visit_report нет base_data")
     
-    # 4. Проверяем параметры расчёта
-    if 'plan_calc_params' not in st.session_state:
-        errors.append("❌ Не настроены параметры расчёта в сайдбаре")
+#     # 4. Проверяем параметры расчёта
+#     if 'plan_calc_params' not in st.session_state:
+#         errors.append("❌ Не настроены параметры расчёта в сайдбаре")
     
-    # Возвращаем ошибки (пустой список = всё ок)
-    return errors
-# ПРОВЕРКА ВРЕМЕННАЯ
+#     # Возвращаем ошибки (пустой список = всё ок)
+#     return errors
+# # ПРОВЕРКА ВРЕМЕННАЯ
 
 # Вспомогательные функции
 def validate_file_upload(file_obj, file_name):
@@ -947,7 +947,7 @@ with tab1:
 
                 
             # 🔵 ПРОВЕРКА ПЕРЕД РАСЧЕТОМ
-            check_errors = check_required_columns()
+            # check_errors = check_required_columns()
             
             if check_errors:
                 # Показываем ошибки
@@ -1137,6 +1137,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

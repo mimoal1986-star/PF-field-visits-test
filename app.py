@@ -289,6 +289,24 @@ def process_field_projects_with_stats():
             try:
                 # Извлекаем базовые данные ТОЛЬКО из полевых проектов
                 base_data = visit_calculator.extract_hierarchical_data(field_df, google_df)
+
+                # ========== ВЫГРУЗКА HIERARCHY_DF ==========
+                if not base_data.empty:
+                    excel_buffer = BytesIO()
+                    base_data.to_excel(excel_buffer, index=False)
+                    excel_buffer.seek(0)
+                    
+                    st.download_button(
+                        label="📥 СКАЧАТЬ ИЕРАРХИЮ (hierarchy_df)",
+                        data=excel_buffer,
+                        file_name=f"hierarchy_df_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key="download_hierarchy"
+                    )
+                    st.success(f"✅ Иерархия выгружена: {len(base_data)} уникальных цепочек")
+                else:
+                    st.warning("⚠️ base_data пустой!")
+                # ============================================
                 
                 # ========== ПРОВЕРКИ ==========
                 # 1. Проверка поля ПО в гугл таблице
@@ -1072,6 +1090,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

@@ -293,9 +293,8 @@ def process_field_projects_with_stats():
                 if field_projects_df is not None and not field_projects_df.empty:
                     base_data = visit_calculator.extract_hierarchical_data(field_projects_df, google_df)
                 else:
-                    # fallback на портал_с_полем если полевых нет
-                    portal_df = st.session_state.cleaned_data.get('портал_с_полем')
-                    base_data = visit_calculator.extract_hierarchical_data(portal_df, google_df)
+                    base_data = pd.DataFrame()
+                    st.warning("⚠️ Нет полевых проектов для построения иерархии")
                 
                 # 🔴 СОХРАНЯЕМ base_data В visit_report (ЭТО ВНЕ ELSE!)
                 if 'visit_report' not in st.session_state:
@@ -354,8 +353,6 @@ def process_field_projects_with_stats():
                     }
                 else:
                     st.warning("⚠️ 2. Не удалось загрузить проекты в таблицу ПланФакт")
-            except Exception as e:
-                st.warning(f"⚠️ Ошибка извлечения базовых данных: {str(e)[:100]}")
         
         # Показываем статистику
         st.write("### 📊 Статистика после обработки")
@@ -978,13 +975,13 @@ with tab1:
     
                     base_data = st.session_state.visit_report['base_data']
                     
-                    cleaned_array = st.session_state.cleaned_data['портал']
+                    source_df = st.session_state.cleaned_data['полевые_проекты']
                     params = st.session_state['plan_calc_params']
                     
                     # 3. Считаем план
                     plan_result = visit_calculator.calculate_hierarchical_plan_on_date(
                         base_data,
-                        st.session_state.cleaned_data['полевые_проекты'],
+                        source_df,
                         params
                     )
                     
@@ -1012,7 +1009,7 @@ with tab1:
                     # 4. Считаем факт
                     fact_result = visit_calculator.calculate_hierarchical_fact_on_date(
                         plan_result, 
-                        cleaned_array, 
+                        source_df, 
                         params
                     )
                     # 5. Рассчитываем метрики
@@ -1143,6 +1140,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

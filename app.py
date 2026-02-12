@@ -974,6 +974,27 @@ with tab1:
                         cleaned_array, 
                         params
                     )
+                    
+                    # ПРОВЕРКА
+                    if base_data is not None and not base_data.empty:
+                        # Проверяем проекты с пустыми датами
+                        projects_no_dates = base_data[
+                            base_data['Дата старта'].isna() | 
+                            base_data['Дата финиша'].isna() | 
+                            (base_data['Длительность'] <= 0)
+                        ]
+                        
+                        if not projects_no_dates.empty:
+                            excel_buffer = BytesIO()
+                            projects_no_dates.to_excel(excel_buffer, index=False)
+                            excel_buffer.seek(0)
+                            
+                            st.download_button(
+                                label=f"📥 СКАЧАТЬ ПРОЕКТЫ БЕЗ ДАТ ({len(projects_no_dates)})",
+                                data=excel_buffer,
+                                file_name="проекты_без_дат.xlsx",
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            )
 
                     # 4. Считаем факт
                     fact_result = visit_calculator.calculate_hierarchical_fact_on_date(
@@ -1109,6 +1130,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

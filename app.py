@@ -989,6 +989,20 @@ with tab1:
                     # 7. СРАЗУ ПОКАЗЫВАЕМ РЕЗУЛЬТАТ
                     st.markdown("---")
                     st.subheader("📊 Результаты расчета план/факт")
+
+                    # ========== КНОПКА PLAN_DF ==========   ← ВОТ ЗДЕСЬ!
+                    if not final_result.empty:
+                        excel_buffer = BytesIO()
+                        final_result.to_excel(excel_buffer, index=False)
+                        excel_buffer.seek(0)
+                        
+                        st.download_button(
+                            label="📥 СКАЧАТЬ PLAN_DF",
+                            data=excel_buffer,
+                            file_name=f"plan_df.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+                    # ====================================
                     
                     if not final_result.empty:
                         # Показать таблицу
@@ -1090,6 +1104,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

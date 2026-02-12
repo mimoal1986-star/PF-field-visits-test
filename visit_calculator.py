@@ -29,7 +29,7 @@ class VisitCalculator:
             project_wave_region_mask = (
                 (visits_df['Код анкеты'] == project_code) &
                 (visits_df['Название проекта'] == wave_name) &
-                (visits_df['Регион'] == region)
+                (visits_df['Регион short'] == region)
             )
             filtered_visits = visits_df[project_wave_region_mask]
             
@@ -60,7 +60,7 @@ class VisitCalculator:
         
         try:
             # 1. Определяем колонку региона
-            region_col = 'Регион short' if 'Регион short' in visits_df.columns else 'Регион'
+            region_col = 'Регион short'
             
             # Создаём иерархию из visits_df (уникальные цепочки)
             hierarchy = pd.DataFrame({
@@ -157,7 +157,7 @@ class VisitCalculator:
             project_wave_region_plans = visits_df.groupby([
                 'Код анкеты', 
                 'Название проекта',
-                'Регион'
+                'Регион short'
             ]).size()
             
             results = []
@@ -254,7 +254,7 @@ class VisitCalculator:
                 return pd.DataFrame()
             
             result_df = plan_df.copy()
-            region_col = 'Регион short' if 'Регион short' in visits_df.columns else 'Регион'
+            region_col = 'Регион short'
             
             # Ищем колонки
             status_col = ' Статус' if ' Статус' in visits_df.columns else 'Статус'
@@ -393,6 +393,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

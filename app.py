@@ -291,6 +291,13 @@ def process_field_projects_with_stats():
                 portal_df = st.session_state.cleaned_data.get('портал_с_полем')
                 if portal_df is not None:
                     base_data = visit_calculator.extract_hierarchical_data(portal_df, google_df)
+                    # 🔴 СОХРАНЯЕМ base_data В visit_report
+                    if 'visit_report' not in st.session_state:
+                        st.session_state.visit_report = {}
+                    
+                    st.session_state.visit_report['base_data'] = base_data
+                    st.session_state.visit_report['timestamp'] = datetime.now().isoformat()
+            
                 else:
                     st.error("❌ Нет портал_с_полем. Сначала запустите обработку.")
                     base_data = pd.DataFrame()
@@ -1130,6 +1137,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

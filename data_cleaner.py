@@ -1119,7 +1119,7 @@ class DataCleaner:
             non_field_clean = non_field_df.copy()
             
             # Проверяем наличие нужных колонок
-            required_cols = ['Код проекта', 'Имя клиента', 'Название проекта']
+            required_cols = ['Код анкеты', 'Имя клиента', 'Название проекта']
             missing_cols = [col for col in required_cols if col not in non_field_clean.columns]
             before_rows = len(non_field_clean)
             after_rows = before_rows
@@ -1622,6 +1622,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

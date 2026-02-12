@@ -252,23 +252,7 @@ class VisitCalculator:
             
             if not results:
                 return pd.DataFrame()
-            
-            # ========== КНОПКА СКАЧИВАНИЯ ==========
-            plan_df_result = pd.DataFrame(results)
-            
-            excel_buffer = BytesIO()
-            plan_df_result.to_excel(excel_buffer, index=False)
-            excel_buffer.seek(0)
-            
-            st.download_button(
-                label="📥 СКАЧАТЬ PLAN_DF",
-                data=excel_buffer,
-                file_name=f"plan_df.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-            # ========================================
-            
-            return plan_df_result
+        
             
             return pd.DataFrame(results)
             
@@ -426,6 +410,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

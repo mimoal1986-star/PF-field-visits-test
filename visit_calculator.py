@@ -9,14 +9,14 @@ import io
 
 class VisitCalculator:
     
-    def _calculate_rs_weights(self, array_df, project_code, wave_name, region):
+    def _calculate_rs_weights(self, visits_df, project_code, wave_name, region):
         """
         Доли RS = визиты RS в проекте+волне+регионе / все визиты проекта+волны+региона
         """
         try:
             # Ищем колонку RS
             rs_col = None
-            for col in array_df.columns:
+            for col in visits_df.columns:
                 if any(name in str(col).lower() for name in ['эм', 'rs']):
                     rs_col = col
                     break
@@ -27,11 +27,11 @@ class VisitCalculator:
             
             # Все визиты проекта+волны+региона
             project_wave_region_mask = (
-                (array_df['Код анкеты'] == project_code) &
-                (array_df['Название проекта'] == wave_name) &
-                (array_df['Регион'] == region)
+                (visits_df['Код анкеты'] == project_code) &
+                (visits_df['Название проекта'] == wave_name) &
+                (visits_df['Регион'] == region)
             )
-            filtered_visits = array_df[project_wave_region_mask]
+            filtered_visits = visits_df[project_wave_region_mask]
             
             if filtered_visits.empty:
                 return {}
@@ -52,7 +52,7 @@ class VisitCalculator:
             return {}
     
     
-    def extract_hierarchical_data(self, array_df, google_df=None):
+    def extract_hierarchical_data(self, visits_df, google_df=None):
         """
         Создаёт полную иерархию Проект→Клиент→Волна→Регион→DSM→ASM→RS
         с базовой информацией о проекте
@@ -60,19 +60,19 @@ class VisitCalculator:
         
         try:
             # 1. Определяем колонку региона
-            region_col = 'Регион short' if 'Регион short' in array_df.columns else 'Регион'
+            region_col = 'Регион short' if 'Регион short' in visits_df.columns else 'Регион'
             
-            # Создаём иерархию из array_df (уникальные цепочки)
+            # Создаём иерархию из visits_df (уникальные цепочки)
             hierarchy = pd.DataFrame({
-                'Проект': array_df['Код анкеты'].fillna('Не указано'),
-                'Клиент': array_df['Имя клиента'].fillna('Не указано'),
-                'Волна': array_df['Название проекта'].fillna('Не указано'),
-                'Регион': array_df[region_col].fillna('Не указано'),
-                'DSM': array_df['ЗОД'].fillna('Не указано'),
-                'ASM': array_df['АСС'].fillna('Не указано'),
-                'RS': array_df['ЭМ'].fillna('Не указано'),
-                'ПО': array_df['ПО'].fillna('не определено'),           # ✅ Берем ПО из массива
-                'Полевой': array_df['Полевой']                          # Для фильтрации
+                'Проект': visits_df['Код анкеты'].fillna('Не указано'),
+                'Клиент': visits_df['Имя клиента'].fillna('Не указано'),
+                'Волна': visits_df['Название проекта'].fillna('Не указано'),
+                'Регион': visits_df[region_col].fillna('Не указано'),
+                'DSM': visits_df['ЗОД'].fillna('Не указано'),
+                'ASM': visits_df['АСС'].fillna('Не указано'),
+                'RS': visits_df['ЭМ'].fillna('Не указано'),
+                'ПО': visits_df['ПО'].fillna('не определено'),           # ✅ Берем ПО из массива
+                'Полевой': visits_df['Полевой']                          # Для фильтрации
             })
             
             # 🔴 ТОЛЬКО ПОЛЕВЫЕ ПРОЕКТЫ
@@ -132,7 +132,7 @@ class VisitCalculator:
             missing_col = str(e).replace("'", "")
             st.error(f"❌ В массиве отсутствует колонка: '{missing_col}'")
             st.write("📋 **Какие колонки есть в массиве:**")
-            cols_list = ", ".join(array_df.columns)
+            cols_list = ", ".join(visits_df.columns)
             st.write(f"`{cols_list}`")
             return pd.DataFrame()
             
@@ -140,13 +140,13 @@ class VisitCalculator:
             st.error(f"❌ Ошибка создания иерархии: {str(e)[:200]}")
             return pd.DataFrame()
     
-    def calculate_hierarchical_plan_on_date(self, hierarchy_df, array_df, calc_params):
+    def calculate_hierarchical_plan_on_date(self, hierarchy_df, visits_df, calc_params):
         """
         РАССЧИТЫВАЕТ ПЛАН ТОЛЬКО ДЛЯ УРОВНЯ RS
         Ключевое исправление: распределение ДНЕВНОГО плана по долям RS
         """
         try:
-            if hierarchy_df.empty or array_df.empty:
+            if hierarchy_df.empty or visits_df.empty:
                 return pd.DataFrame()
             
             start_period = calc_params['start_date']
@@ -154,7 +154,7 @@ class VisitCalculator:
             coefficients = calc_params['coefficients']
             
             # Планы проектов+волн+регионов
-            project_wave_region_plans = array_df.groupby([
+            project_wave_region_plans = visits_df.groupby([
                 'Код анкеты', 
                 'Название проекта',
                 'Регион'
@@ -200,7 +200,7 @@ class VisitCalculator:
                 daily_plan_wave = total_plan / duration
                 
                 # ДОЛИ RS
-                rs_weights = self._calculate_rs_weights(array_df, project_code, wave_name, region)
+                rs_weights = self._calculate_rs_weights(visits_df, project_code, wave_name, region)
                 rs_name = row['RS']
                 
                 if rs_name not in rs_weights or rs_weights[rs_name] <= 0:
@@ -245,22 +245,22 @@ class VisitCalculator:
             print(traceback.format_exc())
             return pd.DataFrame()
         
-    def calculate_hierarchical_fact_on_date(self, plan_df, array_df, calc_params):
+    def calculate_hierarchical_fact_on_date(self, plan_df, visits_df, calc_params):
         """
         ОПТИМИЗИРОВАННЫЙ: считает факт за один проход с учетом волн
         """
         try:
-            if plan_df.empty or array_df.empty:
+            if plan_df.empty or visits_df.empty:
                 return pd.DataFrame()
             
             result_df = plan_df.copy()
-            region_col = 'Регион short' if 'Регион short' in array_df.columns else 'Регион'
+            region_col = 'Регион short' if 'Регион short' in visits_df.columns else 'Регион'
             
             # Ищем колонки
-            status_col = ' Статус' if ' Статус' in array_df.columns else 'Статус'
+            status_col = ' Статус' if ' Статус' in visits_df.columns else 'Статус'
             
             rs_col = None
-            for col in array_df.columns:
+            for col in visits_df.columns:
                 if any(name in str(col).lower() for name in ['эм', 'rs']):
                     rs_col = col
                     break
@@ -271,16 +271,16 @@ class VisitCalculator:
                 return result_df
             
             # ФИЛЬТРЫ
-            completed_mask = array_df[status_col] == 'Выполнено'
+            completed_mask = visits_df[status_col] == 'Выполнено'
             start_date = pd.Timestamp(calc_params['start_date'])
             end_date = pd.Timestamp(calc_params['end_date'])
             period_mask = (
-                (array_df['Дата визита'] >= start_date) &
-                (array_df['Дата визита'] <= end_date)
+                (visits_df['Дата визита'] >= start_date) &
+                (visits_df['Дата визита'] <= end_date)
             )
             
             # СЧИТАЕМ ФАКТЫ С УЧЕТОМ ВОЛН
-            completed_df = array_df[completed_mask]
+            completed_df = visits_df[completed_mask]
             rs_facts_total = completed_df.groupby([
                 'Код анкеты',          # Проект
                 'Название проекта',    # Волна
@@ -288,7 +288,7 @@ class VisitCalculator:
                 rs_col                 # RS
             ]).size().to_dict()
             
-            completed_in_period = array_df[completed_mask & period_mask]
+            completed_in_period = visits_df[completed_mask & period_mask]
             rs_facts_period = completed_in_period.groupby([
                 'Код анкеты',
                 'Название проекта', 
@@ -393,6 +393,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

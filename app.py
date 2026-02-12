@@ -287,8 +287,13 @@ def process_field_projects_with_stats():
         # ============================================
         if field_df is not None and not field_df.empty:
             try:
-                # Извлекаем базовые данные ТОЛЬКО из полевых проектов
-                base_data = visit_calculator.extract_hierarchical_data(field_df, google_df)
+                # Берем портал_с_полем (весь массив с признаком Полевой)
+                portal_df = st.session_state.cleaned_data.get('портал_с_полем')
+                if portal_df is not None:
+                    base_data = visit_calculator.extract_hierarchical_data(portal_df, google_df)
+                else:
+                    st.error("❌ Нет портал_с_полем. Сначала запустите обработку.")
+                    base_data = pd.DataFrame()
 
                 # ========== ВЫГРУЗКА HIERARCHY_DF ==========
                 if not base_data.empty:
@@ -1104,6 +1109,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

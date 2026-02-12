@@ -1121,11 +1121,15 @@ class DataCleaner:
             # Проверяем наличие нужных колонок
             required_cols = ['Код проекта', 'Имя клиента', 'Название проекта']
             missing_cols = [col for col in required_cols if col not in non_field_clean.columns]
+            before_rows = len(non_field_clean)
+            after_rows = before_rows
+            duplicates_removed = 0
             
             if missing_cols:
                 st.warning(f"⚠️ В неполевых проектах нет колонок: {missing_cols}")
                 # Если нет нужных колонок - не удаляем дубликаты
                 non_field_unique = non_field_clean
+                after_rows = before_rows
                 duplicates_removed = 0
             else:
                 # Удаляем дубликаты
@@ -1147,11 +1151,12 @@ class DataCleaner:
                     columns_exist = [col for col in columns_to_drop if col in non_field_unique.columns]
                     
                     if columns_exist:
-                        non_field_clean = non_field_unique.drop(columns=columns_exist, errors='ignore')
+                        non_field_export = non_field_unique.drop(columns=columns_exist, errors='ignore')
                     else:
-                        non_field_clean = non_field_unique
-                        
-                    non_field_clean.to_excel(writer, sheet_name='НЕПОЛЕВЫЕ_ПРОЕКТЫ', index=False)
+                        non_field_export = non_field_unique
+                    
+                    non_field_export.to_excel(writer, sheet_name='НЕПОЛЕВЫЕ_ПРОЕКТЫ', index=False)
+
                     
                     # Добавляем информацию об удаленных дубликатах на отдельную вкладку
                     info_data = {
@@ -1342,8 +1347,8 @@ class DataCleaner:
                 result[std_col] = ''
         
         # 2. Определение "Полевой" (логика как в массиве)
-        if 'Код проекта' in result.columns and not result.empty:
-            result['Полевой'] = result['Код проекта'].apply(self._is_field_project)
+        if 'Код анкеты' in result.columns and not result.empty:
+            result['Полевой'] = result['Код анкеты'].apply(self._is_field_project)
             # Оставляем только полевые проекты
             result = result[result['Полевой'] == 1]
         else:
@@ -1375,7 +1380,7 @@ class DataCleaner:
             result['ЗОД'] = ''
         
         # 4. Добавление ПО из гугла (по коду проекта)
-        if google_df is not None and 'Код проекта' in result.columns:
+        if google_df is not None and 'Код анкеты' in result.columns:
             google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
             google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
             
@@ -1393,7 +1398,7 @@ class DataCleaner:
                     clean_code = str(code_value).strip()
                     return portal_mapping.get(clean_code, 'не определено')
                 
-                result['ПО'] = result['Код проекта'].apply(get_portal)
+                result['ПО'] = result['Код анкеты'].apply(get_portal)
             else:
                 result['ПО'] = 'не определено'
         else:
@@ -1617,6 +1622,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -949,11 +949,11 @@ with tab1:
             # 🔵 ПРОВЕРКА ПЕРЕД РАСЧЕТОМ
             # check_errors = check_required_columns()
             
-            if check_errors:
-                # Показываем ошибки
-                st.error("🚫 **Не могу рассчитать:**")
-                for error in check_errors:
-                    st.write(f"- {error}")
+            # if check_errors:
+            #     # Показываем ошибки
+            #     st.error("🚫 **Не могу рассчитать:**")
+            #     for error in check_errors:
+            #         st.write(f"- {error}")
                 
             
             # 🔵 ЕСЛИ ОШИБОК НЕТ - ПРОВЕРЯЕМ ДАННЫЕ
@@ -1137,6 +1137,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

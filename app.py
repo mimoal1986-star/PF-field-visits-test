@@ -292,6 +292,7 @@ def process_field_projects_with_stats():
                 
                 if field_projects_df is not None and not field_projects_df.empty:
                     base_data = visit_calculator.extract_hierarchical_data(field_projects_df, google_df)
+                    st.write(f"🔥 base_data создан, строк: {len(base_data)}")
                     
                     # ========== ВЫГРУЗКА HIERARCHY_DF ==========
                     if not base_data.empty:
@@ -1143,6 +1144,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

@@ -278,10 +278,11 @@ class VisitCalculator:
             
             # Ищем колонку статуса
             status_col = None
-            for col in visits_df.columns:
-                if 'статус' in str(col).lower():
-                    status_col = col
-                    break
+                for col in visits_df.columns:
+                    col_clean = col.strip()  # Убираем пробелы в начале/конце
+                    if col_clean == 'Статус':
+                        status_col = col  # Берем оригинальное название с пробелом!
+                        break
             
             if not status_col:
                 st.error("❌ Не найдена колонка 'Статус' в массиве")
@@ -433,6 +434,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

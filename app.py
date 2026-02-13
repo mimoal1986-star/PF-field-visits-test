@@ -301,6 +301,11 @@ def process_field_projects_with_stats():
                 # Берем полевые_проекты (уже с CXWAY!)
                 field_projects_df = st.session_state.cleaned_data.get('полевые_проекты')
                 
+                st.write("### 🔍 ДИАГНОСТИКА ПОЛЕЙ В field_projects_df")
+                st.write("Колонки:", list(field_projects_df.columns))
+                st.write("Тип колонки 'Имя клиента':", field_projects_df['Имя клиента'].dtype)
+                st.write("Первые 5 значений:", field_projects_df['Имя клиента'].head(5).tolist())
+
                 if field_projects_df is not None and not field_projects_df.empty:
                     base_data = visit_calculator.extract_hierarchical_data(field_projects_df, google_df)
                     st.write(f"🔥 base_data создан, строк: {len(base_data)}")
@@ -1200,6 +1205,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

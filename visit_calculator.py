@@ -202,9 +202,19 @@ class VisitCalculator:
                 # ДОЛИ RS
                 rs_weights = self._calculate_rs_weights(visits_df, project_code, wave_name, region)
                 rs_name = row['RS']
-                
+                # 🔴 ДИАГНОСТИКА ДЛЯ ПЕРВОЙ СТРОКИ
+                if _ == 0:  # только для первой итерации
+                    st.write(f"**6️⃣ Доли RS для первого проекта:**")
+                    st.write(f"   Проект: {project_code}")
+                    st.write(f"   Волна: {wave_name}")
+                    st.write(f"   Регион: {region}")
+                    st.write(f"   RS из иерархии: '{rs_name}'")
+                    st.write(f"   Найденные RS: {list(rs_weights.keys()) if rs_weights else 'НЕТ'}")
+                    st.write(f"   Вес для этого RS: {rs_weights.get(rs_name, 0)}")
+        
                 if rs_name not in rs_weights or rs_weights[rs_name] <= 0:
                     continue
+                
                 
                 rs_weight = rs_weights[rs_name]
                 
@@ -393,6 +403,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

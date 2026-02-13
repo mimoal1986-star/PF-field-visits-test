@@ -250,12 +250,19 @@ class VisitCalculator:
                     'Дней в периоде': days_in_period,
                     'Дневной план RS, шт.': round(rs_daily_plan, 2)
                 })
-            
-            if not results:
-                return pd.DataFrame()
+
+                # 🔴 ДИАГНОСТИКА - СРАЗУ ПОСЛЕ APPEND
+                if _ == 0:
+                    st.write(f"**8️⃣ Результат для первого проекта:**")
+                    st.write(f"   Добавлен в results: ✅ ДА")
+                    st.write(f"   План на дату: {round(rs_plan_on_date, 1)}")
+                    st.write(f"   Текущий размер results: {len(results)}")
+                            
+        if not results:
+            return pd.DataFrame()
+    
         
-            
-            return pd.DataFrame(results)
+        return pd.DataFrame(results)
             
         except Exception as e:
             print(f"❌ Ошибка: {e}")
@@ -411,6 +418,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

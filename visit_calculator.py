@@ -341,7 +341,13 @@ class VisitCalculator:
 
 
     # 6. РАСЧЕТ ДОПОЛНИТЕЛЬНЫХ ПОКАЗАТЕЛЕЙ                
-    def _calculate_metrics(self, df, calc_params=None):
+    def _calculate_metrics(self, fact_df, calc_params=None, plan_df=None):
+    df = fact_df.copy()
+    
+    # Берем план из plan_df, если он передан
+    if plan_df is not None and 'План на дату, шт.' in plan_df.columns:
+        df['План на дату, шт.'] = plan_df['План на дату, шт.']
+    
         """
         Упрощённый расчёт метрик (как в исходном коде)
         """
@@ -416,6 +422,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

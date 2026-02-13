@@ -192,7 +192,15 @@ class VisitCalculator:
                     check_date = current_date + timedelta(days=day)
                     if start_period <= check_date.date() <= end_period:
                         days_in_period += 1
-                
+            
+                # 🔴 ВСТАВЬ ДИАГНОСТИКУ СЮДА - ПОСЛЕ РАСЧЕТА days_in_period
+                if _ == 0:
+                    st.write(f"**7️⃣ Проверка дат и периода:**")
+                    st.write(f"   Дата старта: {start_date.date()}")
+                    st.write(f"   Дата финиша: {finish_date.date()}")
+                    st.write(f"   Период расчета: {start_period} - {end_period}")
+                    st.write(f"   Дней в периоде: {days_in_period}")
+    
                 if days_in_period == 0:
                     continue
                 
@@ -403,6 +411,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

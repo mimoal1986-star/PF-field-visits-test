@@ -100,18 +100,76 @@ class DataVisualizer:
         return project_agg
     
     def create_planfact_tab(self, data, hierarchy_df=None):
-        """Создает вкладку ПланФакт на дату"""
+        """Создает вкладку ПланФакт на дату с фильтрами"""
         if data is None or data.empty:
             st.warning("⚠️ Нет данных для отчета")
             return
         
         st.subheader("📊 Сводка по проектам")
         
-        # Агрегируем по проектам
-        project_data = self.create_project_summary(data)
+        # 🔍 ФИЛЬТРЫ (каскадные)
+        with st.expander("🔍 Фильтры", expanded=True):
+            # Получаем уникальные значения для фильтров из исходных данных
+            all_zod = data['DSM'].dropna().unique() if 'DSM' in data.columns else []
+            all_asm = data['ASM'].dropna().unique() if 'ASM' in data.columns else []
+            all_regions = data['Регион'].dropna().unique() if 'Регион' in data.columns else []
+            all_projects = data['Проект'].dropna().unique() if 'Проект' in data.columns else []
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                selected_zod = st.multiselect('ЗОД (DSM)', all_zod, key='filter_zod')
+            with col2:
+                # Если выбран ЗОД, фильтруем АСС по нему
+                asm_options = all_asm
+                if selected_zod and 'DSM' in data.columns and 'ASM' in data.columns:
+                    asm_options = data[data['DSM'].isin(selected_zod)]['ASM'].dropna().unique()
+                selected_asm = st.multiselect('АСС (ASM)', asm_options, key='filter_asm')
+            with col3:
+                # Фильтруем регионы по выбранным ЗОД и АСС
+                region_options = all_regions
+                filtered_for_region = data.copy()
+                if selected_zod and 'DSM' in filtered_for_region.columns:
+                    filtered_for_region = filtered_for_region[filtered_for_region['DSM'].isin(selected_zod)]
+                if selected_asm and 'ASM' in filtered_for_region.columns:
+                    filtered_for_region = filtered_for_region[filtered_for_region['ASM'].isin(selected_asm)]
+                if 'Регион' in filtered_for_region.columns:
+                    region_options = filtered_for_region['Регион'].dropna().unique()
+                selected_region = st.multiselect('Регион', region_options, key='filter_region')
+            with col4:
+                # Фильтруем проекты по всем выбранным фильтрам
+                project_options = all_projects
+                filtered_for_project = data.copy()
+                if selected_zod and 'DSM' in filtered_for_project.columns:
+                    filtered_for_project = filtered_for_project[filtered_for_project['DSM'].isin(selected_zod)]
+                if selected_asm and 'ASM' in filtered_for_project.columns:
+                    filtered_for_project = filtered_for_project[filtered_for_project['ASM'].isin(selected_asm)]
+                if selected_region and 'Регион' in filtered_for_project.columns:
+                    filtered_for_project = filtered_for_project[filtered_for_project['Регион'].isin(selected_region)]
+                if 'Проект' in filtered_for_project.columns:
+                    project_options = filtered_for_project['Проект'].dropna().unique()
+                selected_project = st.multiselect('Проект', project_options, key='filter_project')
+        
+        # Применяем фильтры к данным
+        filtered_data = data.copy()
+        
+        if selected_zod and 'DSM' in filtered_data.columns:
+            filtered_data = filtered_data[filtered_data['DSM'].isin(selected_zod)]
+        if selected_asm and 'ASM' in filtered_data.columns:
+            filtered_data = filtered_data[filtered_data['ASM'].isin(selected_asm)]
+        if selected_region and 'Регион' in filtered_data.columns:
+            filtered_data = filtered_data[filtered_data['Регион'].isin(selected_region)]
+        if selected_project and 'Проект' in filtered_data.columns:
+            filtered_data = filtered_data[filtered_data['Проект'].isin(selected_project)]
+        
+        # Показываем количество отфильтрованных записей
+        st.caption(f"📌 Отображается проектов: {filtered_data['Проект'].nunique() if 'Проект' in filtered_data.columns else 0} из {data['Проект'].nunique() if 'Проект' in data.columns else 0}")
+        
+        # Агрегируем по проектам (с фильтрованными данными)
+        project_data = self.create_project_summary(filtered_data)
         
         if project_data.empty:
-            st.warning("⚠️ Нет данных после агрегации")
+            st.warning("⚠️ Нет данных после фильтрации")
             return
         
         # Колонки для отображения
@@ -194,3 +252,4 @@ class DataVisualizer:
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()
+

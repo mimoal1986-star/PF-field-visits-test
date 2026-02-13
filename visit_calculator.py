@@ -269,19 +269,27 @@ class VisitCalculator:
             return pd.DataFrame()
         
     def calculate_hierarchical_fact_on_date(self, plan_df, visits_df, calc_params):
-        """
-        ОПТИМИЗИРОВАННЫЙ: считает факт за один проход с учетом волн
-        """
         try:
             if plan_df.empty or visits_df.empty:
                 return pd.DataFrame()
             
-            result_df = plan_df.copy()  # ← копируем план
+            result_df = plan_df.copy()
             region_col = 'Регион short'
             
-            # Ищем колонки
-            status_col = ' Статус' if ' Статус' in visits_df.columns else 'Статус'
+            # Ищем колонку статуса
+            status_col = None
+            for col in visits_df.columns:
+                if 'статус' in str(col).lower():
+                    status_col = col
+                    break
             
+            if not status_col:
+                st.error("❌ Не найдена колонка 'Статус' в массиве")
+                result_df['Факт проекта, шт.'] = 0
+                result_df['Факт на дату, шт.'] = 0
+                return result_df  # ← ВАЖНО: возвращаем с колонками!
+            
+            # Ищем колонку RS
             rs_col = None
             for col in visits_df.columns:
                 if any(name in str(col).lower() for name in ['эм', 'rs']):
@@ -290,7 +298,7 @@ class VisitCalculator:
             
             if not rs_col:
                 result_df['Факт проекта, шт.'] = 0
-                result_df['Факт на дату, шт.'] = 0  # ← ДОБАВИТЬ ЭТУ СТРОКУ
+                result_df['Факт на дату, шт.'] = 0
                 return result_df
             
             # ФИЛЬТРЫ
@@ -302,105 +310,130 @@ class VisitCalculator:
                 (visits_df['Дата визита'] <= end_date)
             )
             
-            # СЧИТАЕМ ФАКТЫ С УЧЕТОМ ВОЛН
+            # СЧИТАЕМ ФАКТЫ
             completed_df = visits_df[completed_mask]
             rs_facts_total = completed_df.groupby([
-                'Код анкеты',          # Проект
-                'Название проекта',    # Волна
-                region_col,            # Регион
-                rs_col                 # RS
+                'Код анкеты',
+                'Название проекта',
+                region_col,
+                rs_col
             ]).size().to_dict()
             
             completed_in_period = visits_df[completed_mask & period_mask]
             rs_facts_period = completed_in_period.groupby([
                 'Код анкеты',
-                'Название проекта', 
-                region_col,         
+                'Название проекта',
+                region_col,
                 rs_col
             ]).size().to_dict()
             
-            # ИНИЦИАЛИЗИРУЕМ КОЛОНКИ
+            # ✅ СОЗДАЁМ КОЛОНКИ
             result_df['Факт проекта, шт.'] = 0
-            result_df['Факт на дату, шт.'] = 0  # ← ДОБАВИТЬ ЭТУ СТРОКУ
+            result_df['Факт на дату, шт.'] = 0
             
-            # ДОБАВЛЯЕМ ФАКТЫ К RS УРОВНЮ
+            # ✅ ЗАПОЛНЯЕМ
             for idx in result_df[result_df['Уровень'] == 'RS'].index:
                 row = result_df.loc[idx]
                 project = str(row['Проект']).strip()
                 wave = str(row['Волна']).strip()
-                region = str(row['Регион']).strip() 
+                region = str(row['Регион']).strip()
                 rs = str(row['RS']).strip()
                 
                 key = (project, wave, region, rs)
-                
                 result_df.at[idx, 'Факт проекта, шт.'] = rs_facts_total.get(key, 0)
                 result_df.at[idx, 'Факт на дату, шт.'] = rs_facts_period.get(key, 0)
             
-            return result_df
+            return result_df  # ← КЛЮЧЕВОЕ: возвращаем df с колонками!
             
         except Exception as e:
-            print(f"❌ Ошибка: {e}")
+            st.error(f"❌ Ошибка: {e}")
             return pd.DataFrame()
 
 
-    # 6. РАСЧЕТ ДОПОЛНИТЕЛЬНЫХ ПОКАЗАТЕЛЕЙ                
+    # 6. РАСЧЕТ ДОПОЛНИТЕЛЬНЫХ ПОКАЗАТЕЛЕЙ
     def _calculate_metrics(self, fact_df, calc_params=None, plan_df=None):
-        """Упрощённый расчёт метрик (как в исходном коде)"""
         df = fact_df.copy()
         
-        # Берем план из plan_df, если он передан
+        # Берем план из plan_df
         if plan_df is not None and 'План на дату, шт.' in plan_df.columns:
             df['План на дату, шт.'] = plan_df['План на дату, шт.']
         
+        # ✅ ПРОВЕРКА: есть ли колонка 'Факт на дату, шт.'
+        if 'Факт на дату, шт.' not in df.columns:
+            st.error("❌ В fact_df нет колонки 'Факт на дату, шт.'")
+            df['Факт на дату, шт.'] = 0
+        
         # 1. Базовые метрики
         df['%ПФ на дату'] = 0.0
+        
         mask = df['План на дату, шт.'] > 0
-        if mask.any():  # Добавляем проверку
+        if mask.any():
             df.loc[mask, '%ПФ на дату'] = (df.loc[mask, 'Факт на дату, шт.'] / 
                                            df.loc[mask, 'План на дату, шт.'] * 100).round(1)
         
         df['△План/Факт на дату, шт.'] = (df['План на дату, шт.'] - 
                                          df['Факт на дату, шт.']).round(1)
         
-        # 2. Метрики по дням (только с calc_params)
-        if calc_params and 'Дата старта' in df.columns:
-            end_period = calc_params['end_date']
-            
-            df['Дней потрачено'] = 0
-            df['Дней до конца проекта'] = 0
-            df['Ср. план на день для 100% плана'] = 0.0
-            
-            for idx, row in df.iterrows():
-                start_date = row.get('Дата старта')
-                finish_date = row.get('Дата финиша')
-                duration = row.get('Длительность', 0)
-                
-                if pd.notna(start_date) and pd.notna(finish_date) and duration > 0:
-                    # Дней потрачено
-                    days_spent = (end_period - start_date.date()).days + 1
-                    df.at[idx, 'Дней потрачено'] = max(0, min(days_spent, duration))
-                    
-                    # Дней до конца проекта
-                    days_left = (finish_date.date() - end_period).days
-                    df.at[idx, 'Дней до конца проекта'] = max(0, days_left)
-            
-            # Утилизация тайминга, %
-            df['Утилизация тайминга, %'] = 0.0
-            mask_duration = df['Длительность'] > 0
-            if mask_duration.any():
-                df.loc[mask_duration, 'Утилизация тайминга, %'] = (
-                    df.loc[mask_duration, 'Дней потрачено'] / 
-                    df.loc[mask_duration, 'Длительность'] * 100
-                ).round(1)
-        
-        # 3. Исполнение Проекта = %ПФ на дату
-        df['Исполнение Проекта,%'] = df['%ПФ на дату']
-        
         return df
+    
+    # def _calculate_metrics(self, fact_df, calc_params=None, plan_df=None):
+    #     """Упрощённый расчёт метрик (как в исходном коде)"""
+    #     df = fact_df.copy()
+        
+    #     # Берем план из plan_df, если он передан
+    #     if plan_df is not None and 'План на дату, шт.' in plan_df.columns:
+    #         df['План на дату, шт.'] = plan_df['План на дату, шт.']
+        
+    #     # 1. Базовые метрики
+    #     df['%ПФ на дату'] = 0.0
+    #     mask = df['План на дату, шт.'] > 0
+    #     if mask.any():  # Добавляем проверку
+    #         df.loc[mask, '%ПФ на дату'] = (df.loc[mask, 'Факт на дату, шт.'] / 
+    #                                        df.loc[mask, 'План на дату, шт.'] * 100).round(1)
+        
+    #     df['△План/Факт на дату, шт.'] = (df['План на дату, шт.'] - 
+    #                                      df['Факт на дату, шт.']).round(1)
+        
+    #     # 2. Метрики по дням (только с calc_params)
+    #     if calc_params and 'Дата старта' in df.columns:
+    #         end_period = calc_params['end_date']
+            
+    #         df['Дней потрачено'] = 0
+    #         df['Дней до конца проекта'] = 0
+    #         df['Ср. план на день для 100% плана'] = 0.0
+            
+    #         for idx, row in df.iterrows():
+    #             start_date = row.get('Дата старта')
+    #             finish_date = row.get('Дата финиша')
+    #             duration = row.get('Длительность', 0)
+                
+    #             if pd.notna(start_date) and pd.notna(finish_date) and duration > 0:
+    #                 # Дней потрачено
+    #                 days_spent = (end_period - start_date.date()).days + 1
+    #                 df.at[idx, 'Дней потрачено'] = max(0, min(days_spent, duration))
+                    
+    #                 # Дней до конца проекта
+    #                 days_left = (finish_date.date() - end_period).days
+    #                 df.at[idx, 'Дней до конца проекта'] = max(0, days_left)
+            
+    #         # Утилизация тайминга, %
+    #         df['Утилизация тайминга, %'] = 0.0
+    #         mask_duration = df['Длительность'] > 0
+    #         if mask_duration.any():
+    #             df.loc[mask_duration, 'Утилизация тайминга, %'] = (
+    #                 df.loc[mask_duration, 'Дней потрачено'] / 
+    #                 df.loc[mask_duration, 'Длительность'] * 100
+    #             ).round(1)
+        
+    #     # 3. Исполнение Проекта = %ПФ на дату
+    #     df['Исполнение Проекта,%'] = df['%ПФ на дату']
+        
+    #     return df
         
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

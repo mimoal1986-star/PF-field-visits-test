@@ -245,6 +245,19 @@ def process_field_projects_with_stats():
                     hierarchy_df, 
                     google_updated
                 )
+
+                # 🔴 ВЫГРУЗКА ПРЯМО ЗДЕСЬ
+                if cxway_processed is not None and not cxway_processed.empty:
+                    excel_buffer = BytesIO()
+                    cxway_processed.to_excel(excel_buffer, index=False)
+                    excel_buffer.seek(0)
+                    st.download_button(
+                        label="📥 СКАЧАТЬ CXWAY ДО ОБЪЕДИНЕНИЯ",
+                        data=excel_buffer,
+                        file_name="cxway_processed.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key="cxway_download"
+                    )
                 
                 if cxway_processed is not None and not cxway_processed.empty:
                     st.success(f"✅ CXWAY обработан: {len(cxway_processed)} полевых проектов")
@@ -1205,6 +1218,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

@@ -342,33 +342,22 @@ class VisitCalculator:
 
     # 6. РАСЧЕТ ДОПОЛНИТЕЛЬНЫХ ПОКАЗАТЕЛЕЙ                
     def _calculate_metrics(self, fact_df, calc_params=None, plan_df=None):
-    df = fact_df.copy()
-    
-    # Берем план из plan_df, если он передан
-    if plan_df is not None and 'План на дату, шт.' in plan_df.columns:
-        df['План на дату, шт.'] = plan_df['План на дату, шт.']
-    
-        """
-        Упрощённый расчёт метрик (как в исходном коде)
-        """
-        df = df.copy()
+        """Упрощённый расчёт метрик (как в исходном коде)"""
+        df = fact_df.copy()
+        
+        # Берем план из plan_df, если он передан
+        if plan_df is not None and 'План на дату, шт.' in plan_df.columns:
+            df['План на дату, шт.'] = plan_df['План на дату, шт.']
         
         # 1. Базовые метрики
         df['%ПФ на дату'] = 0.0
         mask = df['План на дату, шт.'] > 0
-        df.loc[mask, '%ПФ на дату'] = (df.loc[mask, 'Факт на дату, шт.'] / 
-                                       df.loc[mask, 'План на дату, шт.'] * 100).round(1)
+        if mask.any():  # Добавляем проверку
+            df.loc[mask, '%ПФ на дату'] = (df.loc[mask, 'Факт на дату, шт.'] / 
+                                           df.loc[mask, 'План на дату, шт.'] * 100).round(1)
         
         df['△План/Факт на дату, шт.'] = (df['План на дату, шт.'] - 
                                          df['Факт на дату, шт.']).round(1)
-        
-        # df['%ПФ проекта'] = 0.0
-        # mask_proj = df['План проекта, шт.'] > 0
-        # df.loc[mask_proj, '%ПФ проекта'] = (df.loc[mask_proj, 'Факт проекта, шт.'] / 
-        #                                    df.loc[mask_proj, 'План проекта, шт.'] * 100).round(1)
-        
-        # df['△План/Факт проекта, шт.'] = (df['План проекта, шт.'] - 
-        #                                  df['Факт проекта, шт.']).round(1)
         
         # 2. Метрики по дням (только с calc_params)
         if calc_params and 'Дата старта' in df.columns:
@@ -391,30 +380,17 @@ class VisitCalculator:
                     # Дней до конца проекта
                     days_left = (finish_date.date() - end_period).days
                     df.at[idx, 'Дней до конца проекта'] = max(0, days_left)
-                    
-                    # # Средний план на день
-                    # plan_project = row.get('План проекта, шт.', 0)
-                    # if plan_project > 0:
-                    #     df.at[idx, 'Ср. план на день для 100% плана'] = round(plan_project / duration, 1)
             
-            # Утилизация тайминга
+            # Утилизация тайминга, %
             df['Утилизация тайминга, %'] = 0.0
             mask_duration = df['Длительность'] > 0
-            df.loc[mask_duration, 'Утилизация тайминга, %'] = (
-                df.loc[mask_duration, 'Дней потрачено'] / 
-                df.loc[mask_duration, 'Длительность'] * 100
-            ).round(1)
-            
-            # Фокус
-            # df['Фокус'] = 'Нет'
-            # mask_focus = (
-            #     (df['%ПФ проекта'] < 80) & 
-            #     (df['Утилизация тайминга, %'] > 80) & 
-            #     (df['Утилизация тайминга, %'] < 100)
-            # )
-            # df.loc[mask_focus, 'Фокус'] = 'Да'
+            if mask_duration.any():
+                df.loc[mask_duration, 'Утилизация тайминга, %'] = (
+                    df.loc[mask_duration, 'Дней потрачено'] / 
+                    df.loc[mask_duration, 'Длительность'] * 100
+                ).round(1)
         
-        # 3. Исполнение проекта = %ПФ на дату
+        # 3. Исполнение Проекта = %ПФ на дату
         df['Исполнение Проекта,%'] = df['%ПФ на дату']
         
         return df
@@ -422,6 +398,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

@@ -277,18 +277,24 @@ class VisitCalculator:
             region_col = 'Регион short'
             
             # Ищем колонку статуса
+            st.write("📋 **Все колонки в массиве:**")
+            st.write(list(visits_df.columns))
+            
             status_col = None
             for col in visits_df.columns:
-                col_clean = col.strip()  # Убираем пробелы в начале/конце
+                st.write(f"Проверяем: '{col}' -> очищенная: '{col.strip()}'")
+                col_clean = col.strip()
                 if col_clean == 'Статус':
-                    status_col = col  # Берем оригинальное название с пробелом!
+                    status_col = col
                     break
             
             if not status_col:
-                st.error("❌ Не найдена колонка 'Статус' в массиве")
+                st.error(f"❌ Не найдена колонка 'Статус'")
+                st.write(f"Искали: 'Статус'")
+                st.write(f"Доступные колонки: {list(visits_df.columns)}")
                 result_df['Факт проекта, шт.'] = 0
                 result_df['Факт на дату, шт.'] = 0
-                return result_df  # ← ВАЖНО: возвращаем с колонками!
+                return result_df
             
             # Ищем колонку RS
             rs_col = None
@@ -434,6 +440,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

@@ -989,6 +989,20 @@ class DataCleaner:
                 'ПО': ['ПО']
             }
             
+            # 🔴 ДИАГНОСТИКА: проверяем каждую колонку из маппинга
+            st.write("🔍 **Проверка поиска колонок в array_df_clean:**")
+            for std_name, possible_names in column_mapping.items():
+                found = None
+                for name in possible_names:
+                    if name in array_df_clean.columns:
+                        found = name
+                        break
+                if found:
+                    st.write(f"  ✅ {std_name} → '{found}'")
+                else:
+                    st.write(f"  ❌ {std_name} → НЕ НАЙДЕНА")
+                    st.write(f"     Искали: {possible_names}")
+            
             # Находим фактические названия колонок
             actual_columns = {}
             
@@ -1631,6 +1645,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

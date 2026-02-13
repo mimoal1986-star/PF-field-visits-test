@@ -5,7 +5,7 @@ from datetime import datetime
 from io import BytesIO
 
 class DataVisualizer:
-    
+
     def create_project_summary(self, df):
         """
         Агрегация данных по проектам
@@ -370,6 +370,7 @@ class DataVisualizer:
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()
+
 
 
 

@@ -17,11 +17,8 @@ except ImportError:
     data_cleaner = DataCleaner()
     
 # visit_calculator.py
-try:
-    from utils.visit_calculator import visit_calculator
-except ImportError:
-    from visit_calculator import VisitCalculator, visit_calculator
-    visit_calculator = VisitCalculator()
+from visit_calculator import VisitCalculator
+visit_calculator = VisitCalculator()
 
 # dataviz.py
 try:
@@ -1203,6 +1200,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

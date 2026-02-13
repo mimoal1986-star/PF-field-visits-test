@@ -1072,7 +1072,11 @@ with tab1:
                         params
                     )
                     # 5. Рассчитываем метрики
-                    final_result = visit_calculator._calculate_metrics(fact_result, params)
+                    final_result = visit_calculator._calculate_metrics(
+                        fact_result,  # fact_df (обязательный)
+                        params,       # calc_params (опциональный)
+                        plan_result   # plan_df (опциональный)
+                    )
 
                     # 6. Сохраняем результат
                     st.session_state['visit_report'] = {
@@ -1199,6 +1203,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

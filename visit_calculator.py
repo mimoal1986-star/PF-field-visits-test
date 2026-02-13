@@ -264,11 +264,11 @@ class VisitCalculator:
         
         return pd.DataFrame(results)
             
-        except Exception as e:
-            print(f"❌ Ошибка: {e}")
-            import traceback
-            print(traceback.format_exc())
-            return pd.DataFrame()
+    except Exception as e:
+        print(f"❌ Ошибка: {e}")
+        import traceback
+        print(traceback.format_exc())
+        return pd.DataFrame()
         
     def calculate_hierarchical_fact_on_date(self, plan_df, visits_df, calc_params):
         """
@@ -418,6 +418,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

@@ -962,6 +962,13 @@ class DataCleaner:
             
             array_df_clean = array_df.copy()
             
+            # 🔍 ДИАГНОСТИКА ЗДЕСЬ
+            st.write("🔍 **Проверка исходного массива:**")
+            st.write(f"Всего колонок: {len(array_df_clean.columns)}")
+            st.write(f"Колонка ' Статус' есть: {' Статус' in array_df_clean.columns}")
+            st.write(f"Колонка 'Дата визита' есть: {'Дата визита' in array_df_clean.columns}")
+            st.write(f"Первые 10 колонок: {list(array_df_clean.columns)[:10]}")
+            
             if 'Полевой' not in array_df_clean.columns:
                 st.error("❌ В массиве нет колонки 'Полевой'")
                 return None, None
@@ -1624,6 +1631,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

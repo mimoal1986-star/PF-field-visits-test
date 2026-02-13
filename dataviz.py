@@ -128,13 +128,13 @@ class DataVisualizer:
         )
         
         # Кнопка скачивания
-        excel_buffer = pd.ExcelWriter(pd.BytesIO(), engine='openpyxl')
-        df_display.to_excel(excel_buffer, sheet_name='План_факт_проекты', index=False)
-        excel_buffer.close()
+        output = pd.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df_display.to_excel(writer, sheet_name='План_факт_проекты', index=False)
         
         st.download_button(
             label="⬇️ Скачать Excel",
-            data=excel_buffer,
+            data=output.getvalue(),
             file_name=f"план_факт_проекты_{datetime.now().strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="primary",
@@ -143,3 +143,4 @@ class DataVisualizer:
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()
+

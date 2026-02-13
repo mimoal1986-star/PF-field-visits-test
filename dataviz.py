@@ -129,7 +129,7 @@ class DataVisualizer:
         )
         
         # Кнопка скачивания
-        output = pd.BytesIO()
+        output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df_display.to_excel(writer, sheet_name='План_факт_проекты', index=False)
         
@@ -144,5 +144,6 @@ class DataVisualizer:
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()
+
 
 

@@ -2,6 +2,7 @@
 import pandas as pd
 import streamlit as st
 from datetime import datetime
+from io import BytesIO
 
 class DataVisualizer:
     
@@ -143,4 +144,5 @@ class DataVisualizer:
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()
+
 

@@ -309,6 +309,11 @@ class VisitCalculator:
                 return result_df
             
             # ФИЛЬТРЫ
+            # КОНВЕРТИРУЕМ ДАТУ ВИЗИТА
+            if 'Дата визита' in visits_df.columns:
+                visits_df['Дата визита'] = pd.to_datetime(visits_df['Дата визита'], errors='coerce')
+            
+            # ФИЛЬТРЫ
             completed_mask = visits_df[status_col] == 'Выполнено'
             start_date = pd.Timestamp(calc_params['start_date'])
             end_date = pd.Timestamp(calc_params['end_date'])
@@ -350,6 +355,11 @@ class VisitCalculator:
                 result_df.at[idx, 'Факт проекта, шт.'] = rs_facts_total.get(key, 0)
                 result_df.at[idx, 'Факт на дату, шт.'] = rs_facts_period.get(key, 0)
             
+            # ПРОВЕРКА что колонка создалась
+            if 'Факт на дату, шт.' not in result_df.columns:
+                st.error("❌ Колонка 'Факт на дату, шт.' НЕ СОЗДАЛАСЬ!")
+                result_df['Факт на дату, шт.'] = 0
+    
             return result_df  # ← КЛЮЧЕВОЕ: возвращаем df с колонками!
             
         except Exception as e:
@@ -440,6 +450,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

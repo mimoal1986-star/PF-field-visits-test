@@ -109,11 +109,21 @@ class DataVisualizer:
         
         # 🔍 ФИЛЬТРЫ (каскадные)
         with st.expander("🔍 Фильтры", expanded=True):
-            # Получаем уникальные значения для фильтров из исходных данных
+            # Определяем, какую колонку региона использовать
+            region_col = 'Регион'  # по умолчанию короткий
+            if 'Регион' in data.columns and 'Регион short' in data.columns:
+                # Если есть обе, используем длинный для фильтрации
+                region_col = 'Регион'
+            elif 'Регион' in data.columns:
+                region_col = 'Регион'
+            elif 'Регион short' in data.columns:
+                region_col = 'Регион short'
+            
+            # Получаем уникальные значения для фильтров
             all_zod = data['DSM'].dropna().unique() if 'DSM' in data.columns else []
             all_asm = data['ASM'].dropna().unique() if 'ASM' in data.columns else []
-            all_regions = data['Регион'].dropna().unique() if 'Регион' in data.columns else []
-            all_projects = data['Проект'].dropna().unique() if 'Проект' in data.columns else []
+            all_regions = data[region_col].dropna().unique() if region_col in data.columns else []
+            all_clients = data['Клиент'].dropna().unique() if 'Клиент' in data.columns else []
             
             col1, col2, col3, col4 = st.columns(4)
             
@@ -133,34 +143,35 @@ class DataVisualizer:
                     filtered_for_region = filtered_for_region[filtered_for_region['DSM'].isin(selected_zod)]
                 if selected_asm and 'ASM' in filtered_for_region.columns:
                     filtered_for_region = filtered_for_region[filtered_for_region['ASM'].isin(selected_asm)]
-                if 'Регион' in filtered_for_region.columns:
-                    region_options = filtered_for_region['Регион'].dropna().unique()
+                if region_col in filtered_for_region.columns:
+                    region_options = filtered_for_region[region_col].dropna().unique()
                 selected_region = st.multiselect('Регион', region_options, key='filter_region')
             with col4:
-                # Фильтруем проекты по всем выбранным фильтрам
-                project_options = all_projects
-                filtered_for_project = data.copy()
-                if selected_zod and 'DSM' in filtered_for_project.columns:
-                    filtered_for_project = filtered_for_project[filtered_for_project['DSM'].isin(selected_zod)]
-                if selected_asm and 'ASM' in filtered_for_project.columns:
-                    filtered_for_project = filtered_for_project[filtered_for_project['ASM'].isin(selected_asm)]
-                if selected_region and 'Регион' in filtered_for_project.columns:
-                    filtered_for_project = filtered_for_project[filtered_for_project['Регион'].isin(selected_region)]
-                if 'Проект' in filtered_for_project.columns:
-                    project_options = filtered_for_project['Проект'].dropna().unique()
-                selected_project = st.multiselect('Проект', project_options, key='filter_project')
+                # Фильтруем клиентов по всем выбранным фильтрам
+                client_options = all_clients
+                filtered_for_client = data.copy()
+                if selected_zod and 'DSM' in filtered_for_client.columns:
+                    filtered_for_client = filtered_for_client[filtered_for_client['DSM'].isin(selected_zod)]
+                if selected_asm and 'ASM' in filtered_for_client.columns:
+                    filtered_for_client = filtered_for_client[filtered_for_client['ASM'].isin(selected_asm)]
+                if selected_region and region_col in filtered_for_client.columns:
+                    filtered_for_client = filtered_for_client[filtered_for_client[region_col].isin(selected_region)]
+                if 'Клиент' in filtered_for_client.columns:
+                    client_options = filtered_for_client['Клиент'].dropna().unique()
+                selected_client = st.multiselect('Клиент', client_options, key='filter_client')
         
         # Применяем фильтры к данным
-        filtered_data = data.copy()
+        filtered_data = data.copy()  # ← ВОТ ЗДЕСЬ!
         
         if selected_zod and 'DSM' in filtered_data.columns:
             filtered_data = filtered_data[filtered_data['DSM'].isin(selected_zod)]
         if selected_asm and 'ASM' in filtered_data.columns:
             filtered_data = filtered_data[filtered_data['ASM'].isin(selected_asm)]
-        if selected_region and 'Регион' in filtered_data.columns:
-            filtered_data = filtered_data[filtered_data['Регион'].isin(selected_region)]
-        if selected_project and 'Проект' in filtered_data.columns:
-            filtered_data = filtered_data[filtered_data['Проект'].isin(selected_project)]
+        if selected_region and region_col in filtered_data.columns:
+            filtered_data = filtered_data[filtered_data[region_col].isin(selected_region)]
+        if selected_client and 'Клиент' in filtered_data.columns:
+            filtered_data = filtered_data[filtered_data['Клиент'].isin(selected_client)]
+        
         
         # 📊 РАЗВЕРТКА (ЧЕК-БОКСЫ)
         st.subheader("📊 Детализация")
@@ -359,5 +370,6 @@ class DataVisualizer:
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()
+
 
 

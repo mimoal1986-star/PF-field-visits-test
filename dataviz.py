@@ -29,7 +29,9 @@ class DataVisualizer:
             'Дата старта': 'first',
             'Дата финиша': 'first',
             'Клиент': 'first',
-            'ПО': 'first'
+            'ПО': 'first',
+            'Дней до конца проекта': 'first',
+            'Ср. план на день для 100% плана': 'sum'
         }
         
         # Оставляем только те колонки, которые есть в DataFrame
@@ -51,25 +53,44 @@ class DataVisualizer:
             project_agg['План на дату, шт.'] - project_agg['Факт на дату, шт.']
         ).round(1)
         
+        # △План/Факт,% = (Факт/План) - 1 в %
         project_agg['△План/Факт,%'] = 0.0
         if mask_plan.any():
             project_agg.loc[mask_plan, '△План/Факт,%'] = (
-                project_agg.loc[mask_plan, '△План/Факт, шт.'] / 
-                project_agg.loc[mask_plan, 'План на дату, шт.'] * 100
+                (project_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
+                 project_agg.loc[mask_plan, 'План на дату, шт.']) - 1
+            ).round(3) * 100
+        
+        # Прогноз на месяц = Факт на дату / дней в периоде * 28
+        if 'Дата старта' in project_agg.columns:
+            # Берем период из session_state если есть
+            if 'plan_calc_params' in st.session_state:
+                days_in_period = (st.session_state['plan_calc_params']['end_date'] - 
+                                st.session_state['plan_calc_params']['start_date']).days + 1
+            else:
+                days_in_period = 12  # дефолт
+                
+            project_agg['Прогноз на месяц, шт.'] = (
+                project_agg['Факт на дату, шт.'] / days_in_period * 28
             ).round(1)
+        else:
+            project_agg['Прогноз на месяц, шт.'] = 0.0
         
-        # Дней до конца проекта
-        today = pd.Timestamp.now()
-        project_agg['Дней до конца проекта'] = 0
+        # Важно/Срочно (матрица Эйзенхауэра)
+        project_agg['Важно/Срочно'] = '🟢 Норма'
         
-        if 'Дата финиша' in project_agg.columns:
-            mask_finish = project_agg['Дата финиша'].notna()
-            if mask_finish.any():
-                days_left = (project_agg.loc[mask_finish, 'Дата финиша'] - today).dt.days
-                project_agg.loc[mask_finish, 'Дней до конца проекта'] = days_left.clip(lower=0)
+        # Срочно: дней до конца < 7
+        if 'Дней до конца проекта' in project_agg.columns:
+            urgent_mask = (project_agg['Дней до конца проекта'] < 7) & (project_agg['Дней до конца проекта'] >= 0)
+            # Важно: исполнение < 50%
+            important_mask = project_agg['Исполнение проекта,%'] < 50
+            
+            project_agg.loc[urgent_mask & ~important_mask, 'Важно/Срочно'] = '🟡 Срочно'
+            project_agg.loc[~urgent_mask & important_mask, 'Важно/Срочно'] = '🟠 Важно'
+            project_agg.loc[urgent_mask & important_mask, 'Важно/Срочно'] = '🔴 Важно/Срочно'
         
         # Сортируем по исполнению
-        project_agg = project_agg.sort_values('Исполнение проекта,%', ascending=False)
+        project_agg = project_agg.sort_values('Исполнение проекта,%', ascending=True)
         
         return project_agg
     
@@ -94,21 +115,33 @@ class DataVisualizer:
             'Клиент',
             'ПО',
             'Исполнение проекта,%',
+            'Важно/Срочно',
             'План на дату, шт.',
             'Факт на дату, шт.',
             '△План/Факт, шт.',
             '△План/Факт,%',
-            'План проекта, шт.',
+            'Прогноз на месяц, шт.',
             'Дней до конца проекта',
-            'Длительность'
+            'Ср. план на день для 100% плана, шт.'
         ]
         
         # Только существующие колонки
         existing_cols = [col for col in display_columns if col in project_data.columns]
         df_display = project_data[existing_cols]
         
+        # Форматирование
+        df_display = df_display.copy()
+        
+        # Формат процентов
+        if '△План/Факт,%' in df_display.columns:
+            df_display['△План/Факт,%'] = df_display['△План/Факт,%'].map(lambda x: f"{x:+.1f}%")
+        
+        if 'Исполнение проекта,%' in df_display.columns:
+            df_display['Исполнение проекта,%'] = df_display['Исполнение проекта,%'].map(lambda x: f"{x:.1f}%")
+        
         # KPI сверху
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
+        
         with col1:
             plan_total = df_display['План на дату, шт.'].sum() if 'План на дату, шт.' in df_display.columns else 0
             st.metric("📊 План на дату", f"{plan_total:,.0f} шт")
@@ -119,7 +152,11 @@ class DataVisualizer:
         
         with col3:
             pf_percent = (fact_total / plan_total * 100) if plan_total > 0 else 0
-            st.metric("🎯 Выполнение плана", f"{pf_percent:.1f}%")
+            st.metric("🎯 Выполнение", f"{pf_percent:.1f}%")
+        
+        with col4:
+            forecast_total = df_display['Прогноз на месяц, шт.'].sum() if 'Прогноз на месяц, шт.' in df_display.columns else 0
+            st.metric("📈 Прогноз на месяц", f"{forecast_total:,.0f} шт")
         
         # Таблица
         st.dataframe(
@@ -136,7 +173,7 @@ class DataVisualizer:
         st.download_button(
             label="⬇️ Скачать Excel",
             data=output.getvalue(),
-            file_name=f"план_факт_проекты_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            file_name=f"план_факт_проекты_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="primary",
             use_container_width=True
@@ -144,6 +181,3 @@ class DataVisualizer:
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()
-
-
-

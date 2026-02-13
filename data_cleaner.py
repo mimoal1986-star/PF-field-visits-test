@@ -1356,7 +1356,7 @@ class DataCleaner:
             'Название проекта': ['Wave Name'],
             'АСС': ['ACC', 'АСС'],
             'ЭМ': ['ЭМ рег', 'Эксперт', 'Эксперт менеджер'],
-            'Регион short': ['Region'],
+            'Регион short': ['Region short'],
             ' Статус': ['Status'],
             'Дата визита': ['Date of Visit']
         }    
@@ -1647,6 +1647,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

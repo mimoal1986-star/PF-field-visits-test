@@ -100,7 +100,7 @@ class DataVisualizer:
         return project_agg
     
     def create_planfact_tab(self, data, hierarchy_df=None):
-        """Создает вкладку ПланФакт на дату с фильтрами"""
+        """Создает вкладку ПланФакт на дату с фильтрами и разверткой"""
         if data is None or data.empty:
             st.warning("⚠️ Нет данных для отчета")
             return
@@ -162,11 +162,108 @@ class DataVisualizer:
         if selected_project and 'Проект' in filtered_data.columns:
             filtered_data = filtered_data[filtered_data['Проект'].isin(selected_project)]
         
-        # Показываем количество отфильтрованных записей
-        st.caption(f"📌 Отображается проектов: {filtered_data['Проект'].nunique() if 'Проект' in filtered_data.columns else 0} из {data['Проект'].nunique() if 'Проект' in data.columns else 0}")
+        # 📊 РАЗВЕРТКА (ЧЕК-БОКСЫ)
+        st.subheader("📊 Детализация")
         
-        # Агрегируем по проектам (с фильтрованными данными)
-        project_data = self.create_project_summary(filtered_data)
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            show_regions = st.checkbox("Показать регионы", key='show_regions')
+        with col2:
+            show_dsm = st.checkbox("Показать ЗОД", key='show_dsm')
+        with col3:
+            show_asm = st.checkbox("Показать АСС", key='show_asm')
+        with col4:
+            show_rs = st.checkbox("Показать RS", key='show_rs')
+        
+        # Формируем groupby в зависимости от чек-боксов
+        group_cols = ['Проект', 'Клиент', 'ПО']
+        
+        if show_regions and 'Регион' in filtered_data.columns:
+            group_cols.append('Регион')
+        if show_dsm and 'DSM' in filtered_data.columns:
+            group_cols.append('DSM')
+        if show_asm and 'ASM' in filtered_data.columns:
+            group_cols.append('ASM')
+        if show_rs and 'RS' in filtered_data.columns:
+            group_cols.append('RS')
+        
+        # Агрегируем данные с учетом развертки
+        if len(group_cols) > 3:  # если есть дополнительные уровни
+            agg_columns = {
+                'План проекта, шт.': 'sum',
+                'План на дату, шт.': 'sum',
+                'Факт проекта, шт.': 'sum',
+                'Факт на дату, шт.': 'sum',
+                'Длительность': 'first',
+                'Дата старта': 'first',
+                'Дата финиша': 'first',
+                'Дней до конца проекта': 'first',
+                'Утилизация тайминга, %': 'first',
+                'Ср. план на день для 100% плана': 'sum'
+            }
+            
+            # Только существующие колонки
+            existing_agg = {k: v for k, v in agg_columns.items() if k in filtered_data.columns}
+            
+            # Группируем с учетом развертки
+            detailed_data = filtered_data.groupby(group_cols).agg(existing_agg).reset_index()
+            
+            # Пересчитываем метрики для детальных данных
+            detailed_data['План/Факт на дату,%'] = 0.0
+            mask_plan = detailed_data['План на дату, шт.'] > 0
+            if mask_plan.any():
+                detailed_data.loc[mask_plan, 'План/Факт на дату,%'] = (
+                    detailed_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                    detailed_data.loc[mask_plan, 'План на дату, шт.'] * 100
+                ).round(1)
+            
+            detailed_data['△План/Факт на дату, шт'] = (
+                detailed_data['Факт на дату, шт.'] - detailed_data['План на дату, шт.']
+            ).round(1)
+            
+            detailed_data['△План/Факт на дату, %'] = 0.0
+            if mask_plan.any():
+                detailed_data.loc[mask_plan, '△План/Факт на дату, %'] = (
+                    (detailed_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                     detailed_data.loc[mask_plan, 'План на дату, шт.']) - 1
+                ).round(3) * 100
+            
+            detailed_data['Исполнение проекта,%'] = 0.0
+            mask_project_plan = detailed_data['План проекта, шт.'] > 0
+            if mask_project_plan.any():
+                detailed_data.loc[mask_project_plan, 'Исполнение проекта,%'] = (
+                    detailed_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                    detailed_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
+                ).round(1)
+            
+            # Прогноз на месяц
+            if 'plan_calc_params' in st.session_state:
+                days_in_period = (st.session_state['plan_calc_params']['end_date'] - 
+                                st.session_state['plan_calc_params']['start_date']).days + 1
+            else:
+                days_in_period = 12
+                
+            detailed_data['Прогноз на месяц, шт.'] = (
+                detailed_data['Факт на дату, шт.'] / days_in_period * 28
+            ).round(1)
+            
+            # Фокус
+            detailed_data['Фокус'] = 'Нет'
+            if all(col in detailed_data.columns for col in ['Исполнение проекта,%', 'Утилизация тайминга, %']):
+                mask_focus = (
+                    (detailed_data['Исполнение проекта,%'] < 80) & 
+                    (detailed_data['Утилизация тайминга, %'] > 80) & 
+                    (detailed_data['Утилизация тайминга, %'] < 100)
+                )
+                detailed_data.loc[mask_focus, 'Фокус'] = 'Да'
+            
+            project_data = detailed_data
+        else:
+            # Если развертка не выбрана - используем стандартную агрегацию по проектам
+            project_data = self.create_project_summary(filtered_data)
+        
+        # Показываем количество отфильтрованных записей
+        st.caption(f"📌 Отображается записей: {len(project_data)}")
         
         if project_data.empty:
             st.warning("⚠️ Нет данных после фильтрации")
@@ -192,6 +289,16 @@ class DataVisualizer:
             'Утилизация тайминга, %',
             'Ср. план на день для 100% плана, шт.'
         ]
+        
+        # Добавляем колонки развертки, если они есть
+        if show_regions and 'Регион' in project_data.columns:
+            display_columns.insert(3, 'Регион')
+        if show_dsm and 'DSM' in project_data.columns:
+            display_columns.insert(4, 'DSM')
+        if show_asm and 'ASM' in project_data.columns:
+            display_columns.insert(5, 'ASM')
+        if show_rs and 'RS' in project_data.columns:
+            display_columns.insert(6, 'RS')
         
         # Только существующие колонки
         existing_cols = [col for col in display_columns if col in project_data.columns]
@@ -252,4 +359,5 @@ class DataVisualizer:
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()
+
 

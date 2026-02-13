@@ -20,10 +20,11 @@ class DataVisualizer:
             st.error(f"❌ В данных нет колонки '{project_col}'")
             return pd.DataFrame()
         
-        # Список колонок для агрегации (только существующие)
+        # Список колонок для агрегации
         agg_columns = {
             'План проекта, шт.': 'sum',
             'План на дату, шт.': 'sum',
+            'Факт проекта, шт.': 'sum',
             'Факт на дату, шт.': 'sum',
             'Длительность': 'first',
             'Дата старта': 'first',
@@ -31,16 +32,17 @@ class DataVisualizer:
             'Клиент': 'first',
             'ПО': 'first',
             'Дней до конца проекта': 'first',
+            'Утилизация тайминга, %': 'first',
             'Ср. план на день для 100% плана': 'sum'
         }
         
-        # Оставляем только те колонки, которые есть в DataFrame
+        # Только существующие колонки
         existing_agg = {k: v for k, v in agg_columns.items() if k in df.columns}
         
         # Группируем по проекту
         project_agg = df.groupby(project_col).agg(existing_agg).reset_index()
         
-        # Рассчитываем метрики
+        # 1. Исполнение за период (уже было)
         project_agg['Исполнение проекта,%'] = 0.0
         mask_plan = project_agg['План на дату, шт.'] > 0
         if mask_plan.any():
@@ -49,11 +51,20 @@ class DataVisualizer:
                 project_agg.loc[mask_plan, 'План на дату, шт.'] * 100
             ).round(1)
         
+        # 2. % выполнения плана за ВЕСЬ ПРОЕКТ 🔴 НОВОЕ
+        project_agg['%ПФ проекта'] = 0.0
+        mask_project_plan = project_agg['План проекта, шт.'] > 0
+        if mask_project_plan.any():
+            project_agg.loc[mask_project_plan, '%ПФ проекта'] = (
+                project_agg.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                project_agg.loc[mask_project_plan, 'План проекта, шт.'] * 100
+            ).round(1)
+        
+        # 3. Отклонения
         project_agg['△План/Факт, шт.'] = (
             project_agg['План на дату, шт.'] - project_agg['Факт на дату, шт.']
         ).round(1)
         
-        # △План/Факт,% = (Факт/План) - 1 в %
         project_agg['△План/Факт,%'] = 0.0
         if mask_plan.any():
             project_agg.loc[mask_plan, '△План/Факт,%'] = (
@@ -61,33 +72,27 @@ class DataVisualizer:
                  project_agg.loc[mask_plan, 'План на дату, шт.']) - 1
             ).round(3) * 100
         
-        # Прогноз на месяц = Факт на дату / дней в периоде * 28
-        if 'Дата старта' in project_agg.columns:
-            # Берем период из session_state если есть
-            if 'plan_calc_params' in st.session_state:
-                days_in_period = (st.session_state['plan_calc_params']['end_date'] - 
-                                st.session_state['plan_calc_params']['start_date']).days + 1
-            else:
-                days_in_period = 12  # дефолт
-                
-            project_agg['Прогноз на месяц, шт.'] = (
-                project_agg['Факт на дату, шт.'] / days_in_period * 28
-            ).round(1)
+        # 4. Прогноз на месяц
+        if 'plan_calc_params' in st.session_state:
+            days_in_period = (st.session_state['plan_calc_params']['end_date'] - 
+                            st.session_state['plan_calc_params']['start_date']).days + 1
         else:
-            project_agg['Прогноз на месяц, шт.'] = 0.0
-        
-        # Важно/Срочно (матрица Эйзенхауэра)
-        project_agg['Важно/Срочно'] = '🟢 Норма'
-        
-        # Срочно: дней до конца < 7
-        if 'Дней до конца проекта' in project_agg.columns:
-            urgent_mask = (project_agg['Дней до конца проекта'] < 7) & (project_agg['Дней до конца проекта'] >= 0)
-            # Важно: исполнение < 50%
-            important_mask = project_agg['Исполнение проекта,%'] < 50
+            days_in_period = 12
             
-            project_agg.loc[urgent_mask & ~important_mask, 'Важно/Срочно'] = '🟡 Срочно'
-            project_agg.loc[~urgent_mask & important_mask, 'Важно/Срочно'] = '🟠 Важно'
-            project_agg.loc[urgent_mask & important_mask, 'Важно/Срочно'] = '🔴 Важно/Срочно'
+        project_agg['Прогноз на месяц, шт.'] = (
+            project_agg['Факт на дату, шт.'] / days_in_period * 28
+        ).round(1)
+        
+        # 5. Фокус (Важно/Срочно) 🔴 НОВАЯ ЛОГИКА
+        project_agg['Фокус'] = 'Нет'
+        
+        if all(col in project_agg.columns for col in ['%ПФ проекта', 'Утилизация тайминга, %']):
+            mask_focus = (
+                (project_agg['%ПФ проекта'] < 80) & 
+                (project_agg['Утилизация тайминга, %'] > 80) & 
+                (project_agg['Утилизация тайминга, %'] < 100)
+            )
+            project_agg.loc[mask_focus, 'Фокус'] = 'Да'
         
         # Сортируем по исполнению
         project_agg = project_agg.sort_values('Исполнение проекта,%', ascending=True)
@@ -115,31 +120,36 @@ class DataVisualizer:
             'Клиент',
             'ПО',
             'Исполнение проекта,%',
-            'Важно/Срочно',
+            'Фокус',
             'План на дату, шт.',
             'Факт на дату, шт.',
             '△План/Факт, шт.',
             '△План/Факт,%',
+            '%ПФ проекта',
             'Прогноз на месяц, шт.',
             'Дней до конца проекта',
+            'Утилизация тайминга, %',
             'Ср. план на день для 100% плана, шт.'
         ]
         
         # Только существующие колонки
         existing_cols = [col for col in display_columns if col in project_data.columns]
-        df_display = project_data[existing_cols]
+        df_display = project_data[existing_cols].copy()
         
         # Форматирование
-        df_display = df_display.copy()
-        
-        # Формат процентов
         if '△План/Факт,%' in df_display.columns:
             df_display['△План/Факт,%'] = df_display['△План/Факт,%'].map(lambda x: f"{x:+.1f}%")
         
         if 'Исполнение проекта,%' in df_display.columns:
             df_display['Исполнение проекта,%'] = df_display['Исполнение проекта,%'].map(lambda x: f"{x:.1f}%")
         
-        # KPI сверху
+        if '%ПФ проекта' in df_display.columns:
+            df_display['%ПФ проекта'] = df_display['%ПФ проекта'].map(lambda x: f"{x:.1f}%")
+        
+        if 'Утилизация тайминга, %' in df_display.columns:
+            df_display['Утилизация тайминга, %'] = df_display['Утилизация тайминга, %'].map(lambda x: f"{x:.1f}%")
+        
+        # KPI
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:

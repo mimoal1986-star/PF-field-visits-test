@@ -20,7 +20,7 @@ except ImportError:
 try:
     from utils.visit_calculator import visit_calculator
 except ImportError:
-    from visit_calculator import VisitCalculator
+    from visit_calculator import VisitCalculator, visit_calculator
     visit_calculator = VisitCalculator()
 
 # dataviz.py

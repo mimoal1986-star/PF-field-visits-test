@@ -276,7 +276,7 @@ class VisitCalculator:
             if plan_df.empty or visits_df.empty:
                 return pd.DataFrame()
             
-            result_df = plan_df.copy()
+            result_df = plan_df.copy()  # ← копируем план
             region_col = 'Регион short'
             
             # Ищем колонки
@@ -290,7 +290,7 @@ class VisitCalculator:
             
             if not rs_col:
                 result_df['Факт проекта, шт.'] = 0
-                result_df['Факт на дату, шт.'] = 0
+                result_df['Факт на дату, шт.'] = 0  # ← ДОБАВИТЬ ЭТУ СТРОКУ
                 return result_df
             
             # ФИЛЬТРЫ
@@ -319,6 +319,10 @@ class VisitCalculator:
                 rs_col
             ]).size().to_dict()
             
+            # ИНИЦИАЛИЗИРУЕМ КОЛОНКИ
+            result_df['Факт проекта, шт.'] = 0
+            result_df['Факт на дату, шт.'] = 0  # ← ДОБАВИТЬ ЭТУ СТРОКУ
+            
             # ДОБАВЛЯЕМ ФАКТЫ К RS УРОВНЮ
             for idx in result_df[result_df['Уровень'] == 'RS'].index:
                 row = result_df.loc[idx]
@@ -331,7 +335,6 @@ class VisitCalculator:
                 
                 result_df.at[idx, 'Факт проекта, шт.'] = rs_facts_total.get(key, 0)
                 result_df.at[idx, 'Факт на дату, шт.'] = rs_facts_period.get(key, 0)
-            
             
             return result_df
             
@@ -398,6 +401,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

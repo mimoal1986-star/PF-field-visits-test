@@ -1,5 +1,5 @@
 # utils/visit_calculator.py
-# draft 2.2 
+# draft 3.0 
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -456,6 +456,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

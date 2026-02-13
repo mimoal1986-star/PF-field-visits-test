@@ -1356,8 +1356,10 @@ class DataCleaner:
             'Название проекта': ['Wave Name'],
             'АСС': ['АСС', 'ACC', 'Аккаунт'],
             'ЭМ': ['ЭМ', 'EM', 'ЭМ рег', 'Эксперт', 'Эксперт менеджер'],
-            'Регион short': ['Регион short', 'Регион кратко', 'Region short', 'Регион']
-        }
+            'Регион short': ['Регион short', 'Регион кратко', 'Region short', 'Регион'],
+            ' Статус': ['Status'],
+            'Дата визита': ['Date of Visit']
+        }    
         
         # Создаем стандартный DataFrame
         result = pd.DataFrame()
@@ -1645,6 +1647,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

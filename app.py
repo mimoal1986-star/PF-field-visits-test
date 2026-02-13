@@ -1003,6 +1003,43 @@ with tab1:
                         params
                     )
                     
+                    # ========== ПРОСТАЯ ДИАГНОСТИКА ==========
+                    st.write("### 🔍 ДИАГНОСТИКА ПЛАНА")
+                    
+                    # 1. Проверяем base_data
+                    st.write(f"1️⃣ base_data: {len(base_data)} строк в иерархии")
+                    
+                    # 2. Берем первый проект из иерархии для примера
+                    if not base_data.empty:
+                        example = base_data.iloc[0]
+                        project = example['Проект']
+                        wave = example['Волна']
+                        region = example['Регион']
+                        
+                        st.write(f"2️⃣ Пример проекта из иерархии: `{project} | {wave} | {region}`")
+                        
+                        # 3. Проверяем есть ли такой ключ в source_df
+                        match = source_df[
+                            (source_df['Код анкеты'] == project) &
+                            (source_df['Название проекта'] == wave) &
+                            (source_df['Регион short'] == region)
+                        ]
+                        
+                        st.write(f"3️⃣ Совпадение в source_df: **{len(match)} строк**")
+                        
+                        if len(match) == 0:
+                            st.error("❌ КЛЮЧ НЕ НАЙДЕН! Причина:")
+                            
+                            # Проверяем по отдельности
+                            by_project = source_df[source_df['Код анкеты'] == project].shape[0]
+                            by_wave = source_df[source_df['Название проекта'] == wave].shape[0]
+                            by_region = source_df[source_df['Регион short'] == region].shape[0]
+                            
+                            st.write(f"   - Проект '{project}' встречается: {by_project} раз")
+                            st.write(f"   - Волна '{wave}' встречается: {by_wave} раз")
+                            st.write(f"   - Регион '{region}' встречается: {by_region} раз")
+                    # ==========================================
+                    
                     # ПРОВЕРКА
                     if base_data is not None and not base_data.empty:
                         # Проверяем проекты с пустыми датами
@@ -1158,6 +1195,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

@@ -219,7 +219,7 @@ class DataCleaner:
             if col in df_clean.columns:
                 try:
                     if df_clean[col].dtype != 'datetime64[ns]':
-                        df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                        df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce')
                     
                     # Добавляем валидные даты
                     valid_dates = df_clean[col].dropna()
@@ -440,7 +440,7 @@ class DataCleaner:
                 try:
                     # 🔴 УПРОЩЕННАЯ ЛОГИКА:
                     # 1. Конвертируем ВСЕ значения в datetime
-                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce')
                     
                     # 2. Находим NaT (невалидные даты)
                     nat_mask = df_clean[col].isna()
@@ -1635,6 +1635,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

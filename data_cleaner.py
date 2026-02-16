@@ -187,7 +187,7 @@ class DataCleaner:
             for col in date_cols:
                 try:
                     # ТОЛЬКО конвертация, БЕЗ заполнения пустых!
-                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', format='%d.%m.%Y')
                     empty_dates = df_clean[col].isna().sum()
                     
                     if empty_dates > 0:
@@ -1635,6 +1635,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

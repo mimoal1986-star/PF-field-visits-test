@@ -438,11 +438,14 @@ class DataCleaner:
             
             for col in existing_date_cols:
                 try:
-                    # 🔴 УПРОЩЕННАЯ ЛОГИКА:
-                    # 1. Конвертируем ВСЕ значения в datetime
-                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce')
+                    # ЯВНО УКАЗЫВАЕМ ISO ФОРМАТ С ВРЕМЕНЕМ
+                    df_clean[col] = pd.to_datetime(
+                        df_clean[col], 
+                        format='%Y-%m-%d %H:%M:%S',  # ISO с временем
+                        errors='coerce'
+                    )
                     
-                    # 2. Находим NaT (невалидные даты)
+                    # Находим NaT (невалидные даты)
                     nat_mask = df_clean[col].isna()
                     
                     # 3. Заменяем все NaT на суррогатную дату
@@ -1635,6 +1638,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

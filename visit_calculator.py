@@ -312,7 +312,26 @@ class VisitCalculator:
             # ФИЛЬТРЫ
             # КОНВЕРТИРУЕМ ДАТУ ВИЗИТА
             if 'Дата визита' in visits_df.columns:
-                visits_df['Дата визита'] = pd.to_datetime(visits_df['Дата визита'], format='%d.%m.%Y', errors='coerce')
+                # Сохраняем оригинальные значения
+                original_dates = visits_df['Дата визита'].copy()
+                
+                # Сначала пробуем с временем (из массива)
+                visits_df['Дата визита'] = pd.to_datetime(
+                    original_dates, 
+                    format='%d.%m.%Y %H:%M:%S', 
+                    errors='coerce'
+                )
+                
+                # Если все сконвертировались в NaT, пробуем без времени (из гугл таблицы)
+                if visits_df['Дата визита'].isna().all():
+                    visits_df['Дата визита'] = pd.to_datetime(
+                        original_dates, 
+                        format='%d.%m.%Y', 
+                        errors='coerce'
+                    )
+                
+                # Оставляем только дату (без времени)
+                visits_df['Дата визита'] = visits_df['Дата визита'].dt.date
             
             # ФИЛЬТРЫ
             completed_mask = visits_df[status_col] == 'Выполнено'
@@ -456,6 +475,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

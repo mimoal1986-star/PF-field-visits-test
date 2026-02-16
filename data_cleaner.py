@@ -440,7 +440,12 @@ class DataCleaner:
                 try:
                     # 🔴 УПРОЩЕННАЯ ЛОГИКА:
                     # 1. Конвертируем ВСЕ значения в datetime
-                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                    # Теперь используем ЯВНЫЙ ISO формат
+                    df_clean[col] = pd.to_datetime(
+                        df_clean[col], 
+                        format='%Y-%m-%d %H:%M:%S',  # ISO с временем
+                        errors='coerce'
+                    )
                     
                     # 2. Находим NaT (невалидные даты)
                     nat_mask = df_clean[col].isna()
@@ -648,9 +653,7 @@ class DataCleaner:
         array_df = cleaned_array_df.copy()
 
         
-        # ============================================
-        # ПОДГОТОВКА ДАННЫХ
-        # ============================================
+  
         st.write("\n**4. ПОДГОТОВКА ДАННЫХ:**")
         
         # Копируем данные
@@ -670,9 +673,7 @@ class DataCleaner:
             st.success("✅ Нечего заполнять. Все коды анкеты уже заполнены.")
             return array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
         
-        # ============================================
-        # ОСНОВНОЙ ЦИКЛ ПОИСКА
-        # ============================================
+
         st.write("\n**5. ПОИСК СОВПАДЕНИЙ:**")
         st.write(f"- Обрабатываю {total_empty} строк...")
         
@@ -1307,9 +1308,6 @@ class DataCleaner:
         existing_cols = [col for col in columns if col in result.columns]
         result = result[existing_cols]
 
-        # ============================================
-        # 🆕 ФИЛЬТРАЦИЯ: ОСТАВЛЯЕМ ТОЛЬКО ПРОБЛЕМНЫЕ ПРОЕКТЫ
-        # ============================================
         
         # Колонки с проверками
         check_columns = ['Код проекта пусто', 'Проекта НЕТ в АК', 'Проект есть в массиве, но не полевой', 'Проекта нет в массиве']
@@ -1635,6 +1633,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

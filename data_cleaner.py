@@ -187,7 +187,7 @@ class DataCleaner:
             for col in date_cols:
                 try:
                     # ТОЛЬКО конвертация, БЕЗ заполнения пустых!
-                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', format='%d.%m.%Y')
                     empty_dates = df_clean[col].isna().sum()
                     
                     if empty_dates > 0:
@@ -219,7 +219,7 @@ class DataCleaner:
             if col in df_clean.columns:
                 try:
                     if df_clean[col].dtype != 'datetime64[ns]':
-                        df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                        df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce')
                     
                     # Добавляем валидные даты
                     valid_dates = df_clean[col].dropna()
@@ -438,11 +438,14 @@ class DataCleaner:
             
             for col in existing_date_cols:
                 try:
-                    # 🔴 УПРОЩЕННАЯ ЛОГИКА:
-                    # 1. Конвертируем ВСЕ значения в datetime
-                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                    # ЯВНО УКАЗЫВАЕМ ISO ФОРМАТ С ВРЕМЕНЕМ
+                    df_clean[col] = pd.to_datetime(
+                        df_clean[col], 
+                        format='%Y-%m-%d %H:%M:%S',  # ISO с временем
+                        errors='coerce'
+                    )
                     
-                    # 2. Находим NaT (невалидные даты)
+                    # Находим NaT (невалидные даты)
                     nat_mask = df_clean[col].isna()
                     
                     # 3. Заменяем все NaT на суррогатную дату
@@ -1635,6 +1638,9 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
+
+
 
 
 

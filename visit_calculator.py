@@ -315,14 +315,14 @@ class VisitCalculator:
                 # Сохраняем оригинальные значения
                 original_dates = visits_df['Дата визита'].copy()
                 
-                # Сначала пробуем с временем (из массива)
+                # Сначала пробуем с временем
                 visits_df['Дата визита'] = pd.to_datetime(
                     original_dates, 
                     format='%d.%m.%Y %H:%M:%S', 
                     errors='coerce'
                 )
                 
-                # Если все сконвертировались в NaT, пробуем без времени (из гугл таблицы)
+                # Если все сконвертировались в NaT, пробуем без времени
                 if visits_df['Дата визита'].isna().all():
                     visits_df['Дата визита'] = pd.to_datetime(
                         original_dates, 
@@ -330,8 +330,8 @@ class VisitCalculator:
                         errors='coerce'
                     )
                 
-                # Оставляем только дату (без времени)
-                visits_df['Дата визита'] = visits_df['Дата визита'].dt.date
+                # Нормализуем к началу дня (00:00:00)
+                visits_df['Дата визита'] = visits_df['Дата визита'].dt.normalize()
             
             # ФИЛЬТРЫ
             completed_mask = visits_df[status_col] == 'Выполнено'
@@ -475,6 +475,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

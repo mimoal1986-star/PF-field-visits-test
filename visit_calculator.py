@@ -315,18 +315,18 @@ class VisitCalculator:
                 # Сохраняем оригинальные значения
                 original_dates = visits_df['Дата визита'].copy()
                 
-                # Сначала пробуем с временем
+                # Сначала пробуем ISO с временем (ГГГГ-ММ-ДД ЧЧ:ММ:СС)
                 visits_df['Дата визита'] = pd.to_datetime(
                     original_dates, 
-                    format='%d.%m.%Y %H:%M:%S', 
+                    format='%Y-%m-%d %H:%M:%S', 
                     errors='coerce'
                 )
                 
-                # Если все сконвертировались в NaT, пробуем без времени
+                # Если не сработало, пробуем ISO без времени (ГГГГ-ММ-ДД)
                 if visits_df['Дата визита'].isna().all():
                     visits_df['Дата визита'] = pd.to_datetime(
                         original_dates, 
-                        format='%d.%m.%Y', 
+                        format='%Y-%m-%d', 
                         errors='coerce'
                     )
                 
@@ -475,6 +475,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

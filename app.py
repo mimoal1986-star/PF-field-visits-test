@@ -121,7 +121,7 @@ def validate_file_upload(file_obj, file_name):
             df = pd.read_excel(file_obj, sheet_name=target_sheet, dtype=str)
         else:
             # Для остальных файлов читаем как есть (первый лист)
-            df = pd.read_excel(file_obj, dtype=str)  # ← БЕЗ sheet_name!
+            df = pd.read_excel(file_obj, dtype=str) 
             
         if df.empty:
             st.warning(f"Файл {file_name} пуст")
@@ -1220,6 +1220,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

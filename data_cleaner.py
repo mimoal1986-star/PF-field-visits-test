@@ -444,8 +444,7 @@ class DataCleaner:
                     # ПРОСТО: pandas сам определит формат
                     df_clean[col] = pd.to_datetime(
                         df_clean[col], 
-                        errors='coerce', 
-                        dayfirst=True
+                        errors='coerce'
                     )
                     
                     # Находим NaT (невалидные даты)
@@ -1634,6 +1633,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

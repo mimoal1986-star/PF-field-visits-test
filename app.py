@@ -121,7 +121,7 @@ def validate_file_upload(file_obj, file_name):
             df = pd.read_excel(file_obj, sheet_name=target_sheet, dtype=str)
         else:
             # Для остальных файлов читаем с автоматическим определением типов
-            df = pd.read_excel(file_obj)
+            df = pd.read_excel(file_obj, dtype=str
             
             # Явно конвертируем колонки с датами
             date_columns = ['Дата старта', 'Дата финиша с продлением', 'Дата визита']
@@ -1225,6 +1225,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

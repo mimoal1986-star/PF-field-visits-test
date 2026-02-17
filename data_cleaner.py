@@ -436,43 +436,17 @@ class DataCleaner:
             
             total_replacements = 0
             
-            # Все возможные форматы дат для проверки
-            formats_to_try = [
-                '%Y-%m-%d %H:%M:%S',  # ISO с временем (2026-02-02 16:55:10)
-                '%Y-%m-%d',            # ISO без времени (2026-02-02)
-                '%d.%m.%Y %H:%M:%S',  # Русский с временем (02.02.2026 16:55:10)
-                '%d.%m.%Y',            # Русский без времени (02.02.2026)
-                '%Y/%m/%d %H:%M:%S',  # Слеши с временем (2026/02/02 16:55:10)
-                '%Y/%m/%d',            # Слеши без времени (2026/02/02)
-            ]
-            
             for col in existing_date_cols:
                 try:
                     # Сохраняем оригинал для диагностики
                     original = df_clean[col].copy()
                     
-                    # Пробуем каждый формат последовательно
-                    parsed = None
-                    used_format = None
-                    for fmt in formats_to_try:
-                        try:
-                            parsed = pd.to_datetime(original, format=fmt, errors='coerce')
-                            # Если распарсилось хоть что-то - используем этот формат
-                            if not parsed.isna().all():
-                                used_format = fmt
-                                break
-                        except:
-                            continue
-                    
-                    # Если ничего не сработало - автоопределение
-                    if parsed is None or parsed.isna().all():
-                        st.info(f"   '{col}': автоопределение формата")
-                        parsed = pd.to_datetime(original, infer_datetime_format=True, errors='coerce')
-                        used_format = "auto"
-                    else:
-                        st.info(f"   '{col}': используется формат {used_format}")
-                    
-                    df_clean[col] = parsed
+                    # ПРОСТО: pandas сам определит формат
+                    df_clean[col] = pd.to_datetime(
+                        df_clean[col], 
+                        errors='coerce', 
+                        dayfirst=True
+                    )
                     
                     # Находим NaT (невалидные даты)
                     nat_mask = df_clean[col].isna()
@@ -482,25 +456,16 @@ class DataCleaner:
                         col_replacements = nat_mask.sum()
                         total_replacements += col_replacements
                         
-                        # ✅ ИСПРАВЛЕНО: заменяем значения
                         df_clean.loc[nat_mask, col] = SURROGATE_DATE
                         
-                        # Показываем примеры изменений (первые 3)
                         st.info(f"   '{col}': заменено {col_replacements} значений")
                         
-                        # ✅ ИСПРАВЛЕНО: правильный показ примеров
                         example_indices = nat_mask[nat_mask].index[:3]
                         for idx in example_indices:
-                            orig_val = original[idx]  # берем из сохраненного оригинала
-                            st.info(f"     Строка {idx}: '{orig_val}' → '{SURROGATE_DATE.date()}'")
-                    
-                    # Если были проблемы с парсингом, покажем примеры
-                    problematic_mask = nat_mask & ~pd.isna(original)  # NaT, но не NaN в оригинале
-                    if problematic_mask.any():
-                        problematic_values = original[problematic_mask].head(3)
-                        if not problematic_values.empty:
-                            st.info(f"   ⚠️ Проблемные значения в '{col}': {list(problematic_values)}")
-                                
+                            if idx < len(original):
+                                orig_val = original.iloc[idx] if hasattr(original, 'iloc') else original[idx]
+                                st.info(f"     Строка {idx}: '{orig_val}' → '{SURROGATE_DATE.date()}'")
+                            
                 except Exception as e:
                     st.warning(f"   Ошибка в колонке '{col}': {str(e)[:100]}")
             
@@ -1669,6 +1634,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

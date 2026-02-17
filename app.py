@@ -120,14 +120,8 @@ def validate_file_upload(file_obj, file_name):
             
             df = pd.read_excel(file_obj, sheet_name=target_sheet, dtype=str)
         else:
-            # Для остальных файлов читаем с автоматическим определением типов
-            df = pd.read_excel(file_obj, dtype=str
-            
-            # Явно конвертируем колонки с датами
-            date_columns = ['Дата старта', 'Дата финиша с продлением', 'Дата визита']
-            for col in date_columns:
-                if col in df.columns:
-                    df[col] = pd.to_datetime(df[col], format='%d.%m.%Y', errors='coerce')
+            # Для остальных файлов читаем как есть (первый лист)
+            df = pd.read_excel(file_obj, dtype=str)  # ← БЕЗ sheet_name!
             
         if df.empty:
             st.warning(f"Файл {file_name} пуст")
@@ -137,6 +131,7 @@ def validate_file_upload(file_obj, file_name):
     except Exception as e:
         st.error(f"Ошибка чтения {file_name}: {str(e)[:200]}")
         return None
+        
 
 def display_file_preview(df, title):
     """Отображение предпросмотра файла"""
@@ -1225,6 +1220,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

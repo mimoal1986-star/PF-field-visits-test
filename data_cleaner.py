@@ -1,5 +1,5 @@
 # utils/data_cleaner.py
-# draft 3.0 
+# draft 2.0
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -230,21 +230,34 @@ class DataCleaner:
                     continue
         
         if all_dates:
-            # Берем период из настроек пользователя
-            if 'plan_calc_params' in st.session_state:
-                start_date = st.session_state['plan_calc_params']['start_date']
-                end_date = st.session_state['plan_calc_params']['end_date']
-                
-                # Для бизнес-правил - ГОД и МЕСЯЦ из периода
-                max_year = end_date.year
-                max_month = end_date.month
-                
-                # Границы МЕСЯЦА
-                first_day = pd.Timestamp(year=max_year, month=max_month, day=1)
-                last_day = first_day + pd.offsets.MonthEnd(1)  # последний день МЕСЯЦА
-                
-            st.success(f"   ✅ Период: {start_date.strftime('%d.%m.%Y')} - {end_date.strftime('%d.%m.%Y')}")
+            # Находим максимальную дату (для бизнес-правил)
+            max_date = max(all_dates)
+            max_year = max_date.year
+            max_month = max_date.month
             
+            st.success(f"   ✅ Максимальная дата в данных: {max_date.strftime('%d.%m.%Y')}")
+            
+            # Находим наиболее частый год (для исправления ошибок)
+            from collections import Counter
+            if all_years:
+                year_counts = Counter(all_years)
+                target_year, target_count = year_counts.most_common(1)[0]
+                st.success(f"   🎯 Наиболее частый год: {target_year} ({target_count} дат)")
+            else:
+                target_year = max_year
+                st.info(f"   🎯 Использую максимальный год как целевой: {target_year}")
+            
+            # 2. ВЫЧИСЛЯЕМ ГРАНИЦЫ МАКСИМАЛЬНОГО МЕСЯЦА
+            # Первый день максимального месяца
+            first_day = pd.Timestamp(year=max_year, month=max_month, day=1)
+            
+            # Последний день максимального месяца
+            if max_month == 12:
+                next_month = pd.Timestamp(year=max_year+1, month=1, day=1)
+            else:
+                next_month = pd.Timestamp(year=max_year, month=max_month+1, day=1)
+            
+            last_day = next_month - pd.Timedelta(days=1)
             
             st.info(f"   📅 Период для бизнес-правил: {first_day.strftime('%d.%m.%Y')} - {last_day.strftime('%d.%m.%Y')}")
             
@@ -308,7 +321,6 @@ class DataCleaner:
             
             if year_errors_corrected > 0:
                 st.success(f"   ✅ Исправлено {year_errors_corrected} ошибок в годе")
-                
             
             # 4. ПРИМЕНЯЕМ БИЗНЕС-ПРАВИЛА
             
@@ -438,34 +450,28 @@ class DataCleaner:
             
             for col in existing_date_cols:
                 try:
-                    # Сохраняем оригинал для диагностики
-                    original = df_clean[col].copy()
+                    # 🔴 УПРОЩЕННАЯ ЛОГИКА:
+                    # 1. Конвертируем ВСЕ значения в datetime
+                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
                     
-                    # ПРОСТО: pandas сам определит формат
-                    df_clean[col] = pd.to_datetime(
-                        df_clean[col], 
-                        errors='coerce', 
-                        dayfirst=True
-                    )
-                    
-                    # Находим NaT (невалидные даты)
+                    # 2. Находим NaT (невалидные даты)
                     nat_mask = df_clean[col].isna()
                     
-                    # Заменяем все NaT на суррогатную дату
+                    # 3. Заменяем все NaT на суррогатную дату
                     if nat_mask.any():
+                        df_clean.loc[nat_mask, col] = SURROGATE_DATE
                         col_replacements = nat_mask.sum()
                         total_replacements += col_replacements
                         
-                        df_clean.loc[nat_mask, col] = SURROGATE_DATE
-                        
-                        st.info(f"   '{col}': заменено {col_replacements} значений")
-                        
+                        # Показываем примеры изменений
                         example_indices = nat_mask[nat_mask].index[:3]
-                        for idx in example_indices:
-                            if idx < len(original):
-                                orig_val = original.iloc[idx] if hasattr(original, 'iloc') else original[idx]
-                                st.info(f"     Строка {idx}: '{orig_val}' → '{SURROGATE_DATE.date()}'")
-                            
+                        if len(example_indices) > 0:
+                            st.info(f"   '{col}': заменено {col_replacements} значений")
+                            for idx in example_indices:
+                                if idx < len(df):  
+                                    orig_val = df.at[idx, col]  
+                                    st.info(f"     Строка {idx}: '{orig_val}' → '{SURROGATE_DATE.date()}'")
+                                
                 except Exception as e:
                     st.warning(f"   Ошибка в колонке '{col}': {str(e)[:100]}")
             
@@ -474,7 +480,7 @@ class DataCleaner:
                 st.info("   **Обозначает:** 'Событие еще не наступило'")
             else:
                 st.info("   ℹ️ Невалидных дат не найдено")
-                
+            
         else:
             st.warning(f"   ⚠️ Не найдено ни одной колонки с датами")
             st.info(f"   Искал: {', '.join(DATE_COLUMNS[:3])}...")
@@ -654,7 +660,9 @@ class DataCleaner:
         array_df = cleaned_array_df.copy()
 
         
-  
+        # ============================================
+        # ПОДГОТОВКА ДАННЫХ
+        # ============================================
         st.write("\n**4. ПОДГОТОВКА ДАННЫХ:**")
         
         # Копируем данные
@@ -674,7 +682,9 @@ class DataCleaner:
             st.success("✅ Нечего заполнять. Все коды анкеты уже заполнены.")
             return array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
         
-
+        # ============================================
+        # ОСНОВНОЙ ЦИКЛ ПОИСКА
+        # ============================================
         st.write("\n**5. ПОИСК СОВПАДЕНИЙ:**")
         st.write(f"- Обрабатываю {total_empty} строк...")
         
@@ -952,20 +962,13 @@ class DataCleaner:
             
             array_df_clean = array_df.copy()
             
-            # 🔍 ДИАГНОСТИКА ЗДЕСЬ
-            st.write("🔍 **Проверка исходного массива:**")
-            st.write(f"Всего колонок: {len(array_df_clean.columns)}")
-            st.write(f"Колонка ' Статус' есть: {' Статус' in array_df_clean.columns}")
-            st.write(f"Колонка 'Дата визита' есть: {'Дата визита' in array_df_clean.columns}")
-            st.write(f"Первые 10 колонок: {list(array_df_clean.columns)[:10]}")
-            
             if 'Полевой' not in array_df_clean.columns:
                 st.error("❌ В массиве нет колонки 'Полевой'")
                 return None, None
             
             # Маппинг стандартных колонок (9 колонок)
             column_mapping = {
-                'Код анкеты': ['Код анкеты'],
+                'Код проекта': ['Код анкеты'],
                 'Имя клиента': ['Имя клиента'],
                 'Название проекта': ['Название проекта'],
                 'ЗОД': ['ЗОД', 'ZOD', 'Зод', 'zod'],
@@ -974,24 +977,8 @@ class DataCleaner:
                 'Регион short': ['Регион'],
                 'Регион': ['Регион '],
                 'Полевой': ['Полевой'],
-                ' Статус': [' Статус', 'Статус'],
-                'Дата визита': ['Дата визита'],
                 'ПО': ['ПО']
             }
-            
-            # 🔴 ДИАГНОСТИКА: проверяем каждую колонку из маппинга
-            st.write("🔍 **Проверка поиска колонок в array_df_clean:**")
-            for std_name, possible_names in column_mapping.items():
-                found = None
-                for name in possible_names:
-                    if name in array_df_clean.columns:
-                        found = name
-                        break
-                if found:
-                    st.write(f"  ✅ {std_name} → '{found}'")
-                else:
-                    st.write(f"  ❌ {std_name} → НЕ НАЙДЕНА")
-                    st.write(f"     Искали: {possible_names}")
             
             # Находим фактические названия колонок
             actual_columns = {}
@@ -1024,8 +1011,8 @@ class DataCleaner:
                 non_field_projects = non_field_projects.rename(columns=reverse_mapping)
             
             # Правильный порядок колонок
-            final_columns = ['Код анкеты', 'Имя клиента', 'Название проекта', 
-                           'ЗОД', 'АСС', 'ЭМ', 'Регион short', 'Регион', 'ПО', 'Полевой',' Статус', 'Дата визита']
+            final_columns = ['Код проекта', 'Имя клиента', 'Название проекта', 
+                           'ЗОД', 'АСС', 'ЭМ', 'Регион short', 'Регион', 'ПО', 'Полевой']
             
             # Реорганизуем колонки
             if not field_projects.empty:
@@ -1132,17 +1119,13 @@ class DataCleaner:
             non_field_clean = non_field_df.copy()
             
             # Проверяем наличие нужных колонок
-            required_cols = ['Код анкеты', 'Имя клиента', 'Название проекта']
+            required_cols = ['Код проекта', 'Имя клиента', 'Название проекта']
             missing_cols = [col for col in required_cols if col not in non_field_clean.columns]
-            before_rows = len(non_field_clean)
-            after_rows = before_rows
-            duplicates_removed = 0
             
             if missing_cols:
                 st.warning(f"⚠️ В неполевых проектах нет колонок: {missing_cols}")
                 # Если нет нужных колонок - не удаляем дубликаты
                 non_field_unique = non_field_clean
-                after_rows = before_rows
                 duplicates_removed = 0
             else:
                 # Удаляем дубликаты
@@ -1164,12 +1147,11 @@ class DataCleaner:
                     columns_exist = [col for col in columns_to_drop if col in non_field_unique.columns]
                     
                     if columns_exist:
-                        non_field_export = non_field_unique.drop(columns=columns_exist, errors='ignore')
+                        non_field_clean = non_field_unique.drop(columns=columns_exist, errors='ignore')
                     else:
-                        non_field_export = non_field_unique
-                    
-                    non_field_export.to_excel(writer, sheet_name='НЕПОЛЕВЫЕ_ПРОЕКТЫ', index=False)
-
+                        non_field_clean = non_field_unique
+                        
+                    non_field_clean.to_excel(writer, sheet_name='НЕПОЛЕВЫЕ_ПРОЕКТЫ', index=False)
                     
                     # Добавляем информацию об удаленных дубликатах на отдельную вкладку
                     info_data = {
@@ -1309,6 +1291,9 @@ class DataCleaner:
         existing_cols = [col for col in columns if col in result.columns]
         result = result[existing_cols]
 
+        # ============================================
+        # 🆕 ФИЛЬТРАЦИЯ: ОСТАВЛЯЕМ ТОЛЬКО ПРОБЛЕМНЫЕ ПРОЕКТЫ
+        # ============================================
         
         # Колонки с проверками
         check_columns = ['Код проекта пусто', 'Проекта НЕТ в АК', 'Проект есть в массиве, но не полевой', 'Проекта нет в массиве']
@@ -1338,15 +1323,13 @@ class DataCleaner:
         
         # 1. Базовые колонки
         column_mapping = {
-            'Код анкеты': ['Project Code', 'Код', 'Code'],
-            'Имя клиента': ['Client', 'Имя клиента', 'Клиент имя'],
-            'Название проекта': ['Wave Name'],
-            'АСС': ['ACC', 'АСС'],
-            'ЭМ': ['ЭМ рег', 'Эксперт', 'Эксперт менеджер'],
-            'Регион short': ['Region short'],
-            ' Статус': ['Status'],
-            'Дата визита': ['Date of Visit']
-        }    
+            'Код проекта': ['Код проекта', 'Project Code', 'Код', 'Code'],
+            'Имя клиента': ['Клиент', 'Client', 'Имя клиента', 'Клиент имя'],
+            'Название проекта': ['Проект', 'Project Name', 'Название проекта', 'Название', 'Wave'],
+            'АСС': ['АСС', 'ACC', 'Аккаунт'],
+            'ЭМ': ['ЭМ', 'EM', 'ЭМ рег', 'Эксперт', 'Эксперт менеджер'],
+            'Регион short': ['Регион short', 'Регион кратко', 'Region short', 'Регион']
+        }
         
         # Создаем стандартный DataFrame
         result = pd.DataFrame()
@@ -1359,8 +1342,8 @@ class DataCleaner:
                 result[std_col] = ''
         
         # 2. Определение "Полевой" (логика как в массиве)
-        if 'Код анкеты' in result.columns and not result.empty:
-            result['Полевой'] = result['Код анкеты'].apply(self._is_field_project)
+        if 'Код проекта' in result.columns and not result.empty:
+            result['Полевой'] = result['Код проекта'].apply(self._is_field_project)
             # Оставляем только полевые проекты
             result = result[result['Полевой'] == 1]
         else:
@@ -1392,7 +1375,7 @@ class DataCleaner:
             result['ЗОД'] = ''
         
         # 4. Добавление ПО из гугла (по коду проекта)
-        if google_df is not None and 'Код анкеты' in result.columns:
+        if google_df is not None and 'Код проекта' in result.columns:
             google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
             google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
             
@@ -1410,7 +1393,7 @@ class DataCleaner:
                     clean_code = str(code_value).strip()
                     return portal_mapping.get(clean_code, 'не определено')
                 
-                result['ПО'] = result['Код анкеты'].apply(get_portal)
+                result['ПО'] = result['Код проекта'].apply(get_portal)
             else:
                 result['ПО'] = 'не определено'
         else:
@@ -1634,23 +1617,6 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

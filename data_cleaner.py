@@ -187,7 +187,7 @@ class DataCleaner:
             for col in date_cols:
                 try:
                     # ТОЛЬКО конвертация, БЕЗ заполнения пустых!
-                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce')
                     empty_dates = df_clean[col].isna().sum()
                     
                     if empty_dates > 0:
@@ -219,7 +219,7 @@ class DataCleaner:
             if col in df_clean.columns:
                 try:
                     if df_clean[col].dtype != 'datetime64[ns]':
-                        df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
+                        df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce')
                     
                     # Добавляем валидные даты
                     valid_dates = df_clean[col].dropna()
@@ -1633,6 +1633,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -312,23 +312,12 @@ class VisitCalculator:
             # ФИЛЬТРЫ
             # КОНВЕРТИРУЕМ ДАТУ ВИЗИТА
             if 'Дата визита' in visits_df.columns:
-                # Сохраняем оригинальные значения
-                original_dates = visits_df['Дата визита'].copy()
-                
-                # Сначала пробуем ISO с временем (ГГГГ-ММ-ДД ЧЧ:ММ:СС)
+                # ПРОСТО: pandas сам определит формат
                 visits_df['Дата визита'] = pd.to_datetime(
-                    original_dates, 
-                    format='%Y-%m-%d %H:%M:%S', 
-                    errors='coerce'
+                    visits_df['Дата визита'], 
+                    errors='coerce',
+                    dayfirst=True
                 )
-                
-                # Если не сработало, пробуем ISO без времени (ГГГГ-ММ-ДД)
-                if visits_df['Дата визита'].isna().all():
-                    visits_df['Дата визита'] = pd.to_datetime(
-                        original_dates, 
-                        format='%Y-%m-%d', 
-                        errors='coerce'
-                    )
                 
                 # Нормализуем к началу дня (00:00:00)
                 visits_df['Дата визита'] = visits_df['Дата визита'].dt.normalize()
@@ -435,9 +424,9 @@ class VisitCalculator:
         if calc_params and 'Дата старта' in df.columns and 'Дата финиша' in df.columns:
             end_period = pd.Timestamp(calc_params['end_date'])
             
-            # # Конвертируем даты
-            # df['Дата старта'] = pd.to_datetime(df['Дата старта'], errors='coerce')
-            # df['Дата финиша'] = pd.to_datetime(df['Дата финиша'], errors='coerce')
+        # Конвертируем даты
+        df['Дата старта'] = pd.to_datetime(df['Дата старта'], errors='coerce')
+        df['Дата финиша'] = pd.to_datetime(df['Дата финиша'], errors='coerce')
             
             # Дней потрачено / до конца
             df['Дней потрачено'] = 0
@@ -475,6 +464,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

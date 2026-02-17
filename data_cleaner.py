@@ -438,34 +438,28 @@ class DataCleaner:
             
             for col in existing_date_cols:
                 try:
-                    # Сохраняем оригинал для диагностики
-                    original = df_clean[col].copy()
+                    # 🔴 УПРОЩЕННАЯ ЛОГИКА:
+                    # 1. Конвертируем ВСЕ значения в datetime
+                    df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True)
                     
-                    # ПРОСТО: pandas сам определит формат
-                    df_clean[col] = pd.to_datetime(
-                        df_clean[col], 
-                        errors='coerce', 
-                        dayfirst=True
-                    )
-                    
-                    # Находим NaT (невалидные даты)
+                    # 2. Находим NaT (невалидные даты)
                     nat_mask = df_clean[col].isna()
                     
-                    # Заменяем все NaT на суррогатную дату
+                    # 3. Заменяем все NaT на суррогатную дату
                     if nat_mask.any():
+                        df_clean.loc[nat_mask, col] = SURROGATE_DATE
                         col_replacements = nat_mask.sum()
                         total_replacements += col_replacements
                         
-                        df_clean.loc[nat_mask, col] = SURROGATE_DATE
-                        
-                        st.info(f"   '{col}': заменено {col_replacements} значений")
-                        
+                        # Показываем примеры изменений
                         example_indices = nat_mask[nat_mask].index[:3]
-                        for idx in example_indices:
-                            if idx < len(original):
-                                orig_val = original.iloc[idx] if hasattr(original, 'iloc') else original[idx]
-                                st.info(f"     Строка {idx}: '{orig_val}' → '{SURROGATE_DATE.date()}'")
-                            
+                        if len(example_indices) > 0:
+                            st.info(f"   '{col}': заменено {col_replacements} значений")
+                            for idx in example_indices:
+                                if idx < len(df):  
+                                    orig_val = df.at[idx, col]  
+                                    st.info(f"     Строка {idx}: '{orig_val}' → '{SURROGATE_DATE.date()}'")
+                                
                 except Exception as e:
                     st.warning(f"   Ошибка в колонке '{col}': {str(e)[:100]}")
             
@@ -474,7 +468,7 @@ class DataCleaner:
                 st.info("   **Обозначает:** 'Событие еще не наступило'")
             else:
                 st.info("   ℹ️ Невалидных дат не найдено")
-                
+            
         else:
             st.warning(f"   ⚠️ Не найдено ни одной колонки с датами")
             st.info(f"   Искал: {', '.join(DATE_COLUMNS[:3])}...")
@@ -654,7 +648,9 @@ class DataCleaner:
         array_df = cleaned_array_df.copy()
 
         
-  
+        # ============================================
+        # ПОДГОТОВКА ДАННЫХ
+        # ============================================
         st.write("\n**4. ПОДГОТОВКА ДАННЫХ:**")
         
         # Копируем данные
@@ -674,7 +670,9 @@ class DataCleaner:
             st.success("✅ Нечего заполнять. Все коды анкеты уже заполнены.")
             return array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
         
-
+        # ============================================
+        # ОСНОВНОЙ ЦИКЛ ПОИСКА
+        # ============================================
         st.write("\n**5. ПОИСК СОВПАДЕНИЙ:**")
         st.write(f"- Обрабатываю {total_empty} строк...")
         
@@ -1309,6 +1307,9 @@ class DataCleaner:
         existing_cols = [col for col in columns if col in result.columns]
         result = result[existing_cols]
 
+        # ============================================
+        # 🆕 ФИЛЬТРАЦИЯ: ОСТАВЛЯЕМ ТОЛЬКО ПРОБЛЕМНЫЕ ПРОЕКТЫ
+        # ============================================
         
         # Колонки с проверками
         check_columns = ['Код проекта пусто', 'Проекта НЕТ в АК', 'Проект есть в массиве, но не полевой', 'Проекта нет в массиве']
@@ -1634,8 +1635,6 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
-
-
 
 
 

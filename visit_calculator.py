@@ -424,9 +424,9 @@ class VisitCalculator:
         if calc_params and 'Дата старта' in df.columns and 'Дата финиша' in df.columns:
             end_period = pd.Timestamp(calc_params['end_date'])
             
-        # Конвертируем даты
-        df['Дата старта'] = pd.to_datetime(df['Дата старта'], errors='coerce')
-        df['Дата финиша'] = pd.to_datetime(df['Дата финиша'], errors='coerce')
+            # Конвертируем даты
+            df['Дата старта'] = pd.to_datetime(df['Дата старта'], errors='coerce')
+            df['Дата финиша'] = pd.to_datetime(df['Дата финиша'], errors='coerce')
             
             # Дней потрачено / до конца
             df['Дней потрачено'] = 0
@@ -464,6 +464,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

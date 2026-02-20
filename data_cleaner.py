@@ -1335,7 +1335,37 @@ class DataCleaner:
         
         df_clean = df.copy()
         
-        # 1. Базовые колонки
+        # === НОВОЕ ПРАВИЛО 1: Удалить строки где Status == "Удалено" ===
+        status_col = self._find_column(df_clean, ['Status', 'Статус', 'status'])
+        if status_col:
+            before_filter = len(df_clean)
+            df_clean = df_clean[df_clean[status_col].astype(str).str.strip() != 'Удалено']
+            removed_count = before_filter - len(df_clean)
+            if removed_count > 0:
+                st.info(f"   🗑️ Удалено {removed_count} строк со статусом 'Удалено'")
+        
+        # === НОВОЕ ПРАВИЛО 2: Удалить строки где Date of Visit < первый день месяца ===
+        date_col = self._find_column(df_clean, ['Date of Visit', 'Дата визита', 'Visit Date'])
+        if date_col:
+            # Получаем первый день месяца из настроек
+            first_day = None
+            if 'plan_calc_params' in st.session_state:
+                first_day = pd.Timestamp(st.session_state['plan_calc_params']['start_date'])
+            else:
+                # Если нет настроек, берем первый день текущего месяца
+                today = datetime.now()
+                first_day = pd.Timestamp(year=today.year, month=today.month, day=1)
+            
+            # Конвертируем в дату
+            df_clean[date_col] = pd.to_datetime(df_clean[date_col], errors='coerce')
+            
+            before_filter = len(df_clean)
+            df_clean = df_clean[df_clean[date_col] >= first_day]
+            removed_count = before_filter - len(df_clean)
+            if removed_count > 0:
+                st.info(f"   🗓️ Удалено {removed_count} строк с датой раньше {first_day.strftime('%d.%m.%Y')}")
+        
+        # 1. Базовые колонки (ОСТАВЛЯЕМ КАК ЕСТЬ)
         column_mapping = {
             'Код анкеты': ['Project Code', 'Код', 'Code'],
             'Имя клиента': ['Client', 'Имя клиента', 'Клиент имя'],
@@ -1517,8 +1547,8 @@ class DataCleaner:
         
         # 6. Метаданные
         result['Источник'] = 'CXWAY'
-        
-        return result
+    
+    return result
     
     def _is_field_project(self, code):
         """Логика определения полевого проекта (как в массиве)"""
@@ -1633,6 +1663,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

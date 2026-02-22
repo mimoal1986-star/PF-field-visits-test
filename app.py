@@ -1211,7 +1211,7 @@ with tab2:
         st.warning("⚠️ Нет рассчитанных данных")
         st.info("Сначала запустите расчет на странице 'Загрузка данных'")
     else:
-        tab1, tab2 = st.tabs(["📊 ПланФакт на дату", "📈 Другие"])
+        tab1, tab2 = st.tabs(["📊 ПФ Проекты", "📈 Другие"])
         
         with tab1:
             data = st.session_state.visit_report['calculated_data']
@@ -1220,6 +1220,7 @@ with tab2:
         
         with tab2:
             st.info("Другие отчеты в разработке")
+
 
 
 

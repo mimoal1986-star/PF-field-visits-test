@@ -1360,7 +1360,8 @@ class DataCleaner:
             df_clean[date_col] = pd.to_datetime(df_clean[date_col], errors='coerce')
             
             before_filter = len(df_clean)
-            df_clean = df_clean[df_clean[date_col] >= first_day]
+            mask = pd.isna(df_clean[date_col]) | (df_clean[date_col] >= first_day)
+            df_clean = df_clean[mask]
             removed_count = before_filter - len(df_clean)
             if removed_count > 0:
                 st.info(f"   🗓️ Удалено {removed_count} строк с датой раньше {first_day.strftime('%d.%m.%Y')}")
@@ -1663,6 +1664,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

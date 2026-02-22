@@ -1211,15 +1211,20 @@ with tab2:
         st.warning("⚠️ Нет рассчитанных данных")
         st.info("Сначала запустите расчет на странице 'Загрузка данных'")
     else:
-        tab1, tab2 = st.tabs(["📊 ПФ Проекты", "📈 Другие"])
+        # 👇 МЕНЯЕМ НА ДВЕ ВКЛАДКИ
+        tab_projects, tab_regions = st.tabs(["📊 ПФ проекты", "🗺️ Регионы"])
         
-        with tab1:
+        with tab_projects:
             data = st.session_state.visit_report['calculated_data']
             hierarchy_df = st.session_state.uploaded_files.get('иерархия')
             dataviz.create_planfact_tab(data, hierarchy_df)
         
-        with tab2:
-            st.info("Другие отчеты в разработке")
+        with tab_regions:
+            data = st.session_state.visit_report['calculated_data']
+            hierarchy_df = st.session_state.uploaded_files.get('иерархия')
+            # 👇 ВЫЗЫВАЕМ НОВЫЙ МЕТОД
+            dataviz.create_region_tab(data, hierarchy_df)
+
 
 
 

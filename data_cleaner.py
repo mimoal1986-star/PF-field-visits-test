@@ -1,5 +1,5 @@
 # utils/data_cleaner.py
-# draft 3.0 
+# draft 3.1 
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -1664,6 +1664,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -1,5 +1,5 @@
 # utils/dataviz.py
-# draft 3.0 
+# draft 3.1 
 import pandas as pd
 import streamlit as st
 from datetime import datetime
@@ -371,6 +371,7 @@ class DataVisualizer:
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()
+
 
 
 

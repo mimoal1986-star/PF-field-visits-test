@@ -384,8 +384,345 @@ class DataVisualizer:
             use_container_width=True
         )
 
+    def create_region_summary(self, df):
+        """
+        Агрегация данных по регионам
+        Одна строка = один регион
+        """
+        if df is None or df.empty:
+            return pd.DataFrame()
+        
+        # Определяем колонку региона
+        region_col = 'Регион'
+        if 'Регион short' in df.columns and 'Регион' not in df.columns:
+            region_col = 'Регион short'
+        
+        if region_col not in df.columns:
+            st.error(f"❌ В данных нет колонки региона")
+            return pd.DataFrame()
+        
+        # Список колонок для агрегации
+        agg_columns = {
+            'План проекта, шт.': 'sum',
+            'План на дату, шт.': 'sum',
+            'Факт проекта, шт.': 'sum',
+            'Факт на дату, шт.': 'sum',
+            'Длительность': 'mean',
+            'Клиент': 'nunique',  # количество уникальных клиентов
+            'Проект': 'nunique',   # количество уникальных проектов
+            'RS': 'nunique',        # количество сотрудников
+            'ПО': lambda x: ', '.join(x.dropna().unique()[:3])  # уникальные ПО
+        }
+        
+        # Только существующие колонки
+        existing_agg = {}
+        for k, v in agg_columns.items():
+            if k in df.columns:
+                existing_agg[k] = v
+        
+        # Группируем по региону
+        region_agg = df.groupby(region_col).agg(existing_agg).reset_index()
+        region_agg = region_agg.rename(columns={region_col: 'Регион'})
+        
+        # Переименовываем колонки для понятности
+        rename_map = {
+            'Клиент': 'Кол-во клиентов',
+            'Проект': 'Кол-во проектов',
+            'RS': 'Кол-во сотрудников'
+        }
+        region_agg = region_agg.rename(columns=rename_map)
+        
+        # 1. План/Факт на дату,%
+        region_agg['План/Факт на дату,%'] = 0.0
+        mask_plan = region_agg['План на дату, шт.'] > 0
+        if mask_plan.any():
+            region_agg.loc[mask_plan, 'План/Факт на дату,%'] = (
+                region_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
+                region_agg.loc[mask_plan, 'План на дату, шт.'] * 100
+            ).round(1)
+        
+        # 2. План/Факт проекта,%
+        region_agg['План/Факт проекта,%'] = 0.0
+        mask_project_plan = region_agg['План проекта, шт.'] > 0
+        if mask_project_plan.any():
+            region_agg.loc[mask_project_plan, 'План/Факт проекта,%'] = (
+                region_agg.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                region_agg.loc[mask_project_plan, 'План проекта, шт.'] * 100
+            ).round(1)
+        
+        # 3. △План/Факт на дату, шт
+        region_agg['△План/Факт на дату, шт'] = (
+            region_agg['Факт на дату, шт.'] - region_agg['План на дату, шт.']
+        ).round(1)
+        
+        # 4. △План/Факт на дату, %
+        region_agg['△План/Факт на дату, %'] = 0.0
+        if mask_plan.any():
+            region_agg.loc[mask_plan, '△План/Факт на дату, %'] = (
+                (region_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
+                 region_agg.loc[mask_plan, 'План на дату, шт.']) - 1
+            ).round(3) * 100
+        
+        # 5. Прогноз на месяц, шт.
+        if 'plan_calc_params' in st.session_state:
+            days_in_period = (st.session_state['plan_calc_params']['end_date'] - 
+                            st.session_state['plan_calc_params']['start_date']).days + 1
+        else:
+            days_in_period = 12
+            
+        region_agg['Прогноз на месяц, шт.'] = (
+            region_agg['Факт на дату, шт.'] / days_in_period * 28
+        ).round(1)
+        
+        # Сортируем по региону
+        region_agg = region_agg.sort_values('Регион')
+        
+        return region_agg
+    
+    def create_region_tab(self, data, hierarchy_df=None):
+        """Создает вкладку Регионы с фильтрами и разверткой"""
+        if data is None or data.empty:
+            st.warning("⚠️ Нет данных для отчета")
+            return
+        
+        st.subheader("📊 Сводка по регионам")
+        
+        # Переименовываем колонки для отображения
+        rename_cols = {
+            'ЗОД': 'DSM',
+            'АСС': 'ASM',
+            'ЭМ': 'RS'
+        }
+        data = data.rename(columns=rename_cols)
+        
+        # Определяем колонку региона
+        region_col = 'Регион'
+        if 'Регион short' in data.columns and 'Регион' not in data.columns:
+            region_col = 'Регион short'
+        
+        # 🔍 ФИЛЬТРЫ (каскадные)
+        with st.expander("🔍 Фильтры", expanded=True):
+            # Получаем уникальные значения для фильтров
+            all_dsm = data['DSM'].dropna().unique() if 'DSM' in data.columns else []
+            all_asm = data['ASM'].dropna().unique() if 'ASM' in data.columns else []
+            all_clients = data['Клиент'].dropna().unique() if 'Клиент' in data.columns else []
+            all_projects = data['Проект'].dropna().unique() if 'Проект' in data.columns else []
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                selected_dsm = st.multiselect('DSM', all_dsm, key='region_filter_dsm')
+            with col2:
+                asm_options = all_asm
+                if selected_dsm and 'DSM' in data.columns and 'ASM' in data.columns:
+                    asm_options = data[data['DSM'].isin(selected_dsm)]['ASM'].dropna().unique()
+                selected_asm = st.multiselect('ASM', asm_options, key='region_filter_asm')
+            with col3:
+                client_options = all_clients
+                filtered_for_client = data.copy()
+                if selected_dsm and 'DSM' in filtered_for_client.columns:
+                    filtered_for_client = filtered_for_client[filtered_for_client['DSM'].isin(selected_dsm)]
+                if selected_asm and 'ASM' in filtered_for_client.columns:
+                    filtered_for_client = filtered_for_client[filtered_for_client['ASM'].isin(selected_asm)]
+                if 'Клиент' in filtered_for_client.columns:
+                    client_options = filtered_for_client['Клиент'].dropna().unique()
+                selected_client = st.multiselect('Клиент', client_options, key='region_filter_client')
+            with col4:
+                project_options = all_projects
+                filtered_for_project = data.copy()
+                if selected_dsm and 'DSM' in filtered_for_project.columns:
+                    filtered_for_project = filtered_for_project[filtered_for_project['DSM'].isin(selected_dsm)]
+                if selected_asm and 'ASM' in filtered_for_project.columns:
+                    filtered_for_project = filtered_for_project[filtered_for_project['ASM'].isin(selected_asm)]
+                if selected_client and 'Клиент' in filtered_for_project.columns:
+                    filtered_for_project = filtered_for_project[filtered_for_project['Клиент'].isin(selected_client)]
+                if 'Проект' in filtered_for_project.columns:
+                    project_options = filtered_for_project['Проект'].dropna().unique()
+                selected_project = st.multiselect('Проект', project_options, key='region_filter_project')
+        
+        # Применяем фильтры к данным
+        filtered_data = data.copy()
+        
+        if selected_dsm and 'DSM' in filtered_data.columns:
+            filtered_data = filtered_data[filtered_data['DSM'].isin(selected_dsm)]
+        if selected_asm and 'ASM' in filtered_data.columns:
+            filtered_data = filtered_data[filtered_data['ASM'].isin(selected_asm)]
+        if selected_client and 'Клиент' in filtered_data.columns:
+            filtered_data = filtered_data[filtered_data['Клиент'].isin(selected_client)]
+        if selected_project and 'Проект' in filtered_data.columns:
+            filtered_data = filtered_data[filtered_data['Проект'].isin(selected_project)]
+        
+        # 📊 РАЗВЕРТКА (ЧЕК-БОКСЫ)
+        st.subheader("📊 Детализация")
+        
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            show_project = st.checkbox("Проект", key='region_show_project')
+        with col2:
+            show_wave = st.checkbox("Волна", key='region_show_wave')
+        with col3:
+            show_dsm = st.checkbox("DSM", key='region_show_dsm')
+        with col4:
+            show_asm = st.checkbox("ASM", key='region_show_asm')
+        with col5:
+            show_rs = st.checkbox("RS", key='region_show_rs')
+        
+        # Формируем groupby в зависимости от чек-боксов
+        group_cols = [region_col]
+        
+        if show_project and 'Проект' in filtered_data.columns:
+            group_cols.append('Проект')
+        if show_wave and 'Волна' in filtered_data.columns:
+            group_cols.append('Волна')
+        if show_dsm and 'DSM' in filtered_data.columns:
+            group_cols.append('DSM')
+        if show_asm and 'ASM' in filtered_data.columns:
+            group_cols.append('ASM')
+        if show_rs and 'RS' in filtered_data.columns:
+            group_cols.append('RS')
+        
+        # Агрегируем данные с учетом развертки
+        if len(group_cols) > 1:
+            agg_columns = {
+                'План проекта, шт.': 'sum',
+                'План на дату, шт.': 'sum',
+                'Факт проекта, шт.': 'sum',
+                'Факт на дату, шт.': 'sum',
+                'Длительность': 'mean',
+                'ПО': lambda x: ', '.join(x.dropna().unique()[:3])
+            }
+            
+            existing_agg = {k: v for k, v in agg_columns.items() if k in filtered_data.columns}
+            detailed_data = filtered_data.groupby(group_cols).agg(existing_agg).reset_index()
+            
+            # Пересчитываем метрики
+            detailed_data['План/Факт на дату,%'] = 0.0
+            mask_plan = detailed_data['План на дату, шт.'] > 0
+            if mask_plan.any():
+                detailed_data.loc[mask_plan, 'План/Факт на дату,%'] = (
+                    detailed_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                    detailed_data.loc[mask_plan, 'План на дату, шт.'] * 100
+                ).round(1)
+            
+            detailed_data['План/Факт проекта,%'] = 0.0
+            mask_project_plan = detailed_data['План проекта, шт.'] > 0
+            if mask_project_plan.any():
+                detailed_data.loc[mask_project_plan, 'План/Факт проекта,%'] = (
+                    detailed_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                    detailed_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
+                ).round(1)
+            
+            region_data = detailed_data
+        else:
+            region_data = self.create_region_summary(filtered_data)
+        
+        st.caption(f"📌 Отображается записей: {len(region_data)}")
+        
+        if region_data.empty:
+            st.warning("⚠️ Нет данных после фильтрации")
+            return
+        
+        # KPI
+        st.markdown("### 📊 Ключевые показатели")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            plan_project_total = region_data['План проекта, шт.'].sum() if 'План проекта, шт.' in region_data.columns else 0
+            st.metric("📊 План проекта", f"{plan_project_total:,.0f} шт")
+        
+        with col2:
+            fact_project_total = region_data['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in region_data.columns else 0
+            st.metric("✅ Факт проекта", f"{fact_project_total:,.0f} шт")
+        
+        with col3:
+            pf_project_percent = (fact_project_total / plan_project_total * 100) if plan_project_total > 0 else 0
+            st.metric("🎯 План/Факт проекта", f"{pf_project_percent:.1f}%")
+        
+        col4, col5, col6 = st.columns(3)
+        with col4:
+            plan_date_total = region_data['План на дату, шт.'].sum() if 'План на дату, шт.' in region_data.columns else 0
+            st.metric("📊 План на дату", f"{plan_date_total:,.0f} шт")
+        
+        with col5:
+            fact_date_total = region_data['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in region_data.columns else 0
+            st.metric("✅ Факт на дату", f"{fact_date_total:,.0f} шт")
+        
+        with col6:
+            pf_date_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
+            st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
+        
+        # Колонки для отображения
+        display_columns = [region_col]
+        
+        if show_project and 'Проект' in region_data.columns:
+            display_columns.append('Проект')
+        if show_wave and 'Волна' in region_data.columns:
+            display_columns.append('Волна')
+        if show_dsm and 'DSM' in region_data.columns:
+            display_columns.append('DSM')
+        if show_asm and 'ASM' in region_data.columns:
+            display_columns.append('ASM')
+        if show_rs and 'RS' in region_data.columns:
+            display_columns.append('RS')
+        
+        # Добавляем метрики
+        metric_columns = [
+            'План проекта, шт.',
+            'Факт проекта, шт.',
+            'План/Факт проекта,%',
+            'План на дату, шт.',
+            'Факт на дату, шт.',
+            'План/Факт на дату,%',
+            '△План/Факт на дату, шт',
+            '△План/Факт на дату, %',
+            'Прогноз на месяц, шт.'
+        ]
+        
+        # Добавляем дополнительные колонки из региональной сводки
+        extra_columns = ['Кол-во клиентов', 'Кол-во проектов', 'Кол-во сотрудников', 'ПО']
+        for col in extra_columns:
+            if col in region_data.columns:
+                metric_columns.append(col)
+        
+        display_columns.extend([col for col in metric_columns if col in region_data.columns])
+        
+        # Только существующие колонки
+        existing_cols = [col for col in display_columns if col in region_data.columns]
+        df_display = region_data[existing_cols].copy()
+        
+        # Форматирование
+        if 'План/Факт на дату,%' in df_display.columns:
+            df_display['План/Факт на дату,%'] = df_display['План/Факт на дату,%'].map(lambda x: f"{x:.1f}%")
+        
+        if 'План/Факт проекта,%' in df_display.columns:
+            df_display['План/Факт проекта,%'] = df_display['План/Факт проекта,%'].map(lambda x: f"{x:.1f}%")
+        
+        if '△План/Факт на дату, %' in df_display.columns:
+            df_display['△План/Факт на дату, %'] = df_display['△План/Факт на дату, %'].map(lambda x: f"{x:+.1f}%")
+        
+        # Таблица
+        st.dataframe(
+            df_display,
+            use_container_width=True,
+            hide_index=True
+        )
+        
+        # Кнопка скачивания
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df_display.to_excel(writer, sheet_name='Регионы', index=False)
+        
+        st.download_button(
+            label="⬇️ Скачать Excel",
+            data=output.getvalue(),
+            file_name=f"регионы_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            type="primary",
+            use_container_width=True
+        )
 # Глобальный экземпляр
 dataviz = DataVisualizer()
+
 
 
 

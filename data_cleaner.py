@@ -1547,8 +1547,8 @@ class DataCleaner:
         
         # 6. Метаданные
         result['Источник'] = 'CXWAY'
-    
-    return result
+        
+        return result
     
     def _is_field_project(self, code):
         """Логика определения полевого проекта (как в массиве)"""
@@ -1663,6 +1663,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

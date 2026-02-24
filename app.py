@@ -1211,8 +1211,8 @@ with tab2:
         st.warning("⚠️ Нет рассчитанных данных")
         st.info("Сначала запустите расчет на странице 'Загрузка данных'")
     else:
-        # 👇 МЕНЯЕМ НА ДВЕ ВКЛАДКИ
-        tab_projects, tab_regions = st.tabs(["📊 ПФ проекты", "🗺️ Регионы"])
+        # Три вкладки
+        tab_projects, tab_regions, tab_dsm = st.tabs(["📊 ПФ проекты", "🗺️ Регионы", "👥 DSM"])
         
         with tab_projects:
             data = st.session_state.visit_report['calculated_data']
@@ -1222,8 +1222,13 @@ with tab2:
         with tab_regions:
             data = st.session_state.visit_report['calculated_data']
             hierarchy_df = st.session_state.uploaded_files.get('иерархия')
-            # 👇 ВЫЗЫВАЕМ НОВЫЙ МЕТОД
             dataviz.create_region_tab(data, hierarchy_df)
+        
+        with tab_dsm:
+            data = st.session_state.visit_report['calculated_data']
+            hierarchy_df = st.session_state.uploaded_files.get('иерархия')
+            dataviz.create_dsm_tab(data, hierarchy_df)
+
 
 
 

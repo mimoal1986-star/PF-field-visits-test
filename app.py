@@ -54,13 +54,6 @@ for key, default_value in DEFAULT_STATE.items():
     if key not in st.session_state:
         st.session_state[key] = default_value
 
-# Встроенный справочник ЗОД-АСС
-ZOD_ACC_MAPPING = {
-    'Авсейкова Елена': ['Аблязимова Екатерина'],
-    'Герасименко Лика': ['Герасимова Светлана', 'Карлышева Алиса', 'Механошина Елена', 'Солодникова Виктория'],
-    'Устинов Игорь': ['Шавлюк Юлия']
-}
-
 # Вспомогательные функции
 def validate_file_upload(file_obj, file_name):
     """Проверка и загрузка файла"""
@@ -75,20 +68,26 @@ def validate_file_upload(file_obj, file_name):
     except Exception as e:
         return None
 
+def display_file_preview(df, title):
+    """Отображение предпросмотра файла"""
+    if df is not None and not df.empty:
+        with st.expander(f"👀 {title}"):
+            st.dataframe(df.head(10), use_container_width=True)
+
 def process_all_data():
     """Полная обработка данных и расчет план/факт"""
     try:
-        # Проверяем наличие файлов
+        # Проверяем наличие основных файлов
         required_files = ['портал', 'сервизория']
         missing_files = [f for f in required_files if f not in st.session_state.uploaded_files]
         
         if missing_files:
-            st.error(f"❌ Отсутствуют файлы: {', '.join(missing_files)}")
             return False
         
         # Получаем данные
         portal_raw = st.session_state.uploaded_files['портал']
         google_raw = st.session_state.uploaded_files['сервизория']
+        cxway_raw = st.session_state.uploaded_files.get('cxway')  # может быть None
         
         # Очистка портала
         portal_cleaned = data_cleaner.clean_array(portal_raw)
@@ -127,8 +126,23 @@ def process_all_data():
         
         # Добавление ЗОД из встроенного справочника
         if field_df is not None and not field_df.empty:
-            field_df = data_cleaner.add_zod_from_mapping(field_df, ZOD_ACC_MAPPING)
+            field_df = data_cleaner.add_zod_from_hierarchy(field_df)
             st.session_state.cleaned_data['полевые_проекты'] = field_df
+        
+        # Обработка CXWAY (если есть)
+        if cxway_raw is not None:
+            # Иерархия больше не нужна, передаем None
+            cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
+            
+            if cxway_processed is not None and not cxway_processed.empty:
+                if field_df is not None and not field_df.empty:
+                    combined_field_projects = data_cleaner.merge_field_projects(
+                        field_df, 
+                        cxway_processed
+                    )
+                    st.session_state.cleaned_data['полевые_проекты'] = combined_field_projects
+                else:
+                    st.session_state.cleaned_data['полевые_проекты'] = cxway_processed
         
         # Создание иерархии
         base_data = visit_calculator.extract_hierarchical_data(
@@ -255,6 +269,7 @@ with tab1:
             if portal_df is not None:
                 st.session_state.uploaded_files['портал'] = portal_df
                 st.success("✅ Портал загружен")
+                display_file_preview(portal_df, "Просмотр данных портала")
     
     with col2:
         st.subheader("2. 📅 Проекты Сервизория")
@@ -268,6 +283,22 @@ with tab1:
             if projects_df is not None:
                 st.session_state.uploaded_files['сервизория'] = projects_df
                 st.success("✅ Проекты загружены")
+                display_file_preview(projects_df, "Просмотр проектов")
+    
+    # Отдельная строка для CXWAY (как было в старом коде)
+    st.markdown("---")
+    st.subheader("3. 📡 CXWAY (дополнительно)")
+    cxway_file = st.file_uploader(
+        "Загрузите файл CXWAY.xlsx",
+        type=['xlsx', 'xls'],
+        key="cxway"
+    )
+    if cxway_file:
+        cxway_df = validate_file_upload(cxway_file, "CXWAY.xlsx")
+        if cxway_df is not None:
+            st.session_state.uploaded_files['cxway'] = cxway_df
+            st.success("✅ CXWAY загружен")
+            display_file_preview(cxway_df, "Просмотр данных CXWAY")
     
     st.markdown("---")
     
@@ -291,7 +322,7 @@ with tab1:
                     st.error("❌ Ошибка при расчете")
         
         if not all_loaded:
-            st.info("📌 Загрузите оба файла для расчета")
+            st.info("📌 Загрузите оба основных файла для расчета")
 
 with tab2:
     st.title("📈 Отчеты по полевым визитам")

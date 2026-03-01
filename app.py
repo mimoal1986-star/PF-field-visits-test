@@ -323,6 +323,43 @@ with tab1:
         
         if not all_loaded:
             st.info("📌 Загрузите оба основных файла для расчета")
+            
+# ============================================
+# ПРОВЕРКА ПРОБЛЕМНЫХ ПРОЕКТОВ
+# ============================================
+if 'cleaned_data' in st.session_state and 'сервизория' in st.session_state.cleaned_data:
+    st.markdown("---")
+    st.subheader("🔴 Проблемные проекты")
+    
+    # Данные после очистки и обогащения
+    google_df = st.session_state.cleaned_data['сервизория']
+    field_df = st.session_state.cleaned_data.get('полевые_проекты')
+
+    if field_df is not None:
+        problematic_projects = data_cleaner.check_problematic_projects(
+            google_df, field_df
+        )
+        
+        if not problematic_projects.empty:
+            st.dataframe(problematic_projects, use_container_width=True)
+            
+            excel_buffer = BytesIO()
+            with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                problematic_projects.to_excel(writer, sheet_name='Проблемные_проекты', index=False)
+            excel_buffer.seek(0)
+            
+            st.download_button(
+                label="⬇️ Скачать проблемные проекты",
+                data=excel_buffer,
+                file_name="проблемные_проекты.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                type="secondary",
+                use_container_width=True
+            )
+        else:
+            st.info("✅ Проблемных проектов не найдено")
+    else:
+        st.info("Нет данных для проверки")
 
 with tab2:
     st.title("📈 Отчеты по полевым визитам")
@@ -344,3 +381,4 @@ with tab2:
         with tab_dsm:
             data = st.session_state.visit_report['calculated_data']
             dataviz.create_dsm_tab(data, None)
+

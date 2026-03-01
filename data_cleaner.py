@@ -706,6 +706,7 @@ class DataCleaner:
                 result.append({
                     'Название проекта': project_name,
                     'Волна': wave,
+                    'Код проекта': code if not code_empty else '',  # ← ДОБАВЛЕНО
                     'Код проекта пусто': code_empty,
                     'Проект неполевой, есть в гугл': project_non_field_in_google,
                     'Проект есть в гугл, нет в массиве': project_in_google_not_in_field
@@ -741,6 +742,7 @@ class DataCleaner:
                         result.append({
                             'Название проекта': field_project,
                             'Волна': field_wave,
+                            'Код проекта': field_code,  # ← ДОБАВЛЕНО
                             'Код проекта пусто': False,
                             'Проект неполевой, есть в гугл': False,
                             'Проект есть в гугл, нет в массиве': False,
@@ -991,4 +993,5 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 

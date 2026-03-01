@@ -969,7 +969,7 @@ class DataCleaner:
                 'Название проекта': ['Название проекта'],
                 'ЗОД': ['ЗОД', 'ZOD', 'Зод', 'zod'],
                 'АСС': ['АСС', 'ASS', 'Асс', 'ass'],
-                'ЭМ': ['ЭМ'],
+                'ЭМ': ['ЭМ рег'],
                 'Регион short': ['Регион'],
                 'Регион': ['Регион '],
                 'Полевой': ['Полевой'],
@@ -1372,7 +1372,7 @@ class DataCleaner:
             'Имя клиента': ['Client', 'Имя клиента', 'Клиент имя'],
             'Название проекта': ['Wave Name'],
             'АСС': ['ACC', 'АСС'],
-            'ЭМ': ['ЭМ', 'Эксперт', 'Эксперт менеджер'],
+            'ЭМ': ['ЭМ рег', 'Эксперт', 'Эксперт менеджер'],
             'Регион short': ['Region short'],
             'Статус': ['Status'],
             'Дата визита': ['Date of Visit']
@@ -1387,50 +1387,6 @@ class DataCleaner:
                 result[std_col] = df_clean[source_col].astype(str).fillna('')
             else:
                 result[std_col] = ''
-        
-        # Обогащение кодов проектов из гугл-таблицы
-        if google_df is not None and not google_df.empty:
-            st.write("**🔄 Обогащение кодов проектов CXWAY из гугл-таблицы...**")
-            
-            # Находим строки с пустым кодом
-            empty_code_mask = (
-                result['Код анкеты'].isna() | 
-                (result['Код анкеты'].astype(str).str.strip() == '') |
-                (result['Код анкеты'].astype(str).str.strip() == 'nan')
-            )
-            rows_to_process = result[empty_code_mask]
-            total_empty = len(rows_to_process)
-            
-            if total_empty > 0:
-                st.info(f"   Найдено {total_empty} строк с пустым кодом")
-                
-                # Подготовка гугл-таблицы для поиска
-                google_df = google_df.copy()
-                google_df['_match_client'] = google_df['Проекты в  https://ru.checker-soft.com'].astype(str).str.strip()
-                google_df['_match_wave'] = google_df['Название волны на Чекере/ином ПО'].astype(str).str.strip()
-                
-                filled_count = 0
-                for idx, row in rows_to_process.iterrows():
-                    client_name = str(row['Имя клиента']).strip() if pd.notna(row['Имя клиента']) else ''
-                    wave_name = str(row['Название проекта']).strip() if pd.notna(row['Название проекта']) else ''
-                    
-                    # Ищем точное совпадение в гугл-таблице
-                    match_mask = (
-                        (google_df['_match_client'] == client_name) &
-                        (google_df['_match_wave'] == wave_name)
-                    )
-                    
-                    matched_rows = google_df[match_mask]
-                    
-                    if not matched_rows.empty:
-                        project_code = matched_rows.iloc[0]['Код проекта RU00.000.00.01SVZ24']
-                        if pd.notna(project_code) and str(project_code).strip() != '':
-                            result.at[idx, 'Код анкеты'] = str(project_code).strip()
-                            filled_count += 1
-                
-                st.success(f"   ✅ Заполнено {filled_count} кодов из {total_empty}")
-            else:
-                st.info("   ℹ️ Все коды уже заполнены")
         
         # 2. Определение "Полевой" (логика как в массиве)
         if 'Код анкеты' in result.columns and not result.empty:
@@ -1708,10 +1664,6 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
-
-
-
-
 
 
 

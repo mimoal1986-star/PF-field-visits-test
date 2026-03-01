@@ -7,6 +7,96 @@ from io import BytesIO
 
 class DataVisualizer:
 
+    def __init__(self):
+        self.region_mapping = {
+            'AD': 'Республика Адыгея',
+            'AL': 'Алтайский край',
+            'AM': 'Амурская область',
+            'AR': 'Архангельская область',
+            'AS': 'Астраханская область',
+            'BK': 'Республика Башкортостан',
+            'BL': 'Белгородская область',
+            'BR': 'Брянская область',
+            'BU': 'Республика Бурятия',
+            'CL': 'Челябинская область',
+            'CN': 'Чеченская Республика',
+            'CV': 'Чувашская Республика',
+            'DA': 'Республика Дагестан',
+            'IN': 'Республика Ингушетия',
+            'IR': 'Иркутская область',
+            'IV': 'Ивановская область',
+            'KA': 'Камчатский край',
+            'KB': 'Кабардино-Балкарская Республика',
+            'KC': 'Карачаево-Черкесская Республика',
+            'KD': 'Краснодарский край',
+            'KE': 'Кемеровская область',
+            'KG': 'Калужская область',
+            'KH': 'Хабаровский край',
+            'KI': 'Республика Карелия',
+            'KK': 'Республика Хакасия',
+            'KL': 'Республика Калмыкия',
+            'KM': 'Ханты-Мансийский автономный округ',
+            'KN': 'Калининградская область',
+            'KO': 'Республика Коми',
+            'KS': 'Курская область',
+            'KT': 'Костромская область',
+            'KU': 'Курганская область',
+            'KV': 'Кировская область',
+            'KY': 'Красноярский край',
+            'LN': 'Ленинградская область',
+            'LP': 'Липецкая область',
+            'ME': 'Республика Марий Эл',
+            'MG': 'Магаданская область',
+            'MM': 'Мурманская область',
+            'MR': 'Республика Мордовия',
+            'MS': 'Московская область',
+            'NG': 'Новгородская область',
+            'NN': 'Ненецкий автономный округ',
+            'NO': 'Республика Северная Осетия',
+            'NS': 'Новосибирская область',
+            'NZ': 'Нижегородская область',
+            'OB': 'Оренбургская область',
+            'OL': 'Орловская область',
+            'OM': 'Омская область',
+            'PE': 'Пермский край',
+            'PR': 'Приморский край',
+            'PS': 'Псковская область',
+            'PZ': 'Пензенская область',
+            'RK': 'Республика Крым',
+            'RO': 'Ростовская область',
+            'RZ': 'Рязанская область',
+            'SA': 'Самарская область',
+            'SK': 'Республика Саха (Якутия)',
+            'SL': 'Сахалинская область',
+            'SM': 'Смоленская область',
+            'SR': 'Саратовская область',
+            'ST': 'Ставропольский край',
+            'SV': 'Свердловская область',
+            'TB': 'Тамбовская область',
+            'TL': 'Тульская область',
+            'TO': 'Томская область',
+            'TT': 'Республика Татарстан',
+            'TU': 'Республика Тыва',
+            'TV': 'Тверская область',
+            'TY': 'Тюменская область',
+            'UD': 'Удмуртская Республика',
+            'UL': 'Ульяновская область',
+            'VG': 'Волгоградская область',
+            'VL': 'Владимирская область',
+            'VO': 'Вологодская область',
+            'VR': 'Воронежская область',
+            'YN': 'Ямало-Ненецкий автономный округ',
+            'YS': 'Ярославская область',
+            'YV': 'Еврейская автономная область',
+            'ZK': 'Забайкальский край'
+        }
+    
+    def _get_long_region(self, short_code):
+        """Преобразует короткий код региона в длинное название"""
+        if pd.isna(short_code) or short_code == '':
+            return short_code
+        return self.region_mapping.get(str(short_code).strip().upper(), short_code)
+
     def create_project_summary(self, df):
         """
         Агрегация данных по проектам
@@ -123,10 +213,28 @@ class DataVisualizer:
             if 'Регион short' in data.columns and 'Регион' not in data.columns:
                 region_col = 'Регион short'
             
+            # 👇 ИЗМЕНЕНО: для фильтра регионов используем длинные названия
             # Получаем уникальные значения для фильтров
             all_dsm = data['DSM'].dropna().unique() if 'DSM' in data.columns else []
             all_asm = data['ASM'].dropna().unique() if 'ASM' in data.columns else []
-            all_regions = data[region_col].dropna().unique() if region_col in data.columns else []
+            
+            # Создаем список длинных названий регионов для фильтра
+            if region_col in data.columns:
+                # Получаем уникальные коды регионов
+                unique_codes = data[region_col].dropna().unique()
+                # Создаем словарь для маппинга длинных названий обратно в коды
+                self.region_display_map = {}
+                all_regions_display = []
+                for code in unique_codes:
+                    long_name = self._get_long_region(code)
+                    self.region_display_map[long_name] = code
+                    all_regions_display.append(long_name)
+                # Сортируем по алфавиту
+                all_regions_display.sort()
+            else:
+                all_regions_display = []
+                self.region_display_map = {}
+            
             all_clients = data['Клиент'].dropna().unique() if 'Клиент' in data.columns else []
             
             col1, col2, col3, col4 = st.columns(4)
@@ -139,15 +247,10 @@ class DataVisualizer:
                     asm_options = data[data['DSM'].isin(selected_dsm)]['ASM'].dropna().unique()
                 selected_asm = st.multiselect('ASM', asm_options, key='filter_asm')
             with col3:
-                region_options = all_regions
-                filtered_for_region = data.copy()
-                if selected_dsm and 'DSM' in filtered_for_region.columns:
-                    filtered_for_region = filtered_for_region[filtered_for_region['DSM'].isin(selected_dsm)]
-                if selected_asm and 'ASM' in filtered_for_region.columns:
-                    filtered_for_region = filtered_for_region[filtered_for_region['ASM'].isin(selected_asm)]
-                if region_col in filtered_for_region.columns:
-                    region_options = filtered_for_region[region_col].dropna().unique()
-                selected_region = st.multiselect('Регион', region_options, key='filter_region')
+                # 👇 ИЗМЕНЕНО: показываем длинные названия в фильтре
+                selected_region_display = st.multiselect('Регион', all_regions_display, key='filter_region')
+                # Преобразуем обратно в коды для фильтрации
+                selected_region = [self.region_display_map.get(name, name) for name in selected_region_display]
             with col4:
                 client_options = all_clients
                 filtered_for_client = data.copy()
@@ -350,6 +453,10 @@ class DataVisualizer:
         existing_cols = [col for col in display_columns if col in project_data.columns]
         df_display = project_data[existing_cols].copy()
         
+        # 👇 ИЗМЕНЕНО: применяем длинные названия к колонке региона в таблице
+        if region_col in df_display.columns:
+            df_display[region_col] = df_display[region_col].apply(self._get_long_region)
+        
         # Форматирование
         if 'План/Факт на дату,%' in df_display.columns:
             df_display['План/Факт на дату,%'] = df_display['План/Факт на дату,%'].map(lambda x: f"{x:.1f}%")
@@ -504,8 +611,22 @@ class DataVisualizer:
             # Получаем уникальные значения для фильтров
             all_dsm = data['DSM'].dropna().unique() if 'DSM' in data.columns else []
             all_asm = data['ASM'].dropna().unique() if 'ASM' in data.columns else []
+            
+            # 👇 ИЗМЕНЕНО: для фильтра регионов используем длинные названия
+            if region_col in data.columns:
+                unique_codes = data[region_col].dropna().unique()
+                self.region_display_map = {}
+                all_regions_display = []
+                for code in unique_codes:
+                    long_name = self._get_long_region(code)
+                    self.region_display_map[long_name] = code
+                    all_regions_display.append(long_name)
+                all_regions_display.sort()
+            else:
+                all_regions_display = []
+                self.region_display_map = {}
+            
             all_clients = data['Клиент'].dropna().unique() if 'Клиент' in data.columns else []
-            all_regions = data[region_col].dropna().unique() if region_col in data.columns else []
             
             col1, col2, col3, col4 = st.columns(4)
             
@@ -527,18 +648,9 @@ class DataVisualizer:
                     client_options = filtered_for_client['Клиент'].dropna().unique()
                 selected_client = st.multiselect('Клиент', client_options, key='region_filter_client')
             with col4:
-                # 👇 ИЗМЕНЕНО: теперь фильтр по регионам вместо проектов
-                region_options = all_regions
-                filtered_for_region = data.copy()
-                if selected_dsm and 'DSM' in filtered_for_region.columns:
-                    filtered_for_region = filtered_for_region[filtered_for_region['DSM'].isin(selected_dsm)]
-                if selected_asm and 'ASM' in filtered_for_region.columns:
-                    filtered_for_region = filtered_for_region[filtered_for_region['ASM'].isin(selected_asm)]
-                if selected_client and 'Клиент' in filtered_for_region.columns:
-                    filtered_for_region = filtered_for_region[filtered_for_region['Клиент'].isin(selected_client)]
-                if region_col in filtered_for_region.columns:
-                    region_options = filtered_for_region[region_col].dropna().unique()
-                selected_region = st.multiselect('Регион', region_options, key='region_filter_region')
+                # 👇 ИЗМЕНЕНО: показываем длинные названия в фильтре регионов
+                selected_region_display = st.multiselect('Регион', all_regions_display, key='region_filter_region')
+                selected_region = [self.region_display_map.get(name, name) for name in selected_region_display]
         
         # Применяем фильтры к данным
         filtered_data = data.copy()
@@ -568,7 +680,7 @@ class DataVisualizer:
             show_rs = st.checkbox("RS", key='region_show_rs')
         
         # Формируем groupby в зависимости от чек-боксов
-        group_cols = [region_col, 'Клиент']  # 👇 ДОБАВЛЕНО: Клиент всегда в группировке
+        group_cols = [region_col]  # Только регион
         
         if show_project and 'Проект' in filtered_data.columns:
             group_cols.append('Проект')
@@ -582,7 +694,7 @@ class DataVisualizer:
             group_cols.append('RS')
         
         # Агрегируем данные с учетом развертки
-        if len(group_cols) > 2:  # больше чем Регион + Клиент
+        if len(group_cols) > 1:  # больше чем просто Регион
             agg_columns = {
                 'План проекта, шт.': 'sum',
                 'План на дату, шт.': 'sum',
@@ -615,7 +727,6 @@ class DataVisualizer:
             region_data = detailed_data
         else:
             region_data = self.create_region_summary(filtered_data)
-            # В create_region_sumplicity уже есть Регион и доп колонки
         
         st.caption(f"📌 Отображается записей: {len(region_data)}")
         
@@ -653,7 +764,7 @@ class DataVisualizer:
             st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
         
         # Колонки для отображения
-        display_columns = [region_col, 'Клиент']  # 👇 ИЗМЕНЕНО: сначала Регион, потом Клиент
+        display_columns = [region_col]  # Только регион
         
         if show_project and 'Проект' in region_data.columns:
             display_columns.append('Проект')
@@ -691,95 +802,9 @@ class DataVisualizer:
         existing_cols = [col for col in display_columns if col in region_data.columns]
         df_display = region_data[existing_cols].copy()
         
-        # 👇 ДОБАВЛЕНО: маппинг коротких названий регионов в длинные
-        region_mapping = {
-            'AD': 'Республика Адыгея',
-            'AL': 'Алтайский край',
-            'AM': 'Амурская область',
-            'AR': 'Архангельская область',
-            'AS': 'Астраханская область',
-            'BK': 'Республика Башкортостан',
-            'BL': 'Белгородская область',
-            'BR': 'Брянская область',
-            'BU': 'Республика Бурятия',
-            'CL': 'Челябинская область',
-            'CN': 'Чеченская Республика',
-            'CV': 'Чувашская Республика',
-            'DA': 'Республика Дагестан',
-            'IN': 'Республика Ингушетия',
-            'IR': 'Иркутская область',
-            'IV': 'Ивановская область',
-            'KA': 'Камчатский край',
-            'KB': 'Кабардино-Балкарская Республика',
-            'KC': 'Карачаево-Черкесская Республика',
-            'KD': 'Краснодарский край',
-            'KE': 'Кемеровская область',
-            'KG': 'Калужская область',
-            'KH': 'Хабаровский край',
-            'KI': 'Республика Карелия',
-            'KK': 'Республика Хакасия',
-            'KL': 'Республика Калмыкия',
-            'KM': 'Ханты-Мансийский автономный округ',
-            'KN': 'Калининградская область',
-            'KO': 'Республика Коми',
-            'KS': 'Курская область',
-            'KT': 'Костромская область',
-            'KU': 'Курганская область',
-            'KV': 'Кировская область',
-            'KY': 'Красноярский край',
-            'LN': 'Ленинградская область',
-            'LP': 'Липецкая область',
-            'ME': 'Республика Марий Эл',
-            'MG': 'Магаданская область',
-            'MM': 'Мурманская область',
-            'MR': 'Республика Мордовия',
-            'MS': 'Московская область',
-            'NG': 'Новгородская область',
-            'NN': 'Ненецкий автономный округ',
-            'NO': 'Республика Северная Осетия',
-            'NS': 'Новосибирская область',
-            'NZ': 'Нижегородская область',
-            'OB': 'Оренбургская область',
-            'OL': 'Орловская область',
-            'OM': 'Омская область',
-            'PE': 'Пермский край',
-            'PR': 'Приморский край',
-            'PS': 'Псковская область',
-            'PZ': 'Пензенская область',
-            'RK': 'Республика Крым',
-            'RO': 'Ростовская область',
-            'RZ': 'Рязанская область',
-            'SA': 'Самарская область',
-            'SK': 'Республика Саха (Якутия)',
-            'SL': 'Сахалинская область',
-            'SM': 'Смоленская область',
-            'SR': 'Саратовская область',
-            'ST': 'Ставропольский край',
-            'SV': 'Свердловская область',
-            'TB': 'Тамбовская область',
-            'TL': 'Тульская область',
-            'TO': 'Томская область',
-            'TT': 'Республика Татарстан',
-            'TU': 'Республика Тыва',
-            'TV': 'Тверская область',
-            'TY': 'Тюменская область',
-            'UD': 'Удмуртская Республика',
-            'UL': 'Ульяновская область',
-            'VG': 'Волгоградская область',
-            'VL': 'Владимирская область',
-            'VO': 'Вологодская область',
-            'VR': 'Воронежская область',
-            'YN': 'Ямало-Ненецкий автономный округ',
-            'YS': 'Ярославская область',
-            'YV': 'Еврейская автономная область',
-            'ZK': 'Забайкальский край'
-        }
-        
-        # Применяем маппинг к колонке региона
+        # 👇 ИЗМЕНЕНО: применяем длинные названия к колонке региона
         if region_col in df_display.columns:
-            df_display[region_col] = df_display[region_col].map(
-                lambda x: region_mapping.get(str(x).strip().upper(), x) if pd.notna(x) else x
-            )
+            df_display[region_col] = df_display[region_col].apply(self._get_long_region)
         
         # Форматирование
         if 'План/Факт на дату,%' in df_display.columns:
@@ -923,90 +948,6 @@ class DataVisualizer:
         if 'Регион short' in data.columns and 'Регион' not in data.columns:
             region_col = 'Регион short'
         
-        # Словарь для длинных названий регионов
-        region_mapping = {
-            'AD': 'Республика Адыгея',
-            'AL': 'Алтайский край',
-            'AM': 'Амурская область',
-            'AR': 'Архангельская область',
-            'AS': 'Астраханская область',
-            'BK': 'Республика Башкортостан',
-            'BL': 'Белгородская область',
-            'BR': 'Брянская область',
-            'BU': 'Республика Бурятия',
-            'CL': 'Челябинская область',
-            'CN': 'Чеченская Республика',
-            'CV': 'Чувашская Республика',
-            'DA': 'Республика Дагестан',
-            'IN': 'Республика Ингушетия',
-            'IR': 'Иркутская область',
-            'IV': 'Ивановская область',
-            'KA': 'Камчатский край',
-            'KB': 'Кабардино-Балкарская Республика',
-            'KC': 'Карачаево-Черкесская Республика',
-            'KD': 'Краснодарский край',
-            'KE': 'Кемеровская область',
-            'KG': 'Калужская область',
-            'KH': 'Хабаровский край',
-            'KI': 'Республика Карелия',
-            'KK': 'Республика Хакасия',
-            'KL': 'Республика Калмыкия',
-            'KM': 'Ханты-Мансийский автономный округ',
-            'KN': 'Калининградская область',
-            'KO': 'Республика Коми',
-            'KS': 'Курская область',
-            'KT': 'Костромская область',
-            'KU': 'Курганская область',
-            'KV': 'Кировская область',
-            'KY': 'Красноярский край',
-            'LN': 'Ленинградская область',
-            'LP': 'Липецкая область',
-            'ME': 'Республика Марий Эл',
-            'MG': 'Магаданская область',
-            'MM': 'Мурманская область',
-            'MR': 'Республика Мордовия',
-            'MS': 'Московская область',
-            'NG': 'Новгородская область',
-            'NN': 'Ненецкий автономный округ',
-            'NO': 'Республика Северная Осетия',
-            'NS': 'Новосибирская область',
-            'NZ': 'Нижегородская область',
-            'OB': 'Оренбургская область',
-            'OL': 'Орловская область',
-            'OM': 'Омская область',
-            'PE': 'Пермский край',
-            'PR': 'Приморский край',
-            'PS': 'Псковская область',
-            'PZ': 'Пензенская область',
-            'RK': 'Республика Крым',
-            'RO': 'Ростовская область',
-            'RZ': 'Рязанская область',
-            'SA': 'Самарская область',
-            'SK': 'Республика Саха (Якутия)',
-            'SL': 'Сахалинская область',
-            'SM': 'Смоленская область',
-            'SR': 'Саратовская область',
-            'ST': 'Ставропольский край',
-            'SV': 'Свердловская область',
-            'TB': 'Тамбовская область',
-            'TL': 'Тульская область',
-            'TO': 'Томская область',
-            'TT': 'Республика Татарстан',
-            'TU': 'Республика Тыва',
-            'TV': 'Тверская область',
-            'TY': 'Тюменская область',
-            'UD': 'Удмуртская Республика',
-            'UL': 'Ульяновская область',
-            'VG': 'Волгоградская область',
-            'VL': 'Владимирская область',
-            'VO': 'Вологодская область',
-            'VR': 'Воронежская область',
-            'YN': 'Ямало-Ненецкий автономный округ',
-            'YS': 'Ярославская область',
-            'YV': 'Еврейская автономная область',
-            'ZK': 'Забайкальский край'
-        }
-        
         # 🔍 ФИЛЬТРЫ (каскадные)
         with st.expander("🔍 Фильтры", expanded=True):
             # Получаем уникальные значения для фильтров
@@ -1014,7 +955,20 @@ class DataVisualizer:
             all_clients = data['Клиент'].dropna().unique() if 'Клиент' in data.columns else []
             all_projects = data['Проект'].dropna().unique() if 'Проект' in data.columns else []
             all_waves = data['Волна'].dropna().unique() if 'Волна' in data.columns else []
-            all_regions = data[region_col].dropna().unique() if region_col in data.columns else []
+            
+            # 👇 ИЗМЕНЕНО: для фильтра регионов используем длинные названия
+            if region_col in data.columns:
+                unique_codes = data[region_col].dropna().unique()
+                self.region_display_map = {}
+                all_regions_display = []
+                for code in unique_codes:
+                    long_name = self._get_long_region(code)
+                    self.region_display_map[long_name] = code
+                    all_regions_display.append(long_name)
+                all_regions_display.sort()
+            else:
+                all_regions_display = []
+                self.region_display_map = {}
             
             col1, col2, col3, col4, col5 = st.columns(5)
             
@@ -1051,19 +1005,9 @@ class DataVisualizer:
                     wave_options = filtered_for_wave['Волна'].dropna().unique()
                 selected_wave = st.multiselect('Волна', wave_options, key='dsm_filter_wave')
             with col5:
-                region_options = all_regions
-                filtered_for_region = data.copy()
-                if selected_asm and 'ASM' in filtered_for_region.columns:
-                    filtered_for_region = filtered_for_region[filtered_for_region['ASM'].isin(selected_asm)]
-                if selected_client and 'Клиент' in filtered_for_region.columns:
-                    filtered_for_region = filtered_for_region[filtered_for_region['Клиент'].isin(selected_client)]
-                if selected_project and 'Проект' in filtered_for_region.columns:
-                    filtered_for_region = filtered_for_region[filtered_for_region['Проект'].isin(selected_project)]
-                if selected_wave and 'Волна' in filtered_for_region.columns:
-                    filtered_for_region = filtered_for_region[filtered_for_region['Волна'].isin(selected_wave)]
-                if region_col in filtered_for_region.columns:
-                    region_options = filtered_for_region[region_col].dropna().unique()
-                selected_region = st.multiselect('Регион', region_options, key='dsm_filter_region')
+                # 👇 ИЗМЕНЕНО: показываем длинные названия в фильтре регионов
+                selected_region_display = st.multiselect('Регион', all_regions_display, key='dsm_filter_region')
+                selected_region = [self.region_display_map.get(name, name) for name in selected_region_display]
         
         # Применяем фильтры к данным
         filtered_data = data.copy()
@@ -1095,7 +1039,7 @@ class DataVisualizer:
             show_region = st.checkbox("Регион", key='dsm_show_region')
         
         # Формируем groupby в зависимости от чек-боксов
-        group_cols = ['DSM', 'Клиент']  # DSM и Клиент всегда в группировке
+        group_cols = ['DSM']  # Только DSM
         
         if show_asm and 'ASM' in filtered_data.columns:
             group_cols.append('ASM')
@@ -1109,7 +1053,7 @@ class DataVisualizer:
             group_cols.append(region_col)
         
         # Агрегируем данные с учетом развертки
-        if len(group_cols) > 2:  # больше чем DSM + Клиент
+        if len(group_cols) > 1:  # больше чем просто DSM
             agg_columns = {
                 'План проекта, шт.': 'sum',
                 'План на дату, шт.': 'sum',
@@ -1179,7 +1123,7 @@ class DataVisualizer:
             st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
         
         # Колонки для отображения
-        display_columns = ['DSM', 'Клиент']
+        display_columns = ['DSM']
         
         if show_asm and 'ASM' in dsm_data.columns:
             display_columns.append('ASM')
@@ -1217,11 +1161,9 @@ class DataVisualizer:
         existing_cols = [col for col in display_columns if col in dsm_data.columns]
         df_display = dsm_data[existing_cols].copy()
         
-        # Применяем маппинг к колонке региона если она есть
+        # 👇 ИЗМЕНЕНО: применяем длинные названия к колонке региона если она есть
         if show_region and region_col in df_display.columns:
-            df_display[region_col] = df_display[region_col].map(
-                lambda x: region_mapping.get(str(x).strip().upper(), x) if pd.notna(x) else x
-            )
+            df_display[region_col] = df_display[region_col].apply(self._get_long_region)
         
         # Форматирование
         if 'План/Факт на дату,%' in df_display.columns:
@@ -1256,15 +1198,3 @@ class DataVisualizer:
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()
-
-
-
-
-
-
-
-
-
-
-
-

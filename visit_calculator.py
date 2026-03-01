@@ -131,9 +131,6 @@ class VisitCalculator:
         except KeyError as e:
             missing_col = str(e).replace("'", "")
             st.error(f"❌ В массиве отсутствует колонка: '{missing_col}'")
-            st.write("📋 **Какие колонки есть в массиве:**")
-            cols_list = ", ".join(visits_df.columns)
-            st.write(f"`{cols_list}`")
             return pd.DataFrame()
             
         except Exception as e:
@@ -193,13 +190,6 @@ class VisitCalculator:
                     if start_period <= check_date.date() <= end_period:
                         days_in_period += 1
             
-                # 🔴 ВСТАВЬ ДИАГНОСТИКУ СЮДА - ПОСЛЕ РАСЧЕТА days_in_period
-                if _ == 0:
-                    st.write(f"**7️⃣ Проверка дат и периода:**")
-                    st.write(f"   Дата старта: {start_date.date()}")
-                    st.write(f"   Дата финиша: {finish_date.date()}")
-                    st.write(f"   Период расчета: {start_period} - {end_period}")
-                    st.write(f"   Дней в периоде: {days_in_period}")
     
                 if days_in_period == 0:
                     continue
@@ -210,15 +200,6 @@ class VisitCalculator:
                 # ДОЛИ RS
                 rs_weights = self._calculate_rs_weights(visits_df, project_code, wave_name, region)
                 rs_name = row['RS']
-                # 🔴 ДИАГНОСТИКА ДЛЯ ПЕРВОЙ СТРОКИ
-                if _ == 0:  # только для первой итерации
-                    st.write(f"**6️⃣ Доли RS для первого проекта:**")
-                    st.write(f"   Проект: {project_code}")
-                    st.write(f"   Волна: {wave_name}")
-                    st.write(f"   Регион: {region}")
-                    st.write(f"   RS из иерархии: '{rs_name}'")
-                    st.write(f"   Найденные RS: {list(rs_weights.keys()) if rs_weights else 'НЕТ'}")
-                    st.write(f"   Вес для этого RS: {rs_weights.get(rs_name, 0)}")
         
                 if rs_name not in rs_weights or rs_weights[rs_name] <= 0:
                     continue
@@ -252,12 +233,6 @@ class VisitCalculator:
                     'Дневной план RS, шт.': round(rs_daily_plan, 2)
                 })
 
-                # 🔴 ДИАГНОСТИКА - СРАЗУ ПОСЛЕ APPEND
-                if _ == 0:
-                    st.write(f"**8️⃣ Результат для первого проекта:**")
-                    st.write(f"   Добавлен в results: ✅ ДА")
-                    st.write(f"   План на дату: {round(rs_plan_on_date, 1)}")
-                    st.write(f"   Текущий размер results: {len(results)}")
                             
             if not results:
                 return pd.DataFrame()
@@ -278,21 +253,15 @@ class VisitCalculator:
             region_col = 'Регион short'
             
             # Ищем колонку статуса
-            st.write("📋 **Все колонки в массиве:**")
-            st.write(list(visits_df.columns))
             
             status_col = None
             for col in visits_df.columns:
-                st.write(f"Проверяем: '{col}' -> очищенная: '{col.strip()}'")
                 col_clean = col.strip()
                 if col_clean == 'Статус':
                     status_col = col
                     break
             
             if not status_col:
-                st.error(f"❌ Не найдена колонка 'Статус'")
-                st.write(f"Искали: 'Статус'")
-                st.write(f"Доступные колонки: {list(visits_df.columns)}")
                 result_df['Факт проекта, шт.'] = 0
                 result_df['Факт на дату, шт.'] = 0
                 return result_df
@@ -464,6 +433,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

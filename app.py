@@ -144,6 +144,25 @@ def process_all_data():
                 else:
                     st.session_state.cleaned_data['полевые_проекты'] = cxway_processed
         
+        # Обработка Easymerch (если есть)
+        easymerch_raw = st.session_state.uploaded_files.get('easymerch')
+        if easymerch_raw is not None:
+            easymerch_processed = data_cleaner.clean_easymerch(
+                easymerch_raw, 
+                google_with_field  # для получения квоты по Мултон
+            )
+            
+            if easymerch_processed is not None and not easymerch_processed.empty:
+                if field_df is not None and not field_df.empty:
+                    # Объединяем с существующими полевыми проектами
+                    field_df = pd.concat([field_df, easymerch_processed], ignore_index=True)
+                    st.session_state.cleaned_data['полевые_проекты'] = field_df
+                    st.session_state.cleaned_data['easymerch_processed'] = easymerch_processed
+                else:
+                    st.session_state.cleaned_data['полевые_проекты'] = easymerch_processed
+                    st.session_state.cleaned_data['easymerch_processed'] = easymerch_processed
+                    
+        
         # Создание иерархии
         base_data = visit_calculator.extract_hierarchical_data(
             st.session_state.cleaned_data['полевые_проекты'],
@@ -285,7 +304,7 @@ with tab1:
                 st.success("✅ Проекты загружены")
                 display_file_preview(projects_df, "Просмотр проектов")
     
-    # Отдельная строка для CXWAY (как было в старом коде)
+    # Отдельная строка для CXWAY 
     st.markdown("---")
     st.subheader("3. 📡 CXWAY (дополнительно)")
     cxway_file = st.file_uploader(
@@ -299,6 +318,21 @@ with tab1:
             st.session_state.uploaded_files['cxway'] = cxway_df
             st.success("✅ CXWAY загружен")
             display_file_preview(cxway_df, "Просмотр данных CXWAY")
+            
+    # Отдельная строка для Easymerch 
+    st.markdown("---")
+    st.subheader("4. 📱 Easymerch (дополнительно)")
+    easymerch_file = st.file_uploader(
+        "Загрузите файл Easymerch.xlsx",
+        type=['xlsx', 'xls'],
+        key="easymerch"
+    )
+    if easymerch_file:
+        easymerch_df = validate_file_upload(easymerch_file, "Easymerch.xlsx")
+        if easymerch_df is not None:
+            st.session_state.uploaded_files['easymerch'] = easymerch_df
+            st.success("✅ Easymerch загружен")
+            display_file_preview(easymerch_df, "Просмотр данных Easymerch")
     
     st.markdown("---")
     
@@ -381,4 +415,5 @@ with tab2:
         with tab_dsm:
             data = st.session_state.visit_report['calculated_data']
             dataviz.create_dsm_tab(data, None)
+
 

@@ -129,38 +129,42 @@ def process_all_data():
             field_df = data_cleaner.add_zod_from_hierarchy(field_df)
             st.session_state.cleaned_data['полевые_проекты'] = field_df
         
-        # Обработка CXWAY (если есть)
-        if cxway_raw is not None:
-            # Иерархия больше не нужна, передаем None
-            cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
-            
-            if cxway_processed is not None and not cxway_processed.empty:
-                if field_df is not None and not field_df.empty:
-                    combined_field_projects = data_cleaner.merge_field_projects(
-                        field_df, 
-                        cxway_processed
-                    )
-                    st.session_state.cleaned_data['полевые_проекты'] = combined_field_projects
-                else:
-                    st.session_state.cleaned_data['полевые_проекты'] = cxway_processed
         
         # Обработка Easymerch (если есть)
+        easymerch_processed = None
         easymerch_raw = st.session_state.uploaded_files.get('easymerch')
         if easymerch_raw is not None:
             easymerch_processed = data_cleaner.clean_easymerch(
                 easymerch_raw, 
-                google_with_field  # для получения квоты по Мултон
+                google_with_field
             )
-            
             if easymerch_processed is not None and not easymerch_processed.empty:
-                if field_df is not None and not field_df.empty:
-                    # Объединяем с существующими полевыми проектами
-                    field_df = pd.concat([field_df, easymerch_processed], ignore_index=True)
-                    st.session_state.cleaned_data['полевые_проекты'] = field_df
-                    st.session_state.cleaned_data['easymerch_processed'] = easymerch_processed
-                else:
-                    st.session_state.cleaned_data['полевые_проекты'] = easymerch_processed
-                    st.session_state.cleaned_data['easymerch_processed'] = easymerch_processed
+                st.session_state.cleaned_data['easymerch_processed'] = easymerch_processed
+        
+        # Обработка CXWAY (если есть)
+        cxway_processed = None
+        if cxway_raw is not None:
+            cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
+        
+        # ФИНАЛЬНОЕ ОБЪЕДИНЕНИЕ всех источников
+        sources_for_merge = []
+        
+        if field_df is not None and not field_df.empty:
+            sources_for_merge.append(field_df)
+        
+        if cxway_processed is not None and not cxway_processed.empty:
+            sources_for_merge.append(cxway_processed)
+        
+        if easymerch_processed is not None and not easymerch_processed.empty:
+            sources_for_merge.append(easymerch_processed)
+        
+        if sources_for_merge:
+            all_field_projects = pd.concat(sources_for_merge, ignore_index=True)
+            st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
+        else:
+            st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()
+
+        
                     
         
         # Создание иерархии
@@ -415,5 +419,6 @@ with tab2:
         with tab_dsm:
             data = st.session_state.visit_report['calculated_data']
             dataviz.create_dsm_tab(data, None)
+
 
 

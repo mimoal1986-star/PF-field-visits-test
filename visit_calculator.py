@@ -163,6 +163,42 @@ class VisitCalculator:
             start_period = calc_params['start_date']
             end_period = calc_params['end_date']
             coefficients = calc_params['coefficients']
+
+            # словарь квот для Мултон
+            multon_quotas = {}
+            if google_df is not None and not google_df.empty:
+                # Находим колонки в гугл таблице
+                project_name_col = None
+                for col in google_df.columns:
+                    if 'проект' in str(col).lower():
+                        project_name_col = col
+                        break
+                        
+                code_col = None
+                for col in google_df.columns:
+                    if 'код проект' in str(col).lower():
+                        code_col = col
+                        break
+                        
+                kvota_col = None
+                for col in google_df.columns:
+                    if 'квот' in str(col).lower():
+                        kvota_col = col
+                        break
+                
+                if all([project_name_col, code_col, kvota_col]):
+                    # Фильтруем только Мултон
+                    multon_mask = google_df[project_name_col].astype(str).str.strip() == 'Мултон'
+                    multon_projects = google_df[multon_mask]
+                    
+                    for _, row in multon_projects.iterrows():
+                        code = str(row.get(code_col, '')).strip()
+                        kvota = row.get(kvota_col, 0)
+                        if code and code not in ['', 'nan', 'None', 'null']:
+                            try:
+                                multon_quotas[code] = float(kvota)
+                            except:
+                                multon_quotas[code] = 0
             
             # Планы проектов+волн+регионов (для обычных проектов)
             project_wave_region_plans = visits_df.groupby([
@@ -216,22 +252,25 @@ class VisitCalculator:
                     continue
                 
                 # ДНЕВНОЙ ПЛАН ВОЛНЫ (равномерное распределение)
-                daily_plan_wave = total_plan / duration
-                
-                # ДОЛИ RS
-                rs_weights = self._calculate_rs_weights(visits_df, project_code, wave_name, region)
-                rs_name = row['RS']
-                
-                if rs_name not in rs_weights or rs_weights[rs_name] <= 0:
-                    continue
-                
-                rs_weight = rs_weights[rs_name]
-                
-                # Дневной план RS = дневной план волны × доля RS
-                rs_daily_plan = daily_plan_wave * rs_weight
-                
-                # План RS на дату = дневной план × дни в периоде
-                rs_plan_on_date = rs_daily_plan * days_in_period
+                if row['Клиент'] == 'Мултон' and project_code in multon_quotas:
+                    # План проекта = квота
+                    total_plan = multon_quotas[project_code]
+                    # План на дату = квота (весь план сразу)
+                    rs_plan_on_date = total_plan
+                else:
+                    # Обычный расчет
+                    daily_plan_wave = total_plan / duration
+                    
+                    # ДОЛИ RS
+                    rs_weights = self._calculate_rs_weights(visits_df, project_code, wave_name, region)
+                    rs_name = row['RS']
+                    
+                    if rs_name not in rs_weights or rs_weights[rs_name] <= 0:
+                        continue
+                    
+                    rs_weight = rs_weights[rs_name]
+                    rs_daily_plan = daily_plan_wave * rs_weight
+                    rs_plan_on_date = rs_daily_plan * days_in_period
                 
                 # Запись результата
                 results.append({
@@ -444,6 +483,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

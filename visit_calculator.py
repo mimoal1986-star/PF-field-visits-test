@@ -183,7 +183,7 @@ class VisitCalculator:
                 rs_name = row['RS']
                 
                 # ОПРЕДЕЛЯЕМ total_plan
-                if po == 'Easymerch' and client == 'Мултон':
+                if po == 'ПО клиента' and client == 'Мултон':
                     total_plan = multon_quotas.get(project_code, 0)
                     if total_plan <= 0:
                         continue
@@ -216,7 +216,7 @@ class VisitCalculator:
                     continue
                 
                 # РАСЧЕТ ПЛАНА НА ДАТУ
-                if po == 'Easymerch' and client == 'Мултон':
+                if po == 'ПО клиента' and client == 'Мултон':
                     # Мултон: план = вся квота сразу
                     rs_plan_on_date = total_plan
                     rs_daily_plan = total_plan  # для отчета
@@ -444,6 +444,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

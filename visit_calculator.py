@@ -187,6 +187,17 @@ class VisitCalculator:
                     total_plan = multon_quotas.get(project_code, 0)
                     if total_plan <= 0:
                         continue
+                    # равномерное распределение по регионам
+                    project_regions = hierarchy_df[
+                        (hierarchy_df['Проект'] == project_code) & 
+                        (hierarchy_df['Клиент'] == 'Мултон')
+                    ]['Регион'].unique()
+                    
+                    num_regions = len(project_regions)
+                    if num_regions > 0:
+                        total_plan = total_plan / num_regions  # делим квоту на число регионов
+                    # 👆 КОНЕЦ НОВОГО КОДА
+    
                 else:
                     plan_key = (project_code, wave_name, region)
                     if plan_key not in project_wave_region_plans.index:
@@ -444,6 +455,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

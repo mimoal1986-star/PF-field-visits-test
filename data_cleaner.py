@@ -972,7 +972,7 @@ class DataCleaner:
         result['Полевой'] = 1
         
         # Добавление ПО из гугл таблицы по коду проекта
-        result['ПО'] = 'Easymerch'  # значение по умолчанию
+        result['ПО'] = 'не определено'  # значение по умолчанию
         
         if google_df is not None and 'Код анкеты' in result.columns:
             # Находим колонки в гугл таблице
@@ -1039,39 +1039,6 @@ class DataCleaner:
         else:
             result['Регион'] = 'не определен'
         
-        # Создаем словарь квот по кодам проектов из гугл таблицы
-        result['План_квота'] = 0
-        
-        if google_df is not None:
-            # Находим колонки в гугл таблице
-            project_name_col = self._find_column(google_df, ['Проекты в  https://ru.checker-soft.com', 'Проекты'])
-            code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
-            kvota_col = self._find_column(google_df, ['Квота'])
-            
-            if project_name_col and code_col and kvota_col:
-                # Фильтруем только Мултон
-                multon_in_google = google_df[
-                    google_df[project_name_col].astype(str).str.strip() == 'Мултон'
-                ]
-                
-                # Создаем словарь {код проекта: квота}
-                kvota_by_code = {}
-                for _, row in multon_in_google.iterrows():
-                    code = str(row.get(code_col, '')).strip()
-                    kvota = row.get(kvota_col, 0)
-                    if code and code not in ['', 'nan', 'None', 'null']:
-                        try:
-                            kvota_by_code[code] = float(kvota)
-                        except:
-                            kvota_by_code[code] = 0
-                
-                # Применяем квоты по коду проекта
-                multon_mask = result['Имя клиента'].str.strip() == 'Мултон'
-                if multon_mask.any():
-                    for idx, row in result[multon_mask].iterrows():
-                        code = row.get('Код анкеты', '')
-                        if code in kvota_by_code:
-                            result.at[idx, 'План_квота'] = kvota_by_code[code]
         
         # Добавление ЗОД из встроенного справочника (по АСС) с учетом новых сотрудников
         if 'АСС' in result.columns:
@@ -1155,4 +1122,5 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 

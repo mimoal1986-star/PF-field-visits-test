@@ -937,11 +937,6 @@ class DataCleaner:
     def clean_easymerch(self, df, google_df):
         """
         Очистка файла Easymerch и приведение к структуре полевых проектов
-        
-        Особенности:
-        - Все записи Easymerch считаются полевыми (Полевой = 1)
-        - Регион обрезается до первых 2 символов (BK - Республика Башкортостан → BK)
-        - Для Мултон сохраняется информация для расчета плана по квоте
         """
         if df is None or df.empty:
             return pd.DataFrame()
@@ -976,20 +971,31 @@ class DataCleaner:
         # Все записи Easymerch - полевые
         result['Полевой'] = 1
         
-        # Добавление ЗОД из встроенного справочника (по АСС)
-        if 'АСС' in result.columns:
-            def get_zod(acc_value):
-                if pd.isna(acc_value) or str(acc_value).strip() == '':
-                    return ''
-                clean_acc = str(acc_value).strip()
-                return ZOD_MAPPING.get(clean_acc, '')
-            
-            result['ЗОД'] = result['АСС'].apply(get_zod)
-        else:
-            result['ЗОД'] = ''
+        # Добавление ПО из гугл таблицы по коду проекта
+        result['ПО'] = 'Easymerch'  # значение по умолчанию
         
-        # Добавление ПО
-        result['ПО'] = 'Easymerch'
+        if google_df is not None and 'Код анкеты' in result.columns:
+            # Находим колонки в гугл таблице
+            google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
+            google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+            
+            if google_code_col and google_portal_col:
+                # Создаем словарь {код проекта: ПО}
+                portal_mapping = {}
+                for _, row in google_df.iterrows():
+                    code = str(row.get(google_code_col, '')).strip()
+                    portal = str(row.get(google_portal_col, '')).strip()
+                    if code and code.lower() not in ['nan', 'none', 'null', '']:
+                        portal_mapping[code] = portal
+                
+                # Применяем маппинг
+                def get_portal(code_value):
+                    if pd.isna(code_value) or str(code_value).strip() == '':
+                        return 'Easymerch'
+                    clean_code = str(code_value).strip()
+                    return portal_mapping.get(clean_code, 'Easymerch')
+                
+                result['ПО'] = result['Код анкеты'].apply(get_portal)
         
         # Добавление полного региона (из справочника)
         region_mapping = {
@@ -1033,28 +1039,58 @@ class DataCleaner:
         else:
             result['Регион'] = 'не определен'
         
-        # Добавляем колонку с квотой для Мултон (будет использоваться в расчете плана)
+        # Создаем словарь квот по кодам проектов из гугл таблицы
         result['План_квота'] = 0
         
-        # Специальная обработка для Мултон
-        multon_mask = result['Имя клиента'].str.strip() == 'Мултон'
-        if multon_mask.any() and google_df is not None:
-            # Находим строку Мултон в гугл таблице
-            project_col = self._find_column(google_df, ['Проекты в  https://ru.checker-soft.com', 'Проекты'])
+        if google_df is not None:
+            # Находим колонки в гугл таблице
+            project_name_col = self._find_column(google_df, ['Проекты в  https://ru.checker-soft.com', 'Проекты'])
+            code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
             kvota_col = self._find_column(google_df, ['Квота'])
             
-            if project_col and kvota_col:
-                google_multon = google_df[
-                    google_df[project_col].astype(str).str.strip() == 'Мултон'
+            if project_name_col and code_col and kvota_col:
+                # Фильтруем только Мултон
+                multon_in_google = google_df[
+                    google_df[project_name_col].astype(str).str.strip() == 'Мултон'
                 ]
                 
-                if not google_multon.empty:
-                    # Берем квоту из первой строки
-                    try:
-                        kvota = float(google_multon.iloc[0].get(kvota_col, 0))
-                        result.loc[multon_mask, 'План_квота'] = kvota
-                    except:
-                        pass
+                # Создаем словарь {код проекта: квота}
+                kvota_by_code = {}
+                for _, row in multon_in_google.iterrows():
+                    code = str(row.get(code_col, '')).strip()
+                    kvota = row.get(kvota_col, 0)
+                    if code and code not in ['', 'nan', 'None', 'null']:
+                        try:
+                            kvota_by_code[code] = float(kvota)
+                        except:
+                            kvota_by_code[code] = 0
+                
+                # Применяем квоты по коду проекта
+                multon_mask = result['Имя клиента'].str.strip() == 'Мултон'
+                if multon_mask.any():
+                    for idx, row in result[multon_mask].iterrows():
+                        code = row.get('Код анкеты', '')
+                        if code in kvota_by_code:
+                            result.at[idx, 'План_квота'] = kvota_by_code[code]
+        
+        # Добавление ЗОД из встроенного справочника (по АСС) с учетом новых сотрудников
+        if 'АСС' in result.columns:
+            # Расширяем словарь для поиска (можно вынести в начало файла)
+            extended_zod_mapping = ZOD_MAPPING.copy()
+            extended_zod_mapping.update({
+                'Воронин Евгений': 'Устинов Игорь',
+                'Яцевич Максим': 'Устинов Игорь'
+            })
+            
+            def get_zod(acc_value):
+                if pd.isna(acc_value) or str(acc_value).strip() == '':
+                    return ''
+                clean_acc = str(acc_value).strip()
+                return extended_zod_mapping.get(clean_acc, '')
+            
+            result['ЗОД'] = result['АСС'].apply(get_zod)
+        else:
+            result['ЗОД'] = ''
         
         # Добавляем источник
         result['Источник'] = 'Easymerch'
@@ -1119,3 +1155,4 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+

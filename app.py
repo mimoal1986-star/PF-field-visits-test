@@ -1,5 +1,5 @@
 # app.py
-# draft 4.0 - simplified
+# draft 4.1 - simplified
 import streamlit as st
 import pandas as pd
 import sys
@@ -419,6 +419,7 @@ with tab2:
         with tab_dsm:
             data = st.session_state.visit_report['calculated_data']
             dataviz.create_dsm_tab(data, None)
+
 
 
 

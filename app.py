@@ -182,7 +182,7 @@ def process_all_data():
             source_df = st.session_state.cleaned_data['полевые_проекты']
             
             plan_result = visit_calculator.calculate_hierarchical_plan_on_date(
-                base_data, source_df, params
+                base_data, source_df, params, st.session_state.cleaned_data['сервизория']
             )
             
             if plan_result is not None and not plan_result.empty:
@@ -419,6 +419,7 @@ with tab2:
         with tab_dsm:
             data = st.session_state.visit_report['calculated_data']
             dataviz.create_dsm_tab(data, None)
+
 
 
 

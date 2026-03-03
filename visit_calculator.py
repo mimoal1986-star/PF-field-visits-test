@@ -110,26 +110,6 @@ class VisitCalculator:
                 except Exception as e:
                     pass
             
-            # Добавляем информацию о квоте для Easymerch Мултон
-            if 'План_квота' in visits_df.columns:
-                # Создаем маппинг квот по уникальным комбинациям
-                kvota_mapping = {}
-                for idx, row in visits_df.iterrows():
-                    if row['ПО'] == 'Easymerch' and row['Имя клиента'] == 'Мултон':
-                        key = (row['Код анкеты'], row['Название проекта'], row['Регион short'])
-                        kvota = row.get('План_квота', 0)
-                        if kvota > 0:
-                            kvota_mapping[key] = kvota
-                
-                # Добавляем колонку с квотой в иерархию
-                hierarchy['План_квота'] = 0
-                for idx, row in hierarchy.iterrows():
-                    key = (row['Проект'], row['Волна'], row['Регион'])
-                    if key in kvota_mapping:
-                        hierarchy.at[idx, 'План_квота'] = kvota_mapping[key]
-            else:
-                hierarchy['План_квота'] = 0
-            
             # Рассчитываем длительность
             hierarchy['Длительность'] = 0
             mask_valid_dates = hierarchy['Дата старта'].notna() & hierarchy['Дата финиша'].notna()
@@ -164,6 +144,27 @@ class VisitCalculator:
             end_period = calc_params['end_date']
             coefficients = calc_params['coefficients']
             
+            # 🔴 КВОТЫ МУЛТОН - ПРЯМО ИЗ ГУГЛ-ТАБЛИЦЫ
+            multon_quotas = {}
+            if google_df is not None and not google_df.empty:
+                # Фильтруем проекты Мултон по точному названию колонки
+                project_col = 'Проекты в  https://ru.checker-soft.com'
+                code_col = 'Код проекта RU00.000.00.01SVZ24'
+                kvota_col = 'Квота'
+                
+                if all(col in google_df.columns for col in [project_col, code_col, kvota_col]):
+                    multon_mask = google_df[project_col].astype(str).str.strip() == 'Мултон'
+                    multon_projects = google_df[multon_mask]
+                    
+                    for _, row in multon_projects.iterrows():
+                        code = str(row.get(code_col, '')).strip()
+                        kvota = row.get(kvota_col, 0)
+                        if code and code not in ['', 'nan', 'None', 'null']:
+                            try:
+                                multon_quotas[code] = float(kvota)
+                            except:
+                                multon_quotas[code] = 0
+            
             # Планы проектов+волн+регионов (для обычных проектов)
             project_wave_region_plans = visits_df.groupby([
                 'Код анкеты', 
@@ -182,8 +183,8 @@ class VisitCalculator:
                 rs_name = row['RS']
                 
                 # ОПРЕДЕЛЯЕМ total_plan
-                if po == 'Easymerch' and client == 'Мултон' and 'План_квота' in hierarchy_df.columns:
-                    total_plan = row['План_квота']
+                if po == 'Easymerch' and client == 'Мултон':
+                    total_plan = multon_quotas.get(project_code, 0)
                     if total_plan <= 0:
                         continue
                 else:
@@ -215,7 +216,7 @@ class VisitCalculator:
                     continue
                 
                 # РАСЧЕТ ПЛАНА НА ДАТУ
-                if po == 'Easymerch' and client == 'Мултон' and 'План_квота' in hierarchy_df.columns:
+                if po == 'Easymerch' and client == 'Мултон':
                     # Мултон: план = вся квота сразу
                     rs_plan_on_date = total_plan
                     rs_daily_plan = total_plan  # для отчета
@@ -443,6 +444,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

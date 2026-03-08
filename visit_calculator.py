@@ -319,7 +319,11 @@ class VisitCalculator:
                 visits_df['Дата визита'] = visits_df['Дата визита'].dt.normalize()
             
             # ФИЛЬТРЫ
-            completed_mask = visits_df[status_col].isin(['Выполнено', 'выполнен'])
+            completed_mask = visits_df[status_col].isin([
+                'Выполнено', 'выполнено',      # существующие
+                'Заполнена', 'заполнена',     # новое для Optima
+                'Проверена', 'проверена'      # новое для Optima
+            ])
             start_date = pd.Timestamp(calc_params['start_date'])
             end_date = pd.Timestamp(calc_params['end_date'])
             period_mask = (
@@ -455,6 +459,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

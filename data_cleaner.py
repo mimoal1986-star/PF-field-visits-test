@@ -724,8 +724,8 @@ class DataCleaner:
         if field_df is not None and not field_df.empty:
             # Поиск колонок в данных
             field_cols = {
-                'name': self._find_column(field_df, ['Название проекта', 'Wave Name']),
-                'wave': self._find_column(field_df, ['Волна', 'Wave']),
+                'name': self._find_column(field_df, ['Имя клиента', 'Client']),  # название проекта/клиента
+                'wave': self._find_column(field_df, ['Название проекта', 'Wave Name']),  # название волны
                 'code': self._find_column(field_df, ['Код анкеты', 'Код'])
             }
             
@@ -1292,6 +1292,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

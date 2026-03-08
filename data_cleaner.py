@@ -716,6 +716,8 @@ class DataCleaner:
             field_project_name_col = self._find_column(field_df, ['Название проекта', 'Wave Name'])
             field_wave_col = self._find_column(field_df, ['Волна', 'Wave'])
             field_code_col = self._find_column(field_df, ['Код анкеты', 'Код'])
+            # 🔴 ДОБАВЛЕНО
+            field_source_col = self._find_column(field_df, ['Источник'])
             
             if all([field_project_name_col, field_wave_col, field_code_col]):
                 google_codes = set()
@@ -727,6 +729,8 @@ class DataCleaner:
                     field_project = str(row.get(field_project_name_col, '')).strip()
                     field_wave = str(row.get(field_wave_col, '')).strip()
                     field_code = str(row.get(field_code_col, '')).strip()
+                    # 🔴 ДОБАВЛЕНО
+                    field_source = str(row.get(field_source_col, '')).strip() if field_source_col else ''
                     
                     if not field_project or field_project in ['nan', 'None', '']:
                         continue
@@ -742,6 +746,8 @@ class DataCleaner:
                             'Название проекта': field_project,
                             'Волна': field_wave,
                             'Код проекта': field_code,
+                            # 🔴 ДОБАВЛЕНО
+                            'Источник': field_source if field_source else 'не указан',
                             'Код проекта пусто': False,
                             'Проект неполевой, есть в гугл': False,
                             'Проект есть в гугл, нет в массиве': False,
@@ -1273,6 +1279,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

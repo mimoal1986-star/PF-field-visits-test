@@ -308,35 +308,33 @@ with tab1:
                 st.success("✅ Проекты загружены")
                 display_file_preview(projects_df, "Просмотр проектов")
     
-    # Отдельная строка для CXWAY 
-    st.markdown("---")
-    st.subheader("3. 📡 CXWAY (дополнительно)")
-    cxway_file = st.file_uploader(
-        "Загрузите файл CXWAY.xlsx",
-        type=['xlsx', 'xls'],
-        key="cxway"
-    )
-    if cxway_file:
-        cxway_df = validate_file_upload(cxway_file, "CXWAY.xlsx")
-        if cxway_df is not None:
-            st.session_state.uploaded_files['cxway'] = cxway_df
-            st.success("✅ CXWAY загружен")
-            display_file_preview(cxway_df, "Просмотр данных CXWAY")
+    with col3:
+        st.subheader("3. 📡 CXWAY (дополнительно)")
+        cxway_file = st.file_uploader(
+            "Загрузите файл CXWAY.xlsx",
+            type=['xlsx', 'xls'],
+            key="cxway"
+        )
+        if cxway_file:
+            cxway_df = validate_file_upload(cxway_file, "CXWAY.xlsx")
+            if cxway_df is not None:
+                st.session_state.uploaded_files['cxway'] = cxway_df
+                st.success("✅ CXWAY загружен")
+                display_file_preview(cxway_df, "Просмотр данных CXWAY")
             
-    # Отдельная строка для Easymerch 
-    st.markdown("---")
-    st.subheader("4. 📱 Easymerch (дополнительно)")
-    easymerch_file = st.file_uploader(
-        "Загрузите файл Easymerch.xlsx",
-        type=['xlsx', 'xls'],
-        key="easymerch"
-    )
-    if easymerch_file:
-        easymerch_df = validate_file_upload(easymerch_file, "Easymerch.xlsx")
-        if easymerch_df is not None:
-            st.session_state.uploaded_files['easymerch'] = easymerch_df
-            st.success("✅ Easymerch загружен")
-            display_file_preview(easymerch_df, "Просмотр данных Easymerch")
+    with col4:
+        st.subheader("4. 📱 Easymerch (дополнительно)")
+        easymerch_file = st.file_uploader(
+            "Загрузите файл Easymerch.xlsx",
+            type=['xlsx', 'xls'],
+            key="easymerch"
+        )
+        if easymerch_file:
+            easymerch_df = validate_file_upload(easymerch_file, "Easymerch.xlsx")
+            if easymerch_df is not None:
+                st.session_state.uploaded_files['easymerch'] = easymerch_df
+                st.success("✅ Easymerch загружен")
+                display_file_preview(easymerch_df, "Просмотр данных Easymerch")
     
     st.markdown("---")
     
@@ -419,6 +417,7 @@ with tab2:
         with tab_dsm:
             data = st.session_state.visit_report['calculated_data']
             dataviz.create_dsm_tab(data, None)
+
 
 
 

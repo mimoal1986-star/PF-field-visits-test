@@ -278,7 +278,7 @@ with tab1:
     st.markdown("Загрузите необходимые Excel файлы")
     
     # Загрузка файлов
-    col1, col2 = st.columns(2)
+    col1, col2,col3,col4  = st.columns(4)
     
     with col1:
         st.subheader("1. 📋 Портал (Массив.xlsx)")
@@ -417,6 +417,7 @@ with tab2:
         with tab_dsm:
             data = st.session_state.visit_report['calculated_data']
             dataviz.create_dsm_tab(data, None)
+
 
 
 

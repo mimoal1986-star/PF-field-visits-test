@@ -1063,7 +1063,158 @@ class DataCleaner:
         result['Источник'] = 'Easymerch'
         
         return result
+
+    def clean_optima(self, df, google_df):
+        """
+        Очистка файла Optima и приведение к структуре полевых проектов
+        """
+        if df is None or df.empty:
+            return pd.DataFrame()
+        
+        df_clean = df.copy()
+        
+        # Словарь для преобразования длинных названий регионов в короткие коды
+        long_to_short_region = {
+            'Республика Адыгея': 'AD', 'Алтайский край': 'AL', 'Амурская область': 'AM',
+            'Архангельская область': 'AR', 'Астраханская область': 'AS', 'Республика Башкортостан': 'BK',
+            'Белгородская область': 'BL', 'Брянская область': 'BR', 'Республика Бурятия': 'BU',
+            'Челябинская область': 'CL', 'Чеченская Республика': 'CN', 'Чувашская Республика': 'CV',
+            'Республика Дагестан': 'DA', 'Республика Ингушетия': 'IN', 'Иркутская область': 'IR',
+            'Ивановская область': 'IV', 'Камчатский край': 'KA', 'Кабардино-Балкарская Республика': 'KB',
+            'Карачаево-Черкесская Республика': 'KC', 'Краснодарский край': 'KD', 'Кемеровская область': 'KE',
+            'Калужская область': 'KG', 'Хабаровский край': 'KH', 'Республика Карелия': 'KI',
+            'Республика Хакасия': 'KK', 'Республика Калмыкия': 'KL', 'Ханты-Мансийский автономный округ': 'KM',
+            'Калининградская область': 'KN', 'Республика Коми': 'KO', 'Курская область': 'KS',
+            'Костромская область': 'KT', 'Курганская область': 'KU', 'Кировская область': 'KV',
+            'Красноярский край': 'KY', 'Ленинградская область': 'LN', 'Липецкая область': 'LP',
+            'Республика Марий Эл': 'ME', 'Магаданская область': 'MG', 'Мурманская область': 'MM',
+            'Республика Мордовия': 'MR', 'Московская область': 'MS', 'Новгородская область': 'NG',
+            'Ненецкий автономный округ': 'NN', 'Республика Северная Осетия': 'NO', 'Новосибирская область': 'NS',
+            'Нижегородская область': 'NZ', 'Оренбургская область': 'OB', 'Орловская область': 'OL',
+            'Омская область': 'OM', 'Пермский край': 'PE', 'Приморский край': 'PR',
+            'Псковская область': 'PS', 'Пензенская область': 'PZ', 'Республика Крым': 'RK',
+            'Ростовская область': 'RO', 'Рязанская область': 'RZ', 'Самарская область': 'SA',
+            'Республика Саха (Якутия)': 'SK', 'Сахалинская область': 'SL', 'Смоленская область': 'SM',
+            'Саратовская область': 'SR', 'Ставропольский край': 'ST', 'Свердловская область': 'SV',
+            'Тамбовская область': 'TB', 'Тульская область': 'TL', 'Томская область': 'TO',
+            'Республика Татарстан': 'TT', 'Республика Тыва': 'TU', 'Тверская область': 'TV',
+            'Тюменская область': 'TY', 'Удмуртская Республика': 'UD', 'Ульяновская область': 'UL',
+            'Волгоградская область': 'VG', 'Владимирская область': 'VL', 'Вологодская область': 'VO',
+            'Воронежская область': 'VR', 'Ямало-Ненецкий автономный округ': 'YN', 'Ярославская область': 'YS',
+            'Еврейская автономная область': 'YV', 'Забайкальский край': 'ZK', 'Москва': 'MS',
+            'г Москва': 'MS', 'Санкт-Петербург': 'LN', 'г Санкт-Петербург': 'LN'
+        }
+        
+        # Маппинг колонок Optima → стандартные названия
+        column_mapping = {
+            'Код анкеты': ['Project Code'],
+            'Имя клиента': ['Проект'],
+            'Название проекта': ['Wave Name'],
+            'АСС': ['АСС'],
+            'ЭМ': ['Координатор'],
+            'Регион long': ['Регион Чекер'],
+            'Статус': ['Статус анкеты'],
+            'Дата визита': ['Дата визита']
+        }
+        
+        result = pd.DataFrame()
+        
+        for std_col, possible_names in column_mapping.items():
+            source_col = self._find_column(df_clean, possible_names)
+            if source_col:
+                if std_col == 'Код анкеты':
+                    # Обработка Project Code (может содержать обратный слеш)
+                    codes = df_clean[source_col].astype(str).fillna('')
+                    result[std_col] = codes.apply(
+                        lambda x: x.split('\\')[0].strip() if '\\' in x else x.strip()
+                    )
+                elif std_col == 'Регион long':
+                    result['Регион long'] = df_clean[source_col].astype(str).fillna('')
+                else:
+                    result[std_col] = df_clean[source_col].astype(str).fillna('')
+            else:
+                if std_col == 'Регион long':
+                    result['Регион long'] = ''
+                else:
+                    result[std_col] = ''
+        
+        # Конвертация даты
+        if 'Дата визита' in result.columns:
+            result['Дата визита'] = pd.to_datetime(
+                result['Дата визита'], 
+                errors='coerce',
+                dayfirst=True
+            )
+        
+        # Преобразуем длинные названия регионов в короткие коды
+        def get_short_region(long_name):
+            if pd.isna(long_name) or str(long_name).strip() in ['', 'nan', 'none', 'null']:
+                return 'не определен'
+            clean_name = str(long_name).strip()
+            # Прямое соответствие
+            if clean_name in long_to_short_region:
+                return long_to_short_region[clean_name]
+            # Поиск по вхождению
+            for long, short in long_to_short_region.items():
+                if long in clean_name or clean_name in long:
+                    return short
+            return 'не определен'
+        
+        result['Регион short'] = result['Регион long'].apply(get_short_region)
+        result['Регион'] = result['Регион long']  # сохраняем полное название для отчетов
+        
+        # Все записи Optima - полевые
+        result['Полевой'] = 1
+        
+        # Источник
+        result['Источник'] = 'Optima'
+        
+        # ПО (портал) - по умолчанию Optima
+        result['ПО'] = 'Optima'
+        
+        # Обогащение из Google-таблицы
+        if google_df is not None and 'Код анкеты' in result.columns:
+            google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
+            google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
             
+            if google_code_col and google_portal_col:
+                portal_mapping = {}
+                for _, row in google_df.iterrows():
+                    code = str(row.get(google_code_col, '')).strip()
+                    portal = str(row.get(google_portal_col, '')).strip()
+                    if code and code.lower() not in ['nan', 'none', 'null', '']:
+                        portal_mapping[code] = portal
+                
+                def get_portal(code_value):
+                    if pd.isna(code_value) or str(code_value).strip() in ['', 'nan', 'none', 'null']:
+                        return 'Optima'
+                    clean_code = str(code_value).strip()
+                    if '\\' in clean_code:
+                        clean_code = clean_code.split('\\')[0].strip()
+                    return portal_mapping.get(clean_code, 'Optima')
+                
+                result['ПО'] = result['Код анкеты'].apply(get_portal)
+        
+        # Добавление ЗОД из встроенного справочника (по АСС)
+        if 'АСС' in result.columns:
+            extended_zod_mapping = ZOD_MAPPING.copy()
+            extended_zod_mapping.update({
+                'Воронин Евгений': 'Устинов Игорь',
+                'Яцевич Максим': 'Устинов Игорь'
+            })
+            
+            def get_zod(acc_value):
+                if pd.isna(acc_value) or str(acc_value).strip() in ['', 'nan', 'none', 'null']:
+                    return ''
+                clean_acc = str(acc_value).strip()
+                return extended_zod_mapping.get(clean_acc, '')
+            
+            result['ЗОД'] = result['АСС'].apply(get_zod)
+        else:
+            result['ЗОД'] = ''
+        
+        return result
+    
     def _is_field_project(self, code):
         """Логика определения полевого проекта"""
         try:
@@ -1122,6 +1273,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -659,103 +659,116 @@ class DataCleaner:
     def check_problematic_projects(self, google_df, field_df):
         """
         Проверка проблемных проектов после очистки и обогащения
+        
+        Сравнивает данные из Google-таблицы (план) с фактическими данными визитов
+        и находит несоответствия.
         """
+        
+        # ЭТАП 1: ПОДГОТОВКА ДАННЫХ
+        
         if google_df is None or google_df.empty:
             return pd.DataFrame()
         
-        result = []
+        # Шаг 1.1: Поиск колонок в Google-таблице
+        google_cols = {
+            'name': self._find_column(google_df, ['Проекты в  https://ru.checker-soft.com', 'Проекты']),
+            'wave': self._find_column(google_df, ['Название волны на Чекере/ином ПО', 'Волна']),
+            'code': self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта']),
+            'portal': self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+        }
         
-        # Находим нужные колонки в гугл таблице
-        project_name_col = self._find_column(google_df, ['Проекты в  https://ru.checker-soft.com', 'Проекты'])
-        wave_col = self._find_column(google_df, ['Название волны на Чекере/ином ПО', 'Волна'])
-        code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
-        field_flag_col = 'Полевой'
-        
-        if not all([project_name_col, wave_col, code_col]):
+        if not all([google_cols['name'], google_cols['wave'], google_cols['code']]):
             return pd.DataFrame()
         
-        # Создаем множество кодов из полевого датасета
-        field_codes = set()
+        # Шаг 1.2: Собираем все коды из данных
+        all_codes = set()
         if field_df is not None and not field_df.empty:
             field_code_col = self._find_column(field_df, ['Код анкеты', 'Код'])
             if field_code_col:
-                field_codes = set(
-                    field_df[field_code_col].astype(str).str.strip().fillna('').values
-                )
-                field_codes = {code for code in field_codes if code and code not in ['', 'nan', 'None', 'null']}
+                codes = field_df[field_code_col].astype(str).str.strip().fillna('').values
+                all_codes = {c for c in codes if c and c not in ['', 'nan', 'None', 'null']}
         
-        # Проверяем проекты из гугл таблицы
-        for idx, row in google_df.iterrows():
-            project_name = str(row.get(project_name_col, '')).strip()
-            wave = str(row.get(wave_col, '')).strip()
-            code = str(row.get(code_col, '')).strip()
-            is_field = row.get(field_flag_col, 0)
+        # ЭТАП 2: СБОР ПРОБЛЕМ
+        
+        problems = []
+        
+        # ПРОВЕРКА 1: Проекты из Google, отсутствующие в данных
+        
+        for _, row in google_df.iterrows():
+            # Извлечение данных
+            name = str(row.get(google_cols['name'], '')).strip()
+            wave = str(row.get(google_cols['wave'], '')).strip()
+            code = str(row.get(google_cols['code'], '')).strip()
+            portal = str(row.get(google_cols['portal'], '')).strip() if google_cols['portal'] else ''
+            is_field = row.get('Полевой', 0)
             
-            if not project_name or project_name in ['nan', 'None', '']:
+            if not name or name in ['nan', 'None', '']:
                 continue
             
-            code_empty = pd.isna(row.get(code_col)) or code in ['', 'nan', 'None', 'null']
-            project_non_field_in_google = (is_field == 0)
+            # Проверка проблем
+            code_empty = pd.isna(row.get(google_cols['code'])) or code in ['', 'nan', 'None', 'null']
+            non_field = (is_field == 0)
+            missing_in_data = (is_field == 1 and code and code not in ['', 'nan', 'None', 'null'] 
+                              and code not in all_codes)
             
-            project_in_google_not_in_field = False
-            if is_field == 1 and code and code not in ['', 'nan', 'None', 'null']:
-                project_in_google_not_in_field = code not in field_codes
-            
-            if code_empty or project_non_field_in_google or project_in_google_not_in_field:
-                result.append({
-                    'Название проекта': project_name,
-                    'Волна': wave,
-                    'Код проекта': code if not code_empty else '',
-                    'Код проекта пусто': code_empty,
-                    'Проект неполевой, есть в гугл': project_non_field_in_google,
-                    'Проект есть в гугл, нет в массиве': project_in_google_not_in_field
+            if code_empty or non_field or missing_in_data:
+                problems.append({
+                    'source': 'google',
+                    'name': name, 'wave': wave, 'code': code if not code_empty else '',
+                    'portal': portal, 'code_empty': code_empty,
+                    'non_field': non_field, 'missing_in_data': missing_in_data
                 })
         
-        # Проверяем проекты из датасета, которых нет в гугле
+        # ПРОВЕРКА 2: Проекты из данных, отсутствующие в Google
+        
         if field_df is not None and not field_df.empty:
-            field_project_name_col = self._find_column(field_df, ['Название проекта', 'Wave Name'])
-            field_wave_col = self._find_column(field_df, ['Волна', 'Wave'])
-            field_code_col = self._find_column(field_df, ['Код анкеты', 'Код'])
-            # 🔴 ДОБАВЛЕНО
-            field_source_col = self._find_column(field_df, ['Источник'])
+            # Поиск колонок в данных
+            field_cols = {
+                'name': self._find_column(field_df, ['Название проекта', 'Wave Name']),
+                'wave': self._find_column(field_df, ['Волна', 'Wave']),
+                'code': self._find_column(field_df, ['Код анкеты', 'Код'])
+            }
             
-            if all([field_project_name_col, field_wave_col, field_code_col]):
-                google_codes = set()
-                for code in google_df[code_col].astype(str).str.strip().fillna('').values:
-                    if code and code not in ['', 'nan', 'None', 'null']:
-                        google_codes.add(code)
+            if all(field_cols.values()):
+                # Коды из Google для сравнения
+                google_codes = {str(c).strip() for c in google_df[google_cols['code']].values 
+                              if pd.notna(c) and str(c).strip() not in ['', 'nan', 'None', 'null']}
                 
-                for idx, row in field_df.iterrows():
-                    field_project = str(row.get(field_project_name_col, '')).strip()
-                    field_wave = str(row.get(field_wave_col, '')).strip()
-                    field_code = str(row.get(field_code_col, '')).strip()
-                    # 🔴 ДОБАВЛЕНО
-                    field_source = str(row.get(field_source_col, '')).strip() if field_source_col else ''
+                for _, row in field_df.iterrows():
+                    name = str(row.get(field_cols['name'], '')).strip()
+                    wave = str(row.get(field_cols['wave'], '')).strip()
+                    code = str(row.get(field_cols['code'], '')).strip()
                     
-                    if not field_project or field_project in ['nan', 'None', '']:
+                    if not name or name in ['nan', 'None', '']:
                         continue
                     
-                    project_in_field_not_in_google = (
-                        field_code and 
-                        field_code not in ['', 'nan', 'None', 'null'] and 
-                        field_code not in google_codes
-                    )
-                    
-                    if project_in_field_not_in_google:
-                        result.append({
-                            'Название проекта': field_project,
-                            'Волна': field_wave,
-                            'Код проекта': field_code,
-                            # 🔴 ДОБАВЛЕНО
-                            'Источник': field_source if field_source else 'не указан',
-                            'Код проекта пусто': False,
-                            'Проект неполевой, есть в гугл': False,
-                            'Проект есть в гугл, нет в массиве': False,
-                            'Проект есть в массиве, нет в гугл': True
+                    if code and code not in ['', 'nan', 'None', 'null'] and code not in google_codes:
+                        problems.append({
+                            'source': 'data',
+                            'name': name, 'wave': wave, 'code': code,
+                            'portal': '', 'code_empty': False,
+                            'non_field': False, 'missing_in_data': False,
+                            'missing_in_google': True
                         })
         
-        if not result:
+        # ЭТАП 3: ФОРМИРОВАНИЕ РЕЗУЛЬТАТА
+        
+        if not problems:
             return pd.DataFrame()
+        
+        # Преобразование в итоговый формат
+        result = []
+        for p in problems:
+            result.append({
+                'Название проекта': p['name'],
+                'Волна': p['wave'],
+                'Код проекта': p['code'],
+                'ПО': p['portal'],
+                'Код проекта пусто': p.get('code_empty', False),
+                'Проект неполевой, есть в гугл': p.get('non_field', False),
+                'Проект есть в гугл, нет в массиве': p.get('missing_in_data', False),
+                'Проект есть в массиве, нет в гугл': p.get('missing_in_google', False)
+            })
         
         df_result = pd.DataFrame(result)
         df_result = df_result.drop_duplicates(subset=['Название проекта', 'Волна'])
@@ -1279,6 +1292,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

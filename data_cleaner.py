@@ -660,11 +660,13 @@ class DataCleaner:
         """
         Проверка проблемных проектов после очистки и обогащения
         
-        Сравнивает данные из Google-таблицы (план) с фактическими данными визитов
+        Сравнивает данные из Google-таблицы (план) с данными визитов
         и находит несоответствия.
         """
         
+        # ============================================================
         # ЭТАП 1: ПОДГОТОВКА ДАННЫХ
+        # ============================================================
         
         if google_df is None or google_df.empty:
             return pd.DataFrame()
@@ -674,7 +676,8 @@ class DataCleaner:
             'name': self._find_column(google_df, ['Проекты в  https://ru.checker-soft.com', 'Проекты']),
             'wave': self._find_column(google_df, ['Название волны на Чекере/ином ПО', 'Волна']),
             'code': self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта']),
-            'portal': self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+            'portal': self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО']),
+            'fio_om': self._find_column(google_df, ['ФИО ОМ'])  # 🔴 НОВАЯ КОЛОНКА
         }
         
         if not all([google_cols['name'], google_cols['wave'], google_cols['code']]):
@@ -688,11 +691,15 @@ class DataCleaner:
                 codes = field_df[field_code_col].astype(str).str.strip().fillna('').values
                 all_codes = {c for c in codes if c and c not in ['', 'nan', 'None', 'null']}
         
+        # ============================================================
         # ЭТАП 2: СБОР ПРОБЛЕМ
+        # ============================================================
         
         problems = []
         
+        # ------------------------------------------------------------
         # ПРОВЕРКА 1: Проекты из Google, отсутствующие в данных
+        # ------------------------------------------------------------
         
         for _, row in google_df.iterrows():
             # Извлечение данных
@@ -700,6 +707,7 @@ class DataCleaner:
             wave = str(row.get(google_cols['wave'], '')).strip()
             code = str(row.get(google_cols['code'], '')).strip()
             portal = str(row.get(google_cols['portal'], '')).strip() if google_cols['portal'] else ''
+            fio_om = str(row.get(google_cols['fio_om'], '')).strip() if google_cols['fio_om'] else ''  # 🔴 НОВОЕ
             is_field = row.get('Полевой', 0)
             
             if not name or name in ['nan', 'None', '']:
@@ -715,17 +723,20 @@ class DataCleaner:
                 problems.append({
                     'source': 'google',
                     'name': name, 'wave': wave, 'code': code if not code_empty else '',
-                    'portal': portal, 'code_empty': code_empty,
+                    'portal': portal, 'fio_om': fio_om,  # 🔴 НОВОЕ
+                    'code_empty': code_empty,
                     'non_field': non_field, 'missing_in_data': missing_in_data
                 })
         
+        # ------------------------------------------------------------
         # ПРОВЕРКА 2: Проекты из данных, отсутствующие в Google
+        # ------------------------------------------------------------
         
         if field_df is not None and not field_df.empty:
             # Поиск колонок в данных
             field_cols = {
-                'name': self._find_column(field_df, ['Имя клиента', 'Client']),  # название проекта/клиента
-                'wave': self._find_column(field_df, ['Название проекта', 'Wave Name']),  # название волны
+                'name': self._find_column(field_df, ['Имя клиента', 'Client']),
+                'wave': self._find_column(field_df, ['Название проекта', 'Wave Name']),
                 'code': self._find_column(field_df, ['Код анкеты', 'Код'])
             }
             
@@ -746,12 +757,15 @@ class DataCleaner:
                         problems.append({
                             'source': 'data',
                             'name': name, 'wave': wave, 'code': code,
-                            'portal': '', 'code_empty': False,
+                            'portal': '', 'fio_om': '',  # 🔴 НОВОЕ (пустое значение)
+                            'code_empty': False,
                             'non_field': False, 'missing_in_data': False,
                             'missing_in_google': True
                         })
         
+        # ============================================================
         # ЭТАП 3: ФОРМИРОВАНИЕ РЕЗУЛЬТАТА
+        # ============================================================
         
         if not problems:
             return pd.DataFrame()
@@ -764,6 +778,7 @@ class DataCleaner:
                 'Волна': p['wave'],
                 'Код проекта': p['code'],
                 'ПО': p['portal'],
+                'ФИО ОМ': p.get('fio_om', ''),  # 🔴 НОВАЯ КОЛОНКА
                 'Код проекта пусто': p.get('code_empty', False),
                 'Проект неполевой, есть в гугл': p.get('non_field', False),
                 'Проект есть в гугл, нет в массиве': p.get('missing_in_data', False),
@@ -1292,6 +1307,7 @@ class DataCleaner:
 
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
+
 
 
 

@@ -154,7 +154,20 @@ def process_all_data():
                     st.session_state.cleaned_data['optima_processed'] = optima_processed
             except Exception as e:
                 st.warning(f"⚠️ Ошибка при обработке Optima: {e}")
-        
+
+        # Обработка ПроДата (Мониторинги)
+        prodata_processed = None
+        prodata_raw = st.session_state.uploaded_files.get('prodata')
+        if prodata_raw is not None:
+            try:
+                prodata_processed = data_cleaner.clean_prodata(
+                    prodata_raw, 
+                    google_with_field
+                )
+                if prodata_processed is not None and not prodata_processed.empty:
+                    st.session_state.cleaned_data['prodata_processed'] = prodata_processed
+            except Exception as e:
+                st.warning(f"⚠️ Ошибка при обработке ПроДата: {e}")
         
         # Обработка CXWAY (если есть)
         cxway_processed = None
@@ -175,6 +188,9 @@ def process_all_data():
             
         if optima_processed is not None and not optima_processed.empty:
             sources_for_merge.append(optima_processed)
+            
+        if prodata_processed is not None and not prodata_processed.empty:
+            sources_for_merge.append(prodata_processed)
         
         if sources_for_merge:
             all_field_projects = pd.concat(sources_for_merge, ignore_index=True)
@@ -296,7 +312,7 @@ with tab1:
     st.markdown("Загрузите необходимые Excel файлы")
     
     # Загрузка файлов
-    col1, col2,col3,col4,col5  = st.columns(5)
+    col1, col2,col3,col4,col5,col6  = st.columns(6)
     
     with col1:
         st.subheader("1. 📋 Портал (Массив.xlsx)")
@@ -367,6 +383,20 @@ with tab1:
                 st.session_state.uploaded_files['optima'] = optima_df
                 st.success("✅ Optima загружен")
                 display_file_preview(optima_df, "Просмотр данных Optima")
+
+    with col6:
+        st.subheader("6. 📱 ПроДата (дополнительно)")
+        prodata_file = st.file_uploader(
+            "Загрузите файл ПроДата.xlsx",
+            type=['xlsx', 'xls'],
+            key="prodata"
+        )
+        if prodata_file:
+            prodata_df = validate_file_upload(prodata_file, "ПроДата.xlsx")
+            if prodata_df is not None:
+                st.session_state.uploaded_files['prodata'] = prodata_df
+                st.success("✅ ПроДата загружен")
+                display_file_preview(prodata_df, "Просмотр данных ПроДата")
         
     
     st.markdown("---")
@@ -450,6 +480,7 @@ with tab2:
         with tab_dsm:
             data = st.session_state.visit_report['calculated_data']
             dataviz.create_dsm_tab(data, None)
+
 
 
 

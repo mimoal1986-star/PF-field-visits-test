@@ -219,8 +219,7 @@ class VisitCalculator:
                         continue
                     # равномерное распределение по регионам
                     project_regions = hierarchy_df[
-                        (hierarchy_df['Проект'] == project_code) & 
-                        (hierarchy_df['Клиент'] == 'ПроДата')
+                        (hierarchy_df['Проект'] == project_code)
                     ]['Регион'].unique()
                     num_regions = len(project_regions)
                     if num_regions > 0:
@@ -487,6 +486,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

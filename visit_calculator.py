@@ -166,19 +166,17 @@ class VisitCalculator:
                                 multon_quotas[code] = 0
                                 
             # КВОТЫ ПРОДАТА - ПРЯМО ИЗ ГУГЛ-ТАБЛИЦЫ
-            prodata_quotas = {}
+            all_quotas = {}
             if google_df is not None and not google_df.empty:
-                prodata_mask = google_df[project_col].astype(str).str.strip() == 'ПроДата'
-                prodata_projects = google_df[prodata_mask]
-                for _, row in prodata_projects.iterrows():
+                for _, row in google_df.iterrows():
                     code = str(row.get(code_col, '')).strip()
                     kvota = row.get(kvota_col, 0)
                     if code and code not in ['', 'nan', 'None', 'null']:
                         try:
-                            prodata_quotas[code] = float(kvota)
+                            all_quotas[code] = float(kvota)
                         except:
-                            prodata_quotas[code] = 0
-            
+                            all_quotas[code] = 0
+                
             # Планы проектов+волн+регионов (для обычных проектов)
             project_wave_region_plans = visits_df.groupby([
                 'Код анкеты', 
@@ -214,12 +212,12 @@ class VisitCalculator:
     
                 # ПРОДАТА 
                 elif po == 'Мониторинги':
-                    total_plan = prodata_quotas.get(project_code, 0)
+                    total_plan = all_quotas.get(project_code, 0)  # берем из общего словаря
                     if total_plan <= 0:
                         continue
-                    # равномерное распределение по регионам
+                    # равномерное распределение по регионам (только по проекту!)
                     project_regions = hierarchy_df[
-                        (hierarchy_df['Проект'] == project_code)
+                        hierarchy_df['Проект'] == project_code
                     ]['Регион'].unique()
                     num_regions = len(project_regions)
                     if num_regions > 0:
@@ -486,6 +484,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

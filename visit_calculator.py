@@ -144,7 +144,7 @@ class VisitCalculator:
             end_period = calc_params['end_date']
             coefficients = calc_params['coefficients']
             
-            # 🔴 КВОТЫ МУЛТОН - ПРЯМО ИЗ ГУГЛ-ТАБЛИЦЫ
+            #  КВОТЫ МУЛТОН - ПРЯМО ИЗ ГУГЛ-ТАБЛИЦЫ
             multon_quotas = {}
             if google_df is not None and not google_df.empty:
                 # Фильтруем проекты Мултон по точному названию колонки
@@ -164,6 +164,20 @@ class VisitCalculator:
                                 multon_quotas[code] = float(kvota)
                             except:
                                 multon_quotas[code] = 0
+                                
+            # КВОТЫ ПРОДАТА - ПРЯМО ИЗ ГУГЛ-ТАБЛИЦЫ
+            prodata_quotas = {}
+            if google_df is not None and not google_df.empty:
+                prodata_mask = google_df[project_col].astype(str).str.strip() == 'ПроДата'
+                prodata_projects = google_df[prodata_mask]
+                for _, row in prodata_projects.iterrows():
+                    code = str(row.get(code_col, '')).strip()
+                    kvota = row.get(kvota_col, 0)
+                    if code and code not in ['', 'nan', 'None', 'null']:
+                        try:
+                            prodata_quotas[code] = float(kvota)
+                        except:
+                            prodata_quotas[code] = 0
             
             # Планы проектов+волн+регионов (для обычных проектов)
             project_wave_region_plans = visits_df.groupby([
@@ -183,6 +197,7 @@ class VisitCalculator:
                 rs_name = row['RS']
                 
                 # ОПРЕДЕЛЯЕМ total_plan
+                # Мултон 
                 if po == 'ПО клиента' and client == 'Мултон':
                     total_plan = multon_quotas.get(project_code, 0)
                     if total_plan <= 0:
@@ -196,8 +211,21 @@ class VisitCalculator:
                     num_regions = len(project_regions)
                     if num_regions > 0:
                         total_plan = total_plan / num_regions  # делим квоту на число регионов
-                    # 👆 КОНЕЦ НОВОГО КОДА
     
+                # ПРОДАТА 
+                elif po == 'Мониторинги':
+                    total_plan = prodata_quotas.get(project_code, 0)
+                    if total_plan <= 0:
+                        continue
+                    # равномерное распределение по регионам
+                    project_regions = hierarchy_df[
+                        (hierarchy_df['Проект'] == project_code) & 
+                        (hierarchy_df['Клиент'] == 'ПроДата')
+                    ]['Регион'].unique()
+                    num_regions = len(project_regions)
+                    if num_regions > 0:
+                        total_plan = total_plan / num_regions
+                    
                 else:
                     plan_key = (project_code, wave_name, region)
                     if plan_key not in project_wave_region_plans.index:
@@ -459,6 +487,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

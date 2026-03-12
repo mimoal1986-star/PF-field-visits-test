@@ -166,16 +166,20 @@ class VisitCalculator:
                                 multon_quotas[code] = 0
                                 
             # КВОТЫ ПРОДАТА - ПРЯМО ИЗ ГУГЛ-ТАБЛИЦЫ
-            all_quotas = {}
+            prodata_quotas = {}
             if google_df is not None and not google_df.empty:
-                for _, row in google_df.iterrows():
+                # Фильтруем проекты, где название начинается с "Мониторинг"
+                prodata_mask = google_df[project_col].astype(str).str.strip().str.startswith('Мониторинг')
+                prodata_projects = google_df[prodata_mask]
+                
+                for _, row in prodata_projects.iterrows():
                     code = str(row.get(code_col, '')).strip()
                     kvota = row.get(kvota_col, 0)
                     if code and code not in ['', 'nan', 'None', 'null']:
                         try:
-                            all_quotas[code] = float(kvota)
+                            prodata_quotas[code] = float(kvota)
                         except:
-                            all_quotas[code] = 0
+                            prodata_quotas[code] = 0
                 
             # Планы проектов+волн+регионов (для обычных проектов)
             project_wave_region_plans = visits_df.groupby([
@@ -486,70 +490,6 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

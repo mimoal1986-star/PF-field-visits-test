@@ -481,6 +481,32 @@ with tab2:
             data = st.session_state.visit_report['calculated_data']
             dataviz.create_dsm_tab(data, None)
 
+# ============================================
+# ВЫГРУЗКА ПОЛЕВЫХ ПРОЕКТОВ
+# ============================================
+if st.session_state.cleaned_data.get('полевые_проекты') is not None:
+    st.markdown("---")
+    st.subheader("📥 Выгрузка данных")
+    
+    field_projects_df = st.session_state.cleaned_data['полевые_проекты']
+    
+    if not field_projects_df.empty:
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            field_projects_df.to_excel(writer, sheet_name='Полевые_проекты', index=False)
+        
+        st.download_button(
+            label="📥 Скачать все полевые проекты",
+            data=output.getvalue(),
+            file_name=f"полевые_проекты_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            type="primary",
+            use_container_width=True
+        )
+    else:
+        st.info("Нет данных для выгрузки")
+
+
 
 
 

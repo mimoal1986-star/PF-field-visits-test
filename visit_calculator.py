@@ -333,35 +333,63 @@ class VisitCalculator:
                     'Дневной план RS, шт.': round(rs_daily_plan, 2)
                 })
                                 
+
             if not results:
                 return pd.DataFrame()
             
-            # ПРОВЕРКА
             df_results = pd.DataFrame(results)
-            df_prodata = df_results[df_results['ПО'] == 'Мониторинги']
+            
+            # Отдельно работаем с ПроДата
+            df_prodata = df_results[df_results['ПО'] == 'Мониторинги'].copy()
             
             if not df_prodata.empty:
-                df_export = df_prodata[[
-                    'Проект', 
-                    'Регион', 
-                    'План проекта, шт.',
-                    'План на дату, шт.',
-                    'Дней в периоде'
-                ]].copy()
+                # 1. Уникальные комбинации проект+регион
+                unique_project_regions = df_prodata[['Проект', 'Регион']].drop_duplicates()
                 
+                # 2. Количество регионов на проект (для информации)
+                region_counts = unique_project_regions.groupby('Проект').size().to_dict()
+                
+                # 3. НЕ делим план повторно! Он уже поделен в цикле.
+                # Просто обновляем исходный DataFrame (на всякий случай)
+                df_results.update(df_prodata)
+            
+            # 5. Группировка по проекту
+            df_final = df_results.groupby(['Проект', 'ПО'], as_index=False).agg({
+                'План проекта, шт.': 'sum',
+                'План на дату, шт.': 'sum',
+                'Дней в периоде': 'first',
+                'Клиент': 'first',
+                'DSM': 'first',
+                'ASM': 'first',
+                'RS': 'first',
+                'Длительность': 'first',
+                'Дата старта': 'first',
+                'Дата финиша': 'first',
+                'Дневной план RS, шт.': 'sum'
+            })
+            
+            # 6. Детализация по регионам и волнам (для проверки)
+            df_details = df_results.groupby(['Проект', 'Регион', 'Волна'], as_index=False).agg({
+                'План проекта, шт.': 'first',
+                'План на дату, шт.': 'first'
+            })
+            
+            # Выгрузка детализации
+            if not df_details.empty:
                 output = io.BytesIO()
                 with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                    df_export.to_excel(writer, sheet_name='Планы_ПроДата_по_регионам', index=False)
+                    df_details.to_excel(writer, sheet_name='Детализация_ПроДата', index=False)
                 
                 st.download_button(
-                    label="📥 Скачать планы ПроДата по регионам",
+                    label="📥 Скачать детализацию ПроДата",
                     data=output.getvalue(),
-                    file_name=f"планы_продата_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                    file_name=f"детализация_продата_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
-                # ПРОВЕРКА
-                
+            
+            results = df_final.to_dict('records')
             return pd.DataFrame(results)
+                
             
         except Exception as e:
             return pd.DataFrame()
@@ -555,6 +583,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

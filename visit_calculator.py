@@ -216,7 +216,7 @@ class VisitCalculator:
     
                 # ПРОДАТА 
                 elif po == 'Мониторинги':
-                    total_plan = all_quotas.get(project_code, 0)  # берем из общего словаря
+                    total_plan = prodata_quotas.get(project_code, 0)
                     if total_plan <= 0:
                         continue
                     # равномерное распределение по регионам (только по проекту!)
@@ -490,6 +490,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

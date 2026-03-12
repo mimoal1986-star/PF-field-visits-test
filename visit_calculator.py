@@ -52,6 +52,86 @@ class VisitCalculator:
             return {}
     
     
+    def extract_hierarchical_data(self, visits_df, google_df=None):
+        """
+        Создаёт полную иерархию Проект→Клиент→Волна→Регион→DSM→ASM→RS
+        с базовой информацией о проекте
+        """
+        
+        try:
+            # 1. Определяем колонку региона
+            region_col = 'Регион short'
+            
+            # Создаём иерархию из visits_df (уникальные цепочки)
+            hierarchy = pd.DataFrame({
+                'Проект': visits_df['Код анкеты'].fillna('Не указано'),
+                'Клиент': visits_df['Имя клиента'].fillna('Не указано'),
+                'Волна': visits_df['Название проекта'].fillna('Не указано'),
+                'Регион': visits_df[region_col].fillna('Не указано'),
+                'DSM': visits_df['ЗОД'].fillna('Не указано'),
+                'ASM': visits_df['АСС'].fillna('Не указано'),
+                'RS': visits_df['ЭМ'].fillna('Не указано'),
+                'ПО': visits_df['ПО'].fillna('не определено'),
+                'Полевой': visits_df['Полевой']
+            })
+            
+            # ТОЛЬКО ПОЛЕВЫЕ ПРОЕКТЫ
+            hierarchy = hierarchy[hierarchy['Полевой'] == 1]
+            hierarchy = hierarchy.drop('Полевой', axis=1)
+            
+            # Удаляем дубликаты
+            hierarchy = hierarchy.drop_duplicates().reset_index(drop=True)
+            
+            # Даты - по умолчанию пустые
+            hierarchy['Дата старта'] = pd.NaT
+            hierarchy['Дата финиша'] = pd.NaT
+            
+            # Обогащаем датами из google_df
+            if google_df is not None and not google_df.empty:
+                try:
+                    # Маппинги для дат
+                    start_mapping = {}
+                    finish_mapping = {}
+                    
+                    for idx, row in google_df.iterrows():
+                        code = str(row.get('Код проекта RU00.000.00.01SVZ24', '')).strip()
+                        if code and code not in ['nan', '']:
+                            start_date = row.get('Дата старта')
+                            finish_date = row.get('Дата финиша с продлением')
+                            
+                            if pd.notna(start_date):
+                                start_mapping[code] = start_date
+                            if pd.notna(finish_date):
+                                finish_mapping[code] = finish_date
+                    
+                    hierarchy['Дата старта'] = hierarchy['Проект'].map(start_mapping)
+                    hierarchy['Дата финиша'] = hierarchy['Проект'].map(finish_mapping)
+                    
+                except Exception as e:
+                    pass
+            
+            # Рассчитываем длительность
+            hierarchy['Длительность'] = 0
+            mask_valid_dates = hierarchy['Дата старта'].notna() & hierarchy['Дата финиша'].notna()
+            
+            if mask_valid_dates.any():
+                hierarchy.loc[mask_valid_dates, 'Длительность'] = (
+                    hierarchy.loc[mask_valid_dates, 'Дата финиша'] - 
+                    hierarchy.loc[mask_valid_dates, 'Дата старта']
+                ).dt.days + 1
+            
+            # Сортируем
+            hierarchy = hierarchy.sort_values(['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM', 'RS'])
+            hierarchy = hierarchy[hierarchy['RS'] != 'Итого']
+            
+            return hierarchy
+            
+        except KeyError as e:
+            return pd.DataFrame()
+            
+        except Exception as e:
+            return pd.DataFrame()
+    
     def calculate_hierarchical_plan_on_date(self, hierarchy_df, visits_df, calc_params, google_df=None):
         """
         РАССЧИТЫВАЕТ ПЛАН ТОЛЬКО ДЛЯ УРОВНЯ RS
@@ -139,7 +219,7 @@ class VisitCalculator:
                     total_plan = prodata_quotas.get(project_code, 0)
                     if total_plan <= 0:
                         continue
-                    # равномерное распределение по регионам
+                    # равномерное распределение по регионам (только по проекту!)
                     project_regions = hierarchy_df[
                         (hierarchy_df['Проект'] == project_code) & 
                         (hierarchy_df['ПО'] == 'Мониторинги')
@@ -147,7 +227,7 @@ class VisitCalculator:
                     
                     num_regions = len(project_regions)
                     if num_regions > 0:
-                        total_plan = total_plan / num_regions  # делим квоту на число регионов
+                        total_plan = total_plan / num_regions
                     
                 else:
                     plan_key = (project_code, wave_name, region)
@@ -182,10 +262,6 @@ class VisitCalculator:
                     # Мултон: план = вся квота сразу
                     rs_plan_on_date = total_plan
                     rs_daily_plan = total_plan  # для отчета
-                elif po == 'Мониторинги':
-                    # ПроДата: план = вся квота сразу (как в Мултон)
-                    rs_plan_on_date = total_plan
-                    rs_daily_plan = total_plan
                 else:
                     # Обычный проект: равномерное распределение с весами RS
                     daily_plan_wave = total_plan / duration
@@ -414,8 +490,6 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
-
-
 
 
 

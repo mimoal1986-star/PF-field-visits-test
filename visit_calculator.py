@@ -262,6 +262,9 @@ class VisitCalculator:
                     # Мултон: план = вся квота сразу
                     rs_plan_on_date = total_plan
                     rs_daily_plan = total_plan  # для отчета
+                elif po == 'Мониторинги':  # ← ЭТО НОВОЕ УСЛОВИЕ!
+                    rs_plan_on_date = total_plan
+                    rs_daily_plan = total_plan
                 else:
                     # Обычный проект: равномерное распределение с весами RS
                     daily_plan_wave = total_plan / duration
@@ -490,6 +493,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

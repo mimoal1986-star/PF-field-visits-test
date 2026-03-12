@@ -180,6 +180,25 @@ class VisitCalculator:
                             prodata_quotas[code] = float(kvota)
                         except:
                             prodata_quotas[code] = 0
+                # ПРОВЕРКА 
+                if prodata_quotas:
+                    df_quotas = pd.DataFrame([
+                        {'Код проекта': code, 'Квота': kvota} 
+                        for code, kvota in prodata_quotas.items()
+                    ])
+                    
+                    output = io.BytesIO()
+                    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                        df_quotas.to_excel(writer, sheet_name='Квоты_ПроДата', index=False)
+                    
+                    st.download_button(
+                        label="📥 Скачать квоты ПроДата",
+                        data=output.getvalue(),
+                        file_name=f"квоты_продата_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+                # ПРОВЕРКА 
+        
                 
             # Планы проектов+волн+регионов (для обычных проектов)
             project_wave_region_plans = visits_df.groupby([
@@ -493,6 +512,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

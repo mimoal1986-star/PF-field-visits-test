@@ -318,6 +318,32 @@ class VisitCalculator:
                                 
             if not results:
                 return pd.DataFrame()
+            
+            # ПРОВЕРКА
+            df_results = pd.DataFrame(results)
+            df_prodata = df_results[df_results['ПО'] == 'Мониторинги']
+            
+            if not df_prodata.empty:
+                df_export = df_prodata[[
+                    'Проект', 
+                    'Регион', 
+                    'План проекта, шт.',
+                    'План на дату, шт.',
+                    'Дней в периоде'
+                ]].copy()
+                
+                output = io.BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    df_export.to_excel(writer, sheet_name='Планы_ПроДата_по_регионам', index=False)
+                
+                st.download_button(
+                    label="📥 Скачать планы ПроДата по регионам",
+                    data=output.getvalue(),
+                    file_name=f"планы_продата_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+                # ПРОВЕРКА
+                
             return pd.DataFrame(results)
             
         except Exception as e:
@@ -512,6 +538,7 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
+
 
 
 

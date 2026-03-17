@@ -1277,6 +1277,10 @@ class DataCleaner:
                 result[std_col] = df_clean[source_col].astype(str).fillna('')
             else:
                 result[std_col] = ''
+                
+        # ЗАМЕНЯЕМ ВСЕ ЗНАЧЕНИЯ ВОЛНЫ НА "Все волны"
+        if 'Название проекта' in result.columns:
+            result['Название проекта'] = 'Все волны'
         
         # ЭМ всегда пусто (нет в исходных данных)
         result['ЭМ'] = ''

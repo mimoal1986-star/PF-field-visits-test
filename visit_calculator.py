@@ -161,7 +161,7 @@ class VisitCalculator:
             end_period = calc_params['end_date']
             coefficients = calc_params['coefficients']
             
-            #  КВОТЫ МУЛТОН - ПРЯМО ИЗ ГУГЛ-ТАБЛИЦЫ
+            # КВОТЫ МУЛТОН - ПРЯМО ИЗ ГУГЛ-ТАБЛИЦЫ
             multon_quotas = {}
             if google_df is not None and not google_df.empty:
                 # Фильтруем проекты Мултон по точному названию колонки
@@ -181,7 +181,7 @@ class VisitCalculator:
                                 multon_quotas[code] = float(kvota)
                             except:
                                 multon_quotas[code] = 0
-                                
+            
             # КВОТЫ ПРОДАТА - ПРЯМО ИЗ ГУГЛ-ТАБЛИЦЫ
             prodata_quotas = {}
             if google_df is not None and not google_df.empty:
@@ -197,26 +197,7 @@ class VisitCalculator:
                             prodata_quotas[code] = float(kvota)
                         except:
                             prodata_quotas[code] = 0
-                # ПРОВЕРКА 
-                if prodata_quotas:
-                    df_quotas = pd.DataFrame([
-                        {'Код проекта': code, 'Квота': kvota} 
-                        for code, kvota in prodata_quotas.items()
-                    ])
-                    
-                    output = io.BytesIO()
-                    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                        df_quotas.to_excel(writer, sheet_name='Квоты_ПроДата', index=False)
-                    
-                    st.download_button(
-                        label="📥 Скачать квоты ПроДата",
-                        data=output.getvalue(),
-                        file_name=f"квоты_продата_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    )
-                # ПРОВЕРКА 
-        
-                
+            
             # Планы проектов+волн+регионов (для обычных проектов)
             project_wave_region_plans = visits_df.groupby([
                 'Код анкеты', 
@@ -245,26 +226,24 @@ class VisitCalculator:
                         (hierarchy_df['Проект'] == project_code) & 
                         (hierarchy_df['Клиент'] == 'Мултон')
                     ]['Регион'].unique()
-                    
                     num_regions = len(project_regions)
                     if num_regions > 0:
-                        total_plan = total_plan / num_regions  # делим квоту на число регионов
-    
+                        total_plan = total_plan / num_regions
+                
                 # ПРОДАТА 
                 elif po == 'Мониторинги':
                     total_plan = prodata_quotas.get(project_code, 0)
                     if total_plan <= 0:
                         continue
-                    # равномерное распределение по регионам (только по проекту!)
+                    # равномерное распределение по регионам
                     project_regions = hierarchy_df[
                         (hierarchy_df['Проект'] == project_code) & 
                         (hierarchy_df['ПО'] == 'Мониторинги')
                     ]['Регион'].unique()
-                    
                     num_regions = len(project_regions)
                     if num_regions > 0:
                         total_plan = total_plan / num_regions
-                    
+                
                 else:
                     plan_key = (project_code, wave_name, region)
                     if plan_key not in project_wave_region_plans.index:
@@ -297,8 +276,9 @@ class VisitCalculator:
                 if po == 'ПО клиента' and client == 'Мултон':
                     # Мултон: план = вся квота сразу
                     rs_plan_on_date = total_plan
-                    rs_daily_plan = total_plan  # для отчета
-                elif po == 'Мониторинги':  # ← ЭТО НОВОЕ УСЛОВИЕ!
+                    rs_daily_plan = total_plan
+                elif po == 'Мониторинги':
+                    # ПроДата: план = вся квота сразу (как в Мултон)
                     rs_plan_on_date = total_plan
                     rs_daily_plan = total_plan
                 else:
@@ -332,65 +312,11 @@ class VisitCalculator:
                     'Дней в периоде': days_in_period,
                     'Дневной план RS, шт.': round(rs_daily_plan, 2)
                 })
-                                
-
+            
             if not results:
                 return pd.DataFrame()
-            
-            df_results = pd.DataFrame(results)
-            
-            # Отдельно работаем с ПроДата
-            df_prodata = df_results[df_results['ПО'] == 'Мониторинги'].copy()
-            
-            if not df_prodata.empty:
-                # 1. Уникальные комбинации проект+регион
-                unique_project_regions = df_prodata[['Проект', 'Регион']].drop_duplicates()
-                
-                # 2. Количество регионов на проект (для информации)
-                region_counts = unique_project_regions.groupby('Проект').size().to_dict()
-                
-                # 3. НЕ делим план повторно! Он уже поделен в цикле.
-                # Просто обновляем исходный DataFrame (на всякий случай)
-                df_results.update(df_prodata)
-            
-            # 5. Группировка по проекту
-            df_final = df_results.groupby(['Проект', 'ПО'], as_index=False).agg({
-                'План проекта, шт.': 'sum',
-                'План на дату, шт.': 'sum',
-                'Дней в периоде': 'first',
-                'Клиент': 'first',
-                'DSM': 'first',
-                'ASM': 'first',
-                'RS': 'first',
-                'Длительность': 'first',
-                'Дата старта': 'first',
-                'Дата финиша': 'first',
-                'Дневной план RS, шт.': 'sum'
-            })
-            
-            # 6. Детализация по регионам и волнам (для проверки)
-            df_details = df_results.groupby(['Проект', 'Регион', 'Волна'], as_index=False).agg({
-                'План проекта, шт.': 'first',
-                'План на дату, шт.': 'first'
-            })
-            
-            # Выгрузка детализации
-            if not df_details.empty:
-                output = io.BytesIO()
-                with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                    df_details.to_excel(writer, sheet_name='Детализация_ПроДата', index=False)
-                
-                st.download_button(
-                    label="📥 Скачать детализацию ПроДата",
-                    data=output.getvalue(),
-                    file_name=f"детализация_продата_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
-            
-            results = df_final.to_dict('records')
             return pd.DataFrame(results)
-                
-            
+        
         except Exception as e:
             return pd.DataFrame()
         

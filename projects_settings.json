@@ -1,5 +1,15 @@
 {
-  "excluded_projects": [],
+  "excluded_projects": [
+    {
+      "project_name": "Старик Хинкалыч Курск",
+      "wave_name": "2026.03 (63 волна)",
+      "project_code": "RU00.270.01.01SPK24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-03-19T11:10:02.039508",
+      "added_by": "unknown_user"
+    }
+  ],
   "included_projects": [
     {
       "project_name": "ASKONA",
@@ -180,8 +190,16 @@
       "project_code": "RU00.270.01.01SPK24",
       "timestamp": "2026-03-19T11:09:43.500638",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Старик Хинкалыч Курск",
+      "wave_name": "2026.03 (63 волна)",
+      "project_code": "RU00.270.01.01SPK24",
+      "timestamp": "2026-03-19T11:10:02.039519",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-19T11:09:43.500643",
+  "last_updated": "2026-03-19T11:10:02.039523",
   "version": "1.0"
 }

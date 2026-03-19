@@ -1,0 +1,77 @@
+{
+  "excluded_projects": [
+    {
+      "project_name": "2026.03 - звонки",
+      "wave_name": "",
+      "project_code": "",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-19T10:10:17.563658",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "2026.03 - визиты",
+      "wave_name": "",
+      "project_code": "",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-19T10:10:17.563784",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "2026.03 - визиты юр лица МО",
+      "wave_name": "",
+      "project_code": "",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-19T10:10:17.563880",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "2026.03 - визиты юр лица",
+      "wave_name": "",
+      "project_code": "",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-19T10:10:17.563967",
+      "added_by": "unknown_user"
+    }
+  ],
+  "included_projects": [],
+  "history": [
+    {
+      "action": "add_to_excluded",
+      "project_name": "2026.03 - звонки",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-03-19T10:10:17.563671",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "2026.03 - визиты",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-03-19T10:10:17.563789",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "2026.03 - визиты юр лица МО",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-03-19T10:10:17.563885",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "2026.03 - визиты юр лица",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-03-19T10:10:17.563972",
+      "user": "unknown_user"
+    }
+  ],
+  "last_updated": "2026-03-19T10:10:17.563976",
+  "version": "1.0"
+}

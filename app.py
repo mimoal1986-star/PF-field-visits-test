@@ -577,9 +577,32 @@ with tab3:
         
         # Получаем проекты из расчета (из session_state после process_all_data)
         if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
-            field_df = st.session_state.cleaned_data['полевые_проекты']
+            field_df = st.session_state.cleaned_data['полевые_проекты'].copy()
             
+            # 🔥 ПРИМЕНЯЕМ НАСТРОЙКИ 🔥
             if field_df is not None and not field_df.empty:
+                
+                # 1. Убираем исключенные проекты
+                if not excluded_df.empty:
+                    for _, row in excluded_df.iterrows():
+                        mask = (
+                            (field_df['Имя клиента'] == row['Название проекта']) &
+                            (field_df['Название проекта'] == row['Волна']) &
+                            (field_df['Код анкеты'] == row['Код проекта'])
+                        )
+                        field_df = field_df[~mask]
+                
+                # 2. Добавляем проекты из included_df
+                if not included_df.empty:
+                    for _, row in included_df.iterrows():
+                        new_row = {
+                            'Имя клиента': row['Название проекта'],
+                            'Название проекта': row['Волна'],
+                            'Код анкеты': row['Код проекта'],
+                            'ПО': row['ПО']
+                        }
+                        field_df = pd.concat([field_df, pd.DataFrame([new_row])], ignore_index=True)
+                
                 # Формируем DataFrame для отображения
                 projects_in_calc = field_df[['Имя клиента', 'Название проекта', 'Код анкеты', 'ПО']].copy()
                 projects_in_calc = projects_in_calc.rename(columns={
@@ -592,6 +615,8 @@ with tab3:
                 projects_in_calc = projects_in_calc.drop_duplicates(keep='first').reset_index(drop=True)
                 
                 st.dataframe(projects_in_calc, use_container_width=True)
+                
+            
                 
                 # Мультиселект по Название проекта
                 selected_clients = st.multiselect(

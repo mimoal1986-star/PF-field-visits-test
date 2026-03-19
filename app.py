@@ -752,8 +752,87 @@ with tab3:
     
     with col2:
         if st.button("🔄 Пересчитать", type="secondary", use_container_width=True):
-            st.info("🔄 Пересчет план/факта с учетом настроек")
-            # Здесь будет логика пересчета
+            with st.spinner("🔄 Пересчет план/факта с учетом настроек..."):
+                try:
+                    # 1. Получаем исходные данные
+                    if 'cleaned_data' not in st.session_state:
+                        st.error("❌ Нет данных для пересчета")
+                        st.stop()
+                    
+                    google_df = st.session_state.cleaned_data.get('сервизория')
+                    base_field_df = st.session_state.cleaned_data.get('полевые_проекты', pd.DataFrame()).copy()
+                    
+                    if base_field_df.empty:
+                        st.error("❌ Нет полевых проектов")
+                        st.stop()
+                    
+                    # 2. Применяем настройки к данным
+                    # Убираем исключенные
+                    if not excluded_df.empty:
+                        for _, row in excluded_df.iterrows():
+                            mask = (
+                                (base_field_df['Имя клиента'] == row['Название проекта']) &
+                                (base_field_df['Название проекта'] == row['Волна']) &
+                                (base_field_df['Код анкеты'] == row['Код проекта'])
+                            )
+                            base_field_df = base_field_df[~mask]
+                    
+                    # Добавляем из included_df
+                    if not included_df.empty:
+                        for _, row in included_df.iterrows():
+                            new_row = {
+                                'Имя клиента': row['Название проекта'],
+                                'Название проекта': row['Волна'],
+                                'Код анкеты': row['Код проекта'],
+                                'ПО': row['ПО'],
+                                'ЗОД': row.get('ФИО ОМ', ''),
+                                'АСС': '',
+                                'ЭМ': '',
+                                'Регион short': '',
+                                'Регион': '',
+                                'Полевой': 1,
+                                'Статус': 'Выполнено',
+                                'Дата визита': pd.NaT
+                            }
+                            base_field_df = pd.concat([base_field_df, pd.DataFrame([new_row])], ignore_index=True)
+                    
+                    # 3. Строим иерархию заново
+                    base_data = visit_calculator.extract_hierarchical_data(
+                        base_field_df,
+                        google_df
+                    )
+                    
+                    # 4. Пересчитываем план/факт
+                    if st.session_state.plan_calc_params and not base_data.empty:
+                        params = st.session_state.plan_calc_params
+                        
+                        plan_result = visit_calculator.calculate_hierarchical_plan_on_date(
+                            base_data, base_field_df, params, google_df
+                        )
+                        
+                        if plan_result is not None and not plan_result.empty:
+                            fact_result = visit_calculator.calculate_hierarchical_fact_on_date(
+                                plan_result, base_field_df, params
+                            )
+                            
+                            final_result = visit_calculator._calculate_metrics(
+                                fact_result, params, plan_result
+                            )
+                            
+                            # 5. Обновляем session_state
+                            st.session_state.visit_report['calculated_data'] = final_result
+                            st.session_state.visit_report['base_data'] = base_data
+                            st.session_state.cleaned_data['полевые_проекты_с_настройками'] = base_field_df
+                            
+                            st.success("✅ Пересчет завершен! Перейдите на вкладку 'Отчеты'")
+                            st.rerun()
+                        else:
+                            st.error("❌ Ошибка при расчете плана")
+                    else:
+                        st.error("❌ Нет параметров расчета или данных для иерархии")
+                        
+                except Exception as e:
+                    st.error(f"❌ Ошибка при пересчете: {str(e)}")
     
     with col3:
         if st.button("🗑️ Сбросить все настройки", use_container_width=True):

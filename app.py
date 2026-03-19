@@ -835,85 +835,123 @@ with tab3:
         if st.button("🔄 Пересчитать", type="secondary", use_container_width=True):
             with st.spinner("🔄 Пересчет план/факта с учетом настроек..."):
                 try:
-                    # 1. Получаем исходные данные
+                    # 1️⃣ ПРОВЕРКА НАЛИЧИЯ ДАННЫХ
                     if 'cleaned_data' not in st.session_state:
                         st.error("❌ Нет данных для пересчета")
                         st.stop()
                     
+                    # 2️⃣ ПОЛУЧАЕМ ИСХОДНЫЕ ДАННЫЕ
                     google_df = st.session_state.cleaned_data.get('сервизория')
-                    base_field_df = st.session_state.cleaned_data.get('полевые_проекты', pd.DataFrame()).copy()
+                    field_df = st.session_state.cleaned_data.get('полевые_проекты', pd.DataFrame()).copy()
+                    non_field_df = st.session_state.cleaned_data.get('неполевые_проекты', pd.DataFrame()).copy()
                     
-                    if base_field_df.empty:
-                        st.error("❌ Нет полевых проектов")
+                    if field_df.empty and non_field_df.empty:
+                        st.error("❌ Нет данных о проектах")
                         st.stop()
                     
-                    # 2. Загружаем актуальные настройки из GitHub
+                    # 3️⃣ ЗАГРУЖАЕМ АКТУАЛЬНЫЕ НАСТРОЙКИ ИЗ GITHUB
                     current_excluded = manager.get_excluded_projects()
                     current_included = manager.get_included_projects()
                     
-                    # 3. Применяем настройки к данным
-                    # Убираем исключенные
+                    # 4️⃣ ПРИМЕНЯЕМ НАСТРОЙКИ - МЕНЯЕМ ТОЛЬКО ФЛАГ ПОЛЕВОЙ
+                    
+                    # Сбрасываем все проекты до базового состояния
+                    # (возвращаем исходные значения Полевой из google_df)
+                    if google_df is not None and not google_df.empty:
+                        # Создаем словарь {код проекта: полевой признак из google}
+                        field_flag_map = {}
+                        for _, row in google_df.iterrows():
+                            code = row.get('Код проекта RU00.000.00.01SVZ24', '')
+                            field_flag = row.get('Полевой', 0)
+                            if code and str(code).strip():
+                                field_flag_map[str(code).strip()] = field_flag
+                        
+                        # Применяем к field_df
+                        if 'Код анкеты' in field_df.columns:
+                            field_df['Полевой'] = field_df['Код анкеты'].map(
+                                lambda x: field_flag_map.get(str(x).strip(), 0)
+                            ).fillna(0).astype(int)
+                    
+                    # Применяем ИСКЛЮЧЕННЫЕ проекты (Полевой = 0)
                     if not current_excluded.empty:
                         for _, row in current_excluded.iterrows():
-                            mask = (
-                                (base_field_df['Имя клиента'] == row['Название проекта']) &
-                                (base_field_df['Название проекта'] == row['Волна']) &
-                                (base_field_df['Код анкеты'] == row['Код проекта'])
+                            # Ищем в field_df
+                            mask_field = (
+                                (field_df['Имя клиента'] == row['Название проекта']) &
+                                (field_df['Название проекта'] == row['Волна']) &
+                                (field_df['Код анкеты'] == row['Код проекта'])
                             )
-                            base_field_df = base_field_df[~mask]
+                            if mask_field.any():
+                                field_df.loc[mask_field, 'Полевой'] = 0
+                            
+                            # Ищем в non_field_df на всякий случай
+                            if not non_field_df.empty:
+                                mask_non_field = (
+                                    (non_field_df['Имя клиента'] == row['Название проекта']) &
+                                    (non_field_df['Название проекта'] == row['Волна']) &
+                                    (non_field_df['Код анкеты'] == row['Код проекта'])
+                                )
+                                if mask_non_field.any():
+                                    non_field_df.loc[mask_non_field, 'Полевой'] = 0
                     
-                    # Добавляем проекты из included (если их нет в данных)
+                    # Применяем ДОБАВЛЕННЫЕ проекты (Полевой = 1)
                     if not current_included.empty:
                         for _, row in current_included.iterrows():
-                            mask = (
-                                (base_field_df['Имя клиента'] == row['Название проекта']) &
-                                (base_field_df['Название проекта'] == row['Волна']) &
-                                (base_field_df['Код анкеты'] == row['Код проекта'])
+                            # Ищем в field_df
+                            mask_field = (
+                                (field_df['Имя клиента'] == row['Название проекта']) &
+                                (field_df['Название проекта'] == row['Волна']) &
+                                (field_df['Код анкеты'] == row['Код проекта'])
                             )
-                            if not mask.any():
-                                new_row = {
-                                    'Имя клиента': row['Название проекта'],
-                                    'Название проекта': row['Волна'],
-                                    'Код анкеты': row['Код проекта'],
-                                    'ПО': row['ПО'],
-                                    'ЗОД': '',
-                                    'АСС': '',
-                                    'ЭМ': '',
-                                    'Регион short': '',
-                                    'Регион': '',
-                                    'Полевой': 1,
-                                    'Статус': 'Выполнено',
-                                    'Дата визита': pd.NaT
-                                }
-                                base_field_df = pd.concat([base_field_df, pd.DataFrame([new_row])], ignore_index=True)
+                            if mask_field.any():
+                                field_df.loc[mask_field, 'Полевой'] = 1
+                            
+                            # Ищем в non_field_df
+                            if not non_field_df.empty:
+                                mask_non_field = (
+                                    (non_field_df['Имя клиента'] == row['Название проекта']) &
+                                    (non_field_df['Название проекта'] == row['Волна']) &
+                                    (non_field_df['Код анкеты'] == row['Код проекта'])
+                                )
+                                if mask_non_field.any():
+                                    non_field_df.loc[mask_non_field, 'Полевой'] = 1
                     
-                    # 4. Строим иерархию заново
+                    # 5️⃣ ОБЪЕДИНЯЕМ ОБНОВЛЕННЫЕ ДАННЫЕ
+                    all_projects = pd.concat([field_df, non_field_df], ignore_index=True)
+                    
+                    # 6️⃣ СОХРАНЯЕМ В SESSION_STATE
+                    st.session_state.cleaned_data['полевые_проекты'] = all_projects
+                    st.session_state.cleaned_data['неполевые_проекты'] = non_field_df
+                    
+                    # 7️⃣ СТРОИМ ИЕРАРХИЮ ТОЛЬКО ИЗ ОБНОВЛЕННЫХ ДАННЫХ
                     base_data = visit_calculator.extract_hierarchical_data(
-                        base_field_df,
-                        google_df
+                        all_projects,  # ✅ только обновленные данные
+                        None           # ✅ google_df не нужен!
                     )
                     
-                    # 5. Пересчитываем план/факт
+                    # 8️⃣ ПЕРЕСЧИТЫВАЕМ ПЛАН/ФАКТ
                     if st.session_state.plan_calc_params and not base_data.empty:
                         params = st.session_state.plan_calc_params
                         
                         plan_result = visit_calculator.calculate_hierarchical_plan_on_date(
-                            base_data, base_field_df, params, google_df
+                            base_data, 
+                            all_projects,  # ✅ только обновленные данные
+                            params, 
+                            None           # ✅ google_df не нужен!
                         )
                         
                         if plan_result is not None and not plan_result.empty:
                             fact_result = visit_calculator.calculate_hierarchical_fact_on_date(
-                                plan_result, base_field_df, params
+                                plan_result, all_projects, params
                             )
                             
                             final_result = visit_calculator._calculate_metrics(
                                 fact_result, params, plan_result
                             )
                             
-                            # 6. Обновляем session_state
+                            # 9️⃣ СОХРАНЯЕМ РЕЗУЛЬТАТЫ
                             st.session_state.visit_report['calculated_data'] = final_result
                             st.session_state.visit_report['base_data'] = base_data
-                            st.session_state.cleaned_data['полевые_проекты_с_настройками'] = base_field_df
                             
                             st.success("✅ Пересчет завершен! Перейдите на вкладку 'Отчеты'")
                             st.rerun()
@@ -921,7 +959,7 @@ with tab3:
                             st.error("❌ Ошибка при расчете плана")
                     else:
                         st.error("❌ Нет параметров расчета или данных для иерархии")
-                        
+                            
                 except Exception as e:
                     st.error(f"❌ Ошибка при пересчете: {str(e)}")
     

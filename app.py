@@ -581,7 +581,7 @@ with tab3:
             
             if field_df is not None and not field_df.empty:
                 # Формируем DataFrame для отображения
-                projects_in_calc = field_df[['Название проекта', 'Волна', 'Код анкеты', 'ПО', 'ЗОД']].copy()
+                projects_in_calc = field_df[['Имя клиента', 'Название проекта', 'Код анкеты', 'ПО']].copy()
                 projects_in_calc = projects_in_calc.rename(columns={
                     'Название проекта': 'Название проекта',
                     'Волна': 'Волна',

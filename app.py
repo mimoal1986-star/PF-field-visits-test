@@ -590,16 +590,16 @@ with tab3:
                 
                 st.dataframe(projects_in_calc, use_container_width=True)
                 
-                # Мультиселект по Имя клиента
+                # Мультиселект по Название проекта
                 selected_clients = st.multiselect(
                     "Выберите проекты для исключения:",
-                    options=projects_in_calc['Имя клиента'].unique(),
+                    options=projects_in_calc['Название проекта'].unique(),
                     key='multiselect_exclude'
                 )
                 
                 if selected_clients and st.button("🗑️ Убрать выбранные из расчета", type="secondary", use_container_width=True):
                     # Берем строки с выбранными клиентами
-                    selected_df = projects_in_calc[projects_in_calc['Имя клиента'].isin(selected_clients)].copy()
+                    selected_df = projects_in_calc[projects_in_calc['Название проекта'].isin(selected_clients)].copy()
                     
                     # Передаем как есть
                     success, msg = manager.add_to_excluded(selected_df)

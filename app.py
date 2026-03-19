@@ -563,6 +563,7 @@ with tab3:
     # 👇 КНОПКА ВЫГРУЗКИ field_df
     if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
         field_df_export = st.session_state.cleaned_data['полевые_проекты']
+        field_df = field_df[field_df['Полевой'] == 1]
         if field_df_export is not None and not field_df_export.empty:
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -694,6 +695,7 @@ with tab3:
         # Здесь будут неполевые проекты
         if 'cleaned_data' in st.session_state and 'неполевые_проекты' in st.session_state.cleaned_data:
             non_field_df = st.session_state.cleaned_data['неполевые_проекты'].copy()
+            non_field_df = non_field_df[non_field_df['Полевой'] == 0]
             
             if non_field_df is not None and not non_field_df.empty:
                 # Формируем DataFrame для отображения

@@ -686,75 +686,95 @@ with tab3:
         else:
             st.info("⏳ Сначала выполните расчет на вкладке 'Загрузка данных'")
     
-    # === ПРАВАЯ КОЛОНКА: Проекты НЕ в расчете (можно добавить) ===
+    # === ПРАВАЯ КОЛОНКА: Проекты НЕ в расчете  ===
     with col_right:
         st.subheader("📊 Проекты НЕ В РАСЧЕТЕ")
         st.caption("Отметьте проекты, которые нужно ДОБАВИТЬ в расчет")
         
-        # Здесь будут проблемные проекты
-        if 'problematic_projects' in st.session_state:
-            problematic_df = st.session_state.problematic_projects.copy()
+        # Здесь будут неполевые проекты
+        if 'cleaned_data' in st.session_state and 'неполевые_проекты' in st.session_state.cleaned_data:
+            non_field_df = st.session_state.cleaned_data['неполевые_проекты'].copy()
             
-            # Исключаем уже добавленные проекты
-            if not included_df.empty:
-                for _, row in included_df.iterrows():
-                    mask = (
-                        (problematic_df['Название проекта'] == row['Название проекта']) &
-                        (problematic_df['Волна'] == row['Волна']) &
-                        (problematic_df['Код проекта'] == row['Код проекта'])
-                    )
-                    problematic_df = problematic_df[~mask]
-            
-            
-            if not problematic_df.empty:
-                st.dataframe(problematic_df, use_container_width=True)
+            if non_field_df is not None and not non_field_df.empty:
+                # Формируем DataFrame для отображения
+                projects_not_in_calc = non_field_df[['Имя клиента', 'Название проекта', 'Код анкеты', 'ПО']].copy()
+                projects_not_in_calc = projects_not_in_calc.rename(columns={
+                    'Имя клиента': 'Название проекта',
+                    'Название проекта': 'Волна',
+                    'Код анкеты': 'Код проекта'
+                })
+                # Оставляем только нужные колонки
+                projects_not_in_calc = projects_not_in_calc[['Название проекта', 'Волна', 'Код проекта', 'ПО']]
                 
-                # Мультиселект для выбора проектов
-                problem_options = problematic_df.apply(
-                    lambda row: f"{row['Название проекта']} | {row['Волна']} | {row['Код проекта']}", 
-                    axis=1
-                ).tolist()
+                # Удаляем дубликаты
+                projects_not_in_calc = projects_not_in_calc.drop_duplicates(
+                    subset=['Название проекта', 'Волна', 'Код проекта'], 
+                    keep='first'
+                ).reset_index(drop=True)
                 
-                selected_prob = st.multiselect(
-                    "Выберите проекты для добавления:",
-                    options=problem_options,
-                    key='multiselect_include'
-                )
+                # Исключаем уже добавленные проекты (из included_df)
+                if not included_df.empty:
+                    for _, row in included_df.iterrows():
+                        mask = (
+                            (projects_not_in_calc['Название проекта'] == row['Название проекта']) &
+                            (projects_not_in_calc['Волна'] == row['Волна']) &
+                            (projects_not_in_calc['Код проекта'] == row['Код проекта'])
+                        )
+                        projects_not_in_calc = projects_not_in_calc[~mask]
                 
-                if selected_prob and st.button("➕ Добавить выбранные в расчет", type="primary", use_container_width=True):
-                    selected_rows = []
-                    for s in selected_prob:
-                        parts = s.split(' | ')
-                        if len(parts) >= 3:
-                            # Находим оригинальную строку в problematic_df
-                            mask_name = problematic_df['Название проекта'] == parts[0]
-                            
-                            if mask_name.any():
-                                original_row = problematic_df[mask_name].iloc[0]
-                                row_data = {
-                                    'Название проекта': parts[0],
-                                    'Волна': str(original_row['Волна']),  # принудительно в строку
-                                    'Код проекта': parts[2],
-                                    'ПО': original_row['ПО'],
-                                    'ФИО ОМ': original_row.get('ФИО ОМ', '')
-                                }
-                                selected_rows.append(row_data)
+                if not projects_not_in_calc.empty:
+                    st.dataframe(projects_not_in_calc, use_container_width=True)
                     
-                    if selected_rows:
-                        selected_df = pd.DataFrame(selected_rows)
-                        success, msg = manager.add_to_included(selected_df)
-                        if success:
-                            st.success(msg)
-                            st.rerun()
-                        else:
-                            st.error(msg)
-            
+                    # Мультиселект для выбора проектов
+                    project_options = projects_not_in_calc.apply(
+                        lambda row: f"{row['Название проекта']} | {row['Волна']} | {row['Код проекта']}", 
+                        axis=1
+                    ).tolist()
+                    
+                    selected_projects = st.multiselect(
+                        "Выберите проекты для добавления:",
+                        options=project_options,
+                        key='multiselect_include'
+                    )
+                    
+                    if selected_projects and st.button("➕ Добавить выбранные в расчет", type="primary", use_container_width=True):
+                        selected_rows = []
+                        for s in selected_projects:
+                            parts = s.split(' | ')
+                            if len(parts) >= 3:
+                                # Находим оригинальную строку в projects_not_in_calc
+                                mask = (
+                                    (projects_not_in_calc['Название проекта'] == parts[0]) &
+                                    (projects_not_in_calc['Волна'] == parts[1]) &
+                                    (projects_not_in_calc['Код проекта'] == parts[2])
+                                )
+                                if mask.any():
+                                    original_row = projects_not_in_calc[mask].iloc[0]
+                                    row_data = {
+                                        'Название проекта': parts[0],
+                                        'Волна': parts[1],
+                                        'Код проекта': parts[2],
+                                        'ПО': original_row['ПО'],
+                                        'ФИО ОМ': ''
+                                    }
+                                    selected_rows.append(row_data)
+                        
+                        if selected_rows:
+                            selected_df = pd.DataFrame(selected_rows)
+                            success, msg = manager.add_to_included(selected_df)
+                            if success:
+                                st.success(msg)
+                                st.rerun()
+                            else:
+                                st.error(msg)
+                else:
+                    st.info("✅ Нет неполевых проектов для добавления")
             else:
-                st.info("✅ Проблемных проектов нет")
+                st.info("⏳ Неполевые проекты появятся после расчета")
         else:
-            st.info("⏳ Проблемные проекты появятся после расчета")
-    
-    st.markdown("---")
+            st.info("⏳ Сначала выполните расчет на вкладке 'Загрузка данных'")
+        
+        st.markdown("---") 
     
     # === ТЕКУЩИЕ НАСТРОЙКИ ===
     with st.expander("📋 Текущие списки исключенных/добавленных проектов"):

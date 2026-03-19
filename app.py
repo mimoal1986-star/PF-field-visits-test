@@ -122,7 +122,38 @@ def process_all_data():
         
         # Разделение на полевые/неполевые
         field_df, non_field_df = data_cleaner.split_array_by_field_flag(array_with_portal)
-        st.session_state.cleaned_data['полевые_проекты'] = field_df
+        
+        # Загружаем настройки
+        settings_manager = get_settings_manager()
+        excluded_df = settings_manager.get_excluded_projects()
+        included_df = settings_manager.get_included_projects()
+        
+        # Применяем исключенные проекты (делаем их неполевыми)
+        if not excluded_df.empty and field_df is not None and not field_df.empty:
+            for _, row in excluded_df.iterrows():
+                mask = (
+                    (field_df['Имя клиента'] == row['Название проекта']) &
+                    (field_df['Название проекта'] == row['Волна']) &
+                    (field_df['Код анкеты'] == row['Код проекта'])
+                )
+                if mask.any():
+                    field_df.loc[mask, 'Полевой'] = 0
+        
+        # Применяем добавленные проекты (делаем их полевыми)
+        if not included_df.empty and non_field_df is not None and not non_field_df.empty:
+            for _, row in included_df.iterrows():
+                mask = (
+                    (non_field_df['Имя клиента'] == row['Название проекта']) &
+                    (non_field_df['Название проекта'] == row['Волна']) &
+                    (non_field_df['Код анкеты'] == row['Код проекта'])
+                )
+                if mask.any():
+                    non_field_df.loc[mask, 'Полевой'] = 1
+        
+        # Объединяем обратно
+        all_projects = pd.concat([field_df, non_field_df], ignore_index=True)
+
+        st.session_state.cleaned_data['полевые_проекты'] = all_projects
         st.session_state.cleaned_data['неполевые_проекты'] = non_field_df
         
         # Добавление ЗОД из встроенного справочника
@@ -176,10 +207,7 @@ def process_all_data():
             cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
         
         # ФИНАЛЬНОЕ ОБЪЕДИНЕНИЕ всех источников
-        sources_for_merge = []
-        
-        if field_df is not None and not field_df.empty:
-            sources_for_merge.append(field_df)
+        sources_for_merge = [st.session_state.cleaned_data['полевые_проекты']]  # уже с настройками
         
         if cxway_processed is not None and not cxway_processed.empty:
             sources_for_merge.append(cxway_processed)
@@ -193,11 +221,9 @@ def process_all_data():
         if prodata_processed is not None and not prodata_processed.empty:
             sources_for_merge.append(prodata_processed)
         
-        if sources_for_merge:
+        if len(sources_for_merge) > 1:  # если есть другие источники кроме основного
             all_field_projects = pd.concat(sources_for_merge, ignore_index=True)
             st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
-        else:
-            st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()
 
         
                     
@@ -777,24 +803,6 @@ with tab3:
                             )
                             base_field_df = base_field_df[~mask]
                     
-                    # Добавляем из included_df
-                    if not included_df.empty:
-                        for _, row in included_df.iterrows():
-                            new_row = {
-                                'Имя клиента': row['Название проекта'],
-                                'Название проекта': row['Волна'],
-                                'Код анкеты': row['Код проекта'],
-                                'ПО': row['ПО'],
-                                'ЗОД': row.get('ФИО ОМ', ''),
-                                'АСС': '',
-                                'ЭМ': '',
-                                'Регион short': '',
-                                'Регион': '',
-                                'Полевой': 1,
-                                'Статус': 'Выполнено',
-                                'Дата визита': pd.NaT
-                            }
-                            base_field_df = pd.concat([base_field_df, pd.DataFrame([new_row])], ignore_index=True)
                     
                     # 3. Строим иерархию заново
                     base_data = visit_calculator.extract_hierarchical_data(

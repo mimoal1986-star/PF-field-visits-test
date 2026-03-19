@@ -693,7 +693,18 @@ with tab3:
         
         # Здесь будут проблемные проекты
         if 'problematic_projects' in st.session_state:
-            problematic_df = st.session_state.problematic_projects
+            problematic_df = st.session_state.problematic_projects.copy()
+            
+            # Исключаем уже добавленные проекты
+            if not included_df.empty:
+                for _, row in included_df.iterrows():
+                    mask = (
+                        (problematic_df['Название проекта'] == row['Название проекта']) &
+                        (problematic_df['Волна'] == row['Волна']) &
+                        (problematic_df['Код проекта'] == row['Код проекта'])
+                    )
+                    problematic_df = problematic_df[~mask]
+            
             
             if not problematic_df.empty:
                 st.dataframe(problematic_df, use_container_width=True)

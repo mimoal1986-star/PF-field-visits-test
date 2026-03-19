@@ -726,14 +726,19 @@ with tab3:
                     for s in selected_prob:
                         parts = s.split(' | ')
                         if len(parts) >= 3:
-                            row_data = {
-                                'Название проекта': parts[0],
-                                'Волна': parts[1],
-                                'Код проекта': parts[2],
-                                'ПО': problematic_df[problematic_df['Название проекта'] == parts[0]]['ПО'].iloc[0] if not problematic_df[problematic_df['Название проекта'] == parts[0]].empty else '',
-                                'ФИО ОМ': problematic_df[problematic_df['Название проекта'] == parts[0]]['ФИО ОМ'].iloc[0] if not problematic_df[problematic_df['Название проекта'] == parts[0]].empty else ''
-                            }
-                            selected_rows.append(row_data)
+                            # Находим оригинальную строку в problematic_df
+                            mask_name = problematic_df['Название проекта'] == parts[0]
+                            
+                            if mask_name.any():
+                                original_row = problematic_df[mask_name].iloc[0]
+                                row_data = {
+                                    'Название проекта': parts[0],
+                                    'Волна': str(original_row['Волна']),  # принудительно в строку
+                                    'Код проекта': parts[2],
+                                    'ПО': original_row['ПО'],
+                                    'ФИО ОМ': original_row.get('ФИО ОМ', '')
+                                }
+                                selected_rows.append(row_data)
                     
                     if selected_rows:
                         selected_df = pd.DataFrame(selected_rows)
@@ -743,6 +748,7 @@ with tab3:
                             st.rerun()
                         else:
                             st.error(msg)
+            
             else:
                 st.info("✅ Проблемных проектов нет")
         else:

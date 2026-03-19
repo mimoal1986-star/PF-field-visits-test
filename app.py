@@ -516,6 +516,22 @@ with tab3:
     st.title("⚙️ Пользовательские настройки проектов")
     st.markdown("Управляйте списком проектов для расчета план/факта")
     
+    # 👇 КНОПКА ВЫГРУЗКИ field_df
+    if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
+        field_df_export = st.session_state.cleaned_data['полевые_проекты']
+        if field_df_export is not None and not field_df_export.empty:
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                field_df_export.to_excel(writer, sheet_name='field_df', index=False)
+            
+            st.download_button(
+                label="📥 Скачать field_df.xlsx (все полевые проекты)",
+                data=output.getvalue(),
+                file_name=f"field_df_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+
     # Инициализируем менеджер настроек
     if 'settings_manager' not in st.session_state:
         st.session_state.settings_manager = get_settings_manager()

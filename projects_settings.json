@@ -37,7 +37,17 @@
       "added_by": "unknown_user"
     }
   ],
-  "included_projects": [],
+  "included_projects": [
+    {
+      "project_name": "ASKONA",
+      "wave_name": "Матрас_03.2026; Кровать_03.2026, Диван_03.2026",
+      "project_code": "RU00.006.01.01SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "Ощепкова Анастасия",
+      "added_at": "2026-03-19T10:52:47.905409",
+      "added_by": "unknown_user"
+    }
+  ],
   "history": [
     {
       "action": "add_to_excluded",
@@ -134,8 +144,16 @@
       "project_code": "RU00.174.01.01SVZ24",
       "timestamp": "2026-03-19T10:20:18.070815",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "ASKONA",
+      "wave_name": "Матрас_03.2026; Кровать_03.2026, Диван_03.2026",
+      "project_code": "RU00.006.01.01SVZ24",
+      "timestamp": "2026-03-19T10:52:47.905429",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-19T10:20:18.070819",
+  "last_updated": "2026-03-19T10:52:47.905436",
   "version": "1.0"
 }

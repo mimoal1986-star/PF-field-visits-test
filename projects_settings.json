@@ -46,6 +46,15 @@
       "fio_om": "Ощепкова Анастасия",
       "added_at": "2026-03-19T10:52:47.905409",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Carprice",
+      "wave_name": "46082",
+      "project_code": "RU00.013.06.01SVZ24",
+      "portal": "Чеккер",
+      "fio_om": "Абдулаева Нина",
+      "added_at": "2026-03-19T11:09:06.020418",
+      "added_by": "unknown_user"
     }
   ],
   "history": [
@@ -152,8 +161,16 @@
       "project_code": "RU00.006.01.01SVZ24",
       "timestamp": "2026-03-19T10:52:47.905429",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Carprice",
+      "wave_name": "46082",
+      "project_code": "RU00.013.06.01SVZ24",
+      "timestamp": "2026-03-19T11:09:06.020438",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-19T10:52:47.905436",
+  "last_updated": "2026-03-19T11:09:06.020443",
   "version": "1.0"
 }

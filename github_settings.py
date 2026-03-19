@@ -121,9 +121,16 @@ class GitHubSettingsManager:
     
     def _project_to_dict(self, row) -> Dict:
         """Конвертирует строку DataFrame в словарь для JSON"""
+        # Принудительно преобразуем волну в строку
+        wave_value = row.get('Волна', '')
+        if pd.isna(wave_value):
+            wave_str = ''
+        else:
+            wave_str = str(wave_value)  # гарантированно строка
+        
         return {
             "project_name": str(row.get('Название проекта', '')),
-            "wave_name": str(row.get('Волна', '')),
+            "wave_name": wave_str,  # используем преобразованное значение
             "project_code": str(row.get('Код проекта', '')),
             "portal": str(row.get('ПО', '')),
             "fio_om": str(row.get('ФИО ОМ', '')),

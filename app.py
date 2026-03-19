@@ -792,10 +792,14 @@ with tab3:
                         st.error("❌ Нет полевых проектов")
                         st.stop()
                     
-                    # 2. Применяем настройки к данным
+                    # 2. Загружаем актуальные настройки из GitHub
+                    current_excluded = manager.get_excluded_projects()
+                    current_included = manager.get_included_projects()
+                    
+                    # 3. Применяем настройки к данным
                     # Убираем исключенные
-                    if not excluded_df.empty:
-                        for _, row in excluded_df.iterrows():
+                    if not current_excluded.empty:
+                        for _, row in current_excluded.iterrows():
                             mask = (
                                 (base_field_df['Имя клиента'] == row['Название проекта']) &
                                 (base_field_df['Название проекта'] == row['Волна']) &
@@ -803,14 +807,38 @@ with tab3:
                             )
                             base_field_df = base_field_df[~mask]
                     
+                    # Добавляем проекты из included (если их нет в данных)
+                    if not current_included.empty:
+                        for _, row in current_included.iterrows():
+                            mask = (
+                                (base_field_df['Имя клиента'] == row['Название проекта']) &
+                                (base_field_df['Название проекта'] == row['Волна']) &
+                                (base_field_df['Код анкеты'] == row['Код проекта'])
+                            )
+                            if not mask.any():
+                                new_row = {
+                                    'Имя клиента': row['Название проекта'],
+                                    'Название проекта': row['Волна'],
+                                    'Код анкеты': row['Код проекта'],
+                                    'ПО': row['ПО'],
+                                    'ЗОД': '',
+                                    'АСС': '',
+                                    'ЭМ': '',
+                                    'Регион short': '',
+                                    'Регион': '',
+                                    'Полевой': 1,
+                                    'Статус': 'Выполнено',
+                                    'Дата визита': pd.NaT
+                                }
+                                base_field_df = pd.concat([base_field_df, pd.DataFrame([new_row])], ignore_index=True)
                     
-                    # 3. Строим иерархию заново
+                    # 4. Строим иерархию заново
                     base_data = visit_calculator.extract_hierarchical_data(
                         base_field_df,
                         google_df
                     )
                     
-                    # 4. Пересчитываем план/факт
+                    # 5. Пересчитываем план/факт
                     if st.session_state.plan_calc_params and not base_data.empty:
                         params = st.session_state.plan_calc_params
                         
@@ -827,7 +855,7 @@ with tab3:
                                 fact_result, params, plan_result
                             )
                             
-                            # 5. Обновляем session_state
+                            # 6. Обновляем session_state
                             st.session_state.visit_report['calculated_data'] = final_result
                             st.session_state.visit_report['base_data'] = base_data
                             st.session_state.cleaned_data['полевые_проекты_с_настройками'] = base_field_df

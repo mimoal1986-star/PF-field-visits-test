@@ -582,52 +582,29 @@ with tab3:
             if field_df is not None and not field_df.empty:
                 # Формируем DataFrame для отображения
                 projects_in_calc = field_df[['Имя клиента', 'Название проекта', 'Код анкеты', 'ПО']].copy()
-                projects_in_calc = projects_in_calc.rename(columns={
-                    'Название проекта': 'Название проекта',
-                    'Волна': 'Волна',
-                    'Код анкеты': 'Код проекта',
-                    'ПО': 'ПО',
-                    'ЗОД': 'ФИО ОМ'
-                })
                 projects_in_calc = projects_in_calc.drop_duplicates()
                 
                 st.dataframe(projects_in_calc, use_container_width=True)
                 
-                # Мультиселект для выбора проектов
-                project_options = projects_in_calc.apply(
-                    lambda row: f"{row['Название проекта']} | {row['Волна']} | {row['Код проекта']}", 
-                    axis=1
-                ).tolist()
-                
-                selected = st.multiselect(
+                # Мультиселект по Имя клиента
+                selected_clients = st.multiselect(
                     "Выберите проекты для исключения:",
-                    options=project_options,
+                    options=projects_in_calc['Имя клиента'].unique(),
                     key='multiselect_exclude'
                 )
                 
-                if selected and st.button("🗑️ Убрать выбранные из расчета", type="secondary", use_container_width=True):
-                    # Преобразуем выбранные строки обратно в DataFrame
-                    selected_rows = []
-                    for s in selected:
-                        parts = s.split(' | ')
-                        if len(parts) >= 3:
-                            row_data = {
-                                'Название проекта': parts[0],
-                                'Волна': parts[1],
-                                'Код проекта': parts[2],
-                                'ПО': projects_in_calc[projects_in_calc['Название проекта'] == parts[0]]['ПО'].iloc[0] if not projects_in_calc[projects_in_calc['Название проекта'] == parts[0]].empty else '',
-                                'ФИО ОМ': projects_in_calc[projects_in_calc['Название проекта'] == parts[0]]['ФИО ОМ'].iloc[0] if not projects_in_calc[projects_in_calc['Название проекта'] == parts[0]].empty else ''
-                            }
-                            selected_rows.append(row_data)
+                if selected_clients and st.button("🗑️ Убрать выбранные из расчета", type="secondary", use_container_width=True):
+                    # Берем строки с выбранными клиентами
+                    selected_df = projects_in_calc[projects_in_calc['Имя клиента'].isin(selected_clients)].copy()
                     
-                    if selected_rows:
-                        selected_df = pd.DataFrame(selected_rows)
-                        success, msg = manager.add_to_excluded(selected_df)
-                        if success:
-                            st.success(msg)
-                            st.rerun()
-                        else:
-                            st.error(msg)
+                    # Передаем как есть
+                    success, msg = manager.add_to_excluded(selected_df)
+                    if success:
+                        st.success(msg)
+                        st.rerun()
+                    else:
+                        st.error(msg)
+                    
             else:
                 st.info("⏳ Сначала выполните расчет на вкладке 'Загрузка данных'")
         else:

@@ -514,7 +514,7 @@ if st.session_state.cleaned_data.get('полевые_проекты') is not Non
 # ============================================
 with tab3:
     st.title("⚙️ Пользовательские настройки проектов")
-    st.markdown("Управляйте списком проектов для расчета план/факта")
+    st.markdown("Управляйте списками проектов для расчета план/факта")
     
     # 👇 КНОПКА ВЫГРУЗКИ field_df
     if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
@@ -551,31 +551,32 @@ with tab3:
         st.session_state.selected_to_exclude = []
     if 'selected_to_include' not in st.session_state:
         st.session_state.selected_to_include = []
-    if 'show_history' not in st.session_state:
-        st.session_state.show_history = False
-    
-    # === ОСНОВНОЙ ИНТЕРФЕЙС ===
     
     # Информация о текущих настройках
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("📋 Исключенных проектов", len(excluded_df))
+        st.metric("📋 В расчете", len(st.session_state.cleaned_data.get('полевые_проекты', pd.DataFrame())) if 'cleaned_data' in st.session_state else 0)
     with col2:
-        st.metric("➕ Добавленных проектов", len(included_df))
+        st.metric("🗑️ Исключено", len(excluded_df))
     with col3:
-        st.metric("🔄 Всего изменений", len(manager.get_history(days=9999)))
+        st.metric("➕ Добавлено", len(included_df))
     
     st.markdown("---")
     
-    # ДВЕ КОЛОНКИ ДЛЯ ТАБЛИЦ
-    col_left, col_right = st.columns(2)
+    # СОЗДАЕМ 4 ВКЛАДКИ ВНУТРИ НАСТРОЕК
+    tab_calc, tab_excluded, tab_included, tab_history = st.tabs([
+        "📊 Проекты В РАСЧЕТЕ", 
+        "🗑️ Исключенные проекты", 
+        "➕ Добавленные проекты",
+        "📜 История изменений"
+    ])
     
-    # === ЛЕВАЯ КОЛОНКА: Проекты в расчете (можно исключить) ===
-    with col_left:
-        st.subheader("📊 Проекты В РАСЧЕТЕ")
+    # === ВКЛАДКА 1: ПРОЕКТЫ В РАСЧЕТЕ ===
+    with tab_calc:
+        st.subheader("Проекты, участвующие в расчете")
         st.caption("Отметьте проекты, которые нужно ИСКЛЮЧИТЬ из расчета")
         
-        # Получаем проекты из расчета (из session_state после process_all_data)
+        # Получаем проекты из расчета
         if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
             field_df = st.session_state.cleaned_data['полевые_проекты']
             
@@ -590,119 +591,99 @@ with tab3:
                 selected_clients = st.multiselect(
                     "Выберите проекты для исключения:",
                     options=projects_in_calc['Имя клиента'].unique(),
-                    key='multiselect_exclude'
+                    key='multiselect_exclude_calc'
                 )
                 
-                if selected_clients and st.button("🗑️ Убрать выбранные из расчета", type="secondary", use_container_width=True):
-                    # Берем строки с выбранными клиентами
+                if selected_clients and st.button("🗑️ Исключить выбранные", type="secondary", use_container_width=True):
                     selected_df = projects_in_calc[projects_in_calc['Имя клиента'].isin(selected_clients)].copy()
                     
-                    # Передаем как есть
+                    # Переименовываем колонки для соответствия формату исключенных
+                    selected_df = selected_df.rename(columns={
+                        'Имя клиента': 'Название проекта',
+                        'Название проекта': 'Волна',
+                        'Код анкеты': 'Код проекта'
+                    })
+                    
                     success, msg = manager.add_to_excluded(selected_df)
                     if success:
                         st.success(msg)
                         st.rerun()
                     else:
                         st.error(msg)
-                    
             else:
                 st.info("⏳ Сначала выполните расчет на вкладке 'Загрузка данных'")
         else:
             st.info("⏳ Сначала выполните расчет на вкладке 'Загрузка данных'")
     
-    # === ПРАВАЯ КОЛОНКА: Проекты НЕ в расчете (можно добавить) ===
-    with col_right:
-        st.subheader("📊 Проекты НЕ В РАСЧЕТЕ")
-        st.caption("Отметьте проекты, которые нужно ДОБАВИТЬ в расчет")
+    # === ВКЛАДКА 2: ИСКЛЮЧЕННЫЕ ПРОЕКТЫ ===
+    with tab_excluded:
+        st.subheader("Проекты, исключенные из расчета")
+        st.caption("Отметьте проекты, которые нужно ВЕРНУТЬ в расчет")
         
-        # Здесь будут проблемные проекты
-        if 'problematic_projects' in st.session_state:
-            problematic_df = st.session_state.problematic_projects
+        if not excluded_df.empty:
+            st.dataframe(excluded_df, use_container_width=True)
             
-            if not problematic_df.empty:
-                st.dataframe(problematic_df, use_container_width=True)
-                
-                # Мультиселект для выбора проектов
-                problem_options = problematic_df.apply(
-                    lambda row: f"{row['Название проекта']} | {row['Волна']} | {row['Код проекта']}", 
-                    axis=1
-                ).tolist()
-                
-                selected_prob = st.multiselect(
-                    "Выберите проекты для добавления:",
-                    options=problem_options,
-                    key='multiselect_include'
-                )
-                
-                if selected_prob and st.button("➕ Добавить выбранные в расчет", type="primary", use_container_width=True):
-                    selected_rows = []
-                    for s in selected_prob:
-                        parts = s.split(' | ')
-                        if len(parts) >= 3:
-                            row_data = {
-                                'Название проекта': parts[0],
-                                'Волна': parts[1],
-                                'Код проекта': parts[2],
-                                'ПО': problematic_df[problematic_df['Название проекта'] == parts[0]]['ПО'].iloc[0] if not problematic_df[problematic_df['Название проекта'] == parts[0]].empty else '',
-                                'ФИО ОМ': problematic_df[problematic_df['Название проекта'] == parts[0]]['ФИО ОМ'].iloc[0] if not problematic_df[problematic_df['Название проекта'] == parts[0]].empty else ''
-                            }
-                            selected_rows.append(row_data)
-                    
-                    if selected_rows:
-                        selected_df = pd.DataFrame(selected_rows)
-                        success, msg = manager.add_to_included(selected_df)
-                        if success:
-                            st.success(msg)
-                            st.rerun()
-                        else:
-                            st.error(msg)
-            else:
-                st.info("✅ Проблемных проектов нет")
+            # Мультиселект по Название проекта
+            selected_excluded = st.multiselect(
+                "Выберите проекты для возврата:",
+                options=excluded_df['Название проекта'].unique(),
+                key='multiselect_excluded'
+            )
+            
+            if selected_excluded and st.button("🔄 Вернуть выбранные в расчет", type="primary", use_container_width=True):
+                selected_df = excluded_df[excluded_df['Название проекта'].isin(selected_excluded)].copy()
+                success, msg = manager.remove_from_excluded(selected_df)
+                if success:
+                    st.success(msg)
+                    st.rerun()
+                else:
+                    st.error(msg)
         else:
-            st.info("⏳ Проблемные проекты появятся после расчета")
+            st.info("Список исключенных проектов пуст")
     
-    st.markdown("---")
-    
-    # === ТЕКУЩИЕ НАСТРОЙКИ ===
-    with st.expander("📋 Текущие списки исключенных/добавленных проектов"):
-        col1, col2 = st.columns(2)
+    # === ВКЛАДКА 3: ДОБАВЛЕННЫЕ ПРОЕКТЫ ===
+    with tab_included:
+        st.subheader("Проекты, добавленные вручную")
+        st.caption("Отметьте проекты, которые нужно УБРАТЬ из добавленных")
         
-        with col1:
-            st.subheader("🗑️ Исключенные проекты")
-            if not excluded_df.empty:
-                st.dataframe(excluded_df, use_container_width=True)
-                
-                if st.button("Очистить список исключенных", key="clear_excluded"):
-                    success, msg = manager.remove_from_excluded(excluded_df)
-                    if success:
-                        st.success("Список исключенных очищен")
-                        st.rerun()
-            else:
-                st.info("Список пуст")
-        
-        with col2:
-            st.subheader("➕ Добавленные проекты")
-            if not included_df.empty:
-                st.dataframe(included_df, use_container_width=True)
-                
-                if st.button("Очистить список добавленных", key="clear_included"):
-                    success, msg = manager.remove_from_included(included_df)
-                    if success:
-                        st.success("Список добавленных очищен")
-                        st.rerun()
-            else:
-                st.info("Список пуст")
+        if not included_df.empty:
+            st.dataframe(included_df, use_container_width=True)
+            
+            # Мультиселект по Название проекта
+            selected_included = st.multiselect(
+                "Выберите проекты для удаления:",
+                options=included_df['Название проекта'].unique(),
+                key='multiselect_included'
+            )
+            
+            if selected_included and st.button("🗑️ Убрать из добавленных", type="secondary", use_container_width=True):
+                selected_df = included_df[included_df['Название проекта'].isin(selected_included)].copy()
+                success, msg = manager.remove_from_included(selected_df)
+                if success:
+                    st.success(msg)
+                    st.rerun()
+                else:
+                    st.error(msg)
+        else:
+            st.info("Список добавленных проектов пуст")
     
-    # === ИСТОРИЯ ИЗМЕНЕНИЙ ===
-    with st.expander("📜 История изменений"):
+    # === ВКЛАДКА 4: ИСТОРИЯ ИЗМЕНЕНИЙ ===
+    with tab_history:
+        st.subheader("История изменений настроек")
+        
         history_df = manager.get_history(days=30)
         if not history_df.empty:
-            st.dataframe(history_df, use_container_width=True)
+            # Оставляем только нужные колонки
+            if all(col in history_df.columns for col in ['Дата', 'Пользователь', 'Действие']):
+                st.dataframe(history_df[['Дата', 'Пользователь', 'Действие']], use_container_width=True)
+            else:
+                st.dataframe(history_df, use_container_width=True)
         else:
             st.info("История изменений пуста")
     
-    # === КНОПКИ СОХРАНЕНИЯ И ПЕРЕСЧЕТА ===
     st.markdown("---")
+    
+    # === КНОПКИ СОХРАНЕНИЯ И ПЕРЕСЧЕТА ===
     col1, col2, col3 = st.columns([1, 1, 2])
     
     with col1:

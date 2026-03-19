@@ -1,5 +1,42 @@
 {
-  "excluded_projects": [],
+  "excluded_projects": [
+    {
+      "project_name": "Л'Этуаль",
+      "wave_name": "2026.02",
+      "project_code": "RU00.174.01.01SVZ24",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-19T10:20:18.070513",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Л'Этуаль",
+      "wave_name": "2026.03",
+      "project_code": "RU00.174.01.01SVZ24",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-19T10:20:18.070611",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Л'Этуаль",
+      "wave_name": "2026.03_С",
+      "project_code": "RU00.174.01.01SVZ24",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-19T10:20:18.070686",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Л'Этуаль",
+      "wave_name": "_SINGLE",
+      "project_code": "RU00.174.01.01SVZ24",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-19T10:20:18.070808",
+      "added_by": "unknown_user"
+    }
+  ],
   "included_projects": [],
   "history": [
     {
@@ -65,8 +102,40 @@
       "project_code": "",
       "timestamp": "2026-03-19T10:12:39.724956",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Л'Этуаль",
+      "wave_name": "2026.02",
+      "project_code": "RU00.174.01.01SVZ24",
+      "timestamp": "2026-03-19T10:20:18.070527",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Л'Этуаль",
+      "wave_name": "2026.03",
+      "project_code": "RU00.174.01.01SVZ24",
+      "timestamp": "2026-03-19T10:20:18.070616",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Л'Этуаль",
+      "wave_name": "2026.03_С",
+      "project_code": "RU00.174.01.01SVZ24",
+      "timestamp": "2026-03-19T10:20:18.070691",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Л'Этуаль",
+      "wave_name": "_SINGLE",
+      "project_code": "RU00.174.01.01SVZ24",
+      "timestamp": "2026-03-19T10:20:18.070815",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-19T10:12:39.724962",
+  "last_updated": "2026-03-19T10:20:18.070819",
   "version": "1.0"
 }

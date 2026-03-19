@@ -38,15 +38,6 @@
     }
   ],
   "included_projects": [
-    {
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-03-19T13:19:48.411068",
-      "added_by": "unknown_user"
-    }
   ],
   "history": [
     {

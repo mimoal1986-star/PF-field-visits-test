@@ -7,6 +7,7 @@ import os
 import traceback
 from datetime import date, datetime, timedelta
 from io import BytesIO
+from utils.github_settings import get_settings_manager
 
 # data_cleaner.py
 try:
@@ -305,7 +306,7 @@ with st.sidebar:
 # ==============================================
 # ОСНОВНОЙ ИНТЕРФЕЙС
 # ==============================================
-tab1, tab2 = st.tabs(["📤 Загрузка данных", "📈 Отчеты"])
+tab1, tab2, tab3 = st.tabs(["📤 Загрузка данных", "📈 Отчеты", "⚙️ Настройки проектов"])
 
 with tab1:
     st.title("📤 Загрузка исходных данных")
@@ -438,7 +439,9 @@ if 'cleaned_data' in st.session_state and 'сервизория' in st.session_s
         problematic_projects = data_cleaner.check_problematic_projects(
             google_df, field_df
         )
-        
+        if 'problematic_projects' not in st.session_state:
+            st.session_state.problematic_projects = problematic_projects
+    
         if not problematic_projects.empty:
             st.dataframe(problematic_projects, use_container_width=True)
             
@@ -506,6 +509,226 @@ if st.session_state.cleaned_data.get('полевые_проекты') is not Non
     else:
         st.info("Нет данных для выгрузки")
 
+# ============================================
+# ВКЛАДКА 3: НАСТРОЙКИ ПРОЕКТОВ
+# ============================================
+with tab3:
+    st.title("⚙️ Пользовательские настройки проектов")
+    st.markdown("Управляйте списком проектов для расчета план/факта")
+    
+    # Инициализируем менеджер настроек
+    if 'settings_manager' not in st.session_state:
+        st.session_state.settings_manager = get_settings_manager()
+    
+    manager = st.session_state.settings_manager
+    
+    if not manager.available:
+        st.error("❌ Менеджер настроек недоступен. Проверьте секреты GitHub.")
+        st.stop()
+    
+    # Загружаем текущие настройки
+    excluded_df = manager.get_excluded_projects()
+    included_df = manager.get_included_projects()
+    
+    # === СОСТОЯНИЯ ДЛЯ ИНТЕРФЕЙСА ===
+    if 'selected_to_exclude' not in st.session_state:
+        st.session_state.selected_to_exclude = []
+    if 'selected_to_include' not in st.session_state:
+        st.session_state.selected_to_include = []
+    if 'show_history' not in st.session_state:
+        st.session_state.show_history = False
+    
+    # === ОСНОВНОЙ ИНТЕРФЕЙС ===
+    
+    # Информация о текущих настройках
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("📋 Исключенных проектов", len(excluded_df))
+    with col2:
+        st.metric("➕ Добавленных проектов", len(included_df))
+    with col3:
+        st.metric("🔄 Всего изменений", len(manager.get_history(days=9999)))
+    
+    st.markdown("---")
+    
+    # ДВЕ КОЛОНКИ ДЛЯ ТАБЛИЦ
+    col_left, col_right = st.columns(2)
+    
+    # === ЛЕВАЯ КОЛОНКА: Проекты в расчете (можно исключить) ===
+    with col_left:
+        st.subheader("📊 Проекты В РАСЧЕТЕ")
+        st.caption("Отметьте проекты, которые нужно ИСКЛЮЧИТЬ из расчета")
+        
+        # Получаем проекты из расчета (из session_state после process_all_data)
+        if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
+            field_df = st.session_state.cleaned_data['полевые_проекты']
+            
+            if field_df is not None and not field_df.empty:
+                # Формируем DataFrame для отображения
+                projects_in_calc = field_df[['Название проекта', 'Волна', 'Код анкеты', 'ПО', 'ЗОД']].copy()
+                projects_in_calc = projects_in_calc.rename(columns={
+                    'Название проекта': 'Название проекта',
+                    'Волна': 'Волна',
+                    'Код анкеты': 'Код проекта',
+                    'ПО': 'ПО',
+                    'ЗОД': 'ФИО ОМ'
+                })
+                projects_in_calc = projects_in_calc.drop_duplicates()
+                
+                st.dataframe(projects_in_calc, use_container_width=True)
+                
+                # Мультиселект для выбора проектов
+                project_options = projects_in_calc.apply(
+                    lambda row: f"{row['Название проекта']} | {row['Волна']} | {row['Код проекта']}", 
+                    axis=1
+                ).tolist()
+                
+                selected = st.multiselect(
+                    "Выберите проекты для исключения:",
+                    options=project_options,
+                    key='multiselect_exclude'
+                )
+                
+                if selected and st.button("🗑️ Убрать выбранные из расчета", type="secondary", use_container_width=True):
+                    # Преобразуем выбранные строки обратно в DataFrame
+                    selected_rows = []
+                    for s in selected:
+                        parts = s.split(' | ')
+                        if len(parts) >= 3:
+                            row_data = {
+                                'Название проекта': parts[0],
+                                'Волна': parts[1],
+                                'Код проекта': parts[2],
+                                'ПО': projects_in_calc[projects_in_calc['Название проекта'] == parts[0]]['ПО'].iloc[0] if not projects_in_calc[projects_in_calc['Название проекта'] == parts[0]].empty else '',
+                                'ФИО ОМ': projects_in_calc[projects_in_calc['Название проекта'] == parts[0]]['ФИО ОМ'].iloc[0] if not projects_in_calc[projects_in_calc['Название проекта'] == parts[0]].empty else ''
+                            }
+                            selected_rows.append(row_data)
+                    
+                    if selected_rows:
+                        selected_df = pd.DataFrame(selected_rows)
+                        success, msg = manager.add_to_excluded(selected_df)
+                        if success:
+                            st.success(msg)
+                            st.rerun()
+                        else:
+                            st.error(msg)
+            else:
+                st.info("⏳ Сначала выполните расчет на вкладке 'Загрузка данных'")
+        else:
+            st.info("⏳ Сначала выполните расчет на вкладке 'Загрузка данных'")
+    
+    # === ПРАВАЯ КОЛОНКА: Проекты НЕ в расчете (можно добавить) ===
+    with col_right:
+        st.subheader("📊 Проекты НЕ В РАСЧЕТЕ")
+        st.caption("Отметьте проекты, которые нужно ДОБАВИТЬ в расчет")
+        
+        # Здесь будут проблемные проекты
+        if 'problematic_projects' in st.session_state:
+            problematic_df = st.session_state.problematic_projects
+            
+            if not problematic_df.empty:
+                st.dataframe(problematic_df, use_container_width=True)
+                
+                # Мультиселект для выбора проектов
+                problem_options = problematic_df.apply(
+                    lambda row: f"{row['Название проекта']} | {row['Волна']} | {row['Код проекта']}", 
+                    axis=1
+                ).tolist()
+                
+                selected_prob = st.multiselect(
+                    "Выберите проекты для добавления:",
+                    options=problem_options,
+                    key='multiselect_include'
+                )
+                
+                if selected_prob and st.button("➕ Добавить выбранные в расчет", type="primary", use_container_width=True):
+                    selected_rows = []
+                    for s in selected_prob:
+                        parts = s.split(' | ')
+                        if len(parts) >= 3:
+                            row_data = {
+                                'Название проекта': parts[0],
+                                'Волна': parts[1],
+                                'Код проекта': parts[2],
+                                'ПО': problematic_df[problematic_df['Название проекта'] == parts[0]]['ПО'].iloc[0] if not problematic_df[problematic_df['Название проекта'] == parts[0]].empty else '',
+                                'ФИО ОМ': problematic_df[problematic_df['Название проекта'] == parts[0]]['ФИО ОМ'].iloc[0] if not problematic_df[problematic_df['Название проекта'] == parts[0]].empty else ''
+                            }
+                            selected_rows.append(row_data)
+                    
+                    if selected_rows:
+                        selected_df = pd.DataFrame(selected_rows)
+                        success, msg = manager.add_to_included(selected_df)
+                        if success:
+                            st.success(msg)
+                            st.rerun()
+                        else:
+                            st.error(msg)
+            else:
+                st.info("✅ Проблемных проектов нет")
+        else:
+            st.info("⏳ Проблемные проекты появятся после расчета")
+    
+    st.markdown("---")
+    
+    # === ТЕКУЩИЕ НАСТРОЙКИ ===
+    with st.expander("📋 Текущие списки исключенных/добавленных проектов"):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("🗑️ Исключенные проекты")
+            if not excluded_df.empty:
+                st.dataframe(excluded_df, use_container_width=True)
+                
+                if st.button("Очистить список исключенных", key="clear_excluded"):
+                    success, msg = manager.remove_from_excluded(excluded_df)
+                    if success:
+                        st.success("Список исключенных очищен")
+                        st.rerun()
+            else:
+                st.info("Список пуст")
+        
+        with col2:
+            st.subheader("➕ Добавленные проекты")
+            if not included_df.empty:
+                st.dataframe(included_df, use_container_width=True)
+                
+                if st.button("Очистить список добавленных", key="clear_included"):
+                    success, msg = manager.remove_from_included(included_df)
+                    if success:
+                        st.success("Список добавленных очищен")
+                        st.rerun()
+            else:
+                st.info("Список пуст")
+    
+    # === ИСТОРИЯ ИЗМЕНЕНИЙ ===
+    with st.expander("📜 История изменений"):
+        history_df = manager.get_history(days=30)
+        if not history_df.empty:
+            st.dataframe(history_df, use_container_width=True)
+        else:
+            st.info("История изменений пуста")
+    
+    # === КНОПКИ СОХРАНЕНИЯ И ПЕРЕСЧЕТА ===
+    st.markdown("---")
+    col1, col2, col3 = st.columns([1, 1, 2])
+    
+    with col1:
+        if st.button("💾 Сохранить настройки", type="primary", use_container_width=True):
+            st.success("Настройки сохранены в GitHub!")
+    
+    with col2:
+        if st.button("🔄 Пересчитать", type="secondary", use_container_width=True):
+            st.info("🔄 Пересчет план/факта с учетом настроек")
+            # Здесь будет логика пересчета
+    
+    with col3:
+        if st.button("🗑️ Сбросить все настройки", use_container_width=True):
+            success, msg = manager.clear_all_settings()
+            if success:
+                st.success(msg)
+                st.rerun()
+            else:
+                st.error(msg)
 
 
 

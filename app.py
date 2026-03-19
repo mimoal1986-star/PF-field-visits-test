@@ -152,11 +152,12 @@ def process_all_data(settings_manager=None):
                 if mask.any():
                     non_field_df.loc[mask, 'Полевой'] = 1
         
-        # Объединяем обратно
+        # Объединяем все проекты в один датасет
         all_projects = pd.concat([field_df, non_field_df], ignore_index=True)
-
-        st.session_state.cleaned_data['полевые_проекты'] = all_projects
-        st.session_state.cleaned_data['неполевые_проекты'] = non_field_df
+        
+        # 🔥 ПЕРЕСОЗДАЕМ датасеты на основе актуального значения Полевой
+        st.session_state.cleaned_data['полевые_проекты'] = all_projects[all_projects['Полевой'] == 1].copy()
+        st.session_state.cleaned_data['неполевые_проекты'] = all_projects[all_projects['Полевой'] == 0].copy()
         
         # Добавление ЗОД из встроенного справочника
         if field_df is not None and not field_df.empty:

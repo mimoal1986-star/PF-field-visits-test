@@ -7,7 +7,7 @@ import os
 import traceback
 from datetime import date, datetime, timedelta
 from io import BytesIO
-from utils.github_settings import get_settings_manager
+from github_settings import get_settings_manager
 
 # data_cleaner.py
 try:

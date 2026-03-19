@@ -398,17 +398,29 @@ class GitHubSettingsManager:
     
     def clear_all_settings(self) -> Tuple[bool, str]:
         """Очистить все настройки (для отладки)"""
-        data = self._create_default_structure()
-        data["history"] = [{
+        data = self._read_file()
+        
+        # Очищаем списки проектов
+        data["excluded_projects"] = []
+        data["included_projects"] = []
+        
+        # Добавляем запись в историю со ВСЕМИ полями (пустыми)
+        data["history"].append({
             "action": "clear_all",
+            "project_name": "",  # пустое, но колонка сохранится
+            "wave_name": "",     # пустое, но колонка сохранится
+            "project_code": "",  # пустое, но колонка сохранится
             "timestamp": datetime.now().isoformat(),
             "user": self.current_user
-        }]
+        })
+        
+        data["last_updated"] = datetime.now().isoformat()
         
         if self._write_file(data):
             return True, "✅ Все настройки очищены"
         else:
             return False, "❌ Ошибка при очистке"
+            
 
 # Для удобства создаем глобальный экземпляр при импорте
 def get_settings_manager():

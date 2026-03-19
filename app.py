@@ -160,8 +160,16 @@ def process_all_data(settings_manager=None):
         
         # Добавление ЗОД из встроенного справочника
         if field_df is not None and not field_df.empty:
-            field_df = data_cleaner.add_zod_from_hierarchy(field_df)
-            st.session_state.cleaned_data['полевые_проекты'] = field_df
+            field_df_with_zod = data_cleaner.add_zod_from_hierarchy(field_df)
+            # Обновляем только ЗОД в all_projects
+            for idx, row in field_df_with_zod.iterrows():
+                mask = (
+                    (all_projects['Имя клиента'] == row['Имя клиента']) &
+                    (all_projects['Название проекта'] == row['Название проекта']) &
+                    (all_projects['Код анкеты'] == row['Код анкеты'])
+                )
+                if mask.any():
+                    all_projects.loc[mask, 'ЗОД'] = row['ЗОД']
         
         
         # Обработка Easymerch (если есть)

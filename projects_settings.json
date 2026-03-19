@@ -10,26 +10,7 @@
       "added_by": "unknown_user"
     }
   ],
-  "included_projects": [
-    {
-      "project_name": "ASKONA",
-      "wave_name": "Матрас_03.2026; Кровать_03.2026, Диван_03.2026",
-      "project_code": "RU00.006.01.01SVZ24",
-      "portal": "CXWAY",
-      "fio_om": "Ощепкова Анастасия",
-      "added_at": "2026-03-19T10:52:47.905409",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Carprice",
-      "wave_name": "46082",
-      "project_code": "RU00.013.06.01SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "Абдулаева Нина",
-      "added_at": "2026-03-19T11:09:06.020418",
-      "added_by": "unknown_user"
-    }
-  ],
+  "included_projects": [],
   "history": [
     {
       "action": "add_to_excluded",
@@ -198,8 +179,24 @@
       "project_code": "RU00.270.01.01SPK24",
       "timestamp": "2026-03-19T11:10:02.039519",
       "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "ASKONA",
+      "wave_name": "Матрас_03.2026; Кровать_03.2026, Диван_03.2026",
+      "project_code": "RU00.006.01.01SVZ24",
+      "timestamp": "2026-03-19T11:10:27.607592",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Carprice",
+      "wave_name": "46082",
+      "project_code": "RU00.013.06.01SVZ24",
+      "timestamp": "2026-03-19T11:10:27.607669",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-19T11:10:02.039523",
+  "last_updated": "2026-03-19T11:10:27.607674",
   "version": "1.0"
 }

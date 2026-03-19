@@ -75,7 +75,7 @@ def display_file_preview(df, title):
         with st.expander(f"👀 {title}"):
             st.dataframe(df.head(10), use_container_width=True)
 
-def process_all_data():
+def process_all_data(settings_manager=None):
     """Полная обработка данных и расчет план/факт"""
     try:
         # Проверяем наличие основных файлов
@@ -124,7 +124,9 @@ def process_all_data():
         field_df, non_field_df = data_cleaner.split_array_by_field_flag(array_with_portal)
         
         # Загружаем настройки
-        settings_manager = get_settings_manager()
+        if settings_manager is None:
+            settings_manager = get_settings_manager()
+        
         excluded_df = settings_manager.get_excluded_projects()
         included_df = settings_manager.get_included_projects()
         
@@ -441,7 +443,15 @@ with tab1:
             disabled=not all_loaded
         ):
             with st.spinner("Обработка данных и расчет план/факт..."):
-                success = process_all_data()
+                # Загружаем менеджер настроек
+                if 'settings_manager' in st.session_state:
+                    settings_manager = st.session_state.settings_manager
+                else:
+                    settings_manager = get_settings_manager()
+                    st.session_state.settings_manager = settings_manager
+                # Передаем в функцию
+                success = process_all_data(settings_manager)
+
                 if success:
                     st.success("✅ Расчет завершен! Перейдите на вкладку 'Отчеты'")
                 else:

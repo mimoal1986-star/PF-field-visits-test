@@ -835,133 +835,17 @@ with tab3:
         if st.button("🔄 Пересчитать", type="secondary", use_container_width=True):
             with st.spinner("🔄 Пересчет план/факта с учетом настроек..."):
                 try:
-                    # 1️⃣ ПРОВЕРКА НАЛИЧИЯ ДАННЫХ
-                    if 'cleaned_data' not in st.session_state:
-                        st.error("❌ Нет данных для пересчета")
-                        st.stop()
+                    # Просто вызываем ту же функцию, что и при первом расчете
+                    success = process_all_data(manager)
                     
-                    # 2️⃣ ПОЛУЧАЕМ ИСХОДНЫЕ ДАННЫЕ
-                    google_df = st.session_state.cleaned_data.get('сервизория')
-                    field_df = st.session_state.cleaned_data.get('полевые_проекты', pd.DataFrame()).copy()
-                    non_field_df = st.session_state.cleaned_data.get('неполевые_проекты', pd.DataFrame()).copy()
-                    
-                    if field_df.empty and non_field_df.empty:
-                        st.error("❌ Нет данных о проектах")
-                        st.stop()
-                    
-                    # 3️⃣ ЗАГРУЖАЕМ АКТУАЛЬНЫЕ НАСТРОЙКИ ИЗ GITHUB
-                    current_excluded = manager.get_excluded_projects()
-                    current_included = manager.get_included_projects()
-                    
-                    # 4️⃣ ПРИМЕНЯЕМ НАСТРОЙКИ - МЕНЯЕМ ТОЛЬКО ФЛАГ ПОЛЕВОЙ
-                    
-                    # Сбрасываем все проекты до базового состояния
-                    # (возвращаем исходные значения Полевой из google_df)
-                    if google_df is not None and not google_df.empty:
-                        # Создаем словарь {код проекта: полевой признак из google}
-                        field_flag_map = {}
-                        for _, row in google_df.iterrows():
-                            code = row.get('Код проекта RU00.000.00.01SVZ24', '')
-                            field_flag = row.get('Полевой', 0)
-                            if code and str(code).strip():
-                                field_flag_map[str(code).strip()] = field_flag
-                        
-                        # Применяем к field_df
-                        if 'Код анкеты' in field_df.columns:
-                            field_df['Полевой'] = field_df['Код анкеты'].map(
-                                lambda x: field_flag_map.get(str(x).strip(), 0)
-                            ).fillna(0).astype(int)
-                    
-                    # Применяем ИСКЛЮЧЕННЫЕ проекты (Полевой = 0)
-                    if not current_excluded.empty:
-                        for _, row in current_excluded.iterrows():
-                            # Ищем в field_df
-                            mask_field = (
-                                (field_df['Имя клиента'] == row['Название проекта']) &
-                                (field_df['Название проекта'] == row['Волна']) &
-                                (field_df['Код анкеты'] == row['Код проекта'])
-                            )
-                            if mask_field.any():
-                                field_df.loc[mask_field, 'Полевой'] = 0
-                            
-                            # Ищем в non_field_df на всякий случай
-                            if not non_field_df.empty:
-                                mask_non_field = (
-                                    (non_field_df['Имя клиента'] == row['Название проекта']) &
-                                    (non_field_df['Название проекта'] == row['Волна']) &
-                                    (non_field_df['Код анкеты'] == row['Код проекта'])
-                                )
-                                if mask_non_field.any():
-                                    non_field_df.loc[mask_non_field, 'Полевой'] = 0
-                    
-                    # Применяем ДОБАВЛЕННЫЕ проекты (Полевой = 1)
-                    if not current_included.empty:
-                        for _, row in current_included.iterrows():
-                            # Ищем в field_df
-                            mask_field = (
-                                (field_df['Имя клиента'] == row['Название проекта']) &
-                                (field_df['Название проекта'] == row['Волна']) &
-                                (field_df['Код анкеты'] == row['Код проекта'])
-                            )
-                            if mask_field.any():
-                                field_df.loc[mask_field, 'Полевой'] = 1
-                            
-                            # Ищем в non_field_df
-                            if not non_field_df.empty:
-                                mask_non_field = (
-                                    (non_field_df['Имя клиента'] == row['Название проекта']) &
-                                    (non_field_df['Название проекта'] == row['Волна']) &
-                                    (non_field_df['Код анкеты'] == row['Код проекта'])
-                                )
-                                if mask_non_field.any():
-                                    non_field_df.loc[mask_non_field, 'Полевой'] = 1
-                    
-                    # 5️⃣ ОБЪЕДИНЯЕМ ОБНОВЛЕННЫЕ ДАННЫЕ
-                    all_projects = pd.concat([field_df, non_field_df], ignore_index=True)
-                    
-                    # 6️⃣ СОХРАНЯЕМ В SESSION_STATE
-                    st.session_state.cleaned_data['полевые_проекты'] = all_projects
-                    st.session_state.cleaned_data['неполевые_проекты'] = non_field_df
-                    
-                    # 7️⃣ СТРОИМ ИЕРАРХИЮ ТОЛЬКО ИЗ ОБНОВЛЕННЫХ ДАННЫХ
-                    base_data = visit_calculator.extract_hierarchical_data(
-                        all_projects,  # ✅ только обновленные данные
-                        None           # ✅ google_df не нужен!
-                    )
-                    
-                    # 8️⃣ ПЕРЕСЧИТЫВАЕМ ПЛАН/ФАКТ
-                    if st.session_state.plan_calc_params and not base_data.empty:
-                        params = st.session_state.plan_calc_params
-                        
-                        plan_result = visit_calculator.calculate_hierarchical_plan_on_date(
-                            base_data, 
-                            all_projects,  # ✅ только обновленные данные
-                            params, 
-                            None           # ✅ google_df не нужен!
-                        )
-                        
-                        if plan_result is not None and not plan_result.empty:
-                            fact_result = visit_calculator.calculate_hierarchical_fact_on_date(
-                                plan_result, all_projects, params
-                            )
-                            
-                            final_result = visit_calculator._calculate_metrics(
-                                fact_result, params, plan_result
-                            )
-                            
-                            # 9️⃣ СОХРАНЯЕМ РЕЗУЛЬТАТЫ
-                            st.session_state.visit_report['calculated_data'] = final_result
-                            st.session_state.visit_report['base_data'] = base_data
-                            
-                            st.success("✅ Пересчет завершен! Перейдите на вкладку 'Отчеты'")
-                            st.rerun()
-                        else:
-                            st.error("❌ Ошибка при расчете плана")
+                    if success:
+                        st.success("✅ Пересчет завершен! Перейдите на вкладку 'Отчеты'")
+                        st.rerun()
                     else:
-                        st.error("❌ Нет параметров расчета или данных для иерархии")
-                            
+                        st.error("❌ Ошибка при пересчете")
                 except Exception as e:
-                    st.error(f"❌ Ошибка при пересчете: {str(e)}")
+                    st.error(f"❌ Ошибка: {str(e)}")
+                
     
     with col3:
         if st.button("🗑️ Сбросить все настройки", use_container_width=True):

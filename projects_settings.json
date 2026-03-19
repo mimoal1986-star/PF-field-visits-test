@@ -1,51 +1,5 @@
 {
-  "excluded_projects": [
-    {
-      "project_name": "Л'Этуаль",
-      "wave_name": "2026.02",
-      "project_code": "RU00.174.01.01SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-03-19T10:20:18.070513",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Л'Этуаль",
-      "wave_name": "2026.03",
-      "project_code": "RU00.174.01.01SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-03-19T10:20:18.070611",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Л'Этуаль",
-      "wave_name": "2026.03_С",
-      "project_code": "RU00.174.01.01SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-03-19T10:20:18.070686",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Л'Этуаль",
-      "wave_name": "_SINGLE",
-      "project_code": "RU00.174.01.01SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-03-19T10:20:18.070808",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Старик Хинкалыч Курск",
-      "wave_name": "2026.03 (63 волна)",
-      "project_code": "RU00.270.01.01SPK24",
-      "portal": "CXWAY",
-      "fio_om": "",
-      "added_at": "2026-03-19T11:09:23.231258",
-      "added_by": "unknown_user"
-    }
-  ],
+  "excluded_projects": [],
   "included_projects": [
     {
       "project_name": "ASKONA",
@@ -186,8 +140,48 @@
       "project_code": "RU00.270.01.01SPK24",
       "timestamp": "2026-03-19T11:09:23.231287",
       "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_excluded",
+      "project_name": "Л'Этуаль",
+      "wave_name": "2026.02",
+      "project_code": "RU00.174.01.01SVZ24",
+      "timestamp": "2026-03-19T11:09:43.500391",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_excluded",
+      "project_name": "Л'Этуаль",
+      "wave_name": "2026.03",
+      "project_code": "RU00.174.01.01SVZ24",
+      "timestamp": "2026-03-19T11:09:43.500484",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_excluded",
+      "project_name": "Л'Этуаль",
+      "wave_name": "2026.03_С",
+      "project_code": "RU00.174.01.01SVZ24",
+      "timestamp": "2026-03-19T11:09:43.500542",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_excluded",
+      "project_name": "Л'Этуаль",
+      "wave_name": "_SINGLE",
+      "project_code": "RU00.174.01.01SVZ24",
+      "timestamp": "2026-03-19T11:09:43.500591",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_excluded",
+      "project_name": "Старик Хинкалыч Курск",
+      "wave_name": "2026.03 (63 волна)",
+      "project_code": "RU00.270.01.01SPK24",
+      "timestamp": "2026-03-19T11:09:43.500638",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-19T11:09:23.231291",
+  "last_updated": "2026-03-19T11:09:43.500643",
   "version": "1.0"
 }

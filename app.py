@@ -582,7 +582,11 @@ with tab3:
             if field_df is not None and not field_df.empty:
                 # Формируем DataFrame для отображения
                 projects_in_calc = field_df[['Имя клиента', 'Название проекта', 'Код анкеты', 'ПО']].copy()
-                projects_in_calc = projects_in_calc.drop_duplicates()
+                projects_in_calc = projects_in_calc.rename(columns={
+                    'Имя клиента': 'Название проекта',
+                    'Название проекта': 'Волна',
+                    'Код анкеты': 'Код проекта'
+                })
                 
                 st.dataframe(projects_in_calc, use_container_width=True)
                 
@@ -697,9 +701,18 @@ with tab3:
     with st.expander("📜 История изменений"):
         history_df = manager.get_history(days=30)
         if not history_df.empty:
-            st.dataframe(history_df, use_container_width=True)
+            # Переименовываем колонки для единообразия
+            history_display = history_df.rename(columns={
+                'project_name': 'Название проекта',
+                'wave_name': 'Волна', 
+                'project_code': 'Код проекта'
+            })
+            
+            # Выводим все нужные колонки
+            st.dataframe(history_display, use_container_width=True)
         else:
             st.info("История изменений пуста")
+        
     
     # === КНОПКИ СОХРАНЕНИЯ И ПЕРЕСЧЕТА ===
     st.markdown("---")

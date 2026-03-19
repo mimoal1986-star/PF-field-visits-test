@@ -588,6 +588,9 @@ with tab3:
                     'Код анкеты': 'Код проекта'
                 })
                 
+                # Удаляем дубликаты
+                projects_in_calc = projects_in_calc.drop_duplicates(keep='first').reset_index(drop=True)
+                
                 st.dataframe(projects_in_calc, use_container_width=True)
                 
                 # Мультиселект по Название проекта

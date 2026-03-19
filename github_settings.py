@@ -384,10 +384,17 @@ class GitHubSettingsManager:
             'add_to_excluded': '➕ Исключил',
             'remove_from_excluded': '➖ Вернул из исключенных',
             'add_to_included': '➕ Добавил в расчет',
-            'remove_from_included': '➖ Убрал из расчета'
+            'remove_from_included': '➖ Убрал из расчета',
+            'clear_all': '🗑️ Очистил все настройки'
         }
         df['Действие'] = df['action'].map(action_map).fillna(df['action'])
         
+        # СОЗДАЕМ колонки project_name, wave_name, project_code если их нет
+        for col in ['project_name', 'wave_name', 'project_code']:
+            if col not in df.columns:
+                df[col] = ''
+        
+        # Теперь безопасно обращаемся к колонкам
         return df[['Дата', 'Пользователь', 'Действие', 'project_name', 'wave_name', 'project_code']].rename(
             columns={
                 'project_name': 'Проект',

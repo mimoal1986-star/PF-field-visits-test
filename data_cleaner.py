@@ -791,7 +791,7 @@ class DataCleaner:
         
         return df_result
     
-    def clean_cxway(self, df, hierarchy_df, google_df):
+    def clean_cxway(self, df, hierarchy_df, google_df, portal_df=None):
         """Очистка файла CXWAY и приведение к структуре полевых проектов"""
         if df is None or df.empty:
             return pd.DataFrame()
@@ -965,6 +965,13 @@ class DataCleaner:
             result['Регион'] = 'не определен'
         
         result['Источник'] = 'CXWAY'
+        
+        # 🔥 Удаляем проекты, которые есть в портале (по коду)
+        if portal_df is not None and not portal_df.empty:
+            portal_code_col = self._find_column(portal_df, ['Код анкеты', 'Код'])
+            if portal_code_col:
+                portal_codes = portal_df[portal_code_col].astype(str).str.strip().tolist()
+                result = result[~result['Код анкеты'].astype(str).str.strip().isin(portal_codes)]
         
         return result
     

@@ -115,14 +115,6 @@ def process_all_data(settings_manager=None):
         google_with_field = data_cleaner.update_field_projects_flag(st.session_state.cleaned_data['сервизория'])
         st.session_state.cleaned_data['сервизория'] = google_with_field
 
-        # Обработка CXWAY (если загружен) - ДО применения настроек
-        cxway_raw = st.session_state.uploaded_files.get('cxway')
-        if cxway_raw is not None:
-            cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
-            if cxway_processed is not None and not cxway_processed.empty:
-                # Объединяем с порталом
-                portal_with_cxway = pd.concat([st.session_state.cleaned_data['портал'], cxway_processed], ignore_index=True)
-                st.session_state.cleaned_data['портал'] = portal_with_cxway
         
         array_with_field = data_cleaner.add_field_flag_to_array(st.session_state.cleaned_data['портал'])
         array_with_portal = data_cleaner.add_portal_to_array(array_with_field, google_with_field)
@@ -220,11 +212,19 @@ def process_all_data(settings_manager=None):
             except Exception as e:
                 st.warning(f"⚠️ Ошибка при обработке ПроДата: {e}")
         
+        # Обработка CXWAY (если есть)
+        cxway_processed = None
+        cxway_raw = st.session_state.uploaded_files.get('cxway')
+        if cxway_raw is not None:
+            cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
         
+                                                       
         # ФИНАЛЬНОЕ ОБЪЕДИНЕНИЕ всех источников
-        sources_for_merge = [st.session_state.cleaned_data['полевые_проекты']]  # уже с настройками
+        sources_for_merge = [st.session_state.cleaned_data['полевые_проекты']] 
         
-        
+        if cxway_processed is not None and not cxway_processed.empty:
+            sources_for_merge.append(cxway_processed)
+                                                       
         if easymerch_processed is not None and not easymerch_processed.empty:
             sources_for_merge.append(easymerch_processed)
             

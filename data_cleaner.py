@@ -1499,6 +1499,33 @@ class DataCleaner:
         except Exception as e:
             return array_field_df if array_field_df is not None else pd.DataFrame()
 
+    def remove_cxway_from_portal(self, portal_df, google_df):
+        """Удаляет из портала проекты, которые в google отмечены как CXWAY"""
+        if portal_df is None or portal_df.empty or google_df is None or google_df.empty:
+            return portal_df
+        
+        code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
+        portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+        
+        if code_col is None or portal_col is None:
+            return portal_df
+        
+        cxway_mask = google_df[portal_col].astype(str).str.strip().str.upper() == 'CXWAY'
+        cxway_codes = google_df.loc[cxway_mask, code_col].astype(str).str.strip().tolist()
+        
+        if not cxway_codes:
+            return portal_df
+        
+        portal_code_col = self._find_column(portal_df, ['Код анкеты', 'Код'])
+        if portal_code_col is None:
+            return portal_df
+        
+        portal_df = portal_df.copy()
+        portal_codes = portal_df[portal_code_col].astype(str).str.strip()
+        portal_df = portal_df[~portal_codes.isin(cxway_codes)]
+        
+        return portal_df
+        
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
 

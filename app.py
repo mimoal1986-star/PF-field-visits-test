@@ -88,7 +88,6 @@ def process_all_data(settings_manager=None):
         # Получаем данные
         portal_raw = st.session_state.uploaded_files['портал']
         google_raw = st.session_state.uploaded_files['сервизория']
-        cxway_raw = st.session_state.uploaded_files.get('cxway')  # может быть None
         
         # Очистка портала
         portal_cleaned = data_cleaner.clean_array(portal_raw)
@@ -115,6 +114,15 @@ def process_all_data(settings_manager=None):
         # Добавление признака полевой проект
         google_with_field = data_cleaner.update_field_projects_flag(st.session_state.cleaned_data['сервизория'])
         st.session_state.cleaned_data['сервизория'] = google_with_field
+
+        # Обработка CXWAY (если загружен) - ДО применения настроек
+        cxway_raw = st.session_state.uploaded_files.get('cxway')
+        if cxway_raw is not None:
+            cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
+            if cxway_processed is not None and not cxway_processed.empty:
+                # Объединяем с порталом
+                portal_with_cxway = pd.concat([st.session_state.cleaned_data['портал'], cxway_processed], ignore_index=True)
+                st.session_state.cleaned_data['портал'] = portal_with_cxway
         
         array_with_field = data_cleaner.add_field_flag_to_array(st.session_state.cleaned_data['портал'])
         array_with_portal = data_cleaner.add_portal_to_array(array_with_field, google_with_field)
@@ -212,16 +220,10 @@ def process_all_data(settings_manager=None):
             except Exception as e:
                 st.warning(f"⚠️ Ошибка при обработке ПроДата: {e}")
         
-        # Обработка CXWAY (если есть)
-        cxway_processed = None
-        if cxway_raw is not None:
-            cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
         
         # ФИНАЛЬНОЕ ОБЪЕДИНЕНИЕ всех источников
         sources_for_merge = [st.session_state.cleaned_data['полевые_проекты']]  # уже с настройками
         
-        if cxway_processed is not None and not cxway_processed.empty:
-            sources_for_merge.append(cxway_processed)
         
         if easymerch_processed is not None and not easymerch_processed.empty:
             sources_for_merge.append(easymerch_processed)
@@ -237,7 +239,25 @@ def process_all_data(settings_manager=None):
             st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
 
         
-                    
+        # 🔥 ФИЛЬТР ПО ЗАГРУЖЕННЫМ ФАЙЛАМ
+        all_field_projects = st.session_state.cleaned_data['полевые_проекты']
+        
+        loaded_files = {
+            'CXWAY': 'cxway' in st.session_state.uploaded_files,
+            'Easymerch': 'easymerch' in st.session_state.uploaded_files,
+            'Optima': 'optima' in st.session_state.uploaded_files,
+            'Мониторинги': 'prodata' in st.session_state.uploaded_files
+        }
+        
+        def keep_project(row):
+            po = row.get('ПО', '')
+            if po in ['Чеккер', 'не определено', '']:
+                return True
+            return loaded_files.get(po, False)
+        
+        all_field_projects = all_field_projects[all_field_projects.apply(keep_project, axis=1)]
+        st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
+
         
         # Создание иерархии
         base_data = visit_calculator.extract_hierarchical_data(
@@ -564,11 +584,11 @@ with tab3:
     # 👇 КНОПКА ВЫГРУЗКИ field_df
     if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
         field_df_export = st.session_state.cleaned_data['полевые_проекты']
-        field_df = field_df[field_df['Полевой'] == 1]
-        if field_df_export is not None and not field_df_export.empty:
+        field_df_filtered = field_df_export[field_df_export['Полевой'] == 1]
+        if field_df_filtered is not None and not field_df_filtered.empty:
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                field_df_export.to_excel(writer, sheet_name='field_df', index=False)
+                field_df_filtered.to_excel(writer, sheet_name='field_df', index=False) 
             
             st.download_button(
                 label="📥 Скачать field_df.xlsx (все полевые проекты)",
@@ -624,6 +644,7 @@ with tab3:
         # Получаем проекты из расчета (из session_state после process_all_data)
         if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
             field_df = st.session_state.cleaned_data['полевые_проекты'].copy()
+            field_df = field_df[field_df['Полевой'] == 1]
             
             # 🔥 ПРИМЕНЯЕМ НАСТРОЙКИ 🔥
             if field_df is not None and not field_df.empty:

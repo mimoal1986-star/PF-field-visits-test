@@ -224,13 +224,29 @@ def process_all_data(settings_manager=None):
                 None, 
                 google_with_field,
             )
+            
+            # Разделяем CXWAY на полевые и неполевые
+            if cxway_processed is not None and not cxway_processed.empty:
+                cxway_field = cxway_processed[cxway_processed['Полевой'] == 1]
+                cxway_non_field = cxway_processed[cxway_processed['Полевой'] == 0]
+                
+                # Полевые будем добавлять в sources_for_merge позже
+                # Неполевые добавляем в неполевые проекты сразу
+                if not cxway_non_field.empty:
+                    st.session_state.cleaned_data['неполевые_проекты'] = pd.concat([
+                        st.session_state.cleaned_data['неполевые_проекты'],
+                        cxway_non_field
+            ], ignore_index=True)
         
                                                        
         # ФИНАЛЬНОЕ ОБЪЕДИНЕНИЕ всех источников
         sources_for_merge = [st.session_state.cleaned_data['полевые_проекты']] 
         
         if cxway_processed is not None and not cxway_processed.empty:
-            sources_for_merge.append(cxway_processed)
+            # Добавляем только ПОЛЕВЫЕ из CXWAY
+            cxway_field = cxway_processed[cxway_processed['Полевой'] == 1]
+            if not cxway_field.empty:
+                sources_for_merge.append(cxway_field)
                                                        
         if easymerch_processed is not None and not easymerch_processed.empty:
             sources_for_merge.append(easymerch_processed)

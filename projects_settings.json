@@ -17,6 +17,15 @@
       "fio_om": "",
       "added_at": "2026-03-20T14:12:57.016332",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Северсталь_Тайный соискатель",
+      "wave_name": "1 волна 03.2026 Звонок",
+      "project_code": "Мультикод_.385",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-20T14:14:54.123992",
+      "added_by": "unknown_user"
     }
   ],
   "included_projects": [
@@ -139,8 +148,16 @@
       "project_code": "Мультикод_.0357",
       "timestamp": "2026-03-20T14:12:57.016337",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Северсталь_Тайный соискатель",
+      "wave_name": "1 волна 03.2026 Звонок",
+      "project_code": "Мультикод_.385",
+      "timestamp": "2026-03-20T14:14:54.124008",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-20T14:12:57.016340",
+  "last_updated": "2026-03-20T14:14:54.124012",
   "version": "1.0"
 }

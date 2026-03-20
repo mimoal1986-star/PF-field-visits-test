@@ -1,5 +1,24 @@
 {
-  "excluded_projects": [],
+  "excluded_projects": [
+    {
+      "project_name": "Триколор",
+      "wave_name": "02.2026_(3 волна)_ФСМ",
+      "project_code": "Мультикод_.0357",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-20T14:12:57.016232",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Триколор",
+      "wave_name": "02.2026_(1 волна)_СМ",
+      "project_code": "Мультикод_.0357",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-20T14:12:57.016332",
+      "added_by": "unknown_user"
+    }
+  ],
   "included_projects": [
     {
       "project_name": "CarPrice",
@@ -104,8 +123,24 @@
       "project_code": "RU00.013.06.01SVZ24",
       "timestamp": "2026-03-20T14:11:19.251402",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Триколор",
+      "wave_name": "02.2026_(3 волна)_ФСМ",
+      "project_code": "Мультикод_.0357",
+      "timestamp": "2026-03-20T14:12:57.016248",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Триколор",
+      "wave_name": "02.2026_(1 волна)_СМ",
+      "project_code": "Мультикод_.0357",
+      "timestamp": "2026-03-20T14:12:57.016337",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-20T14:11:19.251410",
+  "last_updated": "2026-03-20T14:12:57.016340",
   "version": "1.0"
 }

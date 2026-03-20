@@ -219,7 +219,12 @@ def process_all_data(settings_manager=None):
         cxway_processed = None
         cxway_raw = st.session_state.uploaded_files.get('cxway')
         if cxway_raw is not None:
-            cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
+            cxway_processed = data_cleaner.clean_cxway(
+                cxway_raw, 
+                None, 
+                google_with_field,
+                st.session_state.cleaned_data['портал']  # передаем портал
+            )
         
                                                        
         # ФИНАЛЬНОЕ ОБЪЕДИНЕНИЕ всех источников

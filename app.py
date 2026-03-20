@@ -223,7 +223,6 @@ def process_all_data(settings_manager=None):
                 cxway_raw, 
                 None, 
                 google_with_field,
-                st.session_state.cleaned_data['портал']  # передаем портал
             )
         
                                                        

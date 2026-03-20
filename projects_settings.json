@@ -1,44 +1,6 @@
 {
-  "excluded_projects": [
-    {
-      "project_name": "Киномакс",
-      "wave_name": "2026.03",
-      "project_code": "RU00.155.01.01SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-03-19T13:37:36.395834",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "ТЕХНОПАРК",
-      "wave_name": "2026.02-03",
-      "project_code": "RU00.284.01.01SPK24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-03-19T13:51:37.296481",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-03-19T17:53:55.227155",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Ёбидоёби",
-      "wave_name": "2026.03 (аудит)",
-      "project_code": "RU00.140.01.01SPK24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-03-19T17:58:10.452681",
-      "added_by": "unknown_user"
-    }
-  ],
-  "included_projects": [
-  ],
+  "excluded_projects": [],
+  "included_projects": [],
   "history": [
     {
       "action": "clear_all",
@@ -84,8 +46,16 @@
       "project_code": "RU00.140.01.01SPK24",
       "timestamp": "2026-03-19T17:58:10.452705",
       "user": "unknown_user"
+    },
+    {
+      "action": "clear_all",
+      "project_name": "",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-03-20T08:54:01.296099",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-19T17:58:10.452713",
+  "last_updated": "2026-03-20T08:54:01.296112",
   "version": "1.0"
 }

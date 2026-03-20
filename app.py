@@ -118,6 +118,9 @@ def process_all_data(settings_manager=None):
         
         array_with_field = data_cleaner.add_field_flag_to_array(st.session_state.cleaned_data['портал'])
         array_with_portal = data_cleaner.add_portal_to_array(array_with_field, google_with_field)
+
+        # Удаляем проекты CXWAY из портала
+        array_with_portal = data_cleaner.remove_cxway_from_portal(array_with_portal, google_with_field)
         st.session_state.cleaned_data['портал_с_полем'] = array_with_portal
         
         # Разделение на полевые/неполевые

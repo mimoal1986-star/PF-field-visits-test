@@ -276,7 +276,7 @@ class VisitCalculator:
                         total_plan = total_plan / num_regions
 
                 # OPTIMA
-                elif po == 'Optima':
+                elif po == 'Оптима':
                     original_code = project_code
                     found_quota = None
                     
@@ -298,7 +298,7 @@ class VisitCalculator:
                     
                     project_regions = hierarchy_df[
                         (hierarchy_df['Проект'] == original_code) & 
-                        (hierarchy_df['ПО'] == 'Optima')
+                        (hierarchy_df['ПО'] == 'Оптима')
                     ]['Регион'].unique()
                     num_regions = len(project_regions)
                     if num_regions > 0:

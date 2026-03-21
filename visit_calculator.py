@@ -342,6 +342,9 @@ class VisitCalculator:
                     # ПроДата: план = вся квота сразу (как в Мултон)
                     rs_plan_on_date = total_plan
                     rs_daily_plan = total_plan
+                elif po == 'Оптима':  # ← добавить эту строку
+                    rs_plan_on_date = total_plan   # план на дату = план проекта
+                    rs_daily_plan = total_plan
                 else:
                     # Обычный проект: равномерное распределение с весами RS
                     daily_plan_wave = total_plan / duration

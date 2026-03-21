@@ -107,6 +107,18 @@ class VisitCalculator:
                     hierarchy['Дата старта'] = hierarchy['Проект'].map(start_mapping)
                     hierarchy['Дата финиша'] = hierarchy['Проект'].map(finish_mapping)
                     
+                    # Если дат нет, ставим первый и последний день месяца
+                    if 'plan_calc_params' in st.session_state:
+                        first_day = pd.Timestamp(st.session_state['plan_calc_params']['start_date'])
+                        last_day = first_day + pd.offsets.MonthEnd(1)
+                    else:
+                        today = datetime.now()
+                        first_day = pd.Timestamp(year=today.year, month=today.month, day=1)
+                        last_day = first_day + pd.offsets.MonthEnd(1)
+                    
+                    hierarchy['Дата старта'] = hierarchy['Дата старта'].fillna(first_day)
+                    hierarchy['Дата финиша'] = hierarchy['Дата финиша'].fillna(last_day)
+                    
                 except Exception as e:
                     pass
             

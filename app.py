@@ -240,46 +240,29 @@ def process_all_data(settings_manager=None):
         
                                                        
         # ФИНАЛЬНОЕ ОБЪЕДИНЕНИЕ всех источников
-        sources_for_merge = [st.session_state.cleaned_data['полевые_проекты']] 
+        sources_for_merge = []
+        
+        if field_df is not None and not field_df.empty:
+            sources_for_merge.append(field_df)
         
         if cxway_processed is not None and not cxway_processed.empty:
-            # Добавляем только ПОЛЕВЫЕ из CXWAY
-            cxway_field = cxway_processed[cxway_processed['Полевой'] == 1]
-            if not cxway_field.empty:
-                sources_for_merge.append(cxway_field)
-                                                       
+            sources_for_merge.append(cxway_processed)
+        
         if easymerch_processed is not None and not easymerch_processed.empty:
             sources_for_merge.append(easymerch_processed)
             
         if optima_processed is not None and not optima_processed.empty:
             sources_for_merge.append(optima_processed)
-            
+        
         if prodata_processed is not None and not prodata_processed.empty:
             sources_for_merge.append(prodata_processed)
         
-        if len(sources_for_merge) > 1:  # если есть другие источники кроме основного
+        if sources_for_merge:
             all_field_projects = pd.concat(sources_for_merge, ignore_index=True)
             st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
-
-        
-        # 🔥 ФИЛЬТР ПО ЗАГРУЖЕННЫМ ФАЙЛАМ
-        all_field_projects = st.session_state.cleaned_data['полевые_проекты']
-        
-        loaded_files = {
-            'CXWAY': 'cxway' in st.session_state.uploaded_files,
-            'Easymerch': 'easymerch' in st.session_state.uploaded_files,
-            'Optima': 'optima' in st.session_state.uploaded_files,
-            'Мониторинги': 'prodata' in st.session_state.uploaded_files
-        }
-        
-        def keep_project(row):
-            po = row.get('ПО', '')
-            if po in ['Чеккер', 'не определено', '']:
-                return True
-            return loaded_files.get(po, False)
-        
-        all_field_projects = all_field_projects[all_field_projects.apply(keep_project, axis=1)]
-        st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
+        else:
+            st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()
+    
 
         
         # Создание иерархии

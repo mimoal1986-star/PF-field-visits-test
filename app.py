@@ -165,6 +165,9 @@ def process_all_data(settings_manager=None):
         # Добавление ЗОД из встроенного справочника
         if field_df is not None and not field_df.empty:
             field_df_with_zod = data_cleaner.add_zod_from_hierarchy(field_df)
+
+            field_df = field_df_with_zod.copy()
+            
             # Обновляем только ЗОД в all_projects
             for idx, row in field_df_with_zod.iterrows():
                 mask = (

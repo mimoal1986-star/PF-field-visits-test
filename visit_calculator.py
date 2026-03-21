@@ -194,6 +194,24 @@ class VisitCalculator:
                             except:
                                 multon_quotas[code] = 0
             
+            
+            # СБОР КВОТ ДЛЯ OPTIMA
+            optima_quotas = {}
+            if google_df is not None and not google_df.empty:
+                project_col = 'Проекты в  https://ru.checker-soft.com'
+                code_col = 'Код проекта RU00.000.00.01SVZ24'
+                kvota_col = 'Квота'
+                
+                if all(col in google_df.columns for col in [project_col, code_col, kvota_col]):
+                    for _, row in google_df.iterrows():
+                        code = str(row.get(code_col, '')).strip()
+                        kvota = row.get(kvota_col, 0)
+                        if code and code not in ['', 'nan', 'None', 'null']:
+                            try:
+                                optima_quotas[code] = float(kvota)
+                            except:
+                                optima_quotas[code] = 0
+                                    
             # КВОТЫ ПРОДАТА - ПРЯМО ИЗ ГУГЛ-ТАБЛИЦЫ
             prodata_quotas = {}
             if google_df is not None and not google_df.empty:
@@ -226,9 +244,10 @@ class VisitCalculator:
                 po = row['ПО']
                 client = row['Клиент']
                 rs_name = row['RS']
-                
+
+
                 # ОПРЕДЕЛЯЕМ total_plan
-                # Мултон 
+                # Мултон
                 if po == 'ПО клиента' and client == 'Мултон':
                     total_plan = multon_quotas.get(project_code, 0)
                     if total_plan <= 0:
@@ -255,6 +274,36 @@ class VisitCalculator:
                     num_regions = len(project_regions)
                     if num_regions > 0:
                         total_plan = total_plan / num_regions
+
+                # OPTIMA
+                elif po == 'Optima':
+                    original_code = project_code
+                    found_quota = None
+                    
+                    if '\\' in original_code:
+                        codes = original_code.split('\\')
+                        for code in codes:
+                            code_clean = code.strip()
+                            if code_clean in optima_quotas:
+                                found_quota = optima_quotas[code_clean]
+                                break
+                    else:
+                        if original_code in optima_quotas:
+                            found_quota = optima_quotas[original_code]
+                    
+                    if found_quota is None or found_quota <= 0:
+                        continue
+                    
+                    total_plan = found_quota
+                    
+                    project_regions = hierarchy_df[
+                        (hierarchy_df['Проект'] == original_code) & 
+                        (hierarchy_df['ПО'] == 'Optima')
+                    ]['Регион'].unique()
+                    num_regions = len(project_regions)
+                    if num_regions > 0:
+                        total_plan = total_plan / num_regions
+                        
                 
                 else:
                     plan_key = (project_code, wave_name, region)

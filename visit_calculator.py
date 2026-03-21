@@ -454,13 +454,25 @@ class VisitCalculator:
                 rs_col
             ]).size().to_dict()
             
-            completed_in_period = visits_df[completed_mask & period_mask]
-            rs_facts_period = completed_in_period.groupby([
-                'Код анкеты',
-                'Название проекта',
-                region_col,
-                rs_col
-            ]).size().to_dict()
+            # Если нет колонки "Дата визита" — факт на дату = факт проекта
+            if 'Дата визита' in visits_df.columns:
+                start_date = pd.Timestamp(calc_params['start_date'])
+                end_date = pd.Timestamp(calc_params['end_date'])
+                period_mask = (
+                    (visits_df['Дата визита'] >= start_date) &
+                    (visits_df['Дата визита'] <= end_date)
+                )
+                completed_in_period = visits_df[completed_mask & period_mask]
+                rs_facts_period = completed_in_period.groupby([
+                    'Код анкеты',
+                    'Название проекта',
+                    region_col,
+                    rs_col
+                ]).size().to_dict()
+            else:
+                # Для Optima и других без дат
+                rs_facts_period = rs_facts_total.copy()
+    
             
             # ✅ СОЗДАЁМ КОЛОНКИ
             result_df['Факт проекта, шт.'] = 0

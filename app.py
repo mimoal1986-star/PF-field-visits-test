@@ -391,6 +391,21 @@ with tab1:
                 st.session_state.uploaded_files['портал'] = portal_df
                 st.success("✅ Портал загружен")
                 display_file_preview(portal_df, "Просмотр данных портала")
+
+                # Кнопка скачивания исходного массива
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    portal_df.to_excel(writer, sheet_name='Исходный_массив', index=False)
+                
+                st.download_button(
+                    label="📥 Скачать исходный массив",
+                    data=output.getvalue(),
+                    file_name=f"исходный_массив_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="secondary",
+                    use_container_width=True,
+                    key="download_original_portal"
+                )
     
     with col2:
         st.subheader("2. 📅 Проекты Сервизория")

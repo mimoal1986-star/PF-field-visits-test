@@ -216,7 +216,7 @@ class DataCleaner:
             array_clean = array_df.copy()
             
             # Находим колонку АСС в массиве
-            array_acc_col = self._find_column(array_clean, ['АСС', 'ACC'])
+            array_acc_col = self._find_column(array_clean, ['АСС', 'ACC', 'АСМ'])
             
             if not array_acc_col:
                 return array_df

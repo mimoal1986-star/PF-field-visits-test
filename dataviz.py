@@ -604,8 +604,8 @@ class DataVisualizer:
             .stDataFrame th {
                 white-space: normal !important;
                 word-wrap: break-word !important;
-                max-width: 100px !important;
-                min-width: 60px !important;
+                max-width: 60px !important;
+                min-width: 40px !important;
             }
             .stDataFrame td {
                 white-space: normal !important;

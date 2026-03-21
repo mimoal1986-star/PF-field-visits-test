@@ -140,7 +140,7 @@ class DataCleaner:
         df_clean = df.copy()
         
         # Удалить строки где Статус == "Удалено"
-        status_col = self._find_column(df_clean, ['Статус', 'status', 'Status'])
+        status_col = self._find_column(df_clean, ['Статус', ' Статус', 'Статус '])
         if status_col:
             df_clean = df_clean[df_clean[status_col].astype(str).str.strip() != 'Удалено']
         

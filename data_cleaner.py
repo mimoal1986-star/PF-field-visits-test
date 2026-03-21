@@ -216,7 +216,7 @@ class DataCleaner:
             array_clean = array_df.copy()
             
             # Находим колонку АСС в массиве
-            array_acc_col = self._find_column(array_clean, ['АСС', 'acc', 'ACC'])
+            array_acc_col = self._find_column(array_clean, ['АСС', 'ACC'])
             
             if not array_acc_col:
                 return array_df
@@ -523,7 +523,7 @@ class DataCleaner:
                 'Имя клиента': ['Имя клиента'],
                 'Название проекта': ['Название проекта'],
                 'ЗОД': ['ЗОД', 'ZOD', 'Зод', 'zod'],
-                'АСС': ['АСС', 'ASS', 'Асс', 'ass'],
+                'АСС': ['АСС', 'ACC'],
                 'ЭМ': ['ЭМ рег'],
                 'Регион short': ['Регион'],
                 'Регион': ['Регион '],
@@ -840,7 +840,7 @@ class DataCleaner:
             'Код анкеты': ['Project Code', 'Код', 'Code'],
             'Имя клиента': ['Client', 'Имя клиента', 'Клиент имя'],
             'Название проекта': ['Wave Name'],
-            'АСС': ['ACC', 'АСС'],
+            'АСС': ['АСС', 'ACC'],
             'ЭМ': ['ЭМ рег', 'Эксперт', 'Эксперт менеджер'],
             'Регион short': ['Region short'],
             'Статус': ['Status'],

@@ -394,7 +394,7 @@ class DataCleaner:
                     code_str = str(code).strip()
                     lower_code = code_str.lower()
                     
-                    if any(word in lower_code for word in ['мультикод', 'пилот', 'семпл']):
+                    if any(word in lower_code for word in ['мультикод','мультикол', 'пилот', 'семпл']):
                         return 1
                     
                     parts = code_str.split('.')

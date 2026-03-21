@@ -595,25 +595,6 @@ class DataVisualizer:
         if 'Утилизация тайминга, %' in df_display.columns:
             df_display['Утилизация тайминга, %'] = df_display['Утилизация тайминга, %'].map(lambda x: f"{x:.1f}%")
         
-        # CSS для уменьшения ширины колонок
-        st.markdown("""
-        <style>
-            .stDataFrame {
-                font-size: 12px;
-            }
-            .stDataFrame th {
-                white-space: normal !important;
-                word-wrap: break-word !important;
-                max-width: 20px !important;
-                min-width: 10px !important;
-            }
-            .stDataFrame td {
-                white-space: normal !important;
-                word-wrap: break-word !important;
-            }
-        </style>
-        """, unsafe_allow_html=True)
-        
 
         # Таблица
         st.dataframe(

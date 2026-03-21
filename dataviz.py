@@ -438,7 +438,13 @@ class DataVisualizer:
             }
             
             existing_agg = {k: v for k, v in agg_columns.items() if k in filtered_data.columns}
-            project_data = filtered_data.groupby('Клиент').agg(existing_agg).reset_index()
+            # Определяем колонки группировки
+            if show_project:
+                group_cols = ['Клиент', 'Проект']
+            else:
+                group_cols = ['Клиент']
+            
+            project_data = filtered_data.groupby(group_cols).agg(existing_agg).reset_index()
             
             # Добавляем метрики
             project_data['План/Факт на дату,%'] = 0.0

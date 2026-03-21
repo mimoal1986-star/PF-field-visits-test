@@ -494,17 +494,25 @@ class DataVisualizer:
         
         display_columns = base_columns.copy()
         
-        # Добавляем колонки развертки
+        # Добавляем колонки развертки (в правильном порядке)
+        # Сначала идут развертки, потом ПО, потом показатели
+        extra_cols = []
+        
         if show_project and 'Проект' in project_data.columns:
-            display_columns.insert(0, 'Проект')
+            extra_cols.append('Проект')
         if show_regions and region_col in project_data.columns:
-            display_columns.insert(1, region_col)
+            extra_cols.append(region_col)
         if show_dsm and 'DSM' in project_data.columns:
-            display_columns.insert(2, 'DSM')
+            extra_cols.append('DSM')
         if show_asm and 'ASM' in project_data.columns:
-            display_columns.insert(3, 'ASM')
+            extra_cols.append('ASM')
         if show_rs and 'RS' in project_data.columns:
-            display_columns.insert(4, 'RS')
+            extra_cols.append('RS')
+        
+        # Вставляем развертки после Клиент
+        if extra_cols:
+            for i, col in enumerate(reversed(extra_cols)):
+                display_columns.insert(1, col)
         
         # Только существующие колонки
         existing_cols = [col for col in display_columns if col in project_data.columns]

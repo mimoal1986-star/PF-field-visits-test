@@ -935,6 +935,18 @@ class DataCleaner:
         else:
             result['ПО'] = 'не определено'
         
+        # Удаляем проекты, которые в Google отмечены как Чеккер
+        if google_df is not None and not google_df.empty:
+            google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
+            google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+            
+            if google_code_col and google_portal_col:
+                checker_mask = google_df[google_portal_col].astype(str).str.strip().str.upper() == 'ЧЕККЕР'
+                checker_codes = google_df.loc[checker_mask, google_code_col].astype(str).str.strip().tolist()
+                
+                if checker_codes:
+                    result = result[~result['Код анкеты'].astype(str).str.strip().isin(checker_codes)]
+        
         # Добавление полного региона
         region_mapping = {
             'AD': 'Республика Адыгея', 'AL': 'Алтайский край', 'AM': 'Амурская область',

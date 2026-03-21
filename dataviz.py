@@ -329,19 +329,23 @@ class DataVisualizer:
         # 📊 РАЗВЕРТКА (ЧЕК-БОКСЫ)
         st.subheader("📊 Детализация")
         
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
-            show_regions = st.checkbox("Регионы", key='show_regions')
+            show_project = st.checkbox("Код проекта", key='show_project_code')
         with col2:
-            show_dsm = st.checkbox("DSM", key='show_dsm')
+            show_regions = st.checkbox("Регионы", key='show_regions')
         with col3:
-            show_asm = st.checkbox("ASM", key='show_asm')
+            show_dsm = st.checkbox("DSM", key='show_dsm')
         with col4:
+            show_asm = st.checkbox("ASM", key='show_asm')
+        with col5:
             show_rs = st.checkbox("RS", key='show_rs')
         
         # Формируем groupby в зависимости от чек-боксов
-        group_cols = ['Проект', 'Клиент', 'ПО']
+        group_cols = ['Клиент', 'ПО']
         
+        if show_project and 'Проект' in filtered_data.columns:
+            group_cols.append('Проект')
         if show_regions and region_col in filtered_data.columns:
             group_cols.append(region_col)
         if show_dsm and 'DSM' in filtered_data.columns:
@@ -469,8 +473,7 @@ class DataVisualizer:
             st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
         
         # Колонки для отображения
-        display_columns = [
-            'Проект',
+        base_columns = [
             'Клиент',
             'ПО',
             'Длительность',
@@ -489,15 +492,19 @@ class DataVisualizer:
             'Ср. план на день для 100% плана'
         ]
         
-        # Добавляем колонки развертки, если они есть
+        display_columns = base_columns.copy()
+        
+        # Добавляем колонки развертки
+        if show_project and 'Проект' in project_data.columns:
+            display_columns.insert(0, 'Проект')
         if show_regions and region_col in project_data.columns:
-            display_columns.insert(3, region_col)
+            display_columns.insert(1, region_col)
         if show_dsm and 'DSM' in project_data.columns:
-            display_columns.insert(4, 'DSM')
+            display_columns.insert(2, 'DSM')
         if show_asm and 'ASM' in project_data.columns:
-            display_columns.insert(5, 'ASM')
+            display_columns.insert(3, 'ASM')
         if show_rs and 'RS' in project_data.columns:
-            display_columns.insert(6, 'RS')
+            display_columns.insert(4, 'RS')
         
         # Только существующие колонки
         existing_cols = [col for col in display_columns if col in project_data.columns]

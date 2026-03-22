@@ -504,14 +504,36 @@ class DataVisualizer:
         # KPI - 6 метрик в два ряда по 3
         st.markdown("### 📊 Ключевые показатели")
         
+        # Чек-бокс Продата (справа от KPI)
+        col_kpi1, col_kpi2, col_kpi3, col_checkbox = st.columns([1, 1, 1, 0.5])
+        with col_checkbox:
+            include_prodata = st.checkbox("📊 Продата", key="include_prodata")
+        
+        # Получаем данные ПроДата
+        prodata_df = st.session_state.get('prodata_processed', None) if 'prodata_processed' in st.session_state else None
+        prodata_plan_total = 0
+        prodata_fact_total = 0
+        prodata_plan_date_total = 0
+        prodata_fact_date_total = 0
+        
+        if include_prodata and prodata_df is not None and not prodata_df.empty:
+            prodata_plan_total = prodata_df['План проекта, шт.'].sum() if 'План проекта, шт.' in prodata_df.columns else 0
+            prodata_fact_total = prodata_df['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in prodata_df.columns else 0
+            prodata_plan_date_total = prodata_df['План на дату, шт.'].sum() if 'План на дату, шт.' in prodata_df.columns else 0
+            prodata_fact_date_total = prodata_df['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in prodata_df.columns else 0
+        
         # Первый ряд: План проекта, Факт проекта, План/Факт проекта
         col1, col2, col3 = st.columns(3)
         with col1:
             plan_project_total = project_data['План проекта, шт.'].sum() if 'План проекта, шт.' in project_data.columns else 0
+            if include_prodata:
+                plan_project_total += prodata_plan_total
             st.metric("📊 План проекта", f"{plan_project_total:,.0f} шт")
         
         with col2:
             fact_project_total = project_data['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in project_data.columns else 0
+            if include_prodata:
+                fact_project_total += prodata_fact_total
             st.metric("✅ Факт проекта", f"{fact_project_total:,.0f} шт")
         
         with col3:
@@ -522,100 +544,19 @@ class DataVisualizer:
         col4, col5, col6 = st.columns(3)
         with col4:
             plan_date_total = project_data['План на дату, шт.'].sum() if 'План на дату, шт.' in project_data.columns else 0
+            if include_prodata:
+                plan_date_total += prodata_plan_date_total
             st.metric("📊 План на дату", f"{plan_date_total:,.0f} шт")
         
         with col5:
             fact_date_total = project_data['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in project_data.columns else 0
+            if include_prodata:
+                fact_date_total += prodata_fact_date_total
             st.metric("✅ Факт на дату", f"{fact_date_total:,.0f} шт")
         
         with col6:
             pf_date_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
             st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
-        
-        # Колонки для отображения
-        base_columns = [
-            'Клиент',
-            'ПО',
-            'Длительность',
-            'План проекта, шт.',
-            'Факт проекта, шт.',
-            'План/Факт проекта,%',
-            'План на дату, шт.',
-            'Факт на дату, шт.',
-            'План/Факт на дату,%',
-            '△План/Факт на дату, шт',
-            '△План/Факт на дату, %',
-            'Прогноз на месяц, шт.',
-            'Фокус',
-            'Дней до конца проекта',
-            'Утилизация тайминга, %',
-            'Ср. план на день для 100% плана'
-        ]
-        
-        display_columns = base_columns.copy()
-        
-        # Добавляем колонки развертки (в правильном порядке)
-        # Сначала идут развертки, потом ПО, потом показатели
-        extra_cols = []
-        
-        if show_project and 'Проект' in project_data.columns:
-            extra_cols.append('Проект')
-        if show_regions and region_col in project_data.columns:
-            extra_cols.append(region_col)
-        if show_dsm and 'DSM' in project_data.columns:
-            extra_cols.append('DSM')
-        if show_asm and 'ASM' in project_data.columns:
-            extra_cols.append('ASM')
-        if show_rs and 'RS' in project_data.columns:
-            extra_cols.append('RS')
-        
-        # Вставляем развертки после Клиент
-        if extra_cols:
-            for i, col in enumerate(reversed(extra_cols)):
-                display_columns.insert(1, col)
-        
-        # Только существующие колонки
-        existing_cols = [col for col in display_columns if col in project_data.columns]
-        df_display = project_data[existing_cols].copy()
-        
-        # Применяем длинные названия к колонке региона в таблице
-        if region_col in df_display.columns:
-            df_display[region_col] = df_display[region_col].apply(self._get_long_region)
-        
-        # Форматирование
-        if 'План/Факт на дату,%' in df_display.columns:
-            df_display['План/Факт на дату,%'] = df_display['План/Факт на дату,%'].map(lambda x: f"{x:.1f}%")
-        
-        if 'План/Факт проекта,%' in df_display.columns:
-            df_display['План/Факт проекта,%'] = df_display['План/Факт проекта,%'].map(lambda x: f"{x:.1f}%")
-        
-        if '△План/Факт на дату, %' in df_display.columns:
-            df_display['△План/Факт на дату, %'] = df_display['△План/Факт на дату, %'].map(lambda x: f"{x:+.1f}%")
-        
-        if 'Утилизация тайминга, %' in df_display.columns:
-            df_display['Утилизация тайминга, %'] = df_display['Утилизация тайминга, %'].map(lambda x: f"{x:.1f}%")
-        
-
-        # Таблица
-        st.dataframe(
-            df_display,
-            use_container_width=True,
-            hide_index=True
-        )
-        
-        # Кнопка скачивания
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df_display.to_excel(writer, sheet_name='План_факт_проекты', index=False)
-        
-        st.download_button(
-            label="⬇️ Скачать Excel",
-            data=output.getvalue(),
-            file_name=f"план_факт_проекты_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            type="primary",
-            use_container_width=True
-        )
     
 
     def create_region_summary(self, df):

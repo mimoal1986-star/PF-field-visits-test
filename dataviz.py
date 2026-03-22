@@ -498,6 +498,7 @@ class DataVisualizer:
         col_kpi1, col_kpi2, col_kpi3, col_checkbox = st.columns([1, 1, 1, 0.5])
         with col_checkbox:
             include_prodata = st.checkbox("📊 Продата", key="include_prodata")
+            st.session_state.include_prodata = include_prodata
         
         # Получаем данные ПроДата
         prodata_df = st.session_state.cleaned_data.get('prodata_processed', None)
@@ -865,9 +866,7 @@ class DataVisualizer:
         st.markdown("### 📊 Ключевые показатели")
         
         # Чек-бокс Продата (справа от KPI)
-        col_kpi1, col_kpi2, col_kpi3, col_checkbox = st.columns([1, 1, 1, 0.5])
-        with col_checkbox:
-            include_prodata = st.checkbox("📊 Продата", key="include_prodata")
+        include_prodata = st.session_state.get('include_prodata', False)
         
         # Получаем данные ПроДата
         prodata_df = st.session_state.cleaned_data.get('prodata_processed', None)
@@ -1260,9 +1259,7 @@ class DataVisualizer:
         st.markdown("### 📊 Ключевые показатели")
         
         # Чек-бокс Продата (справа от KPI)
-        col_kpi1, col_kpi2, col_kpi3, col_checkbox = st.columns([1, 1, 1, 0.5])
-        with col_checkbox:
-            include_prodata = st.checkbox("📊 Продата", key="include_prodata")
+        include_prodata = st.session_state.get('include_prodata', False)
         
         # Получаем данные ПроДата
         prodata_df = st.session_state.cleaned_data.get('prodata_processed', None)

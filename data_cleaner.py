@@ -1468,6 +1468,38 @@ class DataCleaner:
         # Добавляем источник
         result['Источник'] = 'Мониторинги'
         
+        # ===== НОВАЯ ЛОГИКА ДЛЯ ПРОДАТА =====
+        # Считаем количество визитов по клиенту и типу мониторинга
+        if not result.empty:
+            # Группируем по клиенту и типу мониторинга
+            prodata_agg = result.groupby(['Имя клиента', 'Название проекта']).size().reset_index(name='count')
+            
+            # Факт = количество / 70
+            prodata_agg['Факт проекта, шт.'] = (prodata_agg['count'] / 70).round(1)
+            
+            # План = Факт
+            prodata_agg['План проекта, шт.'] = prodata_agg['Факт проекта, шт.']
+            prodata_agg['План на дату, шт.'] = prodata_agg['План проекта, шт.']
+            prodata_agg['Факт на дату, шт.'] = prodata_agg['Факт проекта, шт.']
+            
+            # Переименовываем колонки
+            result = prodata_agg.rename(columns={
+                'Имя клиента': 'Клиент',
+                'Название проекта': 'Тип мониторинга'
+            })
+            
+            # Добавляем служебные колонки
+            result['ПО'] = 'Мониторинги'
+            result['Полевой'] = 1
+            result['Источник'] = 'ПроДата'
+            result['ЗОД'] = ''
+            result['АСС'] = ''
+            result['ЭМ'] = ''
+            result['Регион short'] = ''
+            result['Регион'] = ''
+            result['Статус'] = ''
+            result['Дата визита'] = pd.NaT
+        
         return result
     
     def _is_field_project(self, code):

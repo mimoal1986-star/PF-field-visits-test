@@ -526,6 +526,10 @@ with tab2:
         with tab_projects:
             data = st.session_state.visit_report['calculated_data']
             dataviz.create_planfact_tab(data, None)
+            
+            prodata_df = st.session_state.cleaned_data.get('prodata_processed')
+            if prodata_df is not None and not prodata_df.empty:
+                dataviz.create_prodata_table(prodata_df)
         
         with tab_regions:
             data = st.session_state.visit_report['calculated_data']

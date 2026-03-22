@@ -548,6 +548,7 @@ if st.session_state.cleaned_data.get('полевые_проекты') is not Non
     
     field_projects_df = st.session_state.cleaned_data['полевые_проекты']
     
+    
     # Исключаем ПроДата из выгрузки
     if 'Источник' in field_projects_df.columns:
         field_projects_df = field_projects_df[field_projects_df['Источник'] != 'Мониторинги']

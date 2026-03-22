@@ -862,28 +862,6 @@ class DataVisualizer:
             st.warning("⚠️ Нет данных после фильтрации")
             return
         
-        st.markdown("### 📊 Ключевые показатели")
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            plan_project_total = region_data['План проекта, шт.'].sum() if 'План проекта, шт.' in region_data.columns else 0
-            st.metric("📊 План проекта", f"{plan_project_total:,.0f} шт")
-        with col2:
-            fact_project_total = region_data['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in region_data.columns else 0
-            st.metric("✅ Факт проекта", f"{fact_project_total:,.0f} шт")
-        with col3:
-            pf_project_percent = (fact_project_total / plan_project_total * 100) if plan_project_total > 0 else 0
-            st.metric("🎯 План/Факт проекта", f"{pf_project_percent:.1f}%")
-        
-        col4, col5, col6 = st.columns(3)
-        with col4:
-            plan_date_total = region_data['План на дату, шт.'].sum() if 'План на дату, шт.' in region_data.columns else 0
-            st.metric("📊 План на дату", f"{plan_date_total:,.0f} шт")
-        with col5:
-            fact_date_total = region_data['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in region_data.columns else 0
-            st.metric("✅ Факт на дату", f"{fact_date_total:,.0f} шт")
-        with col6:
-            pf_date_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
-            st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
         
         display_columns = [region_col]
         if show_project and 'Проект' in region_data.columns:
@@ -1223,30 +1201,6 @@ class DataVisualizer:
             st.warning("⚠️ Нет данных после фильтрации")
             return
         
-        # KPI
-        st.markdown("### 📊 Ключевые показатели")
-        
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            plan_project_total = dsm_data['План проекта, шт.'].sum() if 'План проекта, шт.' in dsm_data.columns else 0
-            st.metric("📊 План проекта", f"{plan_project_total:,.0f} шт")
-        with col2:
-            fact_project_total = dsm_data['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in dsm_data.columns else 0
-            st.metric("✅ Факт проекта", f"{fact_project_total:,.0f} шт")
-        with col3:
-            pf_project_percent = (fact_project_total / plan_project_total * 100) if plan_project_total > 0 else 0
-            st.metric("🎯 План/Факт проекта", f"{pf_project_percent:.1f}%")
-        
-        col4, col5, col6 = st.columns(3)
-        with col4:
-            plan_date_total = dsm_data['План на дату, шт.'].sum() if 'План на дату, шт.' in dsm_data.columns else 0
-            st.metric("📊 План на дату", f"{plan_date_total:,.0f} шт")
-        with col5:
-            fact_date_total = dsm_data['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in dsm_data.columns else 0
-            st.metric("✅ Факт на дату", f"{fact_date_total:,.0f} шт")
-        with col6:
-            pf_date_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
-            st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
         
         # Колонки для отображения
         display_columns = ['DSM']

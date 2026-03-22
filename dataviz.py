@@ -510,7 +510,7 @@ class DataVisualizer:
             include_prodata = st.checkbox("📊 Продата", key="include_prodata")
         
         # Получаем данные ПроДата
-        prodata_df = st.session_state.get('prodata_processed', None) if 'prodata_processed' in st.session_state else None
+        prodata_df = st.session_state.cleaned_data.get('prodata_processed', None)
         prodata_plan_total = 0
         prodata_fact_total = 0
         prodata_plan_date_total = 0

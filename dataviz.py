@@ -202,7 +202,8 @@ class DataVisualizer:
         rename_cols = {
             'ЗОД': 'DSM',
             'АСС': 'ASM',
-            'ЭМ': 'RS'
+            'ЭМ': 'RS',
+            'Имя клиента': 'Клиент'
         }
         data = data.rename(columns=rename_cols)
         

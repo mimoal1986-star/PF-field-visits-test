@@ -258,7 +258,7 @@ def process_all_data(settings_manager=None):
             sources_for_merge.append(optima_processed)
         
         if prodata_processed is not None and not prodata_processed.empty:
-            sources_for_merge.append(prodata_processed)
+            st.session_state.cleaned_data['prodata_processed'] = prodata_processed
         
         if sources_for_merge:
             all_field_projects = pd.concat(sources_for_merge, ignore_index=True)
@@ -547,6 +547,10 @@ if st.session_state.cleaned_data.get('полевые_проекты') is not Non
     st.subheader("📥 Выгрузка данных")
     
     field_projects_df = st.session_state.cleaned_data['полевые_проекты']
+    
+    # Исключаем ПроДата из выгрузки
+    if 'Источник' in field_projects_df.columns:
+        field_projects_df = field_projects_df[field_projects_df['Источник'] != 'Мониторинги']
     
     if not field_projects_df.empty:
         output = BytesIO()

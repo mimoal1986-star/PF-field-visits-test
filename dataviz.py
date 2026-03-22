@@ -1373,6 +1373,53 @@ class DataVisualizer:
             type="primary",
             use_container_width=True
         )
+        
+    def create_prodata_table(self, prodata_df):
+        """
+        Создает отдельную таблицу для ПроДата
+        Формат: Клиент | Тип мониторинга | Факт проекта
+        """
+        if prodata_df is None or prodata_df.empty:
+            return
+        
+        st.markdown("---")
+        st.subheader("📊 ПроДата (Мониторинги)")
+        st.caption("Данные ПроДата не участвуют в основной таблице проектов")
+        
+        # Выбираем нужные колонки
+        table_df = prodata_df[['Клиент', 'Тип мониторинга', 'Факт проекта, шт.']].copy()
+        
+        # Форматирование
+        table_df['Факт проекта, шт.'] = table_df['Факт проекта, шт.'].map(lambda x: f"{x:.1f}")
+        
+        # Сортируем по клиенту
+        table_df = table_df.sort_values('Клиент')
+        
+        # Отображаем таблицу
+        st.dataframe(
+            table_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                'Клиент': 'Клиент',
+                'Тип мониторинга': 'Тип мониторинга',
+                'Факт проекта, шт.': st.column_config.TextColumn('Факт проекта, шт.')
+            }
+        )
+        
+        # Кнопка скачивания
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            table_df.to_excel(writer, sheet_name='ПроДата', index=False)
+        
+        st.download_button(
+            label="⬇️ Скачать ПроДата",
+            data=output.getvalue(),
+            file_name=f"prodata_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            type="secondary",
+            use_container_width=True
+        )
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()

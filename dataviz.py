@@ -1317,7 +1317,7 @@ class DataVisualizer:
         
     def create_prodata_table(self, prodata_df):
         """
-        Создает отдельную таблицу для ПроДата
+        Создает отдельную таблицу для ПроДата с возможностью развертки по Типу мониторинга
         Формат: Клиент | Тип мониторинга | Факт проекта
         """
         if prodata_df is None or prodata_df.empty:
@@ -1327,40 +1327,74 @@ class DataVisualizer:
         st.subheader("📊 ПроДата (Мониторинги)")
         st.caption("Данные ПроДата не участвуют в основной таблице проектов")
         
-        # Выбираем нужные колонки
-        table_df = prodata_df[['Клиент', 'Тип мониторинга', 'Факт проекта, шт.']].copy()
+        # Чек-бокс для развертки (по умолчанию выключен)
+        show_detail = st.checkbox("📋 Показать детализацию по типам мониторинга", key="prodata_detail", value=False)
         
-        # Форматирование
-        table_df['Факт проекта, шт.'] = table_df['Факт проекта, шт.'].map(lambda x: f"{x:.1f}")
-        
-        # Сортируем по клиенту
-        table_df = table_df.sort_values('Клиент')
-        
-        # Отображаем таблицу
-        st.dataframe(
-            table_df,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                'Клиент': 'Клиент',
-                'Тип мониторинга': 'Тип мониторинга',
-                'Факт проекта, шт.': st.column_config.TextColumn('Факт проекта, шт.')
-            }
-        )
-        
-        # Кнопка скачивания
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            table_df.to_excel(writer, sheet_name='ПроДата', index=False)
-        
-        st.download_button(
-            label="⬇️ Скачать ПроДата",
-            data=output.getvalue(),
-            file_name=f"prodata_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            type="secondary",
-            use_container_width=True
-        )
+        if show_detail:
+            # Развернутая таблица - показываем каждый тип мониторинга отдельно
+            table_df = prodata_df[['Клиент', 'Тип мониторинга', 'Факт проекта, шт.']].copy()
+            table_df = table_df.sort_values(['Клиент', 'Тип мониторинга'])
+            
+            # Форматирование
+            table_df['Факт проекта, шт.'] = table_df['Факт проекта, шт.'].map(lambda x: f"{x:.1f}")
+            
+            # Отображаем таблицу
+            st.dataframe(
+                table_df,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    'Клиент': 'Клиент',
+                    'Тип мониторинга': 'Тип мониторинга',
+                    'Факт проекта, шт.': st.column_config.TextColumn('Факт проекта, шт.')
+                }
+            )
+            
+            # Кнопка скачивания для развернутой таблицы
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                table_df.to_excel(writer, sheet_name='ПроДата_детально', index=False)
+            
+            st.download_button(
+                label="⬇️ Скачать ПроДата (детально)",
+                data=output.getvalue(),
+                file_name=f"prodata_detailed_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                type="secondary",
+                use_container_width=True
+            )
+        else:
+            # Свернутая таблица - группируем по клиенту (суммируем все типы мониторинга)
+            prodata_agg = prodata_df.groupby('Клиент')['Факт проекта, шт.'].sum().reset_index()
+            prodata_agg = prodata_agg.sort_values('Клиент')
+            
+            # Форматирование
+            prodata_agg['Факт проекта, шт.'] = prodata_agg['Факт проекта, шт.'].map(lambda x: f"{x:.1f}")
+            
+            # Отображаем таблицу
+            st.dataframe(
+                prodata_agg,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    'Клиент': 'Клиент',
+                    'Факт проекта, шт.': st.column_config.TextColumn('Факт проекта, шт.')
+                }
+            )
+            
+            # Кнопка скачивания для свернутой таблицы
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                prodata_agg.to_excel(writer, sheet_name='ПроДата', index=False)
+            
+            st.download_button(
+                label="⬇️ Скачать ПроДата",
+                data=output.getvalue(),
+                file_name=f"prodata_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                type="secondary",
+                use_container_width=True
+            )
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()

@@ -21,8 +21,9 @@ class DataCleaner:
     def _find_column(self, df, possible_names):
         """Находит колонку по возможным названиям"""
         for name in possible_names:
-            if name in df.columns:
-                return name
+            for col in df.columns:
+                if col.strip() == name.strip():
+                    return col
         return None
     
     def clean_google(self, df):

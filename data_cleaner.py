@@ -23,7 +23,7 @@ class DataCleaner:
         for name in possible_names:
             for col in df.columns:
                 if col.strip() == name.strip():
-                    return col
+                    return col.strip()
         return None
     
     def clean_google(self, df):

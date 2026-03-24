@@ -6,7 +6,7 @@ from datetime import datetime
 from io import BytesIO
 import hashlib
 
-def _get_data_hash(df):п
+def _get_data_hash(df):
     """Получить хэш DataFrame для кэширования"""
     if df is None or df.empty:
         return "empty"

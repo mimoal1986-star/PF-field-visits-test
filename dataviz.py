@@ -116,9 +116,9 @@ class DataVisualizer:
             'Дата финиша': 'first',
             'Клиент': 'first',
             'ПО': 'first',
-            'ЗОД': 'first',
-            'АСС': 'first',
-            'ЭМ': 'first'
+            'DSM': 'first',
+            'ASM': 'first',
+            'RS': 'first'
         }).reset_index()
         
         # Расчет метрик

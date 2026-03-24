@@ -105,21 +105,26 @@ class DataVisualizer:
         """Кэшированная группировка по проектам"""
         data = st.session_state.visit_report['calculated_data']
         
-        # Группировка (тяжелая операция)
-        grouped = data.groupby(list(group_cols)).agg({
-            'План проекта, шт.': 'sum',
-            'План на дату, шт.': 'sum',
-            'Факт проекта, шт.': 'sum',
-            'Факт на дату, шт.': 'sum',
-            'Длительность': 'first',
-            'Дата старта': 'first',
-            'Дата финиша': 'first',
-            'Клиент': 'first',
-            'ПО': 'first',
-            'DSM': 'first',
-            'ASM': 'first',
-            'RS': 'first'
-        }).reset_index()
+        # Колонки, которые НЕ нужно агрегировать (они уже в group_cols)
+        group_cols_set = set(group_cols)
+        
+        # Собираем словарь агрегации только для нужных колонок
+        agg_dict = {}
+        
+        # Базовые колонки для агрегации
+        sum_cols = ['План проекта, шт.', 'План на дату, шт.', 'Факт проекта, шт.', 'Факт на дату, шт.']
+        first_cols = ['Длительность', 'Дата старта', 'Дата финиша', 'Клиент', 'ПО', 'DSM', 'ASM', 'RS']
+        
+        for col in sum_cols:
+            if col in data.columns and col not in group_cols_set:
+                agg_dict[col] = 'sum'
+        
+        for col in first_cols:
+            if col in data.columns and col not in group_cols_set:
+                agg_dict[col] = 'first'
+        
+        # Группировка
+        grouped = data.groupby(list(group_cols)).agg(agg_dict).reset_index()
         
         # Расчет метрик
         mask = grouped['План на дату, шт.'] > 0

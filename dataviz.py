@@ -4,15 +4,6 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime
 from io import BytesIO
-import hashlib
-
-def _get_data_hash(df):
-    """Получить хэш DataFrame для кэширования"""
-    if df is None or df.empty:
-        return "empty"
-    return hashlib.md5(
-        pd.util.hash_pandas_object(df).values.tobytes()
-    ).hexdigest()
 
 class DataVisualizer:
 
@@ -99,101 +90,7 @@ class DataVisualizer:
             'YV': 'Еврейская автономная область',
             'ZK': 'Забайкальский край'
         }
-
-    @st.cache_data(ttl=3600, show_spinner=False)
-    def _get_grouped_projects(_self, data_hash: str, group_cols: tuple) -> pd.DataFrame:
-        """Кэшированная группировка по проектам"""
-        data = st.session_state.visit_report['calculated_data']
-        
-        # Колонки, которые НЕ нужно агрегировать (они уже в group_cols)
-        group_cols_set = set(group_cols)
-        
-        # Собираем словарь агрегации только для нужных колонок
-        agg_dict = {}
-        
-        # Базовые колонки для агрегации
-        sum_cols = ['План проекта, шт.', 'План на дату, шт.', 'Факт проекта, шт.', 'Факт на дату, шт.']
-        first_cols = ['Длительность', 'Дата старта', 'Дата финиша', 'Клиент', 'ПО', 'DSM', 'ASM', 'RS']
-        
-        for col in sum_cols:
-            if col in data.columns and col not in group_cols_set:
-                agg_dict[col] = 'sum'
-        
-        for col in first_cols:
-            if col in data.columns and col not in group_cols_set:
-                agg_dict[col] = 'first'
-        
-        # Группировка
-        grouped = data.groupby(list(group_cols)).agg(agg_dict).reset_index()
-        
-        # Расчет метрик
-        mask = grouped['План на дату, шт.'] > 0
-        grouped['План/Факт на дату,%'] = 0.0
-        if mask.any():
-            grouped.loc[mask, 'План/Факт на дату,%'] = (
-                grouped.loc[mask, 'Факт на дату, шт.'] / 
-                grouped.loc[mask, 'План на дату, шт.'] * 100
-            ).round(1)
-        
-        grouped['△План/Факт на дату, шт'] = (
-            grouped['Факт на дату, шт.'] - grouped['План на дату, шт.']
-        ).round(1)
-        
-        return grouped
     
-    @st.cache_data(ttl=3600, show_spinner=False)
-    def _get_grouped_regions(_self, data_hash: str) -> pd.DataFrame:
-        """Кэшированная группировка по регионам"""
-        data = st.session_state.visit_report['calculated_data']
-        
-        region_col = 'Регион' if 'Регион' in data.columns else 'Регион short'
-        
-        grouped = data.groupby(region_col).agg({
-            'План проекта, шт.': 'sum',
-            'План на дату, шт.': 'sum',
-            'Факт проекта, шт.': 'sum',
-            'Факт на дату, шт.': 'sum',
-            'Проект': 'nunique',
-            'RS': 'nunique',
-            'ПО': lambda x: ', '.join(x.dropna().unique()[:3])
-        }).reset_index()
-        
-        grouped = grouped.rename(columns={region_col: 'Регион'})
-        
-        mask = grouped['План на дату, шт.'] > 0
-        grouped['План/Факт на дату,%'] = 0.0
-        if mask.any():
-            grouped.loc[mask, 'План/Факт на дату,%'] = (
-                grouped.loc[mask, 'Факт на дату, шт.'] / 
-                grouped.loc[mask, 'План на дату, шт.'] * 100
-            ).round(1)
-        
-        return grouped
-    
-    @st.cache_data(ttl=3600, show_spinner=False)
-    def _get_grouped_dsm(_self, data_hash: str) -> pd.DataFrame:
-        """Кэшированная группировка по DSM"""
-        data = st.session_state.visit_report['calculated_data']
-        
-        grouped = data.groupby('DSM').agg({
-            'План проекта, шт.': 'sum',
-            'План на дату, шт.': 'sum',
-            'Факт проекта, шт.': 'sum',
-            'Факт на дату, шт.': 'sum',
-            'Проект': 'nunique',
-            'RS': 'nunique',
-            'ПО': lambda x: ', '.join(x.dropna().unique()[:3])
-        }).reset_index()
-        
-        mask = grouped['План на дату, шт.'] > 0
-        grouped['План/Факт на дату,%'] = 0.0
-        if mask.any():
-            grouped.loc[mask, 'План/Факт на дату,%'] = (
-                grouped.loc[mask, 'Факт на дату, шт.'] / 
-                grouped.loc[mask, 'План на дату, шт.'] * 100
-            ).round(1)
-        
-        return grouped
     def _get_long_region(self, short_code):
         """Преобразует короткий код региона в длинное название"""
         if pd.isna(short_code) or short_code == '':
@@ -468,22 +365,7 @@ class DataVisualizer:
             }
             
             existing_agg = {k: v for k, v in agg_columns.items() if k in filtered_data.columns}
-            # Получаем хэш данных
-            data_hash = _get_data_hash(st.session_state.visit_report['calculated_data'])
-            
-            # Получаем кэшированную группировку
-            group_cols_tuple = tuple(group_cols)  # group_cols уже определены выше
-            detailed_data = self._get_grouped_projects(data_hash, group_cols_tuple)
-            
-            # Применяем фильтры к уже сгруппированным данным
-            if 'DSM' in detailed_data.columns and selected_dsm:
-                detailed_data = detailed_data[detailed_data['DSM'].isin(selected_dsm)]
-            if 'ASM' in detailed_data.columns and selected_asm:
-                detailed_data = detailed_data[detailed_data['ASM'].isin(selected_asm)]
-            if region_col in detailed_data.columns and selected_region:
-                detailed_data = detailed_data[detailed_data[region_col].isin(selected_region)]
-            if 'Клиент' in detailed_data.columns and selected_client:
-                detailed_data = detailed_data[detailed_data['Клиент'].isin(selected_client)]
+            detailed_data = filtered_data.groupby(group_cols).agg(existing_agg).reset_index()
             
             detailed_data['План/Факт на дату,%'] = 0.0
             mask_plan = detailed_data['План на дату, шт.'] > 0
@@ -553,21 +435,7 @@ class DataVisualizer:
             else:
                 group_cols = ['Клиент']
             
-            data_hash = _get_data_hash(st.session_state.visit_report['calculated_data'])
-    
-            # Получаем кэшированную группировку
-            group_cols_tuple = tuple(group_cols)
-            project_data = self._get_grouped_projects(data_hash, group_cols_tuple)
-            
-            # Применяем фильтры
-            if 'DSM' in project_data.columns and selected_dsm:
-                project_data = project_data[project_data['DSM'].isin(selected_dsm)]
-            if 'ASM' in project_data.columns and selected_asm:
-                project_data = project_data[project_data['ASM'].isin(selected_asm)]
-            if region_col in project_data.columns and selected_region:
-                project_data = project_data[project_data[region_col].isin(selected_region)]
-            if 'Клиент' in project_data.columns and selected_client:
-                project_data = project_data[project_data['Клиент'].isin(selected_client)]
+            project_data = filtered_data.groupby(group_cols).agg(existing_agg).reset_index()
             
             project_data['План/Факт на дату,%'] = 0.0
             mask_plan = project_data['План на дату, шт.'] > 0
@@ -962,24 +830,32 @@ class DataVisualizer:
             group_cols.append('RS')
         
         if len(group_cols) > 1:
-            # Получаем хэш данных
-            data_hash = _get_data_hash(st.session_state.visit_report['calculated_data'])
-            
-            # Получаем кэшированную группировку по регионам
-            region_data = self._get_grouped_regions(data_hash)
-            
-            # Применяем фильтры
-            if selected_dsm and 'DSM' in region_data.columns:
-                region_data = region_data[region_data['DSM'].isin(selected_dsm)]
-            if selected_asm and 'ASM' in region_data.columns:
-                region_data = region_data[region_data['ASM'].isin(selected_asm)]
-            if selected_region and 'Регион' in region_data.columns:
-                region_data = region_data[region_data['Регион'].isin(selected_region)]
-            if selected_client and 'Клиент' in region_data.columns:
-                region_data = region_data[region_data['Клиент'].isin(selected_client)]
+            agg_columns = {
+                'План проекта, шт.': 'sum',
+                'План на дату, шт.': 'sum',
+                'Факт проекта, шт.': 'sum',
+                'Факт на дату, шт.': 'sum',
+                'Длительность': 'mean',
+                'ПО': lambda x: ', '.join(x.dropna().unique()[:3])
+            }
+            existing_agg = {k: v for k, v in agg_columns.items() if k in filtered_data.columns}
+            region_data = filtered_data.groupby(group_cols).agg(existing_agg).reset_index()
+            region_data['План/Факт на дату,%'] = 0.0
+            mask_plan = region_data['План на дату, шт.'] > 0
+            if mask_plan.any():
+                region_data.loc[mask_plan, 'План/Факт на дату,%'] = (
+                    region_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                    region_data.loc[mask_plan, 'План на дату, шт.'] * 100
+                ).round(1)
+            region_data['План/Факт проекта,%'] = 0.0
+            mask_project_plan = region_data['План проекта, шт.'] > 0
+            if mask_project_plan.any():
+                region_data.loc[mask_project_plan, 'План/Факт проекта,%'] = (
+                    region_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                    region_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
+                ).round(1)
         else:
             region_data = self.create_region_summary(filtered_data)
-            
         
         st.caption(f"📌 Отображается записей: {len(region_data)}")
         if region_data.empty:
@@ -1340,26 +1216,37 @@ class DataVisualizer:
         
         # Агрегируем
         if len(group_cols) > 1:
-            # Получаем хэш данных
-            data_hash = _get_data_hash(st.session_state.visit_report['calculated_data'])
+            agg_columns = {
+                'План проекта, шт.': 'sum',
+                'План на дату, шт.': 'sum',
+                'Факт проекта, шт.': 'sum',
+                'Факт на дату, шт.': 'sum',
+                'Длительность': 'mean',
+                'ПО': lambda x: ', '.join(x.dropna().unique()[:3])
+            }
             
-            # Получаем кэшированную группировку по DSM
-            dsm_data = self._get_grouped_dsm(data_hash)
+            existing_agg = {k: v for k, v in agg_columns.items() if k in filtered_data.columns}
+            detailed_data = filtered_data.groupby(group_cols).agg(existing_agg).reset_index()
             
-            # Применяем фильтры
-            if selected_asm and 'ASM' in dsm_data.columns:
-                dsm_data = dsm_data[dsm_data['ASM'].isin(selected_asm)]
-            if selected_client and 'Клиент' in dsm_data.columns:
-                dsm_data = dsm_data[dsm_data['Клиент'].isin(selected_client)]
-            if selected_project and 'Проект' in dsm_data.columns:
-                dsm_data = dsm_data[dsm_data['Проект'].isin(selected_project)]
-            if selected_wave and 'Волна' in dsm_data.columns:
-                dsm_data = dsm_data[dsm_data['Волна'].isin(selected_wave)]
-            if selected_region and region_col in dsm_data.columns:
-                dsm_data = dsm_data[dsm_data[region_col].isin(selected_region)]
+            detailed_data['План/Факт на дату,%'] = 0.0
+            mask_plan = detailed_data['План на дату, шт.'] > 0
+            if mask_plan.any():
+                detailed_data.loc[mask_plan, 'План/Факт на дату,%'] = (
+                    detailed_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                    detailed_data.loc[mask_plan, 'План на дату, шт.'] * 100
+                ).round(1)
+            
+            detailed_data['План/Факт проекта,%'] = 0.0
+            mask_project_plan = detailed_data['План проекта, шт.'] > 0
+            if mask_project_plan.any():
+                detailed_data.loc[mask_project_plan, 'План/Факт проекта,%'] = (
+                    detailed_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                    detailed_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
+                ).round(1)
+            
+            dsm_data = detailed_data
         else:
             dsm_data = self.create_dsm_summary(filtered_data)
-            
         
         st.caption(f"📌 Отображается записей: {len(dsm_data)}")
         

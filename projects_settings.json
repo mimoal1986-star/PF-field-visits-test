@@ -1,44 +1,6 @@
 {
-  "excluded_projects": [
-    {
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 12.2025",
-      "project_code": "Мультикод_.385",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-23T10:10:50.331653",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 03.2026 Звонок",
-      "project_code": "Мультикод_.385",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-23T10:10:50.331761",
-      "added_by": "unknown_user"
-    }
-  ],
-  "included_projects": [
-    {
-      "project_name": "Томскэнергосбыт",
-      "wave_name": "03.2026",
-      "project_code": "",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-26T08:16:35.645396",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-26T08:24:28.974467",
-      "added_by": "unknown_user"
-    }
-  ],
+  "excluded_projects": [],
+  "included_projects": [],
   "history": [
     {
       "action": "clear_all",
@@ -212,8 +174,16 @@
       "project_code": "RU00.013.06.01SVZ24",
       "timestamp": "2026-03-26T08:24:28.974488",
       "user": "unknown_user"
+    },
+    {
+      "action": "clear_all",
+      "project_name": "",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-03-26T09:08:51.501343",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-26T08:24:28.974495",
+  "last_updated": "2026-03-26T09:08:51.501356",
   "version": "1.0"
 }

@@ -19,7 +19,17 @@
       "added_by": "unknown_user"
     }
   ],
-  "included_projects": [],
+  "included_projects": [
+    {
+      "project_name": "Томскэнергосбыт",
+      "wave_name": "03.2026",
+      "project_code": "",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-03-26T08:16:35.645396",
+      "added_by": "unknown_user"
+    }
+  ],
   "history": [
     {
       "action": "clear_all",
@@ -177,8 +187,16 @@
       "project_code": "RU00.013.06.01SVZ24",
       "timestamp": "2026-03-26T08:12:45.940311",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Томскэнергосбыт",
+      "wave_name": "03.2026",
+      "project_code": "",
+      "timestamp": "2026-03-26T08:16:35.645428",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-26T08:12:45.940325",
+  "last_updated": "2026-03-26T08:16:35.645434",
   "version": "1.0"
 }

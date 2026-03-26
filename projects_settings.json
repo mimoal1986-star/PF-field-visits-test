@@ -19,7 +19,17 @@
       "added_by": "unknown_user"
     }
   ],
-  "included_projects": [],
+  "included_projects": [
+    {
+      "project_name": "CarPrice",
+      "wave_name": "2026.03",
+      "project_code": "RU00.013.06.01SVZ24",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-26T07:55:06.303188",
+      "added_by": "unknown_user"
+    }
+  ],
   "history": [
     {
       "action": "clear_all",
@@ -161,8 +171,16 @@
       "project_code": "Мультикод_.385",
       "timestamp": "2026-03-23T10:10:50.331766",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "CarPrice",
+      "wave_name": "2026.03",
+      "project_code": "RU00.013.06.01SVZ24",
+      "timestamp": "2026-03-26T07:55:06.303205",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-23T10:10:50.331769",
+  "last_updated": "2026-03-26T07:55:06.303210",
   "version": "1.0"
 }

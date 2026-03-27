@@ -1,6 +1,16 @@
 {
   "excluded_projects": [],
-  "included_projects": [],
+  "included_projects": [
+    {
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "3_Волна_Визит в офис продаж",
+      "project_code": "RU00.265.15.03SVZ25",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-03-27T16:35:08.292225",
+      "added_by": "unknown_user"
+    }
+  ],
   "history": [
     {
       "action": "clear_all",
@@ -182,8 +192,16 @@
       "project_code": "",
       "timestamp": "2026-03-26T09:08:51.501343",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "3_Волна_Визит в офис продаж",
+      "project_code": "RU00.265.15.03SVZ25",
+      "timestamp": "2026-03-27T16:35:08.292248",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-26T09:08:51.501356",
+  "last_updated": "2026-03-27T16:35:08.292256",
   "version": "1.0"
 }

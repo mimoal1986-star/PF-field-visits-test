@@ -136,22 +136,22 @@ class VisitCalculator:
             hierarchy = hierarchy.sort_values(['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM', 'RS'])
             hierarchy = hierarchy[hierarchy['RS'] != 'Итого']
             
-            # ПРОВЕРКА
-            try:
-                if not hierarchy.empty:
-                    output = io.BytesIO()
-                    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                        hierarchy.to_excel(writer, sheet_name='Иерархия', index=False)
+            # # ПРОВЕРКА
+            # try:
+            #     if not hierarchy.empty:
+            #         output = io.BytesIO()
+            #         with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            #             hierarchy.to_excel(writer, sheet_name='Иерархия', index=False)
                     
-                    st.download_button(
-                        label="📥 Скачать иерархию (hierarchy_df)",
-                        data=output.getvalue(),
-                        file_name=f"иерархия_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    )
-            except:
-                pass
-            # ПРОВЕРКА
+            #         st.download_button(
+            #             label="📥 Скачать иерархию (hierarchy_df)",
+            #             data=output.getvalue(),
+            #             file_name=f"иерархия_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+            #             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            #         )
+            # except:
+            #     pass
+            # # ПРОВЕРКА
                 
             return hierarchy
             

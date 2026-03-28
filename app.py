@@ -68,24 +68,6 @@ for key, default_value in DEFAULT_STATE.items():
         st.session_state[key] = default_value
 
 # Вспомогательные функции
-def validate_file_upload(file_obj, file_name):
-    """Проверка и загрузка файла"""
-    if file_obj is None:
-        return None
-    
-    try:
-        df = pd.read_excel(file_obj, dtype=str)
-        if df.empty:
-            return None
-        return df
-    except Exception as e:
-        return None
-
-def display_file_preview(df, title):
-    """Отображение предпросмотра файла"""
-    if df is not None and not df.empty:
-        with st.expander(f"👀 {title}"):
-            st.dataframe(df.head(10), use_container_width=True)
 
 def process_all_data(settings_manager=None):
     """Полная обработка данных и расчет план/факт"""

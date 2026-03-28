@@ -16,38 +16,6 @@ ZOD_MAPPING = {
     'Шавлюк Юлия': 'Устинов Игорь'
 }
 
-def is_field_project_by_code(code):
-    """
-    Единая логика определения полевого проекта по коду анкеты
-    Возвращает 1 если полевой, 0 если нет
-    """
-    try:
-        if pd.isna(code):
-            return 0
-            
-        code_str = str(code).strip()
-        lower_code = code_str.lower()
-        
-        # Проверка на ключевые слова
-        if any(word in lower_code for word in ['мультикод', 'мультикол', 'пилот', 'семпл']):
-            return 1
-        
-        # Проверка по структуре кода
-        parts = code_str.split('.')
-        if len(parts) >= 4:
-            country = parts[0]
-            if len(parts[2]) >= 2:
-                direction = '.' + parts[2][:2]
-            else:
-                direction = ''
-            
-            if country in ['RU00', 'RU01', 'RU02', 'RU03', 'RU04'] and direction in ['.01', '.02']:
-                return 1
-                
-        return 0
-    except:
-        return 0
-
 class DataCleaner:
 
     def _find_column(self, df, possible_names):
@@ -592,12 +560,6 @@ class DataCleaner:
             
             if not non_field_projects.empty:
                 non_field_projects = non_field_projects.rename(columns=reverse_mapping)
-
-            if not field_projects.empty and 'Имя клиента' in field_projects.columns:
-                field_projects['Имя клиента'] = field_projects['Имя клиента'].str.strip()
-        
-            if not non_field_projects.empty and 'Имя клиента' in non_field_projects.columns:
-                non_field_projects['Имя клиента'] = non_field_projects['Имя клиента'].str.strip()
             
             # Правильный порядок колонок
             final_columns = ['Код анкеты', 'Имя клиента', 'Название проекта', 
@@ -893,7 +855,6 @@ class DataCleaner:
                 result[std_col] = df_clean[source_col].astype(str).fillna('')
             else:
                 result[std_col] = ''
-        result['Имя клиента'] = result['Имя клиента'].str.strip()
         
         # Обогащение кодов проектов из гугл-таблицы
         if google_df is not None and not google_df.empty:
@@ -933,6 +894,9 @@ class DataCleaner:
                                 result.at[idx, 'Код анкеты'] = str(project_code).strip()
                                 filled_count += 1
         
+        # Определение "Полевой"
+        if 'Код анкеты' in result.columns and not result.empty:
+            result['Полевой'] = result['Код анкеты'].apply(self._is_field_project)
         
         # Добавление ЗОД из встроенного справочника (по АСС)
         if 'АСС' in result.columns:
@@ -1060,12 +1024,13 @@ class DataCleaner:
                 result[std_col] = df_clean[source_col].astype(str).fillna('')
             else:
                 result[std_col] = ''
-        result['Имя клиента'] = result['Имя клиента'].str.strip()
         
         # Обработка региона (берем первые 2 символа)
         if 'Регион short' in result.columns:
             result['Регион short'] = result['Регион short'].str[:2]
         
+        # Все записи Easymerch - полевые
+        result['Полевой'] = 1
         
         # Добавление ПО из гугл таблицы по коду проекта
         result['ПО'] = 'не определено'  # значение по умолчанию
@@ -1233,7 +1198,6 @@ class DataCleaner:
                     result['Регион long'] = ''
                 else:
                     result[std_col] = ''
-        result['Имя клиента'] = result['Имя клиента'].str.strip()
         
         # Конвертация даты
         if 'Дата визита' in result.columns:
@@ -1260,6 +1224,8 @@ class DataCleaner:
         result['Регион short'] = result['Регион long'].apply(get_short_region)
         result['Регион'] = result['Регион long']  # сохраняем полное название для отчетов
         
+        # Все записи Optima - полевые
+        result['Полевой'] = 1
         
         # Источник
         result['Источник'] = 'Optima'
@@ -1339,7 +1305,6 @@ class DataCleaner:
                 result[std_col] = df_clean[source_col].astype(str).fillna('')
             else:
                 result[std_col] = ''
-        result['Имя клиента'] = result['Имя клиента'].str.strip()
                 
         # ЗАМЕНЯЕМ ВСЕ ЗНАЧЕНИЯ ВОЛНЫ НА "Все волны"
         if 'Название проекта' in result.columns:
@@ -1416,6 +1381,8 @@ class DataCleaner:
         # Применяем обработку региона
         result['Регион short'] = result['Регион short'].apply(extract_region_code)
         
+        # Все записи ПроДата - полевые
+        result['Полевой'] = 1
         
         # ПО (портал) - по умолчанию "Мониторинги"
         result['ПО'] = 'Мониторинги'
@@ -1522,6 +1489,7 @@ class DataCleaner:
             
             # Добавляем служебные колонки
             result['ПО'] = 'Мониторинги'
+            result['Полевой'] = 1
             result['Источник'] = 'ПроДата'
             result['ЗОД'] = ''
             result['АСС'] = ''
@@ -1534,8 +1502,31 @@ class DataCleaner:
         return result
     
     def _is_field_project(self, code):
-        """Обертка для обратной совместимости"""
-        return is_field_project_by_code(code)
+        """Логика определения полевого проекта"""
+        try:
+            if pd.isna(code):
+                return 0
+                
+            code_str = str(code).strip()
+            lower_code = code_str.lower()
+            
+            if any(word in lower_code for word in ['мультикод', 'пилот', 'семпл']):
+                return 1
+            
+            parts = code_str.split('.')
+            if len(parts) >= 4:
+                country = parts[0]
+                if len(parts[2]) >= 2:
+                    direction = '.' + parts[2][:2]
+                else:
+                    direction = ''
+                
+                if country in ['RU00', 'RU01', 'RU02', 'RU03', 'RU04'] and direction in ['.01', '.02']:
+                    return 1
+                    
+            return 0
+        except:
+            return 0
     
     def merge_field_projects(self, array_field_df, cxway_field_df):
         """Объединяет полевые проекты из массива и CXWAY"""
@@ -1595,7 +1586,6 @@ class DataCleaner:
         
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
-
 
 
 

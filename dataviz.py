@@ -90,6 +90,213 @@ class DataVisualizer:
             'YV': 'Еврейская автономная область',
             'ZK': 'Забайкальский край'
         }
+
+    def _compute_base_planfact_aggregations(self, data, region_col):
+        """Вычисляет базовые агрегации для вкладки ПланФакт"""
+        
+        # Уникальные значения
+        all_dsm = sorted(data['DSM'].dropna().unique()) if 'DSM' in data.columns else []
+        all_asm = sorted(data['ASM'].dropna().unique()) if 'ASM' in data.columns else []
+        all_clients = sorted(data['Клиент'].dropna().unique()) if 'Клиент' in data.columns else []
+        
+        # Регионы
+        if region_col in data.columns:
+            unique_codes = data[region_col].dropna().unique()
+            region_map = {}
+            regions_display = []
+            for code in unique_codes:
+                long_name = self._get_long_region(code)
+                region_map[long_name] = code
+                regions_display.append(long_name)
+            regions_display.sort()
+        else:
+            region_map = {}
+            regions_display = []
+        
+        return {
+            'raw_data': data.copy(),
+            'all_dsm': all_dsm,
+            'all_asm': all_asm,
+            'all_clients': all_clients,
+            'region_map': region_map,
+            'regions_display': regions_display
+        }
+
+    def _apply_planfact_filters(self, data, dsm_selected, dsm_mode, asm_selected, asm_mode,region_selected, region_mode, client_selected, client_mode, region_col):
+        """Применяет фильтры к данным"""
+        filtered = data.copy()
+        
+        # DSM
+        if dsm_selected:
+            if dsm_mode == 'Включить':
+                filtered = filtered[filtered['DSM'].isin(dsm_selected)]
+            else:
+                filtered = filtered[~filtered['DSM'].isin(dsm_selected)]
+        
+        # ASM
+        if asm_selected:
+            if asm_mode == 'Включить':
+                filtered = filtered[filtered['ASM'].isin(asm_selected)]
+            else:
+                filtered = filtered[~filtered['ASM'].isin(asm_selected)]
+        
+        # Регион
+        if region_selected:
+            if region_mode == 'Включить':
+                filtered = filtered[filtered[region_col].isin(region_selected)]
+            else:
+                filtered = filtered[~filtered[region_col].isin(region_selected)]
+        
+        # Клиент
+        if client_selected:
+            if client_mode == 'Включить':
+                filtered = filtered[filtered['Клиент'].isin(client_selected)]
+            else:
+                filtered = filtered[~filtered['Клиент'].isin(client_selected)]
+        
+        return filtered
+
+    def _compute_base_region_aggregations(self, data, region_col):
+        """Вычисляет базовые агрегации для вкладки Регионы"""
+        
+        # Уникальные значения
+        all_dsm = sorted(data['DSM'].dropna().unique()) if 'DSM' in data.columns else []
+        all_asm = sorted(data['ASM'].dropna().unique()) if 'ASM' in data.columns else []
+        all_clients = sorted(data['Клиент'].dropna().unique()) if 'Клиент' in data.columns else []
+        
+        # Регионы
+        if region_col in data.columns:
+            unique_codes = data[region_col].dropna().unique()
+            region_map = {}
+            regions_display = []
+            for code in unique_codes:
+                long_name = self._get_long_region(code)
+                region_map[long_name] = code
+                regions_display.append(long_name)
+            regions_display.sort()
+        else:
+            region_map = {}
+            regions_display = []
+        
+        return {
+            'raw_data': data.copy(),
+            'all_dsm': all_dsm,
+            'all_asm': all_asm,
+            'all_clients': all_clients,
+            'region_map': region_map,
+            'regions_display': regions_display
+        }
+
+    def _compute_base_dsm_aggregations(self, data, region_col):
+        """Вычисляет базовые агрегации для вкладки DSM"""
+        
+        # Уникальные значения
+        all_asm = sorted(data['ASM'].dropna().unique()) if 'ASM' in data.columns else []
+        all_clients = sorted(data['Клиент'].dropna().unique()) if 'Клиент' in data.columns else []
+        all_projects = sorted(data['Проект'].dropna().unique()) if 'Проект' in data.columns else []
+        all_waves = sorted(data['Волна'].dropna().unique()) if 'Волна' in data.columns else []
+        
+        # Регионы
+        if region_col in data.columns:
+            unique_codes = data[region_col].dropna().unique()
+            region_map = {}
+            regions_display = []
+            for code in unique_codes:
+                long_name = self._get_long_region(code)
+                region_map[long_name] = code
+                regions_display.append(long_name)
+            regions_display.sort()
+        else:
+            region_map = {}
+            regions_display = []
+        
+        return {
+            'raw_data': data.copy(),
+            'all_asm': all_asm,
+            'all_clients': all_clients,
+            'all_projects': all_projects,
+            'all_waves': all_waves,
+            'region_map': region_map,
+            'regions_display': regions_display
+        }
+
+    def _apply_region_filters(self, data, dsm_selected, dsm_mode, asm_selected, asm_mode,
+                              region_selected, region_mode, client_selected, client_mode, region_col):
+        """Применяет фильтры к данным для вкладки Регионы"""
+        filtered = data.copy()
+        
+        # DSM
+        if dsm_selected:
+            if dsm_mode == 'Включить':
+                filtered = filtered[filtered['DSM'].isin(dsm_selected)]
+            else:
+                filtered = filtered[~filtered['DSM'].isin(dsm_selected)]
+        
+        # ASM
+        if asm_selected:
+            if asm_mode == 'Включить':
+                filtered = filtered[filtered['ASM'].isin(asm_selected)]
+            else:
+                filtered = filtered[~filtered['ASM'].isin(asm_selected)]
+        
+        # Регион
+        if region_selected:
+            if region_mode == 'Включить':
+                filtered = filtered[filtered[region_col].isin(region_selected)]
+            else:
+                filtered = filtered[~filtered[region_col].isin(region_selected)]
+        
+        # Клиент
+        if client_selected:
+            if client_mode == 'Включить':
+                filtered = filtered[filtered['Клиент'].isin(client_selected)]
+            else:
+                filtered = filtered[~filtered['Клиент'].isin(client_selected)]
+        
+        return filtered
+    
+    def _apply_dsm_filters(self, data, asm_selected, asm_mode, client_selected, client_mode,
+                           project_selected, project_mode, wave_selected, wave_mode,
+                           region_selected, region_mode, region_col):
+        """Применяет фильтры к данным для вкладки DSM"""
+        filtered = data.copy()
+        
+        # ASM
+        if asm_selected:
+            if asm_mode == 'Включить':
+                filtered = filtered[filtered['ASM'].isin(asm_selected)]
+            else:
+                filtered = filtered[~filtered['ASM'].isin(asm_selected)]
+        
+        # Клиент
+        if client_selected:
+            if client_mode == 'Включить':
+                filtered = filtered[filtered['Клиент'].isin(client_selected)]
+            else:
+                filtered = filtered[~filtered['Клиент'].isin(client_selected)]
+        
+        # Проект
+        if project_selected:
+            if project_mode == 'Включить':
+                filtered = filtered[filtered['Проект'].isin(project_selected)]
+            else:
+                filtered = filtered[~filtered['Проект'].isin(project_selected)]
+        
+        # Волна
+        if wave_selected:
+            if wave_mode == 'Включить':
+                filtered = filtered[filtered['Волна'].isin(wave_selected)]
+            else:
+                filtered = filtered[~filtered['Волна'].isin(wave_selected)]
+        
+        # Регион
+        if region_selected:
+            if region_mode == 'Включить':
+                filtered = filtered[filtered[region_col].isin(region_selected)]
+            else:
+                filtered = filtered[~filtered[region_col].isin(region_selected)]
+        
+        return filtered
     
     def _get_long_region(self, short_code):
         """Преобразует короткий код региона в длинное название"""
@@ -191,503 +398,316 @@ class DataVisualizer:
         return project_agg
     
     def create_planfact_tab(self, data, hierarchy_df=None):
-        """Создает вкладку ПланФакт на дату с фильтрами и разверткой"""
+        """Создает вкладку ПланФакт на дату с фильтрами в форме"""
         if data is None or data.empty:
             st.warning("⚠️ Нет данных для отчета")
             return
         
         st.subheader("📊 Сводка по проектам")
         
-        # Переименовываем колонки для отображения
-        rename_cols = {
-            'ЗОД': 'DSM',
-            'АСС': 'ASM',
-            'ЭМ': 'RS'
-        }
+        # Переименовываем колонки
+        rename_cols = {'ЗОД': 'DSM', 'АСС': 'ASM', 'ЭМ': 'RS'}
         data = data.rename(columns=rename_cols)
         
-        # Определяем колонку региона
         region_col = 'Регион'
         if 'Регион short' in data.columns and 'Регион' not in data.columns:
             region_col = 'Регион short'
         
         # ============================================
-        # ФИЛЬТРЫ (БЕЗ АВТОМАТИЧЕСКОГО ПРИМЕНЕНИЯ)
+        # 1. БАЗОВЫЕ АГРЕГАЦИИ (один раз за сессию)
         # ============================================
         
-        with st.expander("🔍 Фильтры", expanded=True):
+        # Проверяем, изменились ли данные
+        data_hash = hash(data.values.tobytes()) if not data.empty else 0
+        
+        if 'planfact_base_data' not in st.session_state or st.session_state.get('planfact_data_hash') != data_hash:
+            # Вычисляем базовые агрегации
+            base_agg = self._compute_base_planfact_aggregations(data, region_col)
+            st.session_state.planfact_base_data = base_agg
+            st.session_state.planfact_data_hash = data_hash
+            st.session_state.planfact_filtered_data = None  # сбрасываем фильтры
+        
+        base_data = st.session_state.planfact_base_data
+        
+        # ============================================
+        # 2. ФИЛЬТРЫ В ФОРМЕ (без rerun при выборе)
+        # ============================================
+        
+        with st.form("planfact_filters_form"):
             
-            # Получаем уникальные значения
-            all_dsm = sorted(data['DSM'].dropna().unique()) if 'DSM' in data.columns else []
-            all_asm = sorted(data['ASM'].dropna().unique()) if 'ASM' in data.columns else []
+            # Получаем уникальные значения из базовых данных
+            all_dsm = base_data['all_dsm']
+            all_asm = base_data['all_asm']
+            all_clients = base_data['all_clients']
+            all_regions_display = base_data['regions_display']
+            region_map = base_data['region_map']
             
-            # Регионы
-            if region_col in data.columns:
-                unique_codes = data[region_col].dropna().unique()
-                self.region_display_map = {}
-                all_regions_display = []
-                for code in unique_codes:
-                    long_name = self._get_long_region(code)
-                    self.region_display_map[long_name] = code
-                    all_regions_display.append(long_name)
-                all_regions_display.sort()
-            else:
-                all_regions_display = []
-                self.region_display_map = {}
+            st.markdown("### 🔍 Фильтры")
             
-            all_clients = sorted(data['Клиент'].dropna().unique()) if 'Клиент' in data.columns else []
-            
-            # Инициализируем session_state для фильтров
-            if 'planfact_filters' not in st.session_state:
-                st.session_state.planfact_filters = {
-                    'dsm_mode': 'Включить',
-                    'dsm_selected': [],
-                    'asm_mode': 'Включить',
-                    'asm_selected': [],
-                    'region_mode': 'Включить',
-                    'region_selected': [],
-                    'client_mode': 'Включить',
-                    'client_selected': []
-                }
-            
-            filters = st.session_state.planfact_filters
-            
-            # === DSM ===
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
                 st.markdown("**DSM**")
-                dsm_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="planfact_dsm_mode",
-                    horizontal=True,
-                    index=0 if filters['dsm_mode'] == 'Включить' else 1
-                )
-                filters['dsm_mode'] = dsm_mode
+                # Режим двумя кнопками
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    dsm_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    dsm_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
                 
-                selected_dsm = st.multiselect(
-                    "Выбрать", 
-                    all_dsm, 
-                    key="planfact_dsm_selected",
-                    default=filters['dsm_selected']
+                # Текущий режим храним в session_state
+                if 'planfact_dsm_mode' not in st.session_state:
+                    st.session_state.planfact_dsm_mode = 'Включить'
+                if dsm_include:
+                    st.session_state.planfact_dsm_mode = 'Включить'
+                if dsm_exclude:
+                    st.session_state.planfact_dsm_mode = 'Исключить'
+                
+                st.caption(f"Режим: **{st.session_state.planfact_dsm_mode}**")
+                
+                dsm_selected = st.multiselect(
+                    "Выбрать DSM",
+                    all_dsm,
+                    key="planfact_dsm_values",
+                    default=[]
                 )
-                filters['dsm_selected'] = selected_dsm
             
-            # === ASM ===
             with col2:
                 st.markdown("**ASM**")
-                asm_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="planfact_asm_mode",
-                    horizontal=True,
-                    index=0 if filters['asm_mode'] == 'Включить' else 1
-                )
-                filters['asm_mode'] = asm_mode
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    asm_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    asm_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
                 
-                if selected_dsm and 'DSM' in data.columns:
-                    asm_options = sorted(data[data['DSM'].isin(selected_dsm)]['ASM'].dropna().unique())
+                if 'planfact_asm_mode' not in st.session_state:
+                    st.session_state.planfact_asm_mode = 'Включить'
+                if asm_include:
+                    st.session_state.planfact_asm_mode = 'Включить'
+                if asm_exclude:
+                    st.session_state.planfact_asm_mode = 'Исключить'
+                
+                st.caption(f"Режим: **{st.session_state.planfact_asm_mode}**")
+                
+                # Ограничиваем ASM выбранными DSM
+                if dsm_selected:
+                    asm_options = [a for a in all_asm if any(a in d for d in dsm_selected)]
                 else:
                     asm_options = all_asm
                 
-                selected_asm = st.multiselect(
-                    "Выбрать", 
-                    asm_options, 
-                    key="planfact_asm_selected",
-                    default=filters['asm_selected']
+                asm_selected = st.multiselect(
+                    "Выбрать ASM",
+                    asm_options,
+                    key="planfact_asm_values",
+                    default=[]
                 )
-                filters['asm_selected'] = selected_asm
             
-            # === Регион ===
             with col3:
                 st.markdown("**Регион**")
-                region_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="planfact_region_mode",
-                    horizontal=True,
-                    index=0 if filters['region_mode'] == 'Включить' else 1
-                )
-                filters['region_mode'] = region_mode
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    region_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    region_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
                 
-                selected_region_display = st.multiselect(
-                    "Выбрать", 
-                    all_regions_display, 
-                    key="planfact_region_selected",
-                    default=filters['region_selected']
+                if 'planfact_region_mode' not in st.session_state:
+                    st.session_state.planfact_region_mode = 'Включить'
+                if region_include:
+                    st.session_state.planfact_region_mode = 'Включить'
+                if region_exclude:
+                    st.session_state.planfact_region_mode = 'Исключить'
+                
+                st.caption(f"Режим: **{st.session_state.planfact_region_mode}**")
+                
+                region_selected_display = st.multiselect(
+                    "Выбрать регион",
+                    all_regions_display,
+                    key="planfact_region_values",
+                    default=[]
                 )
-                filters['region_selected'] = selected_region_display
-                selected_region = [self.region_display_map.get(name, name) for name in selected_region_display]
+                region_selected = [region_map.get(name, name) for name in region_selected_display]
             
-            # === Клиент ===
             with col4:
                 st.markdown("**Клиент**")
-                client_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="planfact_client_mode",
-                    horizontal=True,
-                    index=0 if filters['client_mode'] == 'Включить' else 1
-                )
-                filters['client_mode'] = client_mode
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    client_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    client_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
+                
+                if 'planfact_client_mode' not in st.session_state:
+                    st.session_state.planfact_client_mode = 'Включить'
+                if client_include:
+                    st.session_state.planfact_client_mode = 'Включить'
+                if client_exclude:
+                    st.session_state.planfact_client_mode = 'Исключить'
+                
+                st.caption(f"Режим: **{st.session_state.planfact_client_mode}**")
                 
                 # Ограничиваем клиентов выбранными фильтрами
-                client_filtered = data.copy()
-                if dsm_mode == "Включить" and selected_dsm:
-                    client_filtered = client_filtered[client_filtered['DSM'].isin(selected_dsm)]
-                if asm_mode == "Включить" and selected_asm:
-                    client_filtered = client_filtered[client_filtered['ASM'].isin(selected_asm)]
-                if region_mode == "Включить" and selected_region:
-                    client_filtered = client_filtered[client_filtered[region_col].isin(selected_region)]
-                client_options = sorted(client_filtered['Клиент'].dropna().unique()) if 'Клиент' in client_filtered.columns else all_clients
+                client_filtered = all_clients
+                if dsm_selected:
+                    client_filtered = [c for c in client_filtered if c in dsm_selected]
                 
-                selected_client = st.multiselect(
-                    "Выбрать", 
-                    client_options, 
-                    key="planfact_client_selected",
-                    default=filters['client_selected']
+                client_selected = st.multiselect(
+                    "Выбрать клиента",
+                    client_filtered,
+                    key="planfact_client_values",
+                    default=[]
                 )
-                filters['client_selected'] = selected_client
             
             st.markdown("---")
             
             # КНОПКА ПРИМЕНЕНИЯ ФИЛЬТРОВ
-            col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
-            with col_btn2:
-                apply_filters = st.button(
-                    "✅ Применить фильтры", 
-                    type="primary", 
-                    use_container_width=True,
-                    key="planfact_apply_btn"
-                )
+            apply_filters = st.form_submit_button(
+                "✅ Применить фильтры",
+                type="primary",
+                use_container_width=True
+            )
         
         # ============================================
-        # ПРИМЕНЯЕМ ФИЛЬТРЫ ТОЛЬКО ПО КНОПКЕ
+        # 3. ПРИМЕНЯЕМ ФИЛЬТРЫ (только по кнопке)
         # ============================================
         
-        if apply_filters or 'planfact_filtered_data' not in st.session_state:
-            filtered_data = data.copy()
-            
-            # DSM
-            if filters['dsm_mode'] == "Включить" and filters['dsm_selected']:
-                filtered_data = filtered_data[filtered_data['DSM'].isin(filters['dsm_selected'])]
-            elif filters['dsm_mode'] == "Исключить" and filters['dsm_selected']:
-                filtered_data = filtered_data[~filtered_data['DSM'].isin(filters['dsm_selected'])]
-            
-            # ASM
-            if filters['asm_mode'] == "Включить" and filters['asm_selected']:
-                filtered_data = filtered_data[filtered_data['ASM'].isin(filters['asm_selected'])]
-            elif filters['asm_mode'] == "Исключить" and filters['asm_selected']:
-                filtered_data = filtered_data[~filtered_data['ASM'].isin(filters['asm_selected'])]
-            
-            # Регион
-            selected_region = [self.region_display_map.get(name, name) for name in filters['region_selected']]
-            if filters['region_mode'] == "Включить" and selected_region:
-                filtered_data = filtered_data[filtered_data[region_col].isin(selected_region)]
-            elif filters['region_mode'] == "Исключить" and selected_region:
-                filtered_data = filtered_data[~filtered_data[region_col].isin(selected_region)]
-            
-            # Клиент
-            if filters['client_mode'] == "Включить" and filters['client_selected']:
-                filtered_data = filtered_data[filtered_data['Клиент'].isin(filters['client_selected'])]
-            elif filters['client_mode'] == "Исключить" and filters['client_selected']:
-                filtered_data = filtered_data[~filtered_data['Клиент'].isin(filters['client_selected'])]
-            
+        if apply_filters:
+            filtered_data = self._apply_planfact_filters(
+                base_data['raw_data'],
+                dsm_selected, st.session_state.planfact_dsm_mode,
+                asm_selected, st.session_state.planfact_asm_mode,
+                region_selected, st.session_state.planfact_region_mode,
+                client_selected, st.session_state.planfact_client_mode,
+                region_col
+            )
             st.session_state.planfact_filtered_data = filtered_data
-        else:
-            filtered_data = st.session_state.planfact_filtered_data
         
-        # 📊 РАЗВЕРТКА (ЧЕК-БОКСЫ)
+        # Берем данные для отображения
+        if st.session_state.planfact_filtered_data is not None:
+            display_data = st.session_state.planfact_filtered_data
+        else:
+            display_data = base_data['raw_data']
+        
+        # ============================================
+        # 4. РАЗВЕРТКА И ОТОБРАЖЕНИЕ
+        # ============================================
+        
         st.subheader("📊 Детализация")
         
         col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
-            show_project = st.checkbox("Код проекта", key='show_project_code')
+            show_project = st.checkbox("Код проекта", key='planfact_show_project')
         with col2:
-            show_regions = st.checkbox("Регионы", key='show_regions')
+            show_regions = st.checkbox("Регионы", key='planfact_show_regions')
         with col3:
-            show_dsm = st.checkbox("DSM", key='show_dsm')
+            show_dsm = st.checkbox("DSM", key='planfact_show_dsm')
         with col4:
-            show_asm = st.checkbox("ASM", key='show_asm')
+            show_asm = st.checkbox("ASM", key='planfact_show_asm')
         with col5:
-            show_rs = st.checkbox("RS", key='show_rs')
+            show_rs = st.checkbox("RS", key='planfact_show_rs')
         
         # Формируем groupby в зависимости от чек-боксов
         group_cols = ['Клиент', 'ПО']
         
-        if show_project and 'Проект' in filtered_data.columns:
+        if show_project and 'Проект' in display_data.columns:
             group_cols.append('Проект')
-        if show_regions and region_col in filtered_data.columns:
+        if show_regions and region_col in display_data.columns:
             group_cols.append(region_col)
-        if show_dsm and 'DSM' in filtered_data.columns:
+        if show_dsm and 'DSM' in display_data.columns:
             group_cols.append('DSM')
-        if show_asm and 'ASM' in filtered_data.columns:
+        if show_asm and 'ASM' in display_data.columns:
             group_cols.append('ASM')
-        if show_rs and 'RS' in filtered_data.columns:
+        if show_rs and 'RS' in display_data.columns:
             group_cols.append('RS')
         
-        # Агрегируем данные с учетом развертки
-        if len(group_cols) > 3:
-            agg_columns = {
-                'План проекта, шт.': 'sum',
-                'План на дату, шт.': 'sum',
-                'Факт проекта, шт.': 'sum',
-                'Факт на дату, шт.': 'sum',
-                'Длительность': 'first',
-                'Дата старта': 'first',
-                'Дата финиша': 'first',
-                'Дней до конца проекта': 'first',
-                'Утилизация тайминга, %': 'first',
-                'Ср. план на день для 100% плана': 'sum'
-            }
-            
-            existing_agg = {k: v for k, v in agg_columns.items() if k in filtered_data.columns}
-            detailed_data = filtered_data.groupby(group_cols).agg(existing_agg).reset_index()
-            
-            detailed_data['План/Факт на дату,%'] = 0.0
-            mask_plan = detailed_data['План на дату, шт.'] > 0
-            if mask_plan.any():
-                detailed_data.loc[mask_plan, 'План/Факт на дату,%'] = (
-                    detailed_data.loc[mask_plan, 'Факт на дату, шт.'] / 
-                    detailed_data.loc[mask_plan, 'План на дату, шт.'] * 100
-                ).round(1)
-            
-            detailed_data['План/Факт проекта,%'] = 0.0
-            mask_project_plan = detailed_data['План проекта, шт.'] > 0
-            if mask_project_plan.any():
-                detailed_data.loc[mask_project_plan, 'План/Факт проекта,%'] = (
-                    detailed_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
-                    detailed_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
-                ).round(1)
-            
-            detailed_data['△План/Факт на дату, шт'] = (
-                detailed_data['Факт на дату, шт.'] - detailed_data['План на дату, шт.']
-            ).round(1)
-            
-            detailed_data['△План/Факт на дату, %'] = 0.0
-            if mask_plan.any():
-                detailed_data.loc[mask_plan, '△План/Факт на дату, %'] = (
-                    (detailed_data.loc[mask_plan, 'Факт на дату, шт.'] / 
-                     detailed_data.loc[mask_plan, 'План на дату, шт.']) - 1
-                ).round(3) * 100
-            
-            detailed_data['Исполнение проекта,%'] = detailed_data['План/Факт проекта,%']
-            
-            if 'plan_calc_params' in st.session_state:
-                days_in_period = (st.session_state['plan_calc_params']['end_date'] - 
-                                st.session_state['plan_calc_params']['start_date']).days + 1
-            else:
-                days_in_period = 12
-                
-            detailed_data['Прогноз на месяц, шт.'] = (
-                detailed_data['Факт на дату, шт.'] / days_in_period * 28
-            ).round(1)
-            
-            detailed_data['Фокус'] = 'Нет'
-            if all(col in detailed_data.columns for col in ['Исполнение проекта,%', 'Утилизация тайминга, %']):
-                mask_focus = (
-                    (detailed_data['Исполнение проекта,%'] < 80) & 
-                    (detailed_data['Утилизация тайминга, %'] > 80) & 
-                    (detailed_data['Утилизация тайминга, %'] < 100)
-                )
-                detailed_data.loc[mask_focus, 'Фокус'] = 'Да'
-            
-            project_data = detailed_data
+        # Агрегируем для отображения
+        agg_columns = {
+            'План проекта, шт.': 'sum',
+            'План на дату, шт.': 'sum',
+            'Факт проекта, шт.': 'sum',
+            'Факт на дату, шт.': 'sum',
+            'Длительность': 'first',
+            'Дата старта': 'first',
+            'Дата финиша': 'first',
+            'Дней до конца проекта': 'first',
+            'Утилизация тайминга, %': 'first',
+            'Ср. план на день для 100% плана': 'sum'
+        }
+        
+        existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
+        
+        if len(group_cols) > 1:
+            project_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
         else:
-            agg_columns = {
-                'План проекта, шт.': 'sum',
-                'План на дату, шт.': 'sum',
-                'Факт проекта, шт.': 'sum',
-                'Факт на дату, шт.': 'sum',
-                'Длительность': 'mean',
-                'ПО': 'first',
-                'Дней до конца проекта': 'mean',
-                'Утилизация тайминга, %': 'mean',
-                'Ср. план на день для 100% плана': 'sum'
-            }
-            
-            existing_agg = {k: v for k, v in agg_columns.items() if k in filtered_data.columns}
-            if show_project:
-                group_cols = ['Клиент', 'Проект']
-            else:
-                group_cols = ['Клиент']
-            
-            project_data = filtered_data.groupby(group_cols).agg(existing_agg).reset_index()
-            
-            project_data['План/Факт на дату,%'] = 0.0
-            mask_plan = project_data['План на дату, шт.'] > 0
-            if mask_plan.any():
-                project_data.loc[mask_plan, 'План/Факт на дату,%'] = (
-                    project_data.loc[mask_plan, 'Факт на дату, шт.'] / 
-                    project_data.loc[mask_plan, 'План на дату, шт.'] * 100
-                ).round(1)
-            
-            project_data['План/Факт проекта,%'] = 0.0
-            mask_project_plan = project_data['План проекта, шт.'] > 0
-            if mask_project_plan.any():
-                project_data.loc[mask_project_plan, 'План/Факт проекта,%'] = (
-                    project_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
-                    project_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
-                ).round(1)
-            
-            project_data['△План/Факт на дату, шт'] = (
-                project_data['Факт на дату, шт.'] - project_data['План на дату, шт.']
+            project_data = display_data
+        
+        # Добавляем вычисляемые метрики
+        mask_plan = project_data['План на дату, шт.'] > 0
+        project_data['План/Факт на дату,%'] = 0.0
+        if mask_plan.any():
+            project_data.loc[mask_plan, 'План/Факт на дату,%'] = (
+                project_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                project_data.loc[mask_plan, 'План на дату, шт.'] * 100
             ).round(1)
-            
-            project_data['△План/Факт на дату, %'] = 0.0
-            if mask_plan.any():
-                project_data.loc[mask_plan, '△План/Факт на дату, %'] = (
-                    (project_data.loc[mask_plan, 'Факт на дату, шт.'] / 
-                     project_data.loc[mask_plan, 'План на дату, шт.']) - 1
-                ).round(3) * 100
-            
-            project_data['Исполнение проекта,%'] = project_data['План/Факт проекта,%']
-            
-            if 'plan_calc_params' in st.session_state:
-                days_in_period = (st.session_state['plan_calc_params']['end_date'] - 
-                                st.session_state['plan_calc_params']['start_date']).days + 1
-            else:
-                days_in_period = 12
-                
-            project_data['Прогноз на месяц, шт.'] = (
-                project_data['Факт на дату, шт.'] / days_in_period * 28
+        
+        mask_project_plan = project_data['План проекта, шт.'] > 0
+        project_data['План/Факт проекта,%'] = 0.0
+        if mask_project_plan.any():
+            project_data.loc[mask_project_plan, 'План/Факт проекта,%'] = (
+                project_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                project_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
             ).round(1)
-            
-            project_data['Фокус'] = 'Нет'
-            if all(col in project_data.columns for col in ['Исполнение проекта,%', 'Утилизация тайминга, %']):
-                mask_focus = (
-                    (project_data['Исполнение проекта,%'] < 80) & 
-                    (project_data['Утилизация тайминга, %'] > 80) & 
-                    (project_data['Утилизация тайминга, %'] < 100)
-                )
-                project_data.loc[mask_focus, 'Фокус'] = 'Да'
         
-        st.caption(f"📌 Отображается записей: {len(project_data)}")
+        project_data['△План/Факт на дату, шт'] = (
+            project_data['Факт на дату, шт.'] - project_data['План на дату, шт.']
+        ).round(1)
         
-        if project_data.empty:
-            st.warning("⚠️ Нет данных после фильтрации")
-            return
+        project_data['△План/Факт на дату, %'] = 0.0
+        if mask_plan.any():
+            project_data.loc[mask_plan, '△План/Факт на дату, %'] = (
+                (project_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                 project_data.loc[mask_plan, 'План на дату, шт.']) - 1
+            ).round(3) * 100
         
-        # KPI - 6 метрик в два ряда по 3
+        # KPI
         st.markdown("### 📊 Ключевые показатели")
         
-        # Чек-бокс Продата (справа от KPI)
         col_kpi1, col_kpi2, col_kpi3, col_checkbox = st.columns([1, 1, 1, 0.5])
         with col_checkbox:
-            include_prodata = st.checkbox("📊 Продата", key="include_prodata")
+            include_prodata = st.checkbox("📊 Продата", key="planfact_include_prodata")
         
-        # Получаем данные ПроДата
         prodata_df = st.session_state.cleaned_data.get('prodata_processed', None)
         prodata_plan_total = 0
         prodata_fact_total = 0
-        prodata_plan_date_total = 0
-        prodata_fact_date_total = 0
         
         if include_prodata and prodata_df is not None and not prodata_df.empty:
             prodata_plan_total = prodata_df['План проекта, шт.'].sum() if 'План проекта, шт.' in prodata_df.columns else 0
             prodata_fact_total = prodata_df['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in prodata_df.columns else 0
-            prodata_plan_date_total = prodata_df['План на дату, шт.'].sum() if 'План на дату, шт.' in prodata_df.columns else 0
-            prodata_fact_date_total = prodata_df['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in prodata_df.columns else 0
         
-        # Первый ряд: План проекта, Факт проекта, План/Факт проекта
         col1, col2, col3 = st.columns(3)
         with col1:
-            plan_project_total = project_data['План проекта, шт.'].sum() if 'План проекта, шт.' in project_data.columns else 0
+            plan_total = project_data['План проекта, шт.'].sum() if 'План проекта, шт.' in project_data.columns else 0
             if include_prodata:
-                plan_project_total += prodata_plan_total
-            st.metric("📊 План проекта", f"{plan_project_total:,.0f} шт")
+                plan_total += prodata_plan_total
+            st.metric("📊 План проекта", f"{plan_total:,.0f} шт")
         
         with col2:
-            fact_project_total = project_data['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in project_data.columns else 0
+            fact_total = project_data['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in project_data.columns else 0
             if include_prodata:
-                fact_project_total += prodata_fact_total
-            st.metric("✅ Факт проекта", f"{fact_project_total:,.0f} шт")
+                fact_total += prodata_fact_total
+            st.metric("✅ Факт проекта", f"{fact_total:,.0f} шт")
         
         with col3:
-            pf_project_percent = (fact_project_total / plan_project_total * 100) if plan_project_total > 0 else 0
-            st.metric("🎯 План/Факт проекта", f"{pf_project_percent:.1f}%")
+            pf_percent = (fact_total / plan_total * 100) if plan_total > 0 else 0
+            st.metric("🎯 План/Факт проекта", f"{pf_percent:.1f}%")
         
-        # Второй ряд: План на дату, Факт на дату, План/Факт на дату
-        col4, col5, col6 = st.columns(3)
-        with col4:
-            plan_date_total = project_data['План на дату, шт.'].sum() if 'План на дату, шт.' in project_data.columns else 0
-            if include_prodata:
-                plan_date_total += prodata_plan_date_total
-            st.metric("📊 План на дату", f"{plan_date_total:,.0f} шт")
+        # Отображаем таблицу
+        display_cols = ['Клиент', 'ПО', 'План проекта, шт.', 'Факт проекта, шт.', 'План/Факт проекта,%']
+        existing_display = [c for c in display_cols if c in project_data.columns]
+        st.dataframe(project_data[existing_display], use_container_width=True, hide_index=True)
         
-        with col5:
-            fact_date_total = project_data['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in project_data.columns else 0
-            if include_prodata:
-                fact_date_total += prodata_fact_date_total
-            st.metric("✅ Факт на дату", f"{fact_date_total:,.0f} шт")
-        
-        with col6:
-            pf_date_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
-            st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
-        
-        # Колонки для отображения
-        base_columns = [
-            'Клиент',
-            'ПО',
-            'Длительность',
-            'План проекта, шт.',
-            'Факт проекта, шт.',
-            'План/Факт проекта,%',
-            'План на дату, шт.',
-            'Факт на дату, шт.',
-            'План/Факт на дату,%',
-            '△План/Факт на дату, шт',
-            '△План/Факт на дату, %',
-            'Прогноз на месяц, шт.',
-            'Фокус',
-            'Дней до конца проекта',
-            'Утилизация тайминга, %',
-            'Ср. план на день для 100% плана'
-        ]
-        
-        display_columns = base_columns.copy()
-        
-        extra_cols = []
-        
-        if show_project and 'Проект' in project_data.columns:
-            extra_cols.append('Проект')
-        if show_regions and region_col in project_data.columns:
-            extra_cols.append(region_col)
-        if show_dsm and 'DSM' in project_data.columns:
-            extra_cols.append('DSM')
-        if show_asm and 'ASM' in project_data.columns:
-            extra_cols.append('ASM')
-        if show_rs and 'RS' in project_data.columns:
-            extra_cols.append('RS')
-        
-        if extra_cols:
-            for i, col in enumerate(reversed(extra_cols)):
-                display_columns.insert(1, col)
-        
-        existing_cols = [col for col in display_columns if col in project_data.columns]
-        df_display = project_data[existing_cols].copy()
-        
-        if region_col in df_display.columns:
-            df_display[region_col] = df_display[region_col].apply(self._get_long_region)
-        
-        if 'План/Факт на дату,%' in df_display.columns:
-            df_display['План/Факт на дату,%'] = df_display['План/Факт на дату,%'].map(lambda x: f"{x:.1f}%")
-        
-        if 'План/Факт проекта,%' in df_display.columns:
-            df_display['План/Факт проекта,%'] = df_display['План/Факт проекта,%'].map(lambda x: f"{x:.1f}%")
-        
-        if '△План/Факт на дату, %' in df_display.columns:
-            df_display['△План/Факт на дату, %'] = df_display['△План/Факт на дату, %'].map(lambda x: f"{x:+.1f}%")
-        
-        if 'Утилизация тайминга, %' in df_display.columns:
-            df_display['Утилизация тайминга, %'] = df_display['Утилизация тайминга, %'].map(lambda x: f"{x:.1f}%")
-        
-        st.dataframe(df_display, use_container_width=True, hide_index=True)
-        
+        # Кнопка скачивания
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df_display.to_excel(writer, sheet_name='План_факт_проекты', index=False)
+            project_data.to_excel(writer, sheet_name='План_факт_проекты', index=False)
         
         st.download_button(
             label="⬇️ Скачать Excel",
@@ -778,380 +798,266 @@ class DataVisualizer:
         return region_agg
 
     def create_region_tab(self, data, hierarchy_df=None):
-        """Создает вкладку Регионы с фильтрами и разверткой"""
+        """Создает вкладку Регионы с фильтрами в форме"""
         if data is None or data.empty:
             st.warning("⚠️ Нет данных для отчета")
             return
         
         st.subheader("📊 Сводка по регионам")
         
-        # Переименовываем колонки для отображения
+        # Переименовываем колонки
         rename_cols = {'ЗОД': 'DSM', 'АСС': 'ASM', 'ЭМ': 'RS'}
         data = data.rename(columns=rename_cols)
         
-        # Определяем колонку региона
         region_col = 'Регион'
         if 'Регион short' in data.columns and 'Регион' not in data.columns:
             region_col = 'Регион short'
         
         # ============================================
-        # ФИЛЬТРЫ (БЕЗ АВТОМАТИЧЕСКОГО ПРИМЕНЕНИЯ)
+        # 1. БАЗОВЫЕ АГРЕГАЦИИ (один раз за сессию)
         # ============================================
         
-        with st.expander("🔍 Фильтры", expanded=True):
+        data_hash = hash(data.values.tobytes()) if not data.empty else 0
+        
+        if 'region_base_data' not in st.session_state or st.session_state.get('region_data_hash') != data_hash:
+            base_agg = self._compute_base_region_aggregations(data, region_col)
+            st.session_state.region_base_data = base_agg
+            st.session_state.region_data_hash = data_hash
+            st.session_state.region_filtered_data = None
+        
+        base_data = st.session_state.region_base_data
+        
+        # ============================================
+        # 2. ФИЛЬТРЫ В ФОРМЕ
+        # ============================================
+        
+        with st.form("region_filters_form"):
             
-            # Получаем уникальные значения
-            all_dsm = sorted(data['DSM'].dropna().unique()) if 'DSM' in data.columns else []
-            all_asm = sorted(data['ASM'].dropna().unique()) if 'ASM' in data.columns else []
+            all_dsm = base_data['all_dsm']
+            all_asm = base_data['all_asm']
+            all_clients = base_data['all_clients']
+            all_regions_display = base_data['regions_display']
+            region_map = base_data['region_map']
             
-            # Регионы
-            if region_col in data.columns:
-                unique_codes = data[region_col].dropna().unique()
-                self.region_display_map = {}
-                all_regions_display = []
-                for code in unique_codes:
-                    long_name = self._get_long_region(code)
-                    self.region_display_map[long_name] = code
-                    all_regions_display.append(long_name)
-                all_regions_display.sort()
-            else:
-                all_regions_display = []
-                self.region_display_map = {}
+            st.markdown("### 🔍 Фильтры")
             
-            all_clients = sorted(data['Клиент'].dropna().unique()) if 'Клиент' in data.columns else []
-            
-            # Инициализируем session_state для фильтров
-            if 'region_filters' not in st.session_state:
-                st.session_state.region_filters = {
-                    'dsm_mode': 'Включить',
-                    'dsm_selected': [],
-                    'asm_mode': 'Включить',
-                    'asm_selected': [],
-                    'region_mode': 'Включить',
-                    'region_selected': [],
-                    'client_mode': 'Включить',
-                    'client_selected': []
-                }
-            
-            filters = st.session_state.region_filters
-            
-            # === DSM ===
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
                 st.markdown("**DSM**")
-                dsm_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="region_dsm_mode",
-                    horizontal=True,
-                    index=0 if filters['dsm_mode'] == 'Включить' else 1
-                )
-                filters['dsm_mode'] = dsm_mode
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    dsm_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    dsm_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
                 
-                selected_dsm = st.multiselect(
-                    "Выбрать", 
-                    all_dsm, 
-                    key="region_dsm_selected",
-                    default=filters['dsm_selected']
+                if 'region_dsm_mode' not in st.session_state:
+                    st.session_state.region_dsm_mode = 'Включить'
+                if dsm_include:
+                    st.session_state.region_dsm_mode = 'Включить'
+                if dsm_exclude:
+                    st.session_state.region_dsm_mode = 'Исключить'
+                
+                st.caption(f"Режим: **{st.session_state.region_dsm_mode}**")
+                
+                dsm_selected = st.multiselect(
+                    "Выбрать DSM",
+                    all_dsm,
+                    key="region_dsm_values",
+                    default=[]
                 )
-                filters['dsm_selected'] = selected_dsm
             
-            # === ASM ===
             with col2:
                 st.markdown("**ASM**")
-                asm_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="region_asm_mode",
-                    horizontal=True,
-                    index=0 if filters['asm_mode'] == 'Включить' else 1
-                )
-                filters['asm_mode'] = asm_mode
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    asm_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    asm_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
                 
-                if selected_dsm and 'DSM' in data.columns:
-                    asm_options = sorted(data[data['DSM'].isin(selected_dsm)]['ASM'].dropna().unique())
+                if 'region_asm_mode' not in st.session_state:
+                    st.session_state.region_asm_mode = 'Включить'
+                if asm_include:
+                    st.session_state.region_asm_mode = 'Включить'
+                if asm_exclude:
+                    st.session_state.region_asm_mode = 'Исключить'
+                
+                st.caption(f"Режим: **{st.session_state.region_asm_mode}**")
+                
+                if dsm_selected:
+                    asm_options = [a for a in all_asm if any(a in d for d in dsm_selected)]
                 else:
                     asm_options = all_asm
                 
-                selected_asm = st.multiselect(
-                    "Выбрать", 
-                    asm_options, 
-                    key="region_asm_selected",
-                    default=filters['asm_selected']
+                asm_selected = st.multiselect(
+                    "Выбрать ASM",
+                    asm_options,
+                    key="region_asm_values",
+                    default=[]
                 )
-                filters['asm_selected'] = selected_asm
             
-            # === Регион ===
             with col3:
                 st.markdown("**Регион**")
-                region_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="region_region_mode",
-                    horizontal=True,
-                    index=0 if filters['region_mode'] == 'Включить' else 1
-                )
-                filters['region_mode'] = region_mode
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    region_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    region_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
                 
-                selected_region_display = st.multiselect(
-                    "Выбрать", 
-                    all_regions_display, 
-                    key="region_region_selected",
-                    default=filters['region_selected']
+                if 'region_region_mode' not in st.session_state:
+                    st.session_state.region_region_mode = 'Включить'
+                if region_include:
+                    st.session_state.region_region_mode = 'Включить'
+                if region_exclude:
+                    st.session_state.region_region_mode = 'Исключить'
+                
+                st.caption(f"Режим: **{st.session_state.region_region_mode}**")
+                
+                region_selected_display = st.multiselect(
+                    "Выбрать регион",
+                    all_regions_display,
+                    key="region_region_values",
+                    default=[]
                 )
-                filters['region_selected'] = selected_region_display
-                selected_region = [self.region_display_map.get(name, name) for name in selected_region_display]
+                region_selected = [region_map.get(name, name) for name in region_selected_display]
             
-            # === Клиент ===
             with col4:
                 st.markdown("**Клиент**")
-                client_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="region_client_mode",
-                    horizontal=True,
-                    index=0 if filters['client_mode'] == 'Включить' else 1
-                )
-                filters['client_mode'] = client_mode
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    client_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    client_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
                 
-                # Ограничиваем клиентов выбранными фильтрами
-                client_filtered = data.copy()
-                if dsm_mode == "Включить" and selected_dsm:
-                    client_filtered = client_filtered[client_filtered['DSM'].isin(selected_dsm)]
-                if asm_mode == "Включить" and selected_asm:
-                    client_filtered = client_filtered[client_filtered['ASM'].isin(selected_asm)]
-                if region_mode == "Включить" and selected_region:
-                    client_filtered = client_filtered[client_filtered[region_col].isin(selected_region)]
-                client_options = sorted(client_filtered['Клиент'].dropna().unique()) if 'Клиент' in client_filtered.columns else all_clients
+                if 'region_client_mode' not in st.session_state:
+                    st.session_state.region_client_mode = 'Включить'
+                if client_include:
+                    st.session_state.region_client_mode = 'Включить'
+                if client_exclude:
+                    st.session_state.region_client_mode = 'Исключить'
                 
-                selected_client = st.multiselect(
-                    "Выбрать", 
-                    client_options, 
-                    key="region_client_selected",
-                    default=filters['client_selected']
+                st.caption(f"Режим: **{st.session_state.region_client_mode}**")
+                
+                client_selected = st.multiselect(
+                    "Выбрать клиента",
+                    all_clients,
+                    key="region_client_values",
+                    default=[]
                 )
-                filters['client_selected'] = selected_client
             
             st.markdown("---")
             
-            # КНОПКА ПРИМЕНЕНИЯ ФИЛЬТРОВ
-            col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
-            with col_btn2:
-                apply_filters = st.button(
-                    "✅ Применить фильтры", 
-                    type="primary", 
-                    use_container_width=True,
-                    key="region_apply_btn"
-                )
+            apply_filters = st.form_submit_button(
+                "✅ Применить фильтры",
+                type="primary",
+                use_container_width=True
+            )
         
         # ============================================
-        # ПРИМЕНЯЕМ ФИЛЬТРЫ ТОЛЬКО ПО КНОПКЕ
+        # 3. ПРИМЕНЯЕМ ФИЛЬТРЫ
         # ============================================
         
-        if apply_filters or 'region_filtered_data' not in st.session_state:
-            filtered_data = data.copy()
-            
-            # DSM
-            if filters['dsm_mode'] == "Включить" and filters['dsm_selected']:
-                filtered_data = filtered_data[filtered_data['DSM'].isin(filters['dsm_selected'])]
-            elif filters['dsm_mode'] == "Исключить" and filters['dsm_selected']:
-                filtered_data = filtered_data[~filtered_data['DSM'].isin(filters['dsm_selected'])]
-            
-            # ASM
-            if filters['asm_mode'] == "Включить" and filters['asm_selected']:
-                filtered_data = filtered_data[filtered_data['ASM'].isin(filters['asm_selected'])]
-            elif filters['asm_mode'] == "Исключить" and filters['asm_selected']:
-                filtered_data = filtered_data[~filtered_data['ASM'].isin(filters['asm_selected'])]
-            
-            # Регион
-            selected_region = [self.region_display_map.get(name, name) for name in filters['region_selected']]
-            if filters['region_mode'] == "Включить" and selected_region:
-                filtered_data = filtered_data[filtered_data[region_col].isin(selected_region)]
-            elif filters['region_mode'] == "Исключить" and selected_region:
-                filtered_data = filtered_data[~filtered_data[region_col].isin(selected_region)]
-            
-            # Клиент
-            if filters['client_mode'] == "Включить" and filters['client_selected']:
-                filtered_data = filtered_data[filtered_data['Клиент'].isin(filters['client_selected'])]
-            elif filters['client_mode'] == "Исключить" and filters['client_selected']:
-                filtered_data = filtered_data[~filtered_data['Клиент'].isin(filters['client_selected'])]
-            
+        if apply_filters:
+            filtered_data = self._apply_region_filters(
+                base_data['raw_data'],
+                dsm_selected, st.session_state.region_dsm_mode,
+                asm_selected, st.session_state.region_asm_mode,
+                region_selected, st.session_state.region_region_mode,
+                client_selected, st.session_state.region_client_mode,
+                region_col
+            )
             st.session_state.region_filtered_data = filtered_data
+        
+        if st.session_state.region_filtered_data is not None:
+            display_data = st.session_state.region_filtered_data
         else:
-            filtered_data = st.session_state.region_filtered_data
+            display_data = base_data['raw_data']
         
-        # 📊 РАЗВЕРТКА (ЧЕК-БОКСЫ)
-        st.subheader("📊 Детализация")
+        # ============================================
+        # 4. АГРЕГАЦИЯ ПО РЕГИОНАМ
+        # ============================================
         
-        col1, col2, col3, col4, col5 = st.columns(5)
-        with col1:
-            show_project = st.checkbox("Проект", key='region_show_project')
-        with col2:
-            show_wave = st.checkbox("Волна", key='region_show_wave')
-        with col3:
-            show_dsm = st.checkbox("DSM", key='region_show_dsm')
-        with col4:
-            show_asm = st.checkbox("ASM", key='region_show_asm')
-        with col5:
-            show_rs = st.checkbox("RS", key='region_show_rs')
+        # Группируем по региону
+        region_agg = display_data.groupby(region_col).agg({
+            'План проекта, шт.': 'sum',
+            'План на дату, шт.': 'sum',
+            'Факт проекта, шт.': 'sum',
+            'Факт на дату, шт.': 'sum',
+            'Проект': 'nunique',
+            'RS': 'nunique'
+        }).reset_index()
         
-        # Формируем groupby
-        group_cols = [region_col]
+        region_agg = region_agg.rename(columns={
+            'Проект': 'Кол-во проектов',
+            'RS': 'Кол-во сотрудников'
+        })
         
-        if show_project and 'Проект' in filtered_data.columns:
-            group_cols.append('Проект')
-        if show_wave and 'Волна' in filtered_data.columns:
-            group_cols.append('Волна')
-        if show_dsm and 'DSM' in filtered_data.columns:
-            group_cols.append('DSM')
-        if show_asm and 'ASM' in filtered_data.columns:
-            group_cols.append('ASM')
-        if show_rs and 'RS' in filtered_data.columns:
-            group_cols.append('RS')
+        # Добавляем метрики
+        mask_plan = region_agg['План на дату, шт.'] > 0
+        region_agg['План/Факт на дату,%'] = 0.0
+        if mask_plan.any():
+            region_agg.loc[mask_plan, 'План/Факт на дату,%'] = (
+                region_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
+                region_agg.loc[mask_plan, 'План на дату, шт.'] * 100
+            ).round(1)
         
-        # Агрегируем
-        if len(group_cols) > 1:
-            agg_columns = {
-                'План проекта, шт.': 'sum',
-                'План на дату, шт.': 'sum',
-                'Факт проекта, шт.': 'sum',
-                'Факт на дату, шт.': 'sum',
-                'Длительность': 'mean',
-                'ПО': lambda x: ', '.join(x.dropna().unique()[:3])
-            }
-            existing_agg = {k: v for k, v in agg_columns.items() if k in filtered_data.columns}
-            region_data = filtered_data.groupby(group_cols).agg(existing_agg).reset_index()
-            
-            region_data['План/Факт на дату,%'] = 0.0
-            mask_plan = region_data['План на дату, шт.'] > 0
-            if mask_plan.any():
-                region_data.loc[mask_plan, 'План/Факт на дату,%'] = (
-                    region_data.loc[mask_plan, 'Факт на дату, шт.'] / 
-                    region_data.loc[mask_plan, 'План на дату, шт.'] * 100
-                ).round(1)
-            
-            region_data['План/Факт проекта,%'] = 0.0
-            mask_project_plan = region_data['План проекта, шт.'] > 0
-            if mask_project_plan.any():
-                region_data.loc[mask_project_plan, 'План/Факт проекта,%'] = (
-                    region_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
-                    region_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
-                ).round(1)
-        else:
-            region_data = self.create_region_summary(filtered_data)
+        mask_project_plan = region_agg['План проекта, шт.'] > 0
+        region_agg['План/Факт проекта,%'] = 0.0
+        if mask_project_plan.any():
+            region_agg.loc[mask_project_plan, 'План/Факт проекта,%'] = (
+                region_agg.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                region_agg.loc[mask_project_plan, 'План проекта, шт.'] * 100
+            ).round(1)
         
-        st.caption(f"📌 Отображается записей: {len(region_data)}")
-        
-        if region_data.empty:
-            st.warning("⚠️ Нет данных после фильтрации")
-            return
+        region_agg['△План/Факт на дату, шт'] = (
+            region_agg['Факт на дату, шт.'] - region_agg['План на дату, шт.']
+        ).round(1)
         
         # KPI
         st.markdown("### 📊 Ключевые показатели")
         
-        # Чек-бокс Продата
         include_prodata = st.checkbox("📊 Продата", key="region_include_prodata")
         
-        # Получаем данные ПроДата
         prodata_df = st.session_state.cleaned_data.get('prodata_processed', None)
         prodata_plan_total = 0
         prodata_fact_total = 0
-        prodata_plan_date_total = 0
-        prodata_fact_date_total = 0
         
         if include_prodata and prodata_df is not None and not prodata_df.empty:
             prodata_plan_total = prodata_df['План проекта, шт.'].sum() if 'План проекта, шт.' in prodata_df.columns else 0
             prodata_fact_total = prodata_df['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in prodata_df.columns else 0
-            prodata_plan_date_total = prodata_df['План на дату, шт.'].sum() if 'План на дату, шт.' in prodata_df.columns else 0
-            prodata_fact_date_total = prodata_df['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in prodata_df.columns else 0
         
-        # Первый ряд: План проекта, Факт проекта, План/Факт проекта
         col1, col2, col3 = st.columns(3)
         with col1:
-            plan_project_total = region_data['План проекта, шт.'].sum() if 'План проекта, шт.' in region_data.columns else 0
+            plan_total = region_agg['План проекта, шт.'].sum() if 'План проекта, шт.' in region_agg.columns else 0
             if include_prodata:
-                plan_project_total += prodata_plan_total
-            st.metric("📊 План проекта", f"{plan_project_total:,.0f} шт")
+                plan_total += prodata_plan_total
+            st.metric("📊 План проекта", f"{plan_total:,.0f} шт")
         
         with col2:
-            fact_project_total = region_data['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in region_data.columns else 0
+            fact_total = region_agg['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in region_agg.columns else 0
             if include_prodata:
-                fact_project_total += prodata_fact_total
-            st.metric("✅ Факт проекта", f"{fact_project_total:,.0f} шт")
+                fact_total += prodata_fact_total
+            st.metric("✅ Факт проекта", f"{fact_total:,.0f} шт")
         
         with col3:
-            pf_project_percent = (fact_project_total / plan_project_total * 100) if plan_project_total > 0 else 0
-            st.metric("🎯 План/Факт проекта", f"{pf_project_percent:.1f}%")
+            pf_percent = (fact_total / plan_total * 100) if plan_total > 0 else 0
+            st.metric("🎯 План/Факт проекта", f"{pf_percent:.1f}%")
         
-        # Второй ряд: План на дату, Факт на дату, План/Факт на дату
-        col4, col5, col6 = st.columns(3)
-        with col4:
-            plan_date_total = region_data['План на дату, шт.'].sum() if 'План на дату, шт.' in region_data.columns else 0
-            if include_prodata:
-                plan_date_total += prodata_plan_date_total
-            st.metric("📊 План на дату", f"{plan_date_total:,.0f} шт")
+        # Отображаем таблицу
+        display_cols = ['Регион', 'План проекта, шт.', 'Факт проекта, шт.', 'План/Факт проекта,%',
+                        'Кол-во проектов', 'Кол-во сотрудников']
+        existing_display = [c for c in display_cols if c in region_agg.columns]
         
-        with col5:
-            fact_date_total = region_data['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in region_data.columns else 0
-            if include_prodata:
-                fact_date_total += prodata_fact_date_total
-            st.metric("✅ Факт на дату", f"{fact_date_total:,.0f} шт")
+        # Преобразуем коды регионов в названия
+        if 'Регион' in region_agg.columns:
+            region_agg['Регион'] = region_agg['Регион'].apply(self._get_long_region)
         
-        with col6:
-            pf_date_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
-            st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
+        st.dataframe(region_agg[existing_display], use_container_width=True, hide_index=True)
         
-        # Колонки для отображения
-        display_columns = [region_col]
-        
-        if show_project and 'Проект' in region_data.columns:
-            display_columns.append('Проект')
-        if show_wave and 'Волна' in region_data.columns:
-            display_columns.append('Волна')
-        if show_dsm and 'DSM' in region_data.columns:
-            display_columns.append('DSM')
-        if show_asm and 'ASM' in region_data.columns:
-            display_columns.append('ASM')
-        if show_rs and 'RS' in region_data.columns:
-            display_columns.append('RS')
-        
-        metric_columns = [
-            'План проекта, шт.',
-            'Факт проекта, шт.',
-            'План/Факт проекта,%',
-            'План на дату, шт.',
-            'Факт на дату, шт.',
-            'План/Факт на дату,%',
-            '△План/Факт на дату, шт',
-            '△План/Факт на дату, %',
-            'Прогноз на месяц, шт.'
-        ]
-        
-        extra_columns = ['Кол-во клиентов', 'Кол-во проектов', 'Кол-во сотрудников', 'ПО']
-        for col in extra_columns:
-            if col in region_data.columns:
-                metric_columns.append(col)
-        
-        display_columns.extend([col for col in metric_columns if col in region_data.columns])
-        
-        df_display = region_data[[col for col in display_columns if col in region_data.columns]].copy()
-        
-        if region_col in df_display.columns:
-            df_display[region_col] = df_display[region_col].apply(self._get_long_region)
-        
-        if 'План/Факт на дату,%' in df_display.columns:
-            df_display['План/Факт на дату,%'] = df_display['План/Факт на дату,%'].map(lambda x: f"{x:.1f}%")
-        if 'План/Факт проекта,%' in df_display.columns:
-            df_display['План/Факт проекта,%'] = df_display['План/Факт проекта,%'].map(lambda x: f"{x:.1f}%")
-        if '△План/Факт на дату, %' in df_display.columns:
-            df_display['△План/Факт на дату, %'] = df_display['△План/Факт на дату, %'].map(lambda x: f"{x:+.1f}%")
-        
-        st.dataframe(df_display, use_container_width=True, hide_index=True)
-        
+        # Кнопка скачивания
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df_display.to_excel(writer, sheet_name='Регионы', index=False)
+            region_agg.to_excel(writer, sheet_name='Регионы', index=False)
         
         st.download_button(
             label="⬇️ Скачать Excel",
@@ -1161,494 +1067,285 @@ class DataVisualizer:
             type="primary",
             use_container_width=True
         )
-
-    
-    def create_dsm_summary(self, df):
-        """
-        Агрегация данных по DSM
-        Одна строка = один DSM
-        """
-        if df is None or df.empty:
-            return pd.DataFrame()
-        
-        if 'DSM' not in df.columns:
-            st.error(f"❌ В данных нет колонки 'DSM'")
-            return pd.DataFrame()
-        
-        # Список колонок для агрегации
-        agg_columns = {
-            'План проекта, шт.': 'sum',
-            'План на дату, шт.': 'sum',
-            'Факт проекта, шт.': 'sum',
-            'Факт на дату, шт.': 'sum',
-            'Длительность': 'mean',
-            'Клиент': lambda x: ', '.join(x.dropna().unique()[:3]),
-            'Проект': 'nunique',
-            'Регион': lambda x: ', '.join(x.dropna().unique()[:3]),
-            'ASM': lambda x: ', '.join(x.dropna().unique()[:3]),
-            'RS': 'nunique',
-            'ПО': lambda x: ', '.join(x.dropna().unique()[:3])
-        }
-        
-        # Только существующие колонки
-        existing_agg = {}
-        for k, v in agg_columns.items():
-            if k in df.columns:
-                existing_agg[k] = v
-        
-        # Группируем по DSM
-        dsm_agg = df.groupby('DSM').agg(existing_agg).reset_index()
-        
-        # Переименовываем колонки для понятности
-        rename_map = {
-            'Проект': 'Кол-во проектов',
-            'RS': 'Кол-во сотрудников'
-        }
-        dsm_agg = dsm_agg.rename(columns=rename_map)
-        
-        # 1. План/Факт на дату,%
-        dsm_agg['План/Факт на дату,%'] = 0.0
-        mask_plan = dsm_agg['План на дату, шт.'] > 0
-        if mask_plan.any():
-            dsm_agg.loc[mask_plan, 'План/Факт на дату,%'] = (
-                dsm_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
-                dsm_agg.loc[mask_plan, 'План на дату, шт.'] * 100
-            ).round(1)
-        
-        # 2. План/Факт проекта,%
-        dsm_agg['План/Факт проекта,%'] = 0.0
-        mask_project_plan = dsm_agg['План проекта, шт.'] > 0
-        if mask_project_plan.any():
-            dsm_agg.loc[mask_project_plan, 'План/Факт проекта,%'] = (
-                dsm_agg.loc[mask_project_plan, 'Факт проекта, шт.'] / 
-                dsm_agg.loc[mask_project_plan, 'План проекта, шт.'] * 100
-            ).round(1)
-        
-        # 3. △План/Факт на дату, шт
-        dsm_agg['△План/Факт на дату, шт'] = (
-            dsm_agg['Факт на дату, шт.'] - dsm_agg['План на дату, шт.']
-        ).round(1)
-        
-        # 4. △План/Факт на дату, %
-        dsm_agg['△План/Факт на дату, %'] = 0.0
-        if mask_plan.any():
-            dsm_agg.loc[mask_plan, '△План/Факт на дату, %'] = (
-                (dsm_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
-                 dsm_agg.loc[mask_plan, 'План на дату, шт.']) - 1
-            ).round(3) * 100
-        
-        # 5. Прогноз на месяц, шт.
-        if 'plan_calc_params' in st.session_state:
-            days_in_period = (st.session_state['plan_calc_params']['end_date'] - 
-                            st.session_state['plan_calc_params']['start_date']).days + 1
-        else:
-            days_in_period = 12
-            
-        dsm_agg['Прогноз на месяц, шт.'] = (
-            dsm_agg['Факт на дату, шт.'] / days_in_period * 28
-        ).round(1)
-        
-        # Сортируем по DSM
-        dsm_agg = dsm_agg.sort_values('DSM')
-        
-        return dsm_agg
     
     def create_dsm_tab(self, data, hierarchy_df=None):
-        """Создает вкладку DSM с фильтрами и разверткой"""
+        """Создает вкладку DSM с фильтрами в форме"""
         if data is None or data.empty:
             st.warning("⚠️ Нет данных для отчета")
             return
         
         st.subheader("📊 Сводка по DSM")
         
-        # Переименовываем колонки для отображения
-        rename_cols = {
-            'ЗОД': 'DSM',
-            'АСС': 'ASM',
-            'ЭМ': 'RS'
-        }
+        # Переименовываем колонки
+        rename_cols = {'ЗОД': 'DSM', 'АСС': 'ASM', 'ЭМ': 'RS'}
         data = data.rename(columns=rename_cols)
         
-        # Определяем колонку региона
         region_col = 'Регион'
         if 'Регион short' in data.columns and 'Регион' not in data.columns:
             region_col = 'Регион short'
         
         # ============================================
-        # ФИЛЬТРЫ (БЕЗ АВТОМАТИЧЕСКОГО ПРИМЕНЕНИЯ)
+        # 1. БАЗОВЫЕ АГРЕГАЦИИ (один раз за сессию)
         # ============================================
         
-        with st.expander("🔍 Фильтры", expanded=True):
+        data_hash = hash(data.values.tobytes()) if not data.empty else 0
+        
+        if 'dsm_base_data' not in st.session_state or st.session_state.get('dsm_data_hash') != data_hash:
+            base_agg = self._compute_base_dsm_aggregations(data, region_col)
+            st.session_state.dsm_base_data = base_agg
+            st.session_state.dsm_data_hash = data_hash
+            st.session_state.dsm_filtered_data = None
+        
+        base_data = st.session_state.dsm_base_data
+        
+        # ============================================
+        # 2. ФИЛЬТРЫ В ФОРМЕ
+        # ============================================
+        
+        with st.form("dsm_filters_form"):
             
-            # Получаем уникальные значения
-            all_asm = sorted(data['ASM'].dropna().unique()) if 'ASM' in data.columns else []
-            all_clients = sorted(data['Клиент'].dropna().unique()) if 'Клиент' in data.columns else []
-            all_projects = sorted(data['Проект'].dropna().unique()) if 'Проект' in data.columns else []
-            all_waves = sorted(data['Волна'].dropna().unique()) if 'Волна' in data.columns else []
+            all_asm = base_data['all_asm']
+            all_clients = base_data['all_clients']
+            all_projects = base_data['all_projects']
+            all_waves = base_data['all_waves']
+            all_regions_display = base_data['regions_display']
+            region_map = base_data['region_map']
             
-            # Регионы
-            if region_col in data.columns:
-                unique_codes = data[region_col].dropna().unique()
-                self.region_display_map = {}
-                all_regions_display = []
-                for code in unique_codes:
-                    long_name = self._get_long_region(code)
-                    self.region_display_map[long_name] = code
-                    all_regions_display.append(long_name)
-                all_regions_display.sort()
-            else:
-                all_regions_display = []
-                self.region_display_map = {}
-            
-            # Инициализируем session_state для фильтров
-            if 'dsm_filters' not in st.session_state:
-                st.session_state.dsm_filters = {
-                    'asm_mode': 'Включить',
-                    'asm_selected': [],
-                    'client_mode': 'Включить',
-                    'client_selected': [],
-                    'project_mode': 'Включить',
-                    'project_selected': [],
-                    'wave_mode': 'Включить',
-                    'wave_selected': [],
-                    'region_mode': 'Включить',
-                    'region_selected': []
-                }
-            
-            filters = st.session_state.dsm_filters
+            st.markdown("### 🔍 Фильтры")
             
             col1, col2, col3, col4, col5 = st.columns(5)
             
-            # === ASM ===
             with col1:
                 st.markdown("**ASM**")
-                asm_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="dsm_asm_mode",
-                    horizontal=True,
-                    index=0 if filters['asm_mode'] == 'Включить' else 1
-                )
-                filters['asm_mode'] = asm_mode
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    asm_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    asm_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
                 
-                selected_asm = st.multiselect(
-                    "Выбрать", 
-                    all_asm, 
-                    key="dsm_asm_selected",
-                    default=filters['asm_selected']
+                if 'dsm_asm_mode' not in st.session_state:
+                    st.session_state.dsm_asm_mode = 'Включить'
+                if asm_include:
+                    st.session_state.dsm_asm_mode = 'Включить'
+                if asm_exclude:
+                    st.session_state.dsm_asm_mode = 'Исключить'
+                
+                st.caption(f"Режим: **{st.session_state.dsm_asm_mode}**")
+                
+                asm_selected = st.multiselect(
+                    "Выбрать ASM",
+                    all_asm,
+                    key="dsm_asm_values",
+                    default=[]
                 )
-                filters['asm_selected'] = selected_asm
             
-            # === Клиент ===
             with col2:
                 st.markdown("**Клиент**")
-                client_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="dsm_client_mode",
-                    horizontal=True,
-                    index=0 if filters['client_mode'] == 'Включить' else 1
-                )
-                filters['client_mode'] = client_mode
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    client_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    client_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
                 
-                selected_client = st.multiselect(
-                    "Выбрать", 
-                    all_clients, 
-                    key="dsm_client_selected",
-                    default=filters['client_selected']
+                if 'dsm_client_mode' not in st.session_state:
+                    st.session_state.dsm_client_mode = 'Включить'
+                if client_include:
+                    st.session_state.dsm_client_mode = 'Включить'
+                if client_exclude:
+                    st.session_state.dsm_client_mode = 'Исключить'
+                
+                st.caption(f"Режим: **{st.session_state.dsm_client_mode}**")
+                
+                client_selected = st.multiselect(
+                    "Выбрать клиента",
+                    all_clients,
+                    key="dsm_client_values",
+                    default=[]
                 )
-                filters['client_selected'] = selected_client
             
-            # === Проект ===
             with col3:
                 st.markdown("**Код проекта**")
-                project_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="dsm_project_mode",
-                    horizontal=True,
-                    index=0 if filters['project_mode'] == 'Включить' else 1
-                )
-                filters['project_mode'] = project_mode
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    project_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    project_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
                 
-                selected_project = st.multiselect(
-                    "Выбрать", 
-                    all_projects, 
-                    key="dsm_project_selected",
-                    default=filters['project_selected']
+                if 'dsm_project_mode' not in st.session_state:
+                    st.session_state.dsm_project_mode = 'Включить'
+                if project_include:
+                    st.session_state.dsm_project_mode = 'Включить'
+                if project_exclude:
+                    st.session_state.dsm_project_mode = 'Исключить'
+                
+                st.caption(f"Режим: **{st.session_state.dsm_project_mode}**")
+                
+                project_selected = st.multiselect(
+                    "Выбрать проект",
+                    all_projects,
+                    key="dsm_project_values",
+                    default=[]
                 )
-                filters['project_selected'] = selected_project
             
-            # === Волна ===
             with col4:
                 st.markdown("**Волна**")
-                wave_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="dsm_wave_mode",
-                    horizontal=True,
-                    index=0 if filters['wave_mode'] == 'Включить' else 1
-                )
-                filters['wave_mode'] = wave_mode
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    wave_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    wave_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
                 
-                selected_wave = st.multiselect(
-                    "Выбрать", 
-                    all_waves, 
-                    key="dsm_wave_selected",
-                    default=filters['wave_selected']
+                if 'dsm_wave_mode' not in st.session_state:
+                    st.session_state.dsm_wave_mode = 'Включить'
+                if wave_include:
+                    st.session_state.dsm_wave_mode = 'Включить'
+                if wave_exclude:
+                    st.session_state.dsm_wave_mode = 'Исключить'
+                
+                st.caption(f"Режим: **{st.session_state.dsm_wave_mode}**")
+                
+                wave_selected = st.multiselect(
+                    "Выбрать волну",
+                    all_waves,
+                    key="dsm_wave_values",
+                    default=[]
                 )
-                filters['wave_selected'] = selected_wave
             
-            # === Регион ===
             with col5:
                 st.markdown("**Регион**")
-                region_mode = st.radio(
-                    "Режим", 
-                    ["Включить", "Исключить"], 
-                    key="dsm_region_mode",
-                    horizontal=True,
-                    index=0 if filters['region_mode'] == 'Включить' else 1
-                )
-                filters['region_mode'] = region_mode
+                mode_col1, mode_col2 = st.columns(2)
+                with mode_col1:
+                    region_include = st.form_submit_button("✅ Включить", use_container_width=True)
+                with mode_col2:
+                    region_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
                 
-                selected_region_display = st.multiselect(
-                    "Выбрать", 
-                    all_regions_display, 
-                    key="dsm_region_selected",
-                    default=filters['region_selected']
+                if 'dsm_region_mode' not in st.session_state:
+                    st.session_state.dsm_region_mode = 'Включить'
+                if region_include:
+                    st.session_state.dsm_region_mode = 'Включить'
+                if region_exclude:
+                    st.session_state.dsm_region_mode = 'Исключить'
+                
+                st.caption(f"Режим: **{st.session_state.dsm_region_mode}**")
+                
+                region_selected_display = st.multiselect(
+                    "Выбрать регион",
+                    all_regions_display,
+                    key="dsm_region_values",
+                    default=[]
                 )
-                filters['region_selected'] = selected_region_display
-                selected_region = [self.region_display_map.get(name, name) for name in selected_region_display]
+                region_selected = [region_map.get(name, name) for name in region_selected_display]
             
             st.markdown("---")
             
-            # КНОПКА ПРИМЕНЕНИЯ ФИЛЬТРОВ
-            col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
-            with col_btn2:
-                apply_filters = st.button(
-                    "✅ Применить фильтры", 
-                    type="primary", 
-                    use_container_width=True,
-                    key="dsm_apply_btn"
-                )
+            apply_filters = st.form_submit_button(
+                "✅ Применить фильтры",
+                type="primary",
+                use_container_width=True
+            )
         
         # ============================================
-        # ПРИМЕНЯЕМ ФИЛЬТРЫ ТОЛЬКО ПО КНОПКЕ
+        # 3. ПРИМЕНЯЕМ ФИЛЬТРЫ
         # ============================================
         
-        if apply_filters or 'dsm_filtered_data' not in st.session_state:
-            filtered_data = data.copy()
-            
-            # ASM
-            if filters['asm_mode'] == "Включить" and filters['asm_selected']:
-                filtered_data = filtered_data[filtered_data['ASM'].isin(filters['asm_selected'])]
-            elif filters['asm_mode'] == "Исключить" and filters['asm_selected']:
-                filtered_data = filtered_data[~filtered_data['ASM'].isin(filters['asm_selected'])]
-            
-            # Клиент
-            if filters['client_mode'] == "Включить" and filters['client_selected']:
-                filtered_data = filtered_data[filtered_data['Клиент'].isin(filters['client_selected'])]
-            elif filters['client_mode'] == "Исключить" and filters['client_selected']:
-                filtered_data = filtered_data[~filtered_data['Клиент'].isin(filters['client_selected'])]
-            
-            # Проект
-            if filters['project_mode'] == "Включить" and filters['project_selected']:
-                filtered_data = filtered_data[filtered_data['Проект'].isin(filters['project_selected'])]
-            elif filters['project_mode'] == "Исключить" and filters['project_selected']:
-                filtered_data = filtered_data[~filtered_data['Проект'].isin(filters['project_selected'])]
-            
-            # Волна
-            if filters['wave_mode'] == "Включить" and filters['wave_selected']:
-                filtered_data = filtered_data[filtered_data['Волна'].isin(filters['wave_selected'])]
-            elif filters['wave_mode'] == "Исключить" and filters['wave_selected']:
-                filtered_data = filtered_data[~filtered_data['Волна'].isin(filters['wave_selected'])]
-            
-            # Регион
-            selected_region = [self.region_display_map.get(name, name) for name in filters['region_selected']]
-            if filters['region_mode'] == "Включить" and selected_region:
-                filtered_data = filtered_data[filtered_data[region_col].isin(selected_region)]
-            elif filters['region_mode'] == "Исключить" and selected_region:
-                filtered_data = filtered_data[~filtered_data[region_col].isin(selected_region)]
-            
+        if apply_filters:
+            filtered_data = self._apply_dsm_filters(
+                base_data['raw_data'],
+                asm_selected, st.session_state.dsm_asm_mode,
+                client_selected, st.session_state.dsm_client_mode,
+                project_selected, st.session_state.dsm_project_mode,
+                wave_selected, st.session_state.dsm_wave_mode,
+                region_selected, st.session_state.dsm_region_mode,
+                region_col
+            )
             st.session_state.dsm_filtered_data = filtered_data
+        
+        if st.session_state.dsm_filtered_data is not None:
+            display_data = st.session_state.dsm_filtered_data
         else:
-            filtered_data = st.session_state.dsm_filtered_data
+            display_data = base_data['raw_data']
         
-        # 📊 РАЗВЕРТКА (ЧЕК-БОКСЫ)
-        st.subheader("📊 Детализация")
+        # ============================================
+        # 4. АГРЕГАЦИЯ ПО DSM
+        # ============================================
         
-        col1, col2, col3, col4, col5 = st.columns(5)
-        with col1:
-            show_asm = st.checkbox("ASM", key='dsm_show_asm')
-        with col2:
-            show_rs = st.checkbox("RS", key='dsm_show_rs')
-        with col3:
-            show_project = st.checkbox("Код проекта", key='dsm_show_project')
-        with col4:
-            show_wave = st.checkbox("Волна", key='dsm_show_wave')
-        with col5:
-            show_region = st.checkbox("Регион", key='dsm_show_region')
+        # Группируем по DSM
+        dsm_agg = display_data.groupby('DSM').agg({
+            'План проекта, шт.': 'sum',
+            'План на дату, шт.': 'sum',
+            'Факт проекта, шт.': 'sum',
+            'Факт на дату, шт.': 'sum',
+            'Проект': 'nunique',
+            'RS': 'nunique'
+        }).reset_index()
         
-        # Формируем groupby
-        group_cols = ['DSM']
+        dsm_agg = dsm_agg.rename(columns={
+            'Проект': 'Кол-во проектов',
+            'RS': 'Кол-во сотрудников'
+        })
         
-        if show_asm and 'ASM' in filtered_data.columns:
-            group_cols.append('ASM')
-        if show_rs and 'RS' in filtered_data.columns:
-            group_cols.append('RS')
-        if show_project and 'Проект' in filtered_data.columns:
-            group_cols.append('Проект')
-        if show_wave and 'Волна' in filtered_data.columns:
-            group_cols.append('Волна')
-        if show_region and region_col in filtered_data.columns:
-            group_cols.append(region_col)
+        # Добавляем метрики
+        mask_plan = dsm_agg['План на дату, шт.'] > 0
+        dsm_agg['План/Факт на дату,%'] = 0.0
+        if mask_plan.any():
+            dsm_agg.loc[mask_plan, 'План/Факт на дату,%'] = (
+                dsm_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
+                dsm_agg.loc[mask_plan, 'План на дату, шт.'] * 100
+            ).round(1)
         
-        # Агрегируем
-        if len(group_cols) > 1:
-            agg_columns = {
-                'План проекта, шт.': 'sum',
-                'План на дату, шт.': 'sum',
-                'Факт проекта, шт.': 'sum',
-                'Факт на дату, шт.': 'sum',
-                'Длительность': 'mean',
-                'ПО': lambda x: ', '.join(x.dropna().unique()[:3])
-            }
-            
-            existing_agg = {k: v for k, v in agg_columns.items() if k in filtered_data.columns}
-            detailed_data = filtered_data.groupby(group_cols).agg(existing_agg).reset_index()
-            
-            detailed_data['План/Факт на дату,%'] = 0.0
-            mask_plan = detailed_data['План на дату, шт.'] > 0
-            if mask_plan.any():
-                detailed_data.loc[mask_plan, 'План/Факт на дату,%'] = (
-                    detailed_data.loc[mask_plan, 'Факт на дату, шт.'] / 
-                    detailed_data.loc[mask_plan, 'План на дату, шт.'] * 100
-                ).round(1)
-            
-            detailed_data['План/Факт проекта,%'] = 0.0
-            mask_project_plan = detailed_data['План проекта, шт.'] > 0
-            if mask_project_plan.any():
-                detailed_data.loc[mask_project_plan, 'План/Факт проекта,%'] = (
-                    detailed_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
-                    detailed_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
-                ).round(1)
-            
-            dsm_data = detailed_data
-        else:
-            dsm_data = self.create_dsm_summary(filtered_data)
+        mask_project_plan = dsm_agg['План проекта, шт.'] > 0
+        dsm_agg['План/Факт проекта,%'] = 0.0
+        if mask_project_plan.any():
+            dsm_agg.loc[mask_project_plan, 'План/Факт проекта,%'] = (
+                dsm_agg.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                dsm_agg.loc[mask_project_plan, 'План проекта, шт.'] * 100
+            ).round(1)
         
-        st.caption(f"📌 Отображается записей: {len(dsm_data)}")
-        
-        if dsm_data.empty:
-            st.warning("⚠️ Нет данных после фильтрации")
-            return
+        dsm_agg['△План/Факт на дату, шт'] = (
+            dsm_agg['Факт на дату, шт.'] - dsm_agg['План на дату, шт.']
+        ).round(1)
         
         # KPI
         st.markdown("### 📊 Ключевые показатели")
         
-        # Чек-бокс Продата
         include_prodata = st.checkbox("📊 Продата", key="dsm_include_prodata")
         
-        # Получаем данные ПроДата
         prodata_df = st.session_state.cleaned_data.get('prodata_processed', None)
         prodata_plan_total = 0
         prodata_fact_total = 0
-        prodata_plan_date_total = 0
-        prodata_fact_date_total = 0
         
         if include_prodata and prodata_df is not None and not prodata_df.empty:
             prodata_plan_total = prodata_df['План проекта, шт.'].sum() if 'План проекта, шт.' in prodata_df.columns else 0
             prodata_fact_total = prodata_df['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in prodata_df.columns else 0
-            prodata_plan_date_total = prodata_df['План на дату, шт.'].sum() if 'План на дату, шт.' in prodata_df.columns else 0
-            prodata_fact_date_total = prodata_df['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in prodata_df.columns else 0
         
-        # Первый ряд: План проекта, Факт проекта, План/Факт проекта
         col1, col2, col3 = st.columns(3)
         with col1:
-            plan_project_total = dsm_data['План проекта, шт.'].sum() if 'План проекта, шт.' in dsm_data.columns else 0
+            plan_total = dsm_agg['План проекта, шт.'].sum() if 'План проекта, шт.' in dsm_agg.columns else 0
             if include_prodata:
-                plan_project_total += prodata_plan_total
-            st.metric("📊 План проекта", f"{plan_project_total:,.0f} шт")
+                plan_total += prodata_plan_total
+            st.metric("📊 План проекта", f"{plan_total:,.0f} шт")
         
         with col2:
-            fact_project_total = dsm_data['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in dsm_data.columns else 0
+            fact_total = dsm_agg['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in dsm_agg.columns else 0
             if include_prodata:
-                fact_project_total += prodata_fact_total
-            st.metric("✅ Факт проекта", f"{fact_project_total:,.0f} шт")
+                fact_total += prodata_fact_total
+            st.metric("✅ Факт проекта", f"{fact_total:,.0f} шт")
         
         with col3:
-            pf_project_percent = (fact_project_total / plan_project_total * 100) if plan_project_total > 0 else 0
-            st.metric("🎯 План/Факт проекта", f"{pf_project_percent:.1f}%")
+            pf_percent = (fact_total / plan_total * 100) if plan_total > 0 else 0
+            st.metric("🎯 План/Факт проекта", f"{pf_percent:.1f}%")
         
-        # Второй ряд: План на дату, Факт на дату, План/Факт на дату
-        col4, col5, col6 = st.columns(3)
-        with col4:
-            plan_date_total = dsm_data['План на дату, шт.'].sum() if 'План на дату, шт.' in dsm_data.columns else 0
-            if include_prodata:
-                plan_date_total += prodata_plan_date_total
-            st.metric("📊 План на дату", f"{plan_date_total:,.0f} шт")
+        # Отображаем таблицу
+        display_cols = ['DSM', 'План проекта, шт.', 'Факт проекта, шт.', 'План/Факт проекта,%',
+                        'Кол-во проектов', 'Кол-во сотрудников']
+        existing_display = [c for c in display_cols if c in dsm_agg.columns]
         
-        with col5:
-            fact_date_total = dsm_data['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in dsm_data.columns else 0
-            if include_prodata:
-                fact_date_total += prodata_fact_date_total
-            st.metric("✅ Факт на дату", f"{fact_date_total:,.0f} шт")
+        st.dataframe(dsm_agg[existing_display], use_container_width=True, hide_index=True)
         
-        with col6:
-            pf_date_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
-            st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
-        
-        # Колонки для отображения
-        display_columns = ['DSM']
-        
-        if show_asm and 'ASM' in dsm_data.columns:
-            display_columns.append('ASM')
-        if show_rs and 'RS' in dsm_data.columns:
-            display_columns.append('RS')
-        if show_project and 'Проект' in dsm_data.columns:
-            display_columns.append('Проект')
-        if show_wave and 'Волна' in dsm_data.columns:
-            display_columns.append('Волна')
-        if show_region and region_col in dsm_data.columns:
-            display_columns.append(region_col)
-        
-        metric_columns = [
-            'План проекта, шт.',
-            'Факт проекта, шт.',
-            'План/Факт проекта,%',
-            'План на дату, шт.',
-            'Факт на дату, шт.',
-            'План/Факт на дату,%',
-            '△План/Факт на дату, шт',
-            '△План/Факт на дату, %',
-            'Прогноз на месяц, шт.'
-        ]
-        
-        extra_columns = ['Кол-во проектов', 'Кол-во сотрудников', 'ПО']
-        for col in extra_columns:
-            if col in dsm_data.columns:
-                metric_columns.append(col)
-        
-        display_columns.extend([col for col in metric_columns if col in dsm_data.columns])
-        
-        existing_cols = [col for col in display_columns if col in dsm_data.columns]
-        df_display = dsm_data[existing_cols].copy()
-        
-        if show_region and region_col in df_display.columns:
-            df_display[region_col] = df_display[region_col].apply(self._get_long_region)
-        
-        if 'План/Факт на дату,%' in df_display.columns:
-            df_display['План/Факт на дату,%'] = df_display['План/Факт на дату,%'].map(lambda x: f"{x:.1f}%")
-        if 'План/Факт проекта,%' in df_display.columns:
-            df_display['План/Факт проекта,%'] = df_display['План/Факт проекта,%'].map(lambda x: f"{x:.1f}%")
-        if '△План/Факт на дату, %' in df_display.columns:
-            df_display['△План/Факт на дату, %'] = df_display['△План/Факт на дату, %'].map(lambda x: f"{x:+.1f}%")
-        
-        st.dataframe(df_display, use_container_width=True, hide_index=True)
-        
+        # Кнопка скачивания
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df_display.to_excel(writer, sheet_name='DSM', index=False)
+            dsm_agg.to_excel(writer, sheet_name='DSM', index=False)
         
         st.download_button(
             label="⬇️ Скачать Excel",

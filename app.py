@@ -120,10 +120,13 @@ def process_all_data(settings_manager=None):
         start = time.time()
 
         
+        # ============================================
+        # ОБОГАЩЕНИЕ ДАННЫХ (ОПТИМИЗИРОВАННО)
+        # ============================================
+        
+        # Добавляем поле 'Полевой' и 'ПО'
         array_with_field = data_cleaner.add_field_flag_to_array(st.session_state.cleaned_data['портал'])
         array_with_portal = data_cleaner.add_portal_to_array(array_with_field, google_with_field)
-
-        # Удаляем проекты CXWAY из портала
         array_with_portal = data_cleaner.remove_cxway_from_portal(array_with_portal, google_with_field)
         st.session_state.cleaned_data['портал_с_полем'] = array_with_portal
         
@@ -137,60 +140,104 @@ def process_all_data(settings_manager=None):
         excluded_df = settings_manager.get_excluded_projects()
         included_df = settings_manager.get_included_projects()
         
+        # ============================================
+        # ВЕКТОРИЗОВАННОЕ ПРИМЕНЕНИЕ НАСТРОЕК
+        # ============================================
+        
         # Применяем исключенные проекты (делаем их неполевыми)
         if not excluded_df.empty and field_df is not None and not field_df.empty:
-            for _, row in excluded_df.iterrows():
-                mask = (
-                    (field_df['Имя клиента'] == row['Название проекта']) &
-                    (field_df['Название проекта'] == row['Волна']) &
-                    (field_df['Код анкеты'] == row['Код проекта'])
-                )
-                if mask.any():
-                    field_df.loc[mask, 'Полевой'] = 0
+            # Создаем временные ключи для быстрого поиска
+            field_df['_temp_key'] = (
+                field_df['Имя клиента'].astype(str) + '|' + 
+                field_df['Название проекта'].astype(str) + '|' + 
+                field_df['Код анкеты'].astype(str)
+            )
+            excluded_df['_temp_key'] = (
+                excluded_df['Название проекта'].astype(str) + '|' + 
+                excluded_df['Волна'].astype(str) + '|' + 
+                excluded_df['Код проекта'].astype(str)
+            )
+            
+            # Одна операция вместо цикла
+            mask = field_df['_temp_key'].isin(excluded_df['_temp_key'])
+            field_df.loc[mask, 'Полевой'] = 0
+            
+            # Удаляем временные колонки
+            field_df = field_df.drop('_temp_key', axis=1)
+            # excluded_df не сохраняем, не нужно удалять
         
         # Применяем добавленные проекты (делаем их полевыми)
         if not included_df.empty and non_field_df is not None and not non_field_df.empty:
-            for _, row in included_df.iterrows():
-                mask = (
-                    (non_field_df['Имя клиента'] == row['Название проекта']) &
-                    (non_field_df['Название проекта'] == row['Волна']) &
-                    (non_field_df['Код анкеты'] == row['Код проекта'])
-                )
-                if mask.any():
-                    non_field_df.loc[mask, 'Полевой'] = 1
+            # Создаем временные ключи
+            non_field_df['_temp_key'] = (
+                non_field_df['Имя клиента'].astype(str) + '|' + 
+                non_field_df['Название проекта'].astype(str) + '|' + 
+                non_field_df['Код анкеты'].astype(str)
+            )
+            included_df['_temp_key'] = (
+                included_df['Название проекта'].astype(str) + '|' + 
+                included_df['Волна'].astype(str) + '|' + 
+                included_df['Код проекта'].astype(str)
+            )
+            
+            # Одна операция вместо цикла
+            mask = non_field_df['_temp_key'].isin(included_df['_temp_key'])
+            non_field_df.loc[mask, 'Полевой'] = 1
+            
+            # Удаляем временные колонки
+            non_field_df = non_field_df.drop('_temp_key', axis=1)
         
         # Объединяем все проекты в один датасет
         all_projects = pd.concat([field_df, non_field_df], ignore_index=True)
         
-        # 🔥 ПЕРЕСОЗДАЕМ датасеты на основе актуального значения Полевой
+        # Создаем датасеты на основе актуального значения Полевой
         st.session_state.cleaned_data['полевые_проекты'] = all_projects[all_projects['Полевой'] == 1].copy()
         st.session_state.cleaned_data['неполевые_проекты'] = all_projects[all_projects['Полевой'] == 0].copy()
         
-        # Добавление ЗОД из встроенного справочника
-        if field_df is not None and not field_df.empty:
-            field_df_with_zod = data_cleaner.add_zod_from_hierarchy(field_df)
-
-            field_df = field_df_with_zod.copy()
-            
-            # Обновляем только ЗОД в all_projects
-            for idx, row in field_df_with_zod.iterrows():
-                mask = (
-                    (all_projects['Имя клиента'] == row['Имя клиента']) &
-                    (all_projects['Название проекта'] == row['Название проекта']) &
-                    (all_projects['Код анкеты'] == row['Код анкеты'])
-                )
-                if mask.any():
-                    all_projects.loc[mask, 'ЗОД'] = row['ЗОД']
+        # ============================================
+        # ВЕКТОРИЗОВАННОЕ ДОБАВЛЕНИЕ ЗОД
+        # ============================================
         
+        # Добавление ЗОД из встроенного справочника (векторизовано)
+        if field_df is not None and not field_df.empty:
+            # Получаем ЗОД через словарь (быстрее чем apply)
+            field_df_with_zod = data_cleaner.add_zod_from_hierarchy(field_df)
+            
+            # Создаем словарь для быстрого обновления
+            if not field_df_with_zod.empty:
+                # Создаем временный ключ для поиска
+                all_projects['_temp_key'] = (
+                    all_projects['Имя клиента'].astype(str) + '|' + 
+                    all_projects['Название проекта'].astype(str) + '|' + 
+                    all_projects['Код анкеты'].astype(str)
+                )
+                
+                # Создаем маппинг ЗОД по ключу
+                zod_mapping = {}
+                for _, row in field_df_with_zod.iterrows():
+                    key = (
+                        str(row['Имя клиента']) + '|' + 
+                        str(row['Название проекта']) + '|' + 
+                        str(row['Код анкеты'])
+                    )
+                    zod_mapping[key] = row['ЗОД']
+                
+                # Обновляем ЗОД одним проходом
+                mask = all_projects['_temp_key'].isin(zod_mapping.keys())
+                all_projects.loc[mask, 'ЗОД'] = all_projects.loc[mask, '_temp_key'].map(zod_mapping)
+                
+                # Удаляем временную колонку
+                all_projects = all_projects.drop('_temp_key', axis=1)
+        
+        # ============================================
+        # ОБРАБОТКА ДОПОЛНИТЕЛЬНЫХ ИСТОЧНИКОВ
+        # ============================================
         
         # Обработка Easymerch (если есть)
         easymerch_processed = None
         easymerch_raw = st.session_state.uploaded_files.get('easymerch')
         if easymerch_raw is not None:
-            easymerch_processed = data_cleaner.clean_easymerch(
-                easymerch_raw, 
-                google_with_field
-            )
+            easymerch_processed = data_cleaner.clean_easymerch(easymerch_raw, google_with_field)
             if easymerch_processed is not None and not easymerch_processed.empty:
                 st.session_state.cleaned_data['easymerch_processed'] = easymerch_processed
         
@@ -199,10 +246,7 @@ def process_all_data(settings_manager=None):
         optima_raw = st.session_state.uploaded_files.get('optima')
         if optima_raw is not None:
             try:
-                optima_processed = data_cleaner.clean_optima(
-                    optima_raw, 
-                    google_with_field
-                )
+                optima_processed = data_cleaner.clean_optima(optima_raw, google_with_field)
                 if optima_processed is not None and not optima_processed.empty:
                     st.session_state.cleaned_data['optima_processed'] = optima_processed
             except Exception as e:
@@ -213,10 +257,7 @@ def process_all_data(settings_manager=None):
         prodata_raw = st.session_state.uploaded_files.get('prodata')
         if prodata_raw is not None:
             try:
-                prodata_processed = data_cleaner.clean_prodata(
-                    prodata_raw, 
-                    google_with_field
-                )
+                prodata_processed = data_cleaner.clean_prodata(prodata_raw, google_with_field)
                 if prodata_processed is not None and not prodata_processed.empty:
                     st.session_state.cleaned_data['prodata_processed'] = prodata_processed
             except Exception as e:
@@ -226,27 +267,24 @@ def process_all_data(settings_manager=None):
         cxway_processed = None
         cxway_raw = st.session_state.uploaded_files.get('cxway')
         if cxway_raw is not None:
-            cxway_processed = data_cleaner.clean_cxway(
-                cxway_raw, 
-                None, 
-                google_with_field,
-            )
+            cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
             
             # Разделяем CXWAY на полевые и неполевые
             if cxway_processed is not None and not cxway_processed.empty:
                 cxway_field = cxway_processed[cxway_processed['Полевой'] == 1]
                 cxway_non_field = cxway_processed[cxway_processed['Полевой'] == 0]
                 
-                # Полевые будем добавлять в sources_for_merge позже
                 # Неполевые добавляем в неполевые проекты сразу
                 if not cxway_non_field.empty:
                     st.session_state.cleaned_data['неполевые_проекты'] = pd.concat([
                         st.session_state.cleaned_data['неполевые_проекты'],
                         cxway_non_field
-            ], ignore_index=True)
+                    ], ignore_index=True)
         
-                                                       
-        # ФИНАЛЬНОЕ ОБЪЕДИНЕНИЕ всех источников
+        # ============================================
+        # ФИНАЛЬНОЕ ОБЪЕДИНЕНИЕ ВСЕХ ИСТОЧНИКОВ
+        # ============================================
+        
         sources_for_merge = []
         
         if field_df is not None and not field_df.empty:

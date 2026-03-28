@@ -329,13 +329,13 @@ with st.sidebar:
     st.header("📊 Навигация")
     st.markdown("---")
     
-    if st.button("🗑️ Сбросить все данные", type="secondary", use_container_width=True):
+    if st.button("🗑️ Сбросить все данные", type="secondary", width='stretch'):
         for key in list(DEFAULT_STATE.keys()):
             st.session_state[key] = DEFAULT_STATE[key]
         st.rerun()
 
     st.markdown("---")
-    if st.button("🗑️ Сбросить кэш файлов", type="secondary", use_container_width=True):
+    if st.button("🗑️ Сбросить кэш файлов", type="secondary", width='stretch'):
         load_excel.clear()
         st.success("✅ Кэш файлов очищен")
         st.rerun()
@@ -465,7 +465,7 @@ with tab1:
         projects_exists = st.session_state.get('projects_uploader') is not None
         
         if portal_exists and projects_exists:
-            if st.button("🚀 РАССЧИТАТЬ ПЛАН/ФАКТ", type="primary", use_container_width=True):
+            if st.button("🚀 РАССЧИТАТЬ ПЛАН/ФАКТ", type="primary", width='stretch'):
                 with st.spinner("📥 Загрузка файлов и обработка данных..."):
                     
                     # 1. ЗАГРУЖАЕМ ФАЙЛЫ из session_state
@@ -513,7 +513,7 @@ with tab1:
                         st.error("❌ Ошибка при расчете")
         else:
             st.info("📌 Загрузите оба основных файла для расчета")
-            st.button("🚀 РАССЧИТАТЬ ПЛАН/ФАКТ", type="primary", use_container_width=True, disabled=True)
+            st.button("🚀 РАССЧИТАТЬ ПЛАН/ФАКТ", type="primary", width='stretch', disabled=True)
             
 
 with tab2:
@@ -566,7 +566,7 @@ if st.session_state.cleaned_data.get('полевые_проекты') is not Non
             file_name=f"полевые_проекты_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="primary",
-            use_container_width=True
+            width='stretch'
         )
     else:
         st.info("Нет данных для выгрузки")
@@ -662,7 +662,7 @@ with tab3:
                 # Удаляем дубликаты
                 projects_in_calc = projects_in_calc.drop_duplicates(keep='first').reset_index(drop=True)
                 
-                st.dataframe(projects_in_calc, use_container_width=True)
+                st.dataframe(projects_in_calc, width='stretch')
                 
             
                 
@@ -673,7 +673,7 @@ with tab3:
                     key='multiselect_exclude'
                 )
                 
-                if selected_clients and st.button("🗑️ Убрать выбранные из расчета", type="secondary", use_container_width=True):
+                if selected_clients and st.button("🗑️ Убрать выбранные из расчета", type="secondary", width='stretch'):
                     # Берем строки с выбранными клиентами
                     selected_df = projects_in_calc[projects_in_calc['Название проекта'].isin(selected_clients)].copy()
                     
@@ -728,7 +728,7 @@ with tab3:
                         projects_not_in_calc = projects_not_in_calc[~mask]
                 
                 if not projects_not_in_calc.empty:
-                    st.dataframe(projects_not_in_calc, use_container_width=True)
+                    st.dataframe(projects_not_in_calc, width='stretch')
                     
                     # Мультиселект для выбора проектов
                     project_options = projects_not_in_calc.apply(
@@ -742,7 +742,7 @@ with tab3:
                         key='multiselect_include'
                     )
                     
-                    if selected_projects and st.button("➕ Добавить выбранные в расчет", type="primary", use_container_width=True):
+                    if selected_projects and st.button("➕ Добавить выбранные в расчет", type="primary", width='stretch'):
                         selected_rows = []
                         for s in selected_projects:
                             parts = s.split(' | ')
@@ -788,7 +788,7 @@ with tab3:
         with col1:
             st.subheader("🗑️ Исключенные проекты")
             if not excluded_df.empty:
-                st.dataframe(excluded_df, use_container_width=True)
+                st.dataframe(excluded_df, width='stretch')
                 
                 if st.button("Очистить список исключенных", key="clear_excluded"):
                     success, msg = manager.remove_from_excluded(excluded_df)
@@ -801,7 +801,7 @@ with tab3:
         with col2:
             st.subheader("➕ Добавленные проекты")
             if not included_df.empty:
-                st.dataframe(included_df, use_container_width=True)
+                st.dataframe(included_df, width='stretch')
                 
                 if st.button("Очистить список добавленных", key="clear_included"):
                     success, msg = manager.remove_from_included(included_df)
@@ -823,7 +823,7 @@ with tab3:
             })
             
             # Выводим все нужные колонки
-            st.dataframe(history_display, use_container_width=True)
+            st.dataframe(history_display, width='stretch')
         else:
             st.info("История изменений пуста")
         
@@ -841,7 +841,7 @@ with tab3:
                 )
                 
                 if not problematic_projects.empty:
-                    st.dataframe(problematic_projects, use_container_width=True)
+                    st.dataframe(problematic_projects, width='stretch')
                     
                     excel_buffer = BytesIO()
                     with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
@@ -854,7 +854,7 @@ with tab3:
                         file_name="проблемные_проекты.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         type="secondary",
-                        use_container_width=True
+                        width='stretch'
                     )
                 else:
                     st.info("✅ Проблемных проектов не найдено")
@@ -867,11 +867,11 @@ with tab3:
     col1, col2, col3 = st.columns([1, 1, 2])
     
     with col1:
-        if st.button("💾 Сохранить настройки", type="primary", use_container_width=True):
+        if st.button("💾 Сохранить настройки", type="primary", width='stretch'):
             st.success("Настройки сохранены в GitHub!")
     
     with col2:
-        if st.button("🔄 Пересчитать", type="secondary", use_container_width=True):
+        if st.button("🔄 Пересчитать", type="secondary", width='stretch'):
             with st.spinner("🔄 Пересчет план/факта с учетом настроек..."):
                 try:
                     # Просто вызываем ту же функцию, что и при первом расчете
@@ -887,7 +887,7 @@ with tab3:
                 
     
     with col3:
-        if st.button("🗑️ Сбросить все настройки", use_container_width=True):
+        if st.button("🗑️ Сбросить все настройки", width='stretch'):
             success, msg = manager.clear_all_settings()
             if success:
                 st.success(msg)

@@ -273,10 +273,17 @@ def process_all_data(settings_manager=None):
 
         
         # Создание иерархии
+        import time as tm
+        start_hier = tm.time()
+        st.write(f"🔍 НАЧАЛО ИЕРАРХИИ: {tm.time() - start_total:.2f} сек от старта")
+        
         base_data = visit_calculator.extract_hierarchical_data(
             st.session_state.cleaned_data['полевые_проекты'],
             st.session_state.cleaned_data['сервизория']
         )
+
+        st.write(f"🔍 КОНЕЦ ИЕРАРХИИ: {tm.time() - start_hier:.2f} сек (время выполнения)")
+        st.write(f"🔍 ВСЕГО СТРОК В ИЕРАРХИИ: {len(base_data)}")
         
         st.session_state.visit_report['base_data'] = base_data
         st.session_state.visit_report['timestamp'] = datetime.now().isoformat()

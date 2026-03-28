@@ -390,7 +390,7 @@ with tab1:
     st.title("📤 Загрузка исходных данных")
     st.markdown("Загрузите необходимые Excel файлы")
     
-    # ОДНА ФОРМА ДЛЯ ВСЕХ ЗАГРУЗЧИКОВ
+    # Используем форму, но без ручного сохранения
     with st.form("upload_form"):
         col1, col2, col3, col4, col5, col6 = st.columns(6)
         
@@ -450,37 +450,21 @@ with tab1:
         
         st.markdown("---")
         
-        # КНОПКА РАССЧИТАТЬ ВНУТРИ ФОРМЫ
+        # КНОПКА РАССЧИТАТЬ
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            # Сохраняем выбранные файлы в session_state ПЕРЕД проверкой
-            if portal_file is not None:
-                st.session_state.selected_portal = portal_file
-            if projects_file is not None:
-                st.session_state.selected_projects = projects_file
-            if cxway_file is not None:
-                st.session_state.selected_cxway = cxway_file
-            if easymerch_file is not None:
-                st.session_state.selected_easymerch = easymerch_file
-            if optima_file is not None:
-                st.session_state.selected_optima = optima_file
-            if prodata_file is not None:
-                st.session_state.selected_prodata = prodata_file
-            
-            # Проверяем наличие основных файлов в session_state
-            main_files_selected = (
-                st.session_state.get('selected_portal') is not None and 
-                st.session_state.get('selected_projects') is not None
-            )
+            # Проверяем наличие файлов через session_state по ключам
+            portal_exists = st.session_state.get('portal_uploader') is not None
+            projects_exists = st.session_state.get('projects_uploader') is not None
             
             submitted = st.form_submit_button(
                 "🚀 РАССЧИТАТЬ ПЛАН/ФАКТ",
                 type="primary",
                 use_container_width=True,
-                disabled=not main_files_selected
+                disabled=not (portal_exists and projects_exists)
             )
             
-            if not main_files_selected:
+            if not (portal_exists and projects_exists):
                 st.info("📌 Загрузите оба основных файла для расчета")
     
     # ============================================
@@ -489,13 +473,20 @@ with tab1:
     if submitted:
         with st.spinner("📥 Загрузка файлов и обработка данных..."):
             
-            # 1. ЗАГРУЖАЕМ ВСЕ ФАЙЛЫ из session_state
-            portal_df = load_excel(st.session_state.get('selected_portal'), "портал")
-            projects_df = load_excel(st.session_state.get('selected_projects'), "проекты")
-            cxway_df = load_excel(st.session_state.get('selected_cxway'), "cxway")
-            easymerch_df = load_excel(st.session_state.get('selected_easymerch'), "easymerch")
-            optima_df = load_excel(st.session_state.get('selected_optima'), "optima")
-            prodata_df = load_excel(st.session_state.get('selected_prodata'), "prodata")
+            # 1. ЗАГРУЖАЕМ ФАЙЛЫ из session_state (по ключам uploader)
+            portal_file_obj = st.session_state.get('portal_uploader')
+            projects_file_obj = st.session_state.get('projects_uploader')
+            cxway_file_obj = st.session_state.get('cxway_uploader')
+            easymerch_file_obj = st.session_state.get('easymerch_uploader')
+            optima_file_obj = st.session_state.get('optima_uploader')
+            prodata_file_obj = st.session_state.get('prodata_uploader')
+            
+            portal_df = load_excel(portal_file_obj, "портал")
+            projects_df = load_excel(projects_file_obj, "проекты")
+            cxway_df = load_excel(cxway_file_obj, "cxway")
+            easymerch_df = load_excel(easymerch_file_obj, "easymerch")
+            optima_df = load_excel(optima_file_obj, "optima")
+            prodata_df = load_excel(prodata_file_obj, "prodata")
             
             # 2. СОХРАНЯЕМ В SESSION_STATE.uploaded_files
             if portal_df is not None:

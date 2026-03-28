@@ -331,7 +331,13 @@ with st.sidebar:
         for key in list(DEFAULT_STATE.keys()):
             st.session_state[key] = DEFAULT_STATE[key]
         st.rerun()
-     
+
+    st.markdown("---")
+    if st.button("🗑️ Сбросить кэш файлов", type="secondary", use_container_width=True):
+        load_excel.clear()
+        st.success("✅ Кэш файлов очищен")
+        st.rerun()
+        
     st.markdown("---")
     st.subheader("📅 Параметры расчета")
     

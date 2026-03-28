@@ -211,7 +211,10 @@ class DataVisualizer:
         if 'Регион short' in data.columns and 'Регион' not in data.columns:
             region_col = 'Регион short'
         
-        # 🔍 ФИЛЬТРЫ (с возможностью исключения)
+        # ============================================
+        # ФИЛЬТРЫ (БЕЗ АВТОМАТИЧЕСКОГО ПРИМЕНЕНИЯ)
+        # ============================================
+        
         with st.expander("🔍 Фильтры", expanded=True):
             
             # Получаем уникальные значения
@@ -234,91 +237,166 @@ class DataVisualizer:
             
             all_clients = sorted(data['Клиент'].dropna().unique()) if 'Клиент' in data.columns else []
             
-            # Переменные для хранения выбранных значений
-            selected_dsm, excluded_dsm = [], []
-            selected_asm, excluded_asm = [], []
-            selected_region, excluded_region = [], []
-            selected_client, excluded_client = [], []
+            # Инициализируем session_state для фильтров
+            if 'planfact_filters' not in st.session_state:
+                st.session_state.planfact_filters = {
+                    'dsm_mode': 'Включить',
+                    'dsm_selected': [],
+                    'asm_mode': 'Включить',
+                    'asm_selected': [],
+                    'region_mode': 'Включить',
+                    'region_selected': [],
+                    'client_mode': 'Включить',
+                    'client_selected': []
+                }
             
-            col1, col2, col3, col4 = st.columns(4)
+            filters = st.session_state.planfact_filters
             
             # === DSM ===
+            col1, col2, col3, col4 = st.columns(4)
+            
             with col1:
                 st.markdown("**DSM**")
-                dsm_mode = st.radio("Режим", ["Включить", "Исключить"], key="dsm_mode", horizontal=True)
-                if dsm_mode == "Включить":
-                    selected_dsm = st.multiselect("Выбрать", all_dsm, key="dsm_include")
-                else:
-                    excluded_dsm = st.multiselect("Исключить", all_dsm, key="dsm_exclude")
+                dsm_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="planfact_dsm_mode",
+                    horizontal=True,
+                    index=0 if filters['dsm_mode'] == 'Включить' else 1
+                )
+                filters['dsm_mode'] = dsm_mode
+                
+                selected_dsm = st.multiselect(
+                    "Выбрать", 
+                    all_dsm, 
+                    key="planfact_dsm_selected",
+                    default=filters['dsm_selected']
+                )
+                filters['dsm_selected'] = selected_dsm
             
-            # === ASM (с учетом выбранных DSM) ===
+            # === ASM ===
             with col2:
                 st.markdown("**ASM**")
-                asm_mode = st.radio("Режим", ["Включить", "Исключить"], key="asm_mode", horizontal=True)
+                asm_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="planfact_asm_mode",
+                    horizontal=True,
+                    index=0 if filters['asm_mode'] == 'Включить' else 1
+                )
+                filters['asm_mode'] = asm_mode
                 
                 if selected_dsm and 'DSM' in data.columns:
                     asm_options = sorted(data[data['DSM'].isin(selected_dsm)]['ASM'].dropna().unique())
                 else:
                     asm_options = all_asm
                 
-                if asm_mode == "Включить":
-                    selected_asm = st.multiselect("Выбрать", asm_options, key="asm_include")
-                else:
-                    excluded_asm = st.multiselect("Исключить", asm_options, key="asm_exclude")
+                selected_asm = st.multiselect(
+                    "Выбрать", 
+                    asm_options, 
+                    key="planfact_asm_selected",
+                    default=filters['asm_selected']
+                )
+                filters['asm_selected'] = selected_asm
             
             # === Регион ===
             with col3:
                 st.markdown("**Регион**")
-                region_mode = st.radio("Режим", ["Включить", "Исключить"], key="region_mode", horizontal=True)
+                region_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="planfact_region_mode",
+                    horizontal=True,
+                    index=0 if filters['region_mode'] == 'Включить' else 1
+                )
+                filters['region_mode'] = region_mode
                 
-                if region_mode == "Включить":
-                    selected_region_display = st.multiselect("Выбрать", all_regions_display, key="region_include")
-                    selected_region = [self.region_display_map.get(name, name) for name in selected_region_display]
-                else:
-                    excluded_region_display = st.multiselect("Исключить", all_regions_display, key="region_exclude")
-                    excluded_region = [self.region_display_map.get(name, name) for name in excluded_region_display]
+                selected_region_display = st.multiselect(
+                    "Выбрать", 
+                    all_regions_display, 
+                    key="planfact_region_selected",
+                    default=filters['region_selected']
+                )
+                filters['region_selected'] = selected_region_display
+                selected_region = [self.region_display_map.get(name, name) for name in selected_region_display]
             
-            # === Клиент (с учетом выбранных DSM, ASM, региона) ===
+            # === Клиент ===
             with col4:
                 st.markdown("**Клиент**")
-                client_mode = st.radio("Режим", ["Включить", "Исключить"], key="client_mode", horizontal=True)
+                client_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="planfact_client_mode",
+                    horizontal=True,
+                    index=0 if filters['client_mode'] == 'Включить' else 1
+                )
+                filters['client_mode'] = client_mode
                 
+                # Ограничиваем клиентов выбранными фильтрами
                 client_filtered = data.copy()
-                if selected_dsm and 'DSM' in client_filtered.columns:
+                if dsm_mode == "Включить" and selected_dsm:
                     client_filtered = client_filtered[client_filtered['DSM'].isin(selected_dsm)]
-                if selected_asm and 'ASM' in client_filtered.columns:
+                if asm_mode == "Включить" and selected_asm:
                     client_filtered = client_filtered[client_filtered['ASM'].isin(selected_asm)]
-                if selected_region and region_col in client_filtered.columns:
+                if region_mode == "Включить" and selected_region:
                     client_filtered = client_filtered[client_filtered[region_col].isin(selected_region)]
                 client_options = sorted(client_filtered['Клиент'].dropna().unique()) if 'Клиент' in client_filtered.columns else all_clients
                 
-                if client_mode == "Включить":
-                    selected_client = st.multiselect("Выбрать", client_options, key="client_include")
-                else:
-                    excluded_client = st.multiselect("Исключить", client_options, key="client_exclude")
+                selected_client = st.multiselect(
+                    "Выбрать", 
+                    client_options, 
+                    key="planfact_client_selected",
+                    default=filters['client_selected']
+                )
+                filters['client_selected'] = selected_client
+            
+            st.markdown("---")
+            
+            # КНОПКА ПРИМЕНЕНИЯ ФИЛЬТРОВ
+            col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
+            with col_btn2:
+                apply_filters = st.button(
+                    "✅ Применить фильтры", 
+                    type="primary", 
+                    use_container_width=True,
+                    key="planfact_apply_btn"
+                )
         
-        # === ПРИМЕНЯЕМ ФИЛЬТРЫ ===
-        filtered_data = data.copy()
+        # ============================================
+        # ПРИМЕНЯЕМ ФИЛЬТРЫ ТОЛЬКО ПО КНОПКЕ
+        # ============================================
         
-        if selected_dsm:
-            filtered_data = filtered_data[filtered_data['DSM'].isin(selected_dsm)]
-        if excluded_dsm:
-            filtered_data = filtered_data[~filtered_data['DSM'].isin(excluded_dsm)]
-        
-        if selected_asm:
-            filtered_data = filtered_data[filtered_data['ASM'].isin(selected_asm)]
-        if excluded_asm:
-            filtered_data = filtered_data[~filtered_data['ASM'].isin(excluded_asm)]
-        
-        if selected_region:
-            filtered_data = filtered_data[filtered_data[region_col].isin(selected_region)]
-        if excluded_region:
-            filtered_data = filtered_data[~filtered_data[region_col].isin(excluded_region)]
-        
-        if selected_client:
-            filtered_data = filtered_data[filtered_data['Клиент'].isin(selected_client)]
-        if excluded_client:
-            filtered_data = filtered_data[~filtered_data['Клиент'].isin(excluded_client)]
+        if apply_filters or 'planfact_filtered_data' not in st.session_state:
+            filtered_data = data.copy()
+            
+            # DSM
+            if filters['dsm_mode'] == "Включить" and filters['dsm_selected']:
+                filtered_data = filtered_data[filtered_data['DSM'].isin(filters['dsm_selected'])]
+            elif filters['dsm_mode'] == "Исключить" and filters['dsm_selected']:
+                filtered_data = filtered_data[~filtered_data['DSM'].isin(filters['dsm_selected'])]
+            
+            # ASM
+            if filters['asm_mode'] == "Включить" and filters['asm_selected']:
+                filtered_data = filtered_data[filtered_data['ASM'].isin(filters['asm_selected'])]
+            elif filters['asm_mode'] == "Исключить" and filters['asm_selected']:
+                filtered_data = filtered_data[~filtered_data['ASM'].isin(filters['asm_selected'])]
+            
+            # Регион
+            selected_region = [self.region_display_map.get(name, name) for name in filters['region_selected']]
+            if filters['region_mode'] == "Включить" and selected_region:
+                filtered_data = filtered_data[filtered_data[region_col].isin(selected_region)]
+            elif filters['region_mode'] == "Исключить" and selected_region:
+                filtered_data = filtered_data[~filtered_data[region_col].isin(selected_region)]
+            
+            # Клиент
+            if filters['client_mode'] == "Включить" and filters['client_selected']:
+                filtered_data = filtered_data[filtered_data['Клиент'].isin(filters['client_selected'])]
+            elif filters['client_mode'] == "Исключить" and filters['client_selected']:
+                filtered_data = filtered_data[~filtered_data['Клиент'].isin(filters['client_selected'])]
+            
+            st.session_state.planfact_filtered_data = filtered_data
+        else:
+            filtered_data = st.session_state.planfact_filtered_data
         
         # 📊 РАЗВЕРТКА (ЧЕК-БОКСЫ)
         st.subheader("📊 Детализация")
@@ -707,17 +785,26 @@ class DataVisualizer:
         
         st.subheader("📊 Сводка по регионам")
         
+        # Переименовываем колонки для отображения
         rename_cols = {'ЗОД': 'DSM', 'АСС': 'ASM', 'ЭМ': 'RS'}
         data = data.rename(columns=rename_cols)
         
+        # Определяем колонку региона
         region_col = 'Регион'
         if 'Регион short' in data.columns and 'Регион' not in data.columns:
             region_col = 'Регион short'
         
+        # ============================================
+        # ФИЛЬТРЫ (БЕЗ АВТОМАТИЧЕСКОГО ПРИМЕНЕНИЯ)
+        # ============================================
+        
         with st.expander("🔍 Фильтры", expanded=True):
+            
+            # Получаем уникальные значения
             all_dsm = sorted(data['DSM'].dropna().unique()) if 'DSM' in data.columns else []
             all_asm = sorted(data['ASM'].dropna().unique()) if 'ASM' in data.columns else []
             
+            # Регионы
             if region_col in data.columns:
                 unique_codes = data[region_col].dropna().unique()
                 self.region_display_map = {}
@@ -733,78 +820,170 @@ class DataVisualizer:
             
             all_clients = sorted(data['Клиент'].dropna().unique()) if 'Клиент' in data.columns else []
             
-            selected_dsm, excluded_dsm = [], []
-            selected_asm, excluded_asm = [], []
-            selected_region, excluded_region = [], []
-            selected_client, excluded_client = [], []
+            # Инициализируем session_state для фильтров
+            if 'region_filters' not in st.session_state:
+                st.session_state.region_filters = {
+                    'dsm_mode': 'Включить',
+                    'dsm_selected': [],
+                    'asm_mode': 'Включить',
+                    'asm_selected': [],
+                    'region_mode': 'Включить',
+                    'region_selected': [],
+                    'client_mode': 'Включить',
+                    'client_selected': []
+                }
             
+            filters = st.session_state.region_filters
+            
+            # === DSM ===
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
                 st.markdown("**DSM**")
-                dsm_mode = st.radio("Режим", ["Включить", "Исключить"], key="region_dsm_mode", horizontal=True)
-                if dsm_mode == "Включить":
-                    selected_dsm = st.multiselect("Выбрать", all_dsm, key="region_dsm_include")
-                else:
-                    excluded_dsm = st.multiselect("Исключить", all_dsm, key="region_dsm_exclude")
+                dsm_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="region_dsm_mode",
+                    horizontal=True,
+                    index=0 if filters['dsm_mode'] == 'Включить' else 1
+                )
+                filters['dsm_mode'] = dsm_mode
+                
+                selected_dsm = st.multiselect(
+                    "Выбрать", 
+                    all_dsm, 
+                    key="region_dsm_selected",
+                    default=filters['dsm_selected']
+                )
+                filters['dsm_selected'] = selected_dsm
             
+            # === ASM ===
             with col2:
                 st.markdown("**ASM**")
-                asm_mode = st.radio("Режим", ["Включить", "Исключить"], key="region_asm_mode", horizontal=True)
+                asm_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="region_asm_mode",
+                    horizontal=True,
+                    index=0 if filters['asm_mode'] == 'Включить' else 1
+                )
+                filters['asm_mode'] = asm_mode
+                
                 if selected_dsm and 'DSM' in data.columns:
                     asm_options = sorted(data[data['DSM'].isin(selected_dsm)]['ASM'].dropna().unique())
                 else:
                     asm_options = all_asm
-                if asm_mode == "Включить":
-                    selected_asm = st.multiselect("Выбрать", asm_options, key="region_asm_include")
-                else:
-                    excluded_asm = st.multiselect("Исключить", asm_options, key="region_asm_exclude")
+                
+                selected_asm = st.multiselect(
+                    "Выбрать", 
+                    asm_options, 
+                    key="region_asm_selected",
+                    default=filters['asm_selected']
+                )
+                filters['asm_selected'] = selected_asm
             
+            # === Регион ===
             with col3:
                 st.markdown("**Регион**")
-                region_mode = st.radio("Режим", ["Включить", "Исключить"], key="region_region_mode", horizontal=True)
-                if region_mode == "Включить":
-                    selected_region_display = st.multiselect("Выбрать", all_regions_display, key="region_region_include")
-                    selected_region = [self.region_display_map.get(name, name) for name in selected_region_display]
-                else:
-                    excluded_region_display = st.multiselect("Исключить", all_regions_display, key="region_region_exclude")
-                    excluded_region = [self.region_display_map.get(name, name) for name in excluded_region_display]
+                region_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="region_region_mode",
+                    horizontal=True,
+                    index=0 if filters['region_mode'] == 'Включить' else 1
+                )
+                filters['region_mode'] = region_mode
+                
+                selected_region_display = st.multiselect(
+                    "Выбрать", 
+                    all_regions_display, 
+                    key="region_region_selected",
+                    default=filters['region_selected']
+                )
+                filters['region_selected'] = selected_region_display
+                selected_region = [self.region_display_map.get(name, name) for name in selected_region_display]
             
+            # === Клиент ===
             with col4:
                 st.markdown("**Клиент**")
-                client_mode = st.radio("Режим", ["Включить", "Исключить"], key="region_client_mode", horizontal=True)
+                client_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="region_client_mode",
+                    horizontal=True,
+                    index=0 if filters['client_mode'] == 'Включить' else 1
+                )
+                filters['client_mode'] = client_mode
+                
+                # Ограничиваем клиентов выбранными фильтрами
                 client_filtered = data.copy()
-                if selected_dsm and 'DSM' in client_filtered.columns:
+                if dsm_mode == "Включить" and selected_dsm:
                     client_filtered = client_filtered[client_filtered['DSM'].isin(selected_dsm)]
-                if selected_asm and 'ASM' in client_filtered.columns:
+                if asm_mode == "Включить" and selected_asm:
                     client_filtered = client_filtered[client_filtered['ASM'].isin(selected_asm)]
-                if selected_region and region_col in client_filtered.columns:
+                if region_mode == "Включить" and selected_region:
                     client_filtered = client_filtered[client_filtered[region_col].isin(selected_region)]
                 client_options = sorted(client_filtered['Клиент'].dropna().unique()) if 'Клиент' in client_filtered.columns else all_clients
-                if client_mode == "Включить":
-                    selected_client = st.multiselect("Выбрать", client_options, key="region_client_include")
-                else:
-                    excluded_client = st.multiselect("Исключить", client_options, key="region_client_exclude")
+                
+                selected_client = st.multiselect(
+                    "Выбрать", 
+                    client_options, 
+                    key="region_client_selected",
+                    default=filters['client_selected']
+                )
+                filters['client_selected'] = selected_client
+            
+            st.markdown("---")
+            
+            # КНОПКА ПРИМЕНЕНИЯ ФИЛЬТРОВ
+            col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
+            with col_btn2:
+                apply_filters = st.button(
+                    "✅ Применить фильтры", 
+                    type="primary", 
+                    use_container_width=True,
+                    key="region_apply_btn"
+                )
         
-        filtered_data = data.copy()
-        if selected_dsm:
-            filtered_data = filtered_data[filtered_data['DSM'].isin(selected_dsm)]
-        if excluded_dsm:
-            filtered_data = filtered_data[~filtered_data['DSM'].isin(excluded_dsm)]
-        if selected_asm:
-            filtered_data = filtered_data[filtered_data['ASM'].isin(selected_asm)]
-        if excluded_asm:
-            filtered_data = filtered_data[~filtered_data['ASM'].isin(excluded_asm)]
-        if selected_region:
-            filtered_data = filtered_data[filtered_data[region_col].isin(selected_region)]
-        if excluded_region:
-            filtered_data = filtered_data[~filtered_data[region_col].isin(excluded_region)]
-        if selected_client:
-            filtered_data = filtered_data[filtered_data['Клиент'].isin(selected_client)]
-        if excluded_client:
-            filtered_data = filtered_data[~filtered_data['Клиент'].isin(excluded_client)]
+        # ============================================
+        # ПРИМЕНЯЕМ ФИЛЬТРЫ ТОЛЬКО ПО КНОПКЕ
+        # ============================================
         
+        if apply_filters or 'region_filtered_data' not in st.session_state:
+            filtered_data = data.copy()
+            
+            # DSM
+            if filters['dsm_mode'] == "Включить" and filters['dsm_selected']:
+                filtered_data = filtered_data[filtered_data['DSM'].isin(filters['dsm_selected'])]
+            elif filters['dsm_mode'] == "Исключить" and filters['dsm_selected']:
+                filtered_data = filtered_data[~filtered_data['DSM'].isin(filters['dsm_selected'])]
+            
+            # ASM
+            if filters['asm_mode'] == "Включить" and filters['asm_selected']:
+                filtered_data = filtered_data[filtered_data['ASM'].isin(filters['asm_selected'])]
+            elif filters['asm_mode'] == "Исключить" and filters['asm_selected']:
+                filtered_data = filtered_data[~filtered_data['ASM'].isin(filters['asm_selected'])]
+            
+            # Регион
+            selected_region = [self.region_display_map.get(name, name) for name in filters['region_selected']]
+            if filters['region_mode'] == "Включить" and selected_region:
+                filtered_data = filtered_data[filtered_data[region_col].isin(selected_region)]
+            elif filters['region_mode'] == "Исключить" and selected_region:
+                filtered_data = filtered_data[~filtered_data[region_col].isin(selected_region)]
+            
+            # Клиент
+            if filters['client_mode'] == "Включить" and filters['client_selected']:
+                filtered_data = filtered_data[filtered_data['Клиент'].isin(filters['client_selected'])]
+            elif filters['client_mode'] == "Исключить" and filters['client_selected']:
+                filtered_data = filtered_data[~filtered_data['Клиент'].isin(filters['client_selected'])]
+            
+            st.session_state.region_filtered_data = filtered_data
+        else:
+            filtered_data = st.session_state.region_filtered_data
+        
+        # 📊 РАЗВЕРТКА (ЧЕК-БОКСЫ)
         st.subheader("📊 Детализация")
+        
         col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
             show_project = st.checkbox("Проект", key='region_show_project')
@@ -817,7 +996,9 @@ class DataVisualizer:
         with col5:
             show_rs = st.checkbox("RS", key='region_show_rs')
         
+        # Формируем groupby
         group_cols = [region_col]
+        
         if show_project and 'Проект' in filtered_data.columns:
             group_cols.append('Проект')
         if show_wave and 'Волна' in filtered_data.columns:
@@ -829,6 +1010,7 @@ class DataVisualizer:
         if show_rs and 'RS' in filtered_data.columns:
             group_cols.append('RS')
         
+        # Агрегируем
         if len(group_cols) > 1:
             agg_columns = {
                 'План проекта, шт.': 'sum',
@@ -840,6 +1022,7 @@ class DataVisualizer:
             }
             existing_agg = {k: v for k, v in agg_columns.items() if k in filtered_data.columns}
             region_data = filtered_data.groupby(group_cols).agg(existing_agg).reset_index()
+            
             region_data['План/Факт на дату,%'] = 0.0
             mask_plan = region_data['План на дату, шт.'] > 0
             if mask_plan.any():
@@ -847,6 +1030,7 @@ class DataVisualizer:
                     region_data.loc[mask_plan, 'Факт на дату, шт.'] / 
                     region_data.loc[mask_plan, 'План на дату, шт.'] * 100
                 ).round(1)
+            
             region_data['План/Факт проекта,%'] = 0.0
             mask_project_plan = region_data['План проекта, шт.'] > 0
             if mask_project_plan.any():
@@ -858,14 +1042,16 @@ class DataVisualizer:
             region_data = self.create_region_summary(filtered_data)
         
         st.caption(f"📌 Отображается записей: {len(region_data)}")
+        
         if region_data.empty:
             st.warning("⚠️ Нет данных после фильтрации")
             return
         
+        # KPI
         st.markdown("### 📊 Ключевые показатели")
         
-        # Чек-бокс Продата (справа от KPI)
-        include_prodata = st.session_state.get('include_prodata', False)
+        # Чек-бокс Продата
+        include_prodata = st.checkbox("📊 Продата", key="region_include_prodata")
         
         # Получаем данные ПроДата
         prodata_df = st.session_state.cleaned_data.get('prodata_processed', None)
@@ -916,7 +1102,9 @@ class DataVisualizer:
             pf_date_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
             st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
         
+        # Колонки для отображения
         display_columns = [region_col]
+        
         if show_project and 'Проект' in region_data.columns:
             display_columns.append('Проект')
         if show_wave and 'Волна' in region_data.columns:
@@ -928,9 +1116,17 @@ class DataVisualizer:
         if show_rs and 'RS' in region_data.columns:
             display_columns.append('RS')
         
-        metric_columns = ['План проекта, шт.', 'Факт проекта, шт.', 'План/Факт проекта,%',
-                         'План на дату, шт.', 'Факт на дату, шт.', 'План/Факт на дату,%',
-                         '△План/Факт на дату, шт', '△План/Факт на дату, %', 'Прогноз на месяц, шт.']
+        metric_columns = [
+            'План проекта, шт.',
+            'Факт проекта, шт.',
+            'План/Факт проекта,%',
+            'План на дату, шт.',
+            'Факт на дату, шт.',
+            'План/Факт на дату,%',
+            '△План/Факт на дату, шт',
+            '△План/Факт на дату, %',
+            'Прогноз на месяц, шт.'
+        ]
         
         extra_columns = ['Кол-во клиентов', 'Кол-во проектов', 'Кол-во сотрудников', 'ПО']
         for col in extra_columns:
@@ -1078,7 +1274,10 @@ class DataVisualizer:
         if 'Регион short' in data.columns and 'Регион' not in data.columns:
             region_col = 'Регион short'
         
-        # 🔍 ФИЛЬТРЫ (с возможностью исключения)
+        # ============================================
+        # ФИЛЬТРЫ (БЕЗ АВТОМАТИЧЕСКОГО ПРИМЕНЕНИЯ)
+        # ============================================
+        
         with st.expander("🔍 Фильтры", expanded=True):
             
             # Получаем уникальные значения
@@ -1101,89 +1300,179 @@ class DataVisualizer:
                 all_regions_display = []
                 self.region_display_map = {}
             
-            # Переменные для хранения выбранных значений
-            selected_asm, excluded_asm = [], []
-            selected_client, excluded_client = [], []
-            selected_project, excluded_project = [], []
-            selected_wave, excluded_wave = [], []
-            selected_region, excluded_region = [], []
+            # Инициализируем session_state для фильтров
+            if 'dsm_filters' not in st.session_state:
+                st.session_state.dsm_filters = {
+                    'asm_mode': 'Включить',
+                    'asm_selected': [],
+                    'client_mode': 'Включить',
+                    'client_selected': [],
+                    'project_mode': 'Включить',
+                    'project_selected': [],
+                    'wave_mode': 'Включить',
+                    'wave_selected': [],
+                    'region_mode': 'Включить',
+                    'region_selected': []
+                }
+            
+            filters = st.session_state.dsm_filters
             
             col1, col2, col3, col4, col5 = st.columns(5)
             
             # === ASM ===
             with col1:
                 st.markdown("**ASM**")
-                asm_mode = st.radio("Режим", ["Включить", "Исключить"], key="dsm_asm_mode", horizontal=True)
-                if asm_mode == "Включить":
-                    selected_asm = st.multiselect("Выбрать", all_asm, key="dsm_asm_include")
-                else:
-                    excluded_asm = st.multiselect("Исключить", all_asm, key="dsm_asm_exclude")
+                asm_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="dsm_asm_mode",
+                    horizontal=True,
+                    index=0 if filters['asm_mode'] == 'Включить' else 1
+                )
+                filters['asm_mode'] = asm_mode
+                
+                selected_asm = st.multiselect(
+                    "Выбрать", 
+                    all_asm, 
+                    key="dsm_asm_selected",
+                    default=filters['asm_selected']
+                )
+                filters['asm_selected'] = selected_asm
             
             # === Клиент ===
             with col2:
                 st.markdown("**Клиент**")
-                client_mode = st.radio("Режим", ["Включить", "Исключить"], key="dsm_client_mode", horizontal=True)
-                if client_mode == "Включить":
-                    selected_client = st.multiselect("Выбрать", all_clients, key="dsm_client_include")
-                else:
-                    excluded_client = st.multiselect("Исключить", all_clients, key="dsm_client_exclude")
+                client_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="dsm_client_mode",
+                    horizontal=True,
+                    index=0 if filters['client_mode'] == 'Включить' else 1
+                )
+                filters['client_mode'] = client_mode
+                
+                selected_client = st.multiselect(
+                    "Выбрать", 
+                    all_clients, 
+                    key="dsm_client_selected",
+                    default=filters['client_selected']
+                )
+                filters['client_selected'] = selected_client
             
             # === Проект ===
             with col3:
                 st.markdown("**Код проекта**")
-                project_mode = st.radio("Режим", ["Включить", "Исключить"], key="dsm_project_mode", horizontal=True)
-                if project_mode == "Включить":
-                    selected_project = st.multiselect("Выбрать", all_projects, key="dsm_project_include")
-                else:
-                    excluded_project = st.multiselect("Исключить", all_projects, key="dsm_project_exclude")
+                project_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="dsm_project_mode",
+                    horizontal=True,
+                    index=0 if filters['project_mode'] == 'Включить' else 1
+                )
+                filters['project_mode'] = project_mode
+                
+                selected_project = st.multiselect(
+                    "Выбрать", 
+                    all_projects, 
+                    key="dsm_project_selected",
+                    default=filters['project_selected']
+                )
+                filters['project_selected'] = selected_project
             
             # === Волна ===
             with col4:
                 st.markdown("**Волна**")
-                wave_mode = st.radio("Режим", ["Включить", "Исключить"], key="dsm_wave_mode", horizontal=True)
-                if wave_mode == "Включить":
-                    selected_wave = st.multiselect("Выбрать", all_waves, key="dsm_wave_include")
-                else:
-                    excluded_wave = st.multiselect("Исключить", all_waves, key="dsm_wave_exclude")
+                wave_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="dsm_wave_mode",
+                    horizontal=True,
+                    index=0 if filters['wave_mode'] == 'Включить' else 1
+                )
+                filters['wave_mode'] = wave_mode
+                
+                selected_wave = st.multiselect(
+                    "Выбрать", 
+                    all_waves, 
+                    key="dsm_wave_selected",
+                    default=filters['wave_selected']
+                )
+                filters['wave_selected'] = selected_wave
             
             # === Регион ===
             with col5:
                 st.markdown("**Регион**")
-                region_mode = st.radio("Режим", ["Включить", "Исключить"], key="dsm_region_mode", horizontal=True)
-                if region_mode == "Включить":
-                    selected_region_display = st.multiselect("Выбрать", all_regions_display, key="dsm_region_include")
-                    selected_region = [self.region_display_map.get(name, name) for name in selected_region_display]
-                else:
-                    excluded_region_display = st.multiselect("Исключить", all_regions_display, key="dsm_region_exclude")
-                    excluded_region = [self.region_display_map.get(name, name) for name in excluded_region_display]
+                region_mode = st.radio(
+                    "Режим", 
+                    ["Включить", "Исключить"], 
+                    key="dsm_region_mode",
+                    horizontal=True,
+                    index=0 if filters['region_mode'] == 'Включить' else 1
+                )
+                filters['region_mode'] = region_mode
+                
+                selected_region_display = st.multiselect(
+                    "Выбрать", 
+                    all_regions_display, 
+                    key="dsm_region_selected",
+                    default=filters['region_selected']
+                )
+                filters['region_selected'] = selected_region_display
+                selected_region = [self.region_display_map.get(name, name) for name in selected_region_display]
+            
+            st.markdown("---")
+            
+            # КНОПКА ПРИМЕНЕНИЯ ФИЛЬТРОВ
+            col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
+            with col_btn2:
+                apply_filters = st.button(
+                    "✅ Применить фильтры", 
+                    type="primary", 
+                    use_container_width=True,
+                    key="dsm_apply_btn"
+                )
         
-        # === ПРИМЕНЯЕМ ФИЛЬТРЫ ===
-        filtered_data = data.copy()
+        # ============================================
+        # ПРИМЕНЯЕМ ФИЛЬТРЫ ТОЛЬКО ПО КНОПКЕ
+        # ============================================
         
-        if selected_asm:
-            filtered_data = filtered_data[filtered_data['ASM'].isin(selected_asm)]
-        if excluded_asm:
-            filtered_data = filtered_data[~filtered_data['ASM'].isin(excluded_asm)]
-        
-        if selected_client:
-            filtered_data = filtered_data[filtered_data['Клиент'].isin(selected_client)]
-        if excluded_client:
-            filtered_data = filtered_data[~filtered_data['Клиент'].isin(excluded_client)]
-        
-        if selected_project:
-            filtered_data = filtered_data[filtered_data['Проект'].isin(selected_project)]
-        if excluded_project:
-            filtered_data = filtered_data[~filtered_data['Проект'].isin(excluded_project)]
-        
-        if selected_wave:
-            filtered_data = filtered_data[filtered_data['Волна'].isin(selected_wave)]
-        if excluded_wave:
-            filtered_data = filtered_data[~filtered_data['Волна'].isin(excluded_wave)]
-        
-        if selected_region:
-            filtered_data = filtered_data[filtered_data[region_col].isin(selected_region)]
-        if excluded_region:
-            filtered_data = filtered_data[~filtered_data[region_col].isin(excluded_region)]
+        if apply_filters or 'dsm_filtered_data' not in st.session_state:
+            filtered_data = data.copy()
+            
+            # ASM
+            if filters['asm_mode'] == "Включить" and filters['asm_selected']:
+                filtered_data = filtered_data[filtered_data['ASM'].isin(filters['asm_selected'])]
+            elif filters['asm_mode'] == "Исключить" and filters['asm_selected']:
+                filtered_data = filtered_data[~filtered_data['ASM'].isin(filters['asm_selected'])]
+            
+            # Клиент
+            if filters['client_mode'] == "Включить" and filters['client_selected']:
+                filtered_data = filtered_data[filtered_data['Клиент'].isin(filters['client_selected'])]
+            elif filters['client_mode'] == "Исключить" and filters['client_selected']:
+                filtered_data = filtered_data[~filtered_data['Клиент'].isin(filters['client_selected'])]
+            
+            # Проект
+            if filters['project_mode'] == "Включить" and filters['project_selected']:
+                filtered_data = filtered_data[filtered_data['Проект'].isin(filters['project_selected'])]
+            elif filters['project_mode'] == "Исключить" and filters['project_selected']:
+                filtered_data = filtered_data[~filtered_data['Проект'].isin(filters['project_selected'])]
+            
+            # Волна
+            if filters['wave_mode'] == "Включить" and filters['wave_selected']:
+                filtered_data = filtered_data[filtered_data['Волна'].isin(filters['wave_selected'])]
+            elif filters['wave_mode'] == "Исключить" and filters['wave_selected']:
+                filtered_data = filtered_data[~filtered_data['Волна'].isin(filters['wave_selected'])]
+            
+            # Регион
+            selected_region = [self.region_display_map.get(name, name) for name in filters['region_selected']]
+            if filters['region_mode'] == "Включить" and selected_region:
+                filtered_data = filtered_data[filtered_data[region_col].isin(selected_region)]
+            elif filters['region_mode'] == "Исключить" and selected_region:
+                filtered_data = filtered_data[~filtered_data[region_col].isin(selected_region)]
+            
+            st.session_state.dsm_filtered_data = filtered_data
+        else:
+            filtered_data = st.session_state.dsm_filtered_data
         
         # 📊 РАЗВЕРТКА (ЧЕК-БОКСЫ)
         st.subheader("📊 Детализация")
@@ -1257,8 +1546,8 @@ class DataVisualizer:
         # KPI
         st.markdown("### 📊 Ключевые показатели")
         
-        # Чек-бокс Продата (справа от KPI)
-        include_prodata = st.session_state.get('include_prodata', False)
+        # Чек-бокс Продата
+        include_prodata = st.checkbox("📊 Продата", key="dsm_include_prodata")
         
         # Получаем данные ПроДата
         prodata_df = st.session_state.cleaned_data.get('prodata_processed', None)

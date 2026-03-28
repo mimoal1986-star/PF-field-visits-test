@@ -388,7 +388,24 @@ class DataCleaner:
             
         except Exception as e:
             return None
-    
+
+    def update_field_projects_flag(self, google_df):
+        """
+        Обновляет поле 'Полевой' в гугл таблице
+        """
+        try:
+            google_df = google_df.copy()
+            
+            code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24'])
+            if not code_col:
+                return google_df
+            
+            google_df['Полевой'] = self._is_field_project_vectorized(google_df[code_col])
+            
+            return google_df
+            
+        except Exception as e:
+            return google_df
 
 
     def add_field_flag_to_array(self, array_df):

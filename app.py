@@ -8,7 +8,6 @@ import traceback
 from datetime import date, datetime, timedelta
 from io import BytesIO
 from github_settings import get_settings_manager
-from data_cleaner import is_field_project_by_code
 
 # data_cleaner.py
 try:
@@ -185,7 +184,7 @@ def process_all_data(settings_manager=None):
         # ШАГ 4: ЕДИНОЕ ОПРЕДЕЛЕНИЕ ПОЛЕВОГО ПРОЕКТА
         
         if 'Код анкеты' in all_projects_raw.columns:
-            all_projects_raw['Полевой'] = all_projects_raw['Код анкеты'].apply(is_field_project_by_code)
+            all_projects_raw['Полевой'] = all_projects_raw['Код анкеты'].apply(data_cleaner._is_field_project)
         else:
             all_projects_raw['Полевой'] = 0
         

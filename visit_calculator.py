@@ -160,7 +160,7 @@ class VisitCalculator:
     
     def calculate_hierarchical_plan_on_date(self, hierarchy_df, visits_df, calc_params, google_df=None):
         """
-        РАССЧИТЫВАЕТ ПЛАН ТОЛЬКО ДЛЯ УРОВНЯ RS
+        РАССЧИТЫВАЕТ ПЛАН ТОЛЬКО ДЛЯ УРОВНЯ RS (ОПТИМИЗИРОВАННО)
         """
         try:
             if hierarchy_df.empty or visits_df.empty:
@@ -168,69 +168,120 @@ class VisitCalculator:
             
             start_period = calc_params['start_date']
             end_period = calc_params['end_date']
-            coefficients = calc_params['coefficients']
             
-            # КВОТЫ МУЛТОН - ПРЯМО ИЗ ГУГЛ-ТАБЛИЦЫ
+            # ============================================
+            # 1. ПРЕДВАРИТЕЛЬНЫЙ РАСЧЕТ ВСЕХ НУЖНЫХ ДАННЫХ
+            # ============================================
+            
+            # КВОТЫ МУЛТОН
             multon_quotas = {}
             if google_df is not None and not google_df.empty:
-                # Фильтруем проекты Мултон по точному названию колонки
                 project_col = 'Проекты в  https://ru.checker-soft.com'
                 code_col = 'Код проекта RU00.000.00.01SVZ24'
                 kvota_col = 'Квота'
-                
                 if all(col in google_df.columns for col in [project_col, code_col, kvota_col]):
                     multon_mask = google_df[project_col].astype(str).str.strip() == 'Мултон'
-                    multon_projects = google_df[multon_mask]
-                    
-                    for _, row in multon_projects.iterrows():
+                    for _, row in google_df[multon_mask].iterrows():
                         code = str(row.get(code_col, '')).strip()
-                        kvota = row.get(kvota_col, 0)
                         if code and code not in ['', 'nan', 'None', 'null']:
                             try:
-                                multon_quotas[code] = float(kvota)
+                                multon_quotas[code] = float(row.get(kvota_col, 0))
                             except:
-                                multon_quotas[code] = 0
+                                pass
             
-            
-            # СБОР КВОТ ДЛЯ OPTIMA
+            # КВОТЫ OPTIMA
             optima_quotas = {}
             if google_df is not None and not google_df.empty:
                 project_col = 'Проекты в  https://ru.checker-soft.com'
                 code_col = 'Код проекта RU00.000.00.01SVZ24'
                 kvota_col = 'Квота'
-                
                 if all(col in google_df.columns for col in [project_col, code_col, kvota_col]):
                     for _, row in google_df.iterrows():
                         code = str(row.get(code_col, '')).strip()
-                        kvota = row.get(kvota_col, 0)
                         if code and code not in ['', 'nan', 'None', 'null']:
                             try:
-                                optima_quotas[code] = float(kvota)
+                                optima_quotas[code] = float(row.get(kvota_col, 0))
                             except:
-                                optima_quotas[code] = 0
-                                    
-            # КВОТЫ ПРОДАТА - ПРЯМО ИЗ ГУГЛ-ТАБЛИЦЫ
+                                pass
+            
+            # КВОТЫ ПРОДАТА
             prodata_quotas = {}
             if google_df is not None and not google_df.empty:
-                # Фильтруем проекты, где название начинается с "Мониторинг"
-                prodata_mask = google_df[project_col].astype(str).str.strip().str.startswith('Мониторинг')
-                prodata_projects = google_df[prodata_mask]
-                
-                for _, row in prodata_projects.iterrows():
-                    code = str(row.get(code_col, '')).strip()
-                    kvota = row.get(kvota_col, 0)
-                    if code and code not in ['', 'nan', 'None', 'null']:
-                        try:
-                            prodata_quotas[code] = float(kvota)
-                        except:
-                            prodata_quotas[code] = 0
+                project_col = 'Проекты в  https://ru.checker-soft.com'
+                code_col = 'Код проекта RU00.000.00.01SVZ24'
+                kvota_col = 'Квота'
+                if all(col in google_df.columns for col in [project_col, code_col, kvota_col]):
+                    prodata_mask = google_df[project_col].astype(str).str.strip().str.startswith('Мониторинг')
+                    for _, row in google_df[prodata_mask].iterrows():
+                        code = str(row.get(code_col, '')).strip()
+                        if code and code not in ['', 'nan', 'None', 'null']:
+                            try:
+                                prodata_quotas[code] = float(row.get(kvota_col, 0))
+                            except:
+                                pass
             
-            # Планы проектов+волн+регионов (для обычных проектов)
+            # Планы проектов+волн+регионов
             project_wave_region_plans = visits_df.groupby([
                 'Код анкеты', 
                 'Название проекта',
                 'Регион short'
-            ]).size()
+            ]).size().to_dict()
+            
+            # ============================================
+            # 2. ПРЕДВАРИТЕЛЬНЫЙ РАСЧЕТ ВЕСОВ RS
+            # ============================================
+            
+            # Создаем словарь весов RS: ключ = (проект, волна, регион)
+            rs_weights_cache = {}
+            
+            # Группируем все визиты по проекту, волне, региону и RS
+            visits_grouped = visits_df.groupby([
+                'Код анкеты', 
+                'Название проекта', 
+                'Регион short',
+                'ЭМ'  # RS колонка
+            ]).size().reset_index(name='count')
+            
+            # Для каждой комбинации считаем общее количество и долю
+            for _, group in visits_grouped.groupby(['Код анкеты', 'Название проекта', 'Регион short']):
+                key = (group['Код анкеты'].iloc[0], group['Название проекта'].iloc[0], group['Регион short'].iloc[0])
+                total = group['count'].sum()
+                if total > 0:
+                    rs_weights_cache[key] = {}
+                    for _, row in group.iterrows():
+                        rs_weights_cache[key][row['ЭМ']] = row['count'] / total
+            
+            # ============================================
+            # 3. ПРЕДВАРИТЕЛЬНЫЙ РАСЧЕТ РАСПРЕДЕЛЕНИЯ ПО РЕГИОНАМ
+            # ============================================
+            
+            # Для Мултон, Оптима и ПроДата считаем количество регионов
+            multon_regions = {}
+            optima_regions = {}
+            prodata_regions = {}
+            
+            for _, row in hierarchy_df.iterrows():
+                project_code = row['Проект']
+                po = row['ПО']
+                client = row['Клиент']
+                region = row['Регион']
+                
+                if po == 'ПО клиента' and client == 'Мултон':
+                    if project_code not in multon_regions:
+                        multon_regions[project_code] = set()
+                    multon_regions[project_code].add(region)
+                elif po == 'Оптима':
+                    if project_code not in optima_regions:
+                        optima_regions[project_code] = set()
+                    optima_regions[project_code].add(region)
+                elif po == 'Мониторинги':
+                    if project_code not in prodata_regions:
+                        prodata_regions[project_code] = set()
+                    prodata_regions[project_code].add(region)
+            
+            # ============================================
+            # 4. ОСНОВНОЙ ЦИКЛ (ОПТИМИЗИРОВАННЫЙ)
+            # ============================================
             
             results = []
             
@@ -241,72 +292,46 @@ class VisitCalculator:
                 po = row['ПО']
                 client = row['Клиент']
                 rs_name = row['RS']
-
-
-                # ОПРЕДЕЛЯЕМ total_plan
-                # Мултон
+                
+                # Определяем total_plan
                 if po == 'ПО клиента' and client == 'Мултон':
                     total_plan = multon_quotas.get(project_code, 0)
                     if total_plan <= 0:
                         continue
-                    # равномерное распределение по регионам
-                    project_regions = hierarchy_df[
-                        (hierarchy_df['Проект'] == project_code) & 
-                        (hierarchy_df['Клиент'] == 'Мултон')
-                    ]['Регион'].unique()
-                    num_regions = len(project_regions)
+                    num_regions = len(multon_regions.get(project_code, []))
                     if num_regions > 0:
                         total_plan = total_plan / num_regions
                 
-                # ПРОДАТА 
                 elif po == 'Мониторинги':
                     total_plan = prodata_quotas.get(project_code, 0)
                     if total_plan <= 0:
                         continue
-                    # равномерное распределение по регионам
-                    project_regions = hierarchy_df[
-                        (hierarchy_df['Проект'] == project_code) & 
-                        (hierarchy_df['ПО'] == 'Мониторинги')
-                    ]['Регион'].unique()
-                    num_regions = len(project_regions)
+                    num_regions = len(prodata_regions.get(project_code, []))
                     if num_regions > 0:
                         total_plan = total_plan / num_regions
-
-                # OPTIMA
+                
                 elif po == 'Оптима':
-                    original_code = project_code
                     found_quota = None
-                    
-                    if '\\' in original_code:
-                        codes = original_code.split('\\')
-                        for code in codes:
-                            code_clean = code.strip()
-                            if code_clean in optima_quotas:
-                                found_quota = optima_quotas[code_clean]
+                    if '\\' in project_code:
+                        for code in project_code.split('\\'):
+                            if code.strip() in optima_quotas:
+                                found_quota = optima_quotas[code.strip()]
                                 break
                     else:
-                        if original_code in optima_quotas:
-                            found_quota = optima_quotas[original_code]
+                        found_quota = optima_quotas.get(project_code)
                     
-                    if found_quota is None or found_quota <= 0:
+                    if not found_quota or found_quota <= 0:
                         continue
-                    
                     total_plan = found_quota
-                    
-                    project_regions = hierarchy_df[
-                        (hierarchy_df['Проект'] == original_code) & 
-                        (hierarchy_df['ПО'] == 'Оптима')
-                    ]['Регион'].unique()
-                    num_regions = len(project_regions)
+                    num_regions = len(optima_regions.get(project_code, []))
                     if num_regions > 0:
                         total_plan = total_plan / num_regions
-                        
                 
                 else:
                     plan_key = (project_code, wave_name, region)
-                    if plan_key not in project_wave_region_plans.index:
+                    total_plan = project_wave_region_plans.get(plan_key, 0)
+                    if total_plan <= 0:
                         continue
-                    total_plan = project_wave_region_plans.loc[plan_key]
                 
                 # Проверка дат
                 start_date = row['Дата старта']
@@ -319,47 +344,39 @@ class VisitCalculator:
                 if end_period < start_date.date() or start_period > finish_date.date():
                     continue
                 
-                # ДНИ ПРОЕКТА, ПОПАДАЮЩИЕ В ПЕРИОД
-                days_in_period = 0
-                current_date = start_date
-                for day in range(duration):
-                    check_date = current_date + timedelta(days=day)
-                    if start_period <= check_date.date() <= end_period:
-                        days_in_period += 1
+                # БЫСТРЫЙ расчет дней в периоде (без цикла)
+                period_start = max(start_period, start_date.date())
+                period_end = min(end_period, finish_date.date())
+                days_in_period = max(0, (period_end - period_start).days + 1)
                 
                 if days_in_period == 0:
                     continue
                 
-                # РАСЧЕТ ПЛАНА НА ДАТУ
-                if po == 'ПО клиента' and client == 'Мултон':
-                    # Мултон: план = вся квота сразу
+                # Расчет плана на дату
+                # Мултон, ПроДата, Оптима: план = вся квота сразу
+                is_special = (po == 'ПО клиента' and client == 'Мултон') or po == 'Мониторинги' or po == 'Оптима'
+                
+                if is_special:
                     rs_plan_on_date = total_plan
-                    rs_daily_plan = total_plan
-                elif po == 'Мониторинги':
-                    # ПроДата: план = вся квота сразу (как в Мултон)
-                    rs_plan_on_date = total_plan
-                    rs_daily_plan = total_plan
-                elif po == 'Оптима':  # ← добавить эту строку
-                    rs_plan_on_date = total_plan   # план на дату = план проекта
                     rs_daily_plan = total_plan
                 else:
                     # Обычный проект: равномерное распределение с весами RS
                     daily_plan_wave = total_plan / duration
-                    rs_weights = self._calculate_rs_weights(visits_df, project_code, wave_name, region)
+                    key = (project_code, wave_name, region)
+                    rs_weights = rs_weights_cache.get(key, {})
+                    rs_weight = rs_weights.get(rs_name, 0)
                     
-                    if rs_name not in rs_weights or rs_weights[rs_name] <= 0:
+                    if rs_weight <= 0:
                         continue
                     
-                    rs_weight = rs_weights[rs_name]
                     rs_daily_plan = daily_plan_wave * rs_weight
                     rs_plan_on_date = rs_daily_plan * days_in_period
                 
-                # Запись результата
                 results.append({
                     'Проект': project_code,
                     'Клиент': row['Клиент'],
                     'Волна': wave_name,
-                    'Регион': row['Регион'],
+                    'Регион': region,
                     'DSM': row['DSM'],
                     'ASM': row['ASM'],
                     'RS': rs_name,
@@ -379,6 +396,9 @@ class VisitCalculator:
             return pd.DataFrame(results)
         
         except Exception as e:
+            print(f"Ошибка в calculate_hierarchical_plan_on_date: {e}")
+            import traceback
+            traceback.print_exc()
             return pd.DataFrame()
         
         

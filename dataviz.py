@@ -448,22 +448,14 @@ class DataVisualizer:
             
             with col1:
                 st.markdown("**DSM**")
-                # Режим двумя кнопками
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    dsm_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    dsm_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
-                
-                # Текущий режим храним в session_state
-                if 'planfact_dsm_mode' not in st.session_state:
-                    st.session_state.planfact_dsm_mode = 'Включить'
-                if dsm_include:
-                    st.session_state.planfact_dsm_mode = 'Включить'
-                if dsm_exclude:
-                    st.session_state.planfact_dsm_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.planfact_dsm_mode}**")
+                dsm_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="planfact_dsm_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('planfact_dsm_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.planfact_dsm_mode = dsm_mode
                 
                 dsm_selected = st.multiselect(
                     "Выбрать DSM",
@@ -474,22 +466,15 @@ class DataVisualizer:
             
             with col2:
                 st.markdown("**ASM**")
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    asm_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    asm_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
+                asm_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="planfact_asm_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('planfact_asm_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.planfact_asm_mode = asm_mode
                 
-                if 'planfact_asm_mode' not in st.session_state:
-                    st.session_state.planfact_asm_mode = 'Включить'
-                if asm_include:
-                    st.session_state.planfact_asm_mode = 'Включить'
-                if asm_exclude:
-                    st.session_state.planfact_asm_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.planfact_asm_mode}**")
-                
-                # Ограничиваем ASM выбранными DSM
                 if dsm_selected:
                     asm_options = [a for a in all_asm if any(a in d for d in dsm_selected)]
                 else:
@@ -504,20 +489,14 @@ class DataVisualizer:
             
             with col3:
                 st.markdown("**Регион**")
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    region_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    region_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
-                
-                if 'planfact_region_mode' not in st.session_state:
-                    st.session_state.planfact_region_mode = 'Включить'
-                if region_include:
-                    st.session_state.planfact_region_mode = 'Включить'
-                if region_exclude:
-                    st.session_state.planfact_region_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.planfact_region_mode}**")
+                region_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="planfact_region_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('planfact_region_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.planfact_region_mode = region_mode
                 
                 region_selected_display = st.multiselect(
                     "Выбрать регион",
@@ -529,20 +508,14 @@ class DataVisualizer:
             
             with col4:
                 st.markdown("**Клиент**")
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    client_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    client_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
-                
-                if 'planfact_client_mode' not in st.session_state:
-                    st.session_state.planfact_client_mode = 'Включить'
-                if client_include:
-                    st.session_state.planfact_client_mode = 'Включить'
-                if client_exclude:
-                    st.session_state.planfact_client_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.planfact_client_mode}**")
+                client_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="planfact_client_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('planfact_client_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.planfact_client_mode = client_mode
                 
                 # Ограничиваем клиентов выбранными фильтрами
                 client_filtered = all_clients
@@ -562,7 +535,8 @@ class DataVisualizer:
             apply_filters = st.form_submit_button(
                 "✅ Применить фильтры",
                 type="primary",
-                use_container_width=True
+                use_container_width=True,
+                key="planfact_apply_filters_btn"
             )
         
         # ============================================
@@ -845,20 +819,14 @@ class DataVisualizer:
             
             with col1:
                 st.markdown("**DSM**")
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    dsm_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    dsm_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
-                
-                if 'region_dsm_mode' not in st.session_state:
-                    st.session_state.region_dsm_mode = 'Включить'
-                if dsm_include:
-                    st.session_state.region_dsm_mode = 'Включить'
-                if dsm_exclude:
-                    st.session_state.region_dsm_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.region_dsm_mode}**")
+                dsm_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="region_dsm_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('region_dsm_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.region_dsm_mode = dsm_mode
                 
                 dsm_selected = st.multiselect(
                     "Выбрать DSM",
@@ -869,20 +837,14 @@ class DataVisualizer:
             
             with col2:
                 st.markdown("**ASM**")
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    asm_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    asm_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
-                
-                if 'region_asm_mode' not in st.session_state:
-                    st.session_state.region_asm_mode = 'Включить'
-                if asm_include:
-                    st.session_state.region_asm_mode = 'Включить'
-                if asm_exclude:
-                    st.session_state.region_asm_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.region_asm_mode}**")
+                asm_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="region_asm_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('region_asm_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.region_asm_mode = asm_mode
                 
                 if dsm_selected:
                     asm_options = [a for a in all_asm if any(a in d for d in dsm_selected)]
@@ -898,20 +860,14 @@ class DataVisualizer:
             
             with col3:
                 st.markdown("**Регион**")
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    region_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    region_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
-                
-                if 'region_region_mode' not in st.session_state:
-                    st.session_state.region_region_mode = 'Включить'
-                if region_include:
-                    st.session_state.region_region_mode = 'Включить'
-                if region_exclude:
-                    st.session_state.region_region_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.region_region_mode}**")
+                region_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="region_region_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('region_region_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.region_region_mode = region_mode
                 
                 region_selected_display = st.multiselect(
                     "Выбрать регион",
@@ -923,20 +879,14 @@ class DataVisualizer:
             
             with col4:
                 st.markdown("**Клиент**")
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    client_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    client_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
-                
-                if 'region_client_mode' not in st.session_state:
-                    st.session_state.region_client_mode = 'Включить'
-                if client_include:
-                    st.session_state.region_client_mode = 'Включить'
-                if client_exclude:
-                    st.session_state.region_client_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.region_client_mode}**")
+                client_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="region_client_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('region_client_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.region_client_mode = client_mode
                 
                 client_selected = st.multiselect(
                     "Выбрать клиента",
@@ -950,7 +900,8 @@ class DataVisualizer:
             apply_filters = st.form_submit_button(
                 "✅ Применить фильтры",
                 type="primary",
-                use_container_width=True
+                use_container_width=True,
+                key="region_apply_filters_btn"
             )
         
         # ============================================
@@ -1117,20 +1068,14 @@ class DataVisualizer:
             
             with col1:
                 st.markdown("**ASM**")
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    asm_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    asm_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
-                
-                if 'dsm_asm_mode' not in st.session_state:
-                    st.session_state.dsm_asm_mode = 'Включить'
-                if asm_include:
-                    st.session_state.dsm_asm_mode = 'Включить'
-                if asm_exclude:
-                    st.session_state.dsm_asm_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.dsm_asm_mode}**")
+                asm_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="dsm_asm_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('dsm_asm_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.dsm_asm_mode = asm_mode
                 
                 asm_selected = st.multiselect(
                     "Выбрать ASM",
@@ -1141,20 +1086,14 @@ class DataVisualizer:
             
             with col2:
                 st.markdown("**Клиент**")
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    client_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    client_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
-                
-                if 'dsm_client_mode' not in st.session_state:
-                    st.session_state.dsm_client_mode = 'Включить'
-                if client_include:
-                    st.session_state.dsm_client_mode = 'Включить'
-                if client_exclude:
-                    st.session_state.dsm_client_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.dsm_client_mode}**")
+                client_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="dsm_client_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('dsm_client_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.dsm_client_mode = client_mode
                 
                 client_selected = st.multiselect(
                     "Выбрать клиента",
@@ -1165,20 +1104,14 @@ class DataVisualizer:
             
             with col3:
                 st.markdown("**Код проекта**")
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    project_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    project_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
-                
-                if 'dsm_project_mode' not in st.session_state:
-                    st.session_state.dsm_project_mode = 'Включить'
-                if project_include:
-                    st.session_state.dsm_project_mode = 'Включить'
-                if project_exclude:
-                    st.session_state.dsm_project_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.dsm_project_mode}**")
+                project_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="dsm_project_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('dsm_project_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.dsm_project_mode = project_mode
                 
                 project_selected = st.multiselect(
                     "Выбрать проект",
@@ -1189,20 +1122,14 @@ class DataVisualizer:
             
             with col4:
                 st.markdown("**Волна**")
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    wave_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    wave_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
-                
-                if 'dsm_wave_mode' not in st.session_state:
-                    st.session_state.dsm_wave_mode = 'Включить'
-                if wave_include:
-                    st.session_state.dsm_wave_mode = 'Включить'
-                if wave_exclude:
-                    st.session_state.dsm_wave_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.dsm_wave_mode}**")
+                wave_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="dsm_wave_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('dsm_wave_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.dsm_wave_mode = wave_mode
                 
                 wave_selected = st.multiselect(
                     "Выбрать волну",
@@ -1213,20 +1140,14 @@ class DataVisualizer:
             
             with col5:
                 st.markdown("**Регион**")
-                mode_col1, mode_col2 = st.columns(2)
-                with mode_col1:
-                    region_include = st.form_submit_button("✅ Включить", use_container_width=True)
-                with mode_col2:
-                    region_exclude = st.form_submit_button("❌ Исключить", use_container_width=True)
-                
-                if 'dsm_region_mode' not in st.session_state:
-                    st.session_state.dsm_region_mode = 'Включить'
-                if region_include:
-                    st.session_state.dsm_region_mode = 'Включить'
-                if region_exclude:
-                    st.session_state.dsm_region_mode = 'Исключить'
-                
-                st.caption(f"Режим: **{st.session_state.dsm_region_mode}**")
+                region_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="dsm_region_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('dsm_region_mode', 'Включить') == 'Включить' else 1
+                )
+                st.session_state.dsm_region_mode = region_mode
                 
                 region_selected_display = st.multiselect(
                     "Выбрать регион",
@@ -1241,7 +1162,8 @@ class DataVisualizer:
             apply_filters = st.form_submit_button(
                 "✅ Применить фильтры",
                 type="primary",
-                use_container_width=True
+                use_container_width=True,
+                key="dsm_apply_filters_btn"
             )
         
         # ============================================

@@ -453,7 +453,25 @@ with tab1:
         # КНОПКА РАССЧИТАТЬ ВНУТРИ ФОРМЫ
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            main_files_selected = portal_file is not None and projects_file is not None
+            # Сохраняем выбранные файлы в session_state ПЕРЕД проверкой
+            if portal_file is not None:
+                st.session_state.selected_portal = portal_file
+            if projects_file is not None:
+                st.session_state.selected_projects = projects_file
+            if cxway_file is not None:
+                st.session_state.selected_cxway = cxway_file
+            if easymerch_file is not None:
+                st.session_state.selected_easymerch = easymerch_file
+            if optima_file is not None:
+                st.session_state.selected_optima = optima_file
+            if prodata_file is not None:
+                st.session_state.selected_prodata = prodata_file
+            
+            # Проверяем наличие основных файлов в session_state
+            main_files_selected = (
+                st.session_state.get('selected_portal') is not None and 
+                st.session_state.get('selected_projects') is not None
+            )
             
             submitted = st.form_submit_button(
                 "🚀 РАССЧИТАТЬ ПЛАН/ФАКТ",
@@ -471,15 +489,15 @@ with tab1:
     if submitted:
         with st.spinner("📥 Загрузка файлов и обработка данных..."):
             
-            # 1. ЗАГРУЖАЕМ ВСЕ ФАЙЛЫ (через кэш)
-            portal_df = load_excel(portal_file, "портал")
-            projects_df = load_excel(projects_file, "проекты")
-            cxway_df = load_excel(cxway_file, "cxway")
-            easymerch_df = load_excel(easymerch_file, "easymerch")
-            optima_df = load_excel(optima_file, "optima")
-            prodata_df = load_excel(prodata_file, "prodata")
+            # 1. ЗАГРУЖАЕМ ВСЕ ФАЙЛЫ из session_state
+            portal_df = load_excel(st.session_state.get('selected_portal'), "портал")
+            projects_df = load_excel(st.session_state.get('selected_projects'), "проекты")
+            cxway_df = load_excel(st.session_state.get('selected_cxway'), "cxway")
+            easymerch_df = load_excel(st.session_state.get('selected_easymerch'), "easymerch")
+            optima_df = load_excel(st.session_state.get('selected_optima'), "optima")
+            prodata_df = load_excel(st.session_state.get('selected_prodata'), "prodata")
             
-            # 2. СОХРАНЯЕМ В SESSION_STATE
+            # 2. СОХРАНЯЕМ В SESSION_STATE.uploaded_files
             if portal_df is not None:
                 st.session_state.uploaded_files['портал'] = portal_df
             if projects_df is not None:
@@ -493,7 +511,7 @@ with tab1:
             if prodata_df is not None:
                 st.session_state.uploaded_files['prodata'] = prodata_df
             
-            # 3. ЗАПУСКАЕМ РАСЧЕТ (существующая логика)
+            # 3. ЗАПУСКАЕМ РАСЧЕТ
             if 'settings_manager' in st.session_state:
                 settings_manager = st.session_state.settings_manager
             else:

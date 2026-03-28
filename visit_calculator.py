@@ -57,12 +57,15 @@ class VisitCalculator:
         Создаёт полную иерархию Проект→Клиент→Волна→Регион→DSM→ASM→RS
         с базовой информацией о проекте
         """
+        import time
+        start_total = time.time()
         
         try:
             # 1. Определяем колонку региона
             region_col = 'Регион short'
             
-            # Создаём иерархию из visits_df (уникальные цепочки)
+            # Создаём иерархию из visits_df
+            start = time.time()
             hierarchy = pd.DataFrame({
                 'Проект': visits_df['Код анкеты'].fillna('Не указано'),
                 'Клиент': visits_df['Имя клиента'].fillna('Не указано'),
@@ -74,13 +77,18 @@ class VisitCalculator:
                 'ПО': visits_df['ПО'].fillna('не определено'),
                 'Полевой': visits_df['Полевой']
             })
+            st.write(f"[DETAIL] Создание DataFrame: {time.time() - start:.2f} сек")
             
             # ТОЛЬКО ПОЛЕВЫЕ ПРОЕКТЫ
+            start = time.time()
             hierarchy = hierarchy[hierarchy['Полевой'] == 1]
             hierarchy = hierarchy.drop('Полевой', axis=1)
+            st.write(f"[DETAIL] Фильтр полевых: {time.time() - start:.2f} сек")
             
             # Удаляем дубликаты
+            start = time.time()
             hierarchy = hierarchy.drop_duplicates().reset_index(drop=True)
+            st.write(f"[DETAIL] Удаление дубликатов: {time.time() - start:.2f} сек")
             
             # Даты - по умолчанию пустые
             hierarchy['Дата старта'] = pd.NaT
@@ -88,8 +96,8 @@ class VisitCalculator:
             
             # Обогащаем датами из google_df
             if google_df is not None and not google_df.empty:
+                start = time.time()
                 try:
-                    # Маппинги для дат
                     start_mapping = {}
                     finish_mapping = {}
                     
@@ -121,8 +129,10 @@ class VisitCalculator:
                     
                 except Exception as e:
                     pass
+                st.write(f"[DETAIL] Обогащение датами: {time.time() - start:.2f} сек")
             
             # Рассчитываем длительность
+            start = time.time()
             hierarchy['Длительность'] = 0
             mask_valid_dates = hierarchy['Дата старта'].notna() & hierarchy['Дата финиша'].notna()
             
@@ -131,33 +141,20 @@ class VisitCalculator:
                     hierarchy.loc[mask_valid_dates, 'Дата финиша'] - 
                     hierarchy.loc[mask_valid_dates, 'Дата старта']
                 ).dt.days + 1
+            st.write(f"[DETAIL] Расчет длительности: {time.time() - start:.2f} сек")
             
             # Сортируем
+            start = time.time()
             hierarchy = hierarchy.sort_values(['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM', 'RS'])
             hierarchy = hierarchy[hierarchy['RS'] != 'Итого']
+            st.write(f"[DETAIL] Сортировка: {time.time() - start:.2f} сек")
             
-            # # ПРОВЕРКА
-            # try:
-            #     if not hierarchy.empty:
-            #         output = io.BytesIO()
-            #         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            #             hierarchy.to_excel(writer, sheet_name='Иерархия', index=False)
-                    
-            #         st.download_button(
-            #             label="📥 Скачать иерархию (hierarchy_df)",
-            #             data=output.getvalue(),
-            #             file_name=f"иерархия_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-            #             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            #         )
-            # except:
-            #     pass
-            # # ПРОВЕРКА
-                
+            st.write(f"[DETAIL] ВСЕГО Иерархия: {time.time() - start_total:.2f} сек")
+            
             return hierarchy
             
         except KeyError as e:
             return pd.DataFrame()
-            
         except Exception as e:
             return pd.DataFrame()
     

@@ -112,7 +112,7 @@ def process_all_data(settings_manager=None):
         # Добавление признака полевой проект
         google_with_field = data_cleaner.update_field_projects_flag(st.session_state.cleaned_data['сервизория'])
         st.session_state.cleaned_data['сервизория'] = google_with_field
-        print(f"[DEBUG] Очистка: {time.time() - start:.2f} сек")
+        st.write(f"[DEBUG] Очистка: {time.time() - start:.2f} сек")
         start = time.time()
 
         
@@ -277,7 +277,7 @@ def process_all_data(settings_manager=None):
         st.session_state.visit_report['base_data'] = base_data
         st.session_state.visit_report['timestamp'] = datetime.now().isoformat()
 
-        print(f"[DEBUG] Иерархия: {time.time() - start:.2f} сек")
+        st.write(f"[DEBUG] Иерархия: {time.time() - start:.2f} сек")
         start = time.time()
         
         # Расчет план/факт
@@ -289,7 +289,7 @@ def process_all_data(settings_manager=None):
                 base_data, source_df, params, st.session_state.cleaned_data['сервизория']
             )
             
-            print(f"[DEBUG] План: {time.time() - start:.2f} сек")
+            st.write(f"[DEBUG] План: {time.time() - start:.2f} сек")
             start = time.time()
             
             if plan_result is not None and not plan_result.empty:
@@ -297,7 +297,7 @@ def process_all_data(settings_manager=None):
                     plan_result, source_df, params
                 )
                 
-                print(f"[DEBUG] Факт: {time.time() - start:.2f} сек")
+                st.write(f"[DEBUG] Факт: {time.time() - start:.2f} сек")
                 start = time.time()
                 
                 final_result = visit_calculator._calculate_metrics(
@@ -306,9 +306,9 @@ def process_all_data(settings_manager=None):
                 
                 st.session_state.visit_report['calculated_data'] = final_result
             
-                print(f"[DEBUG] Метрики: {time.time() - start:.2f} сек")
+                st.write(f"[DEBUG] Метрики: {time.time() - start:.2f} сек")
                 
-        print(f"[DEBUG] ВСЕГО: {time.time() - start_total:.2f} сек")
+        st.write(f"[DEBUG] ВСЕГО: {time.time() - start_total:.2f} сек")
                 
         
         st.session_state.processing_complete = True

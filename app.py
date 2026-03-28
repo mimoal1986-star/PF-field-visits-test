@@ -8,6 +8,7 @@ import traceback
 from datetime import date, datetime, timedelta
 from io import BytesIO
 from github_settings import get_settings_manager
+from data_cleaner import is_field_project_by_code
 
 # data_cleaner.py
 try:
@@ -76,7 +77,7 @@ def display_file_preview(df, title):
             st.dataframe(df.head(10), use_container_width=True)
 
 def process_all_data(settings_manager=None):
-    """Полная обработка данных и расчет план/факт"""
+    """Полная обработка данных и расчет план/факт - ОПТИМИЗИРОВАННАЯ ВЕРСИЯ"""
     try:
         # Проверяем наличие основных файлов
         required_files = ['портал', 'сервизория']
@@ -84,6 +85,8 @@ def process_all_data(settings_manager=None):
         
         if missing_files:
             return False
+        
+        # ШАГ 1: ОЧИСТКА ИСТОЧНИКОВ (БЕЗ ОПРЕДЕЛЕНИЯ ПОЛЕВОЙ)
         
         # Получаем данные
         portal_raw = st.session_state.uploaded_files['портал']
@@ -111,162 +114,128 @@ def process_all_data(settings_manager=None):
             enriched_array, discrepancy_df, stats = enriched_result
             st.session_state.cleaned_data['портал'] = enriched_array
         
-        # Добавление признака полевой проект
+        # Добавление признака полевой проект в Google
         google_with_field = data_cleaner.update_field_projects_flag(st.session_state.cleaned_data['сервизория'])
         st.session_state.cleaned_data['сервизория'] = google_with_field
-
         
+        # Добавляем поле в портал
         array_with_field = data_cleaner.add_field_flag_to_array(st.session_state.cleaned_data['портал'])
         array_with_portal = data_cleaner.add_portal_to_array(array_with_field, google_with_field)
-
+        
         # Удаляем проекты CXWAY из портала
         array_with_portal = data_cleaner.remove_cxway_from_portal(array_with_portal, google_with_field)
-        st.session_state.cleaned_data['портал_с_полем'] = array_with_portal
         
-        # Разделение на полевые/неполевые
-        field_df, non_field_df = data_cleaner.split_array_by_field_flag(array_with_portal)
+
+        # ШАГ 2: СБОР ВСЕХ ИСТОЧНИКОВ В ОДИН ДАТАСЕТ
         
-        # Загружаем настройки
+        all_sources = []
+        
+        # 1. Портал (уже очищен)
+        if array_with_portal is not None and not array_with_portal.empty:
+            all_sources.append(array_with_portal)
+        
+        # 2. CXWAY
+        cxway_raw = st.session_state.uploaded_files.get('cxway')
+        if cxway_raw is not None:
+            cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
+            if cxway_processed is not None and not cxway_processed.empty:
+                all_sources.append(cxway_processed)
+                st.session_state.cleaned_data['cxway_processed'] = cxway_processed
+        
+        # 3. Easymerch
+        easymerch_raw = st.session_state.uploaded_files.get('easymerch')
+        if easymerch_raw is not None:
+            easymerch_processed = data_cleaner.clean_easymerch(easymerch_raw, google_with_field)
+            if easymerch_processed is not None and not easymerch_processed.empty:
+                all_sources.append(easymerch_processed)
+                st.session_state.cleaned_data['easymerch_processed'] = easymerch_processed
+        
+        # 4. Optima
+        optima_raw = st.session_state.uploaded_files.get('optima')
+        if optima_raw is not None:
+            try:
+                optima_processed = data_cleaner.clean_optima(optima_raw, google_with_field)
+                if optima_processed is not None and not optima_processed.empty:
+                    all_sources.append(optima_processed)
+                    st.session_state.cleaned_data['optima_processed'] = optima_processed
+            except Exception as e:
+                st.warning(f"⚠️ Ошибка при обработке Optima: {e}")
+        
+        # 5. ProData (Мониторинги)
+        prodata_raw = st.session_state.uploaded_files.get('prodata')
+        if prodata_raw is not None:
+            try:
+                prodata_processed = data_cleaner.clean_prodata(prodata_raw, google_with_field)
+                if prodata_processed is not None and not prodata_processed.empty:
+                    all_sources.append(prodata_processed)
+                    st.session_state.cleaned_data['prodata_processed'] = prodata_processed
+            except Exception as e:
+                st.warning(f"⚠️ Ошибка при обработке ПроДата: {e}")
+        
+
+        # ШАГ 3: ОБЪЕДИНЕНИЕ ВСЕХ ИСТОЧНИКОВ
+        
+        if not all_sources:
+            st.error("❌ Нет данных для обработки")
+            return False
+        
+        all_projects_raw = pd.concat(all_sources, ignore_index=True)
+        
+
+        # ШАГ 4: ЕДИНОЕ ОПРЕДЕЛЕНИЕ ПОЛЕВОГО ПРОЕКТА
+        
+        if 'Код анкеты' in all_projects_raw.columns:
+            all_projects_raw['Полевой'] = all_projects_raw['Код анкеты'].apply(is_field_project_by_code)
+        else:
+            all_projects_raw['Полевой'] = 0
+        
+
+        # ШАГ 5: ПРИМЕНЕНИЕ НАСТРОЕК (ИСКЛЮЧЕНИЯ И ДОБАВЛЕНИЯ)
+        
         if settings_manager is None:
             settings_manager = get_settings_manager()
         
         excluded_df = settings_manager.get_excluded_projects()
         included_df = settings_manager.get_included_projects()
         
-        # Применяем исключенные проекты (делаем их неполевыми)
-        if not excluded_df.empty and field_df is not None and not field_df.empty:
+        # 5.1 Применяем исключенные проекты
+        if not excluded_df.empty:
             for _, row in excluded_df.iterrows():
                 mask = (
-                    (field_df['Имя клиента'] == row['Название проекта']) &
-                    (field_df['Название проекта'] == row['Волна']) &
-                    (field_df['Код анкеты'] == row['Код проекта'])
+                    (all_projects_raw['Имя клиента'].astype(str).str.strip() == str(row['Название проекта']).strip()) &
+                    (all_projects_raw['Название проекта'].astype(str).str.strip() == str(row['Волна']).strip()) &
+                    (all_projects_raw['Код анкеты'].astype(str).str.strip() == str(row['Код проекта']).strip())
                 )
                 if mask.any():
-                    field_df.loc[mask, 'Полевой'] = 0
+                    all_projects_raw.loc[mask, 'Полевой'] = 0
         
-        # Применяем добавленные проекты (делаем их полевыми)
-        if not included_df.empty and non_field_df is not None and not non_field_df.empty:
+        # 5.2 Применяем добавленные проекты
+        if not included_df.empty:
             for _, row in included_df.iterrows():
                 mask = (
-                    (non_field_df['Имя клиента'] == row['Название проекта']) &
-                    (non_field_df['Название проекта'] == row['Волна']) &
-                    (non_field_df['Код анкеты'] == row['Код проекта'])
+                    (all_projects_raw['Имя клиента'].astype(str).str.strip() == str(row['Название проекта']).strip()) &
+                    (all_projects_raw['Название проекта'].astype(str).str.strip() == str(row['Волна']).strip()) &
+                    (all_projects_raw['Код анкеты'].astype(str).str.strip() == str(row['Код проекта']).strip())
                 )
                 if mask.any():
-                    non_field_df.loc[mask, 'Полевой'] = 1
+                    all_projects_raw.loc[mask, 'Полевой'] = 1
         
-        # Объединяем все проекты в один датасет
-        all_projects = pd.concat([field_df, non_field_df], ignore_index=True)
+        # ШАГ 6: РАЗДЕЛЕНИЕ НА ПОЛЕВЫЕ И НЕПОЛЕВЫЕ
         
-        # 🔥 ПЕРЕСОЗДАЕМ датасеты на основе актуального значения Полевой
-        st.session_state.cleaned_data['полевые_проекты'] = all_projects[all_projects['Полевой'] == 1].copy()
-        st.session_state.cleaned_data['неполевые_проекты'] = all_projects[all_projects['Полевой'] == 0].copy()
+        # Создаем полевые проекты
+        field_projects = all_projects_raw[all_projects_raw['Полевой'] == 1].copy()
+        non_field_projects = all_projects_raw[all_projects_raw['Полевой'] == 0].copy()
         
-        # Добавление ЗОД из встроенного справочника
-        if field_df is not None and not field_df.empty:
-            field_df_with_zod = data_cleaner.add_zod_from_hierarchy(field_df)
-
-            field_df = field_df_with_zod.copy()
-            
-            # Обновляем только ЗОД в all_projects
-            for idx, row in field_df_with_zod.iterrows():
-                mask = (
-                    (all_projects['Имя клиента'] == row['Имя клиента']) &
-                    (all_projects['Название проекта'] == row['Название проекта']) &
-                    (all_projects['Код анкеты'] == row['Код анкеты'])
-                )
-                if mask.any():
-                    all_projects.loc[mask, 'ЗОД'] = row['ЗОД']
+        st.session_state.cleaned_data['полевые_проекты'] = field_projects
+        st.session_state.cleaned_data['неполевые_проекты'] = non_field_projects
         
+        # ШАГ 7: ДОБАВЛЕНИЕ ЗОД
         
-        # Обработка Easymerch (если есть)
-        easymerch_processed = None
-        easymerch_raw = st.session_state.uploaded_files.get('easymerch')
-        if easymerch_raw is not None:
-            easymerch_processed = data_cleaner.clean_easymerch(
-                easymerch_raw, 
-                google_with_field
-            )
-            if easymerch_processed is not None and not easymerch_processed.empty:
-                st.session_state.cleaned_data['easymerch_processed'] = easymerch_processed
+        if not field_projects.empty:
+            field_with_zod = data_cleaner.add_zod_from_hierarchy(field_projects)
+            st.session_state.cleaned_data['полевые_проекты'] = field_with_zod
         
-        # Обработка Optima (если есть)
-        optima_processed = None
-        optima_raw = st.session_state.uploaded_files.get('optima')
-        if optima_raw is not None:
-            try:
-                optima_processed = data_cleaner.clean_optima(
-                    optima_raw, 
-                    google_with_field
-                )
-                if optima_processed is not None and not optima_processed.empty:
-                    st.session_state.cleaned_data['optima_processed'] = optima_processed
-            except Exception as e:
-                st.warning(f"⚠️ Ошибка при обработке Optima: {e}")
-
-        # Обработка ПроДата (Мониторинги)
-        prodata_processed = None
-        prodata_raw = st.session_state.uploaded_files.get('prodata')
-        if prodata_raw is not None:
-            try:
-                prodata_processed = data_cleaner.clean_prodata(
-                    prodata_raw, 
-                    google_with_field
-                )
-                if prodata_processed is not None and not prodata_processed.empty:
-                    st.session_state.cleaned_data['prodata_processed'] = prodata_processed
-            except Exception as e:
-                st.warning(f"⚠️ Ошибка при обработке ПроДата: {e}")
-        
-        # Обработка CXWAY (если есть)
-        cxway_processed = None
-        cxway_raw = st.session_state.uploaded_files.get('cxway')
-        if cxway_raw is not None:
-            cxway_processed = data_cleaner.clean_cxway(
-                cxway_raw, 
-                None, 
-                google_with_field,
-            )
-            
-            # Разделяем CXWAY на полевые и неполевые
-            if cxway_processed is not None and not cxway_processed.empty:
-                cxway_field = cxway_processed[cxway_processed['Полевой'] == 1]
-                cxway_non_field = cxway_processed[cxway_processed['Полевой'] == 0]
-                
-                # Полевые будем добавлять в sources_for_merge позже
-                # Неполевые добавляем в неполевые проекты сразу
-                if not cxway_non_field.empty:
-                    st.session_state.cleaned_data['неполевые_проекты'] = pd.concat([
-                        st.session_state.cleaned_data['неполевые_проекты'],
-                        cxway_non_field
-            ], ignore_index=True)
-        
-                                                       
-        # ФИНАЛЬНОЕ ОБЪЕДИНЕНИЕ всех источников
-        sources_for_merge = []
-        
-        if field_df is not None and not field_df.empty:
-            sources_for_merge.append(field_df)
-        
-        if cxway_processed is not None and not cxway_processed.empty:
-            sources_for_merge.append(cxway_processed)
-        
-        if easymerch_processed is not None and not easymerch_processed.empty:
-            sources_for_merge.append(easymerch_processed)
-            
-        if optima_processed is not None and not optima_processed.empty:
-            sources_for_merge.append(optima_processed)
-        
-        if prodata_processed is not None and not prodata_processed.empty:
-            st.session_state.cleaned_data['prodata_processed'] = prodata_processed
-        
-        if sources_for_merge:
-            all_field_projects = pd.concat(sources_for_merge, ignore_index=True)
-            st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
-        else:
-            st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()
-    
-
+        # ШАГ 8: СОЗДАНИЕ ИЕРАРХИИ И РАСЧЕТ ПЛАН/ФАКТ
         
         # Создание иерархии
         base_data = visit_calculator.extract_hierarchical_data(

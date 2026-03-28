@@ -390,132 +390,122 @@ with tab1:
     st.title("📤 Загрузка исходных данных")
     st.markdown("Загрузите необходимые Excel файлы")
     
-    # Используем форму, но без ручного сохранения
-    with st.form("upload_form"):
-        col1, col2, col3, col4, col5, col6 = st.columns(6)
-        
-        with col1:
-            st.subheader("1. 📋 Портал (Массив.xlsx)")
-            portal_file = st.file_uploader(
-                "Загрузите файл Массив.xlsx",
-                type=['xlsx', 'xls'],
-                key="portal_uploader",
-                label_visibility="collapsed"
-            )
-        
-        with col2:
-            st.subheader("2. 📅 Проекты Сервизория")
-            projects_file = st.file_uploader(
-                "Загрузите файл Гугл таблица.xlsx",
-                type=['xlsx', 'xls'],
-                key="projects_uploader",
-                label_visibility="collapsed"
-            )
-        
-        with col3:
-            st.subheader("3. 📡 CXWAY (дополнительно)")
-            cxway_file = st.file_uploader(
-                "Загрузите файл CXWAY.xlsx",
-                type=['xlsx', 'xls'],
-                key="cxway_uploader",
-                label_visibility="collapsed"
-            )
-        
-        with col4:
-            st.subheader("4. 📱 Easymerch (дополнительно)")
-            easymerch_file = st.file_uploader(
-                "Загрузите файл Easymerch.xlsx",
-                type=['xlsx', 'xls'],
-                key="easymerch_uploader",
-                label_visibility="collapsed"
-            )
-        
-        with col5:
-            st.subheader("5. 📱 Optima (дополнительно)")
-            optima_file = st.file_uploader(
-                "Загрузите файл Optima.xlsx",
-                type=['xlsx', 'xls'],
-                key="optima_uploader",
-                label_visibility="collapsed"
-            )
-        
-        with col6:
-            st.subheader("6. 📱 ПроДата (дополнительно)")
-            prodata_file = st.file_uploader(
-                "Загрузите файл ПроДата.xlsx",
-                type=['xlsx', 'xls'],
-                key="prodata_uploader",
-                label_visibility="collapsed"
-            )
-        
-        st.markdown("---")
-        
-        # КНОПКА РАССЧИТАТЬ
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            # Проверяем наличие файлов через session_state по ключам
-            portal_exists = st.session_state.get('portal_uploader') is not None
-            projects_exists = st.session_state.get('projects_uploader') is not None
-            
-            submitted = st.form_submit_button(
-                "🚀 РАССЧИТАТЬ ПЛАН/ФАКТ",
-                type="primary",
-                use_container_width=True,
-                disabled=not (portal_exists and projects_exists)
-            )
-            
-            if not (portal_exists and projects_exists):
-                st.info("📌 Загрузите оба основных файла для расчета")
+    # Размещаем загрузчики БЕЗ формы (чтобы они обновляли session_state сразу)
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
     
-    # ============================================
-    # ВЕСЬ РАСЧЕТ ВЫПОЛНЯЕТСЯ ПОСЛЕ ФОРМЫ
-    # ============================================
-    if submitted:
-        with st.spinner("📥 Загрузка файлов и обработка данных..."):
-            
-            # 1. ЗАГРУЖАЕМ ФАЙЛЫ из session_state (по ключам uploader)
-            portal_file_obj = st.session_state.get('portal_uploader')
-            projects_file_obj = st.session_state.get('projects_uploader')
-            cxway_file_obj = st.session_state.get('cxway_uploader')
-            easymerch_file_obj = st.session_state.get('easymerch_uploader')
-            optima_file_obj = st.session_state.get('optima_uploader')
-            prodata_file_obj = st.session_state.get('prodata_uploader')
-            
-            portal_df = load_excel(portal_file_obj, "портал")
-            projects_df = load_excel(projects_file_obj, "проекты")
-            cxway_df = load_excel(cxway_file_obj, "cxway")
-            easymerch_df = load_excel(easymerch_file_obj, "easymerch")
-            optima_df = load_excel(optima_file_obj, "optima")
-            prodata_df = load_excel(prodata_file_obj, "prodata")
-            
-            # 2. СОХРАНЯЕМ В SESSION_STATE.uploaded_files
-            if portal_df is not None:
-                st.session_state.uploaded_files['портал'] = portal_df
-            if projects_df is not None:
-                st.session_state.uploaded_files['сервизория'] = projects_df
-            if cxway_df is not None:
-                st.session_state.uploaded_files['cxway'] = cxway_df
-            if easymerch_df is not None:
-                st.session_state.uploaded_files['easymerch'] = easymerch_df
-            if optima_df is not None:
-                st.session_state.uploaded_files['optima'] = optima_df
-            if prodata_df is not None:
-                st.session_state.uploaded_files['prodata'] = prodata_df
-            
-            # 3. ЗАПУСКАЕМ РАСЧЕТ
-            if 'settings_manager' in st.session_state:
-                settings_manager = st.session_state.settings_manager
-            else:
-                settings_manager = get_settings_manager()
-                st.session_state.settings_manager = settings_manager
-            
-            success = process_all_data(settings_manager)
-            
-            if success:
-                st.success("✅ Расчет завершен! Перейдите на вкладку 'Отчеты'")
-                st.rerun()
-            else:
-                st.error("❌ Ошибка при расчете")
+    with col1:
+        st.subheader("1. 📋 Портал (Массив.xlsx)")
+        portal_file = st.file_uploader(
+            "Загрузите файл Массив.xlsx",
+            type=['xlsx', 'xls'],
+            key="portal_uploader",
+            label_visibility="collapsed"
+        )
+    
+    with col2:
+        st.subheader("2. 📅 Проекты Сервизория")
+        projects_file = st.file_uploader(
+            "Загрузите файл Гугл таблица.xlsx",
+            type=['xlsx', 'xls'],
+            key="projects_uploader",
+            label_visibility="collapsed"
+        )
+    
+    with col3:
+        st.subheader("3. 📡 CXWAY (дополнительно)")
+        cxway_file = st.file_uploader(
+            "Загрузите файл CXWAY.xlsx",
+            type=['xlsx', 'xls'],
+            key="cxway_uploader",
+            label_visibility="collapsed"
+        )
+    
+    with col4:
+        st.subheader("4. 📱 Easymerch (дополнительно)")
+        easymerch_file = st.file_uploader(
+            "Загрузите файл Easymerch.xlsx",
+            type=['xlsx', 'xls'],
+            key="easymerch_uploader",
+            label_visibility="collapsed"
+        )
+    
+    with col5:
+        st.subheader("5. 📱 Optima (дополнительно)")
+        optima_file = st.file_uploader(
+            "Загрузите файл Optima.xlsx",
+            type=['xlsx', 'xls'],
+            key="optima_uploader",
+            label_visibility="collapsed"
+        )
+    
+    with col6:
+        st.subheader("6. 📱 ПроДата (дополнительно)")
+        prodata_file = st.file_uploader(
+            "Загрузите файл ПроДата.xlsx",
+            type=['xlsx', 'xls'],
+            key="prodata_uploader",
+            label_visibility="collapsed"
+        )
+    
+    st.markdown("---")
+    
+    # КНОПКА РАССЧИТАТЬ (вне формы)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        # Проверяем наличие файлов (они уже в session_state)
+        portal_exists = st.session_state.get('portal_uploader') is not None
+        projects_exists = st.session_state.get('projects_uploader') is not None
+        
+        if portal_exists and projects_exists:
+            if st.button("🚀 РАССЧИТАТЬ ПЛАН/ФАКТ", type="primary", use_container_width=True):
+                with st.spinner("📥 Загрузка файлов и обработка данных..."):
+                    
+                    # 1. ЗАГРУЖАЕМ ФАЙЛЫ из session_state
+                    portal_file_obj = st.session_state.get('portal_uploader')
+                    projects_file_obj = st.session_state.get('projects_uploader')
+                    cxway_file_obj = st.session_state.get('cxway_uploader')
+                    easymerch_file_obj = st.session_state.get('easymerch_uploader')
+                    optima_file_obj = st.session_state.get('optima_uploader')
+                    prodata_file_obj = st.session_state.get('prodata_uploader')
+                    
+                    portal_df = load_excel(portal_file_obj, "портал")
+                    projects_df = load_excel(projects_file_obj, "проекты")
+                    cxway_df = load_excel(cxway_file_obj, "cxway")
+                    easymerch_df = load_excel(easymerch_file_obj, "easymerch")
+                    optima_df = load_excel(optima_file_obj, "optima")
+                    prodata_df = load_excel(prodata_file_obj, "prodata")
+                    
+                    # 2. СОХРАНЯЕМ В SESSION_STATE.uploaded_files
+                    if portal_df is not None:
+                        st.session_state.uploaded_files['портал'] = portal_df
+                    if projects_df is not None:
+                        st.session_state.uploaded_files['сервизория'] = projects_df
+                    if cxway_df is not None:
+                        st.session_state.uploaded_files['cxway'] = cxway_df
+                    if easymerch_df is not None:
+                        st.session_state.uploaded_files['easymerch'] = easymerch_df
+                    if optima_df is not None:
+                        st.session_state.uploaded_files['optima'] = optima_df
+                    if prodata_df is not None:
+                        st.session_state.uploaded_files['prodata'] = prodata_df
+                    
+                    # 3. ЗАПУСКАЕМ РАСЧЕТ
+                    if 'settings_manager' in st.session_state:
+                        settings_manager = st.session_state.settings_manager
+                    else:
+                        settings_manager = get_settings_manager()
+                        st.session_state.settings_manager = settings_manager
+                    
+                    success = process_all_data(settings_manager)
+                    
+                    if success:
+                        st.success("✅ Расчет завершен! Перейдите на вкладку 'Отчеты'")
+                        st.rerun()
+                    else:
+                        st.error("❌ Ошибка при расчете")
+        else:
+            st.info("📌 Загрузите оба основных файла для расчета")
+            st.button("🚀 РАССЧИТАТЬ ПЛАН/ФАКТ", type="primary", use_container_width=True, disabled=True)
             
 
 with tab2:

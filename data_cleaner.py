@@ -16,6 +16,91 @@ ZOD_MAPPING = {
     'Шавлюк Юлия': 'Устинов Игорь'
 }
 
+@st.cache_data
+def _enrich_array_with_project_codes_cached(array_df, projects_df):
+    """Кэшируемая версия обогащения кодами проектов"""
+    
+    array_df = array_df.copy()
+    projects_df = projects_df.copy()
+    
+    # Находим колонку кода
+    code_col = 'Код анкеты' if 'Код анкеты' in array_df.columns else None
+    if not code_col:
+        return array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
+    
+    # Находим пустые строки
+    empty_mask = (
+        array_df[code_col].isna() |
+        (array_df[code_col].astype(str).str.strip() == '')
+    )
+    rows_to_process = array_df[empty_mask]
+    total_empty = len(rows_to_process)
+    
+    if total_empty == 0:
+        return array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
+    
+    # Находим колонки в проектах
+    client_col = None
+    for name in ['Проекты в  https://ru.checker-soft.com', 'Проекты']:
+        if name in projects_df.columns:
+            client_col = name
+            break
+    
+    wave_col = None
+    for name in ['Название волны на Чекере/ином ПО', 'Волна']:
+        if name in projects_df.columns:
+            wave_col = name
+            break
+    
+    code_proj_col = None
+    for name in ['Код проекта RU00.000.00.01SVZ24', 'Код проекта']:
+        if name in projects_df.columns:
+            code_proj_col = name
+            break
+    
+    if not all([client_col, wave_col, code_proj_col]):
+        return array_df, pd.DataFrame(), {'processed': total_empty, 'filled': 0, 'discrepancies': total_empty}
+    
+    # Создаем словарь для быстрого поиска
+    code_map = {}
+    for _, row in projects_df.iterrows():
+        client = str(row[client_col]).strip()
+        wave = str(row[wave_col]).strip()
+        code = str(row[code_proj_col]).strip()
+        if client and wave and code and code.lower() not in ['nan', 'none', 'null', '']:
+            code_map[(client, wave)] = code
+    
+    # Заполняем пустые коды
+    client_array_col = 'Имя клиента' if 'Имя клиента' in array_df.columns else None
+    wave_array_col = 'Название проекта' if 'Название проекта' in array_df.columns else None
+    
+    filled_count = 0
+    if client_array_col and wave_array_col:
+        for idx in rows_to_process.index:
+            client = str(array_df.loc[idx, client_array_col]).strip()
+            wave = str(array_df.loc[idx, wave_array_col]).strip()
+            code = code_map.get((client, wave))
+            if code:
+                array_df.loc[idx, code_col] = code
+                filled_count += 1
+    
+    # Собираем расхождения
+    discrepancy_rows = []
+    for idx in rows_to_process.index:
+        if not array_df.loc[idx, code_col] or str(array_df.loc[idx, code_col]).strip() == '':
+            discrepancy_rows.append(array_df.loc[idx].to_dict())
+    
+    discrepancy_df = pd.DataFrame(discrepancy_rows) if discrepancy_rows else pd.DataFrame()
+    
+    stats = {
+        'processed': total_empty,
+        'filled': filled_count,
+        'discrepancies': len(discrepancy_df)
+    }
+    
+    return array_df, discrepancy_df, stats
+    
+
 class DataCleaner:
 
     def _find_column(self, df, possible_names):
@@ -259,79 +344,8 @@ class DataCleaner:
             return None
         
     def enrich_array_with_project_codes(self, cleaned_array_df, projects_df):
-        """
-        Ищет и заполняет пустые 'Код анкеты' в очищенном Массиве,
-        используя данные из таблицы Проектов Сервизория.
-        """
-        array_df = cleaned_array_df.copy()
-        
-        projects_df = projects_df.copy()
-        
-        # Находим строки с пустым 'Код анкеты'
-        code_col = self._find_column(array_df, ['Код анкеты'])
-        if not code_col:
-            return array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
-        
-        empty_code_mask = (
-            array_df[code_col].isna() |
-            (array_df[code_col].astype(str).str.strip() == '')
-        )
-        rows_to_process = array_df[empty_code_mask]
-        total_empty = len(rows_to_process)
-        
-        if total_empty == 0:
-            return array_df, pd.DataFrame(), {'processed': 0, 'filled': 0, 'discrepancies': 0}
-        
-        # Подготовка проектов для быстрого поиска
-        project_client_col = self._find_column(projects_df, ['Проекты в  https://ru.checker-soft.com'])
-        project_wave_col = self._find_column(projects_df, ['Название волны на Чекере/ином ПО'])
-        project_code_col = self._find_column(projects_df, ['Код проекта RU00.000.00.01SVZ24'])
-        
-        if not all([project_client_col, project_wave_col, project_code_col]):
-            return array_df, pd.DataFrame(), {'processed': total_empty, 'filled': 0, 'discrepancies': total_empty}
-        
-        projects_df['_match_client'] = projects_df[project_client_col].astype(str).str.strip()
-        projects_df['_match_wave'] = projects_df[project_wave_col].astype(str).str.strip()
-        
-        # Счетчики
-        filled_count = 0
-        discrepancy_rows = []
-        
-        client_col = self._find_column(array_df, ['Имя клиента'])
-        wave_col = self._find_column(array_df, ['Название проекта'])
-        
-        for idx, row in rows_to_process.iterrows():
-            client_name = str(row[client_col]).strip() if pd.notna(row[client_col]) else ''
-            project_name = str(row[wave_col]).strip() if pd.notna(row[wave_col]) else ''
-            
-            # Ищем точное совпадение
-            match_mask = (
-                (projects_df['_match_client'] == client_name) &
-                (projects_df['_match_wave'] == project_name)
-            )
-            
-            matched_rows = projects_df[match_mask]
-            
-            if not matched_rows.empty:
-                project_code = matched_rows.iloc[0][project_code_col]
-                
-                if pd.notna(project_code) and str(project_code).strip() != '':
-                    array_df.at[idx, code_col] = str(project_code).strip()
-                    filled_count += 1
-                else:
-                    discrepancy_rows.append(row.to_dict())
-            else:
-                discrepancy_rows.append(row.to_dict())
-        
-        discrepancy_df = pd.DataFrame(discrepancy_rows) if discrepancy_rows else pd.DataFrame()
-        
-        stats = {
-            'processed': total_empty,
-            'filled': filled_count,
-            'discrepancies': len(discrepancy_df)
-        }
-        
-        return array_df, discrepancy_df, stats
+        """Обертка для кэшируемой версии"""
+        return _enrich_array_with_project_codes_cached(cleaned_array_df, projects_df)
 
     def export_discrepancies_to_excel(self, discrepancy_df, filename="Расхождение_Массив"):
         try:
@@ -375,49 +389,7 @@ class DataCleaner:
         except Exception as e:
             return None
     
-    def update_field_projects_flag(self, google_df):
-        """
-        Обновляет поле 'Полевой' в гугл таблице
-        """
-        try:
-            google_df = google_df.copy()
-            
-            code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24'])
-            if not code_col:
-                return google_df
-            
-            def is_field_project(code):
-                try:
-                    if pd.isna(code):
-                        return 0
-                        
-                    code_str = str(code).strip()
-                    lower_code = code_str.lower()
-                    
-                    if any(word in lower_code for word in ['мультикод','мультикол', 'пилот', 'семпл']):
-                        return 1
-                    
-                    parts = code_str.split('.')
-                    if len(parts) >= 4:
-                        country = parts[0]
-                        if len(parts[2]) >= 2:
-                            direction = '.' + parts[2][:2]
-                        else:
-                            direction = ''
-                        
-                        if country in ['RU00', 'RU01', 'RU02', 'RU03', 'RU04'] and direction in ['.01', '.02']:
-                            return 1
-                            
-                    return 0
-                except:
-                    return 0
-                            
-            google_df['Полевой'] = google_df[code_col].apply(is_field_project)
-            
-            return google_df
-            
-        except Exception as e:
-            return google_df
+
 
     def add_field_flag_to_array(self, array_df):
         """
@@ -456,7 +428,7 @@ class DataCleaner:
                 except:
                     return 0
             
-            array_df['Полевой'] = array_df[code_col].apply(is_field_project)
+            array_df['Полевой'] = self._is_field_project_vectorized(array_df[code_col])
             
             return array_df
             
@@ -894,9 +866,9 @@ class DataCleaner:
                                 result.at[idx, 'Код анкеты'] = str(project_code).strip()
                                 filled_count += 1
         
-        # Определение "Полевой"
+        # Определение "Полевой" (векторно)
         if 'Код анкеты' in result.columns and not result.empty:
-            result['Полевой'] = result['Код анкеты'].apply(self._is_field_project)
+            result['Полевой'] = self._is_field_project_vectorized(result['Код анкеты'])
         
         # Добавление ЗОД из встроенного справочника (по АСС)
         if 'АСС' in result.columns:
@@ -1501,32 +1473,19 @@ class DataCleaner:
         
         return result
     
-    def _is_field_project(self, code):
-        """Логика определения полевого проекта"""
-        try:
-            if pd.isna(code):
-                return 0
-                
-            code_str = str(code).strip()
-            lower_code = code_str.lower()
-            
-            if any(word in lower_code for word in ['мультикод', 'пилот', 'семпл']):
-                return 1
-            
-            parts = code_str.split('.')
-            if len(parts) >= 4:
-                country = parts[0]
-                if len(parts[2]) >= 2:
-                    direction = '.' + parts[2][:2]
-                else:
-                    direction = ''
-                
-                if country in ['RU00', 'RU01', 'RU02', 'RU03', 'RU04'] and direction in ['.01', '.02']:
-                    return 1
-                    
-            return 0
-        except:
-            return 0
+    def _is_field_project_vectorized(self, codes_series):
+        """Векторизованное определение полевых проектов (быстро)"""
+        codes_str = codes_series.astype(str).str.strip()
+        
+        # Ключевые слова: мультикод, пилот, семпл
+        keyword_mask = codes_str.str.contains('мультикод|пилот|семпл', case=False, na=False)
+        
+        # Коды с направлением .01 или .02
+        pattern = r'^RU0[0-4]\..*\.(01|02)\..*'
+        code_mask = codes_str.str.match(pattern, na=False)
+        
+        return (keyword_mask | code_mask).astype(int)
+        
     
     def merge_field_projects(self, array_field_df, cxway_field_df):
         """Объединяет полевые проекты из массива и CXWAY"""
@@ -1583,6 +1542,35 @@ class DataCleaner:
         portal_df = portal_df[~portal_codes.isin(cxway_codes)]
         
         return portal_df
+    
+    def enrich_array_batch(self, array_df, google_df):
+        """Быстрое обогащение: Полевой, ПО, ЗОД за один проход"""
+        df = array_df.copy()
+        
+        # Полевой (векторно)
+        df['Полевой'] = self._is_field_project_vectorized(df['Код анкеты'])
+        
+        # ПО из Google
+        google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
+        google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+        
+        portal_map = {}
+        if google_code_col and google_portal_col:
+            for _, row in google_df.iterrows():
+                code = str(row.get(google_code_col, '')).strip()
+                portal = str(row.get(google_portal_col, '')).strip()
+                if code and code.lower() not in ['nan', 'none', 'null', '']:
+                    portal_map[code] = portal
+        
+        df['ПО'] = df['Код анкеты'].map(portal_map).fillna('не определено')
+        
+        # ЗОД из справочника
+        if 'АСС' in df.columns:
+            df['ЗОД'] = df['АСС'].map(ZOD_MAPPING).fillna('')
+        else:
+            df['ЗОД'] = ''
+        
+        return df
         
 # Глобальный экземпляр
 data_cleaner = DataCleaner()

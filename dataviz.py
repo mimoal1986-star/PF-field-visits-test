@@ -455,7 +455,8 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('planfact_dsm_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.planfact_dsm_mode = dsm_mode
+                # Читаем значение из session_state (не присваиваем)
+                dsm_mode = st.session_state.planfact_dsm_mode
                 
                 dsm_selected = st.multiselect(
                     "Выбрать DSM",
@@ -473,7 +474,7 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('planfact_asm_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.planfact_asm_mode = asm_mode
+                asm_mode = st.session_state.planfact_asm_mode
                 
                 if dsm_selected:
                     asm_options = [a for a in all_asm if any(a in d for d in dsm_selected)]
@@ -496,7 +497,7 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('planfact_region_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.planfact_region_mode = region_mode
+                region_mode = st.session_state.planfact_region_mode
                 
                 region_selected_display = st.multiselect(
                     "Выбрать регион",
@@ -515,7 +516,7 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('planfact_client_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.planfact_client_mode = client_mode
+                client_mode = st.session_state.planfact_client_mode
                 
                 # Ограничиваем клиентов выбранными фильтрами
                 client_filtered = all_clients
@@ -826,7 +827,7 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('region_dsm_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.region_dsm_mode = dsm_mode
+                dsm_mode = st.session_state.region_dsm_mode
                 
                 dsm_selected = st.multiselect(
                     "Выбрать DSM",
@@ -844,7 +845,7 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('region_asm_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.region_asm_mode = asm_mode
+                asm_mode = st.session_state.region_asm_modee
                 
                 if dsm_selected:
                     asm_options = [a for a in all_asm if any(a in d for d in dsm_selected)]
@@ -867,7 +868,7 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('region_region_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.region_region_mode = region_mode
+                region_mode = st.session_state.region_region_mode
                 
                 region_selected_display = st.multiselect(
                     "Выбрать регион",
@@ -886,7 +887,7 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('region_client_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.region_client_mode = client_mode
+                client_mode = st.session_state.region_client_mode
                 
                 client_selected = st.multiselect(
                     "Выбрать клиента",

@@ -845,7 +845,7 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('region_asm_mode', 'Включить') == 'Включить' else 1
                 )
-                asm_mode = st.session_state.region_asm_modee
+                asm_mode = st.session_state.region_asm_mode
                 
                 if dsm_selected:
                     asm_options = [a for a in all_asm if any(a in d for d in dsm_selected)]

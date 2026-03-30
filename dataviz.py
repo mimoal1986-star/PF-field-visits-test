@@ -673,9 +673,45 @@ class DataVisualizer:
         with col3:
             pf_percent = (fact_total / plan_total * 100) if plan_total > 0 else 0
             st.metric("🎯 План/Факт проекта", f"{pf_percent:.1f}%")
+
+        # Второй ряд: План на дату, Факт на дату, План/Факт на дату
+        col4, col5, col6 = st.columns(3)
+        with col4:
+            plan_date_total = project_data['План на дату, шт.'].sum() if 'План на дату, шт.' in project_data.columns else 0
+            if include_prodata:
+                plan_date_total += prodata_plan_date_total
+            st.metric("📊 План на дату", f"{plan_date_total:,.0f} шт")
+        
+        with col5:
+            fact_date_total = project_data['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in project_data.columns else 0
+            if include_prodata:
+                fact_date_total += prodata_fact_date_total
+            st.metric("✅ Факт на дату", f"{fact_date_total:,.0f} шт")
+        
+        with col6:
+            pf_date_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
+            st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
         
         # Отображаем таблицу
-        display_cols = ['Клиент', 'ПО', 'План проекта, шт.', 'Факт проекта, шт.', 'План/Факт проекта,%']
+        display_cols = [
+            'Клиент', 
+            'ПО', 
+            'Длительность',
+            'План проекта, шт.', 
+            'Факт проекта, шт.', 
+            'План/Факт проекта,%',
+            'План на дату, шт.',
+            'Факт на дату, шт.',
+            'План/Факт на дату,%',
+            '△План/Факт на дату, шт',
+            '△План/Факт на дату, %',
+            'Прогноз на месяц, шт.',
+            'Фокус',
+            'Дней до конца проекта',
+            'Утилизация тайминга, %',
+            'Ср. план на день для 100% плана'
+        ]
+        
         existing_display = [c for c in display_cols if c in project_data.columns]
         st.dataframe(project_data[existing_display], use_container_width=True, hide_index=True)
         
@@ -996,8 +1032,24 @@ class DataVisualizer:
             st.metric("🎯 План/Факт проекта", f"{pf_percent:.1f}%")
         
         # Отображаем таблицу
-        display_cols = ['Регион', 'План проекта, шт.', 'Факт проекта, шт.', 'План/Факт проекта,%',
-                        'Кол-во проектов', 'Кол-во сотрудников']
+        display_cols = [
+            'Клиент', 
+            'ПО', 
+            'Длительность',
+            'План проекта, шт.', 
+            'Факт проекта, шт.', 
+            'План/Факт проекта,%',
+            'План на дату, шт.',
+            'Факт на дату, шт.',
+            'План/Факт на дату,%',
+            '△План/Факт на дату, шт',
+            '△План/Факт на дату, %',
+            'Прогноз на месяц, шт.',
+            'Фокус',
+            'Дней до конца проекта',
+            'Утилизация тайминга, %',
+            'Ср. план на день для 100% плана'
+        ]
         existing_display = [c for c in display_cols if c in region_agg.columns]
         
         # Преобразуем коды регионов в названия
@@ -1264,8 +1316,25 @@ class DataVisualizer:
             st.metric("🎯 План/Факт проекта", f"{pf_percent:.1f}%")
         
         # Отображаем таблицу
-        display_cols = ['DSM', 'План проекта, шт.', 'Факт проекта, шт.', 'План/Факт проекта,%',
-                        'Кол-во проектов', 'Кол-во сотрудников']
+        display_cols = [
+            'Клиент', 
+            'ПО', 
+            'Длительность',
+            'План проекта, шт.', 
+            'Факт проекта, шт.', 
+            'План/Факт проекта,%',
+            'План на дату, шт.',
+            'Факт на дату, шт.',
+            'План/Факт на дату,%',
+            '△План/Факт на дату, шт',
+            '△План/Факт на дату, %',
+            'Прогноз на месяц, шт.',
+            'Фокус',
+            'Дней до конца проекта',
+            'Утилизация тайминга, %',
+            'Ср. план на день для 100% плана'
+        ]
+
         existing_display = [c for c in display_cols if c in dsm_agg.columns]
         
         st.dataframe(dsm_agg[existing_display], use_container_width=True, hide_index=True)

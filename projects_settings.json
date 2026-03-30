@@ -1,6 +1,16 @@
 {
   "excluded_projects": [],
-  "included_projects": [],
+  "included_projects": [
+    {
+      "project_name": "CarPrice",
+      "wave_name": "2026.03",
+      "project_code": "RU00.013.06.01SVZ24",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-03-30T09:37:56.692777",
+      "added_by": "unknown_user"
+    }
+  ],
   "history": [
     {
       "action": "clear_all",
@@ -286,8 +296,16 @@
       "project_code": "",
       "timestamp": "2026-03-30T09:36:46.385101",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "CarPrice",
+      "wave_name": "2026.03",
+      "project_code": "RU00.013.06.01SVZ24",
+      "timestamp": "2026-03-30T09:37:56.692793",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-30T09:36:46.385119",
+  "last_updated": "2026-03-30T09:37:56.692798",
   "version": "1.0"
 }

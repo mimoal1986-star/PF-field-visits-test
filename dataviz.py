@@ -567,7 +567,7 @@ class DataVisualizer:
         
         st.subheader("📊 Детализация")
         
-        col1, col2, col3, col4, col5 = st.columns(5)
+        col1, col2, col3, col4, col5, col6 = st.columns(6)
         with col1:
             show_project = st.checkbox("Код проекта", key='planfact_show_project')
         with col2:
@@ -578,9 +578,11 @@ class DataVisualizer:
             show_asm = st.checkbox("ASM", key='planfact_show_asm')
         with col5:
             show_rs = st.checkbox("RS", key='planfact_show_rs')
+        with col6:
+            show_po = st.checkbox("ПО", key='planfact_show_po')
         
         # Формируем groupby в зависимости от чек-боксов
-        group_cols = ['Клиент', 'ПО']
+        group_cols = ['Клиент']
         
         if show_project and 'Проект' in display_data.columns:
             group_cols.append('Проект')
@@ -592,6 +594,8 @@ class DataVisualizer:
             group_cols.append('ASM')
         if show_rs and 'RS' in display_data.columns:
             group_cols.append('RS')
+        if show_po and 'ПО' in display_data.columns:
+            group_cols.append('ПО')
         
         # Агрегируем для отображения
         agg_columns = {

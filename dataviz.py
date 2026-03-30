@@ -1076,7 +1076,7 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('dsm_asm_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.dsm_asm_mode = asm_mode
+                asm_mode = st.session_state.dsm_asm_mode
                 
                 asm_selected = st.multiselect(
                     "Выбрать ASM",

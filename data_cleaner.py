@@ -965,15 +965,35 @@ class DataCleaner:
         if google_df is not None and not google_df.empty:
             google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
             google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+            google_client_col = self._find_column(google_df, ['Проекты в  https://ru.checker-soft.com', 'Проекты'])
             
-            if google_code_col and google_portal_col:
+            if google_code_col and google_portal_col and google_client_col:
+                # Находим проекты с ПО Чеккер
                 checker_mask = google_df[google_portal_col].astype(str).str.strip().str.upper() == 'ЧЕККЕР'
-                checker_codes = google_df.loc[checker_mask, google_code_col].astype(str).str.strip().tolist()
+                checker_df = google_df[checker_mask].copy()
                 
-                if checker_codes:
-                    result = result[~result['Код анкеты'].astype(str).str.strip().isin(checker_codes)]
-        
-        self._log_samples(result, "6. После удаления Чеккер")
+                if not checker_df.empty:
+                    # Создаем ключи (клиент + код) для проектов Чеккер
+                    checker_df['_key'] = (
+                        checker_df[google_client_col].astype(str).str.strip() + '|' +
+                        checker_df[google_code_col].astype(str).str.strip()
+                    )
+                    
+                    # Создаем ключи в CXWAY (клиент + код)
+                    result['_key'] = (
+                        result['Имя клиента'].astype(str).str.strip() + '|' +
+                        result['Код анкеты'].astype(str).str.strip()
+                    )
+                    
+                    # Определяем семплы и пилоты
+                    result['_is_sample_pilot'] = result['Код анкеты'].astype(str).str.contains('семпл|пилот', case=False, na=False)
+                    
+                    # Удаляем ТОЛЬКО обычные проекты (не семплы/пилоты)
+                    mask_to_remove = result['_key'].isin(checker_df['_key']) & ~result['_is_sample_pilot']
+                    result = result[~mask_to_remove]
+                    
+                    # Удаляем временные колонки
+                    result = result.drop(['_key', '_is_sample_pilot'], axis=1)
         
         # Добавление полного региона
         region_mapping = {
@@ -1575,29 +1595,52 @@ class DataCleaner:
             return array_field_df if array_field_df is not None else pd.DataFrame()
 
     def remove_cxway_from_portal(self, portal_df, google_df):
-        """Удаляет из портала проекты, которые в google отмечены как CXWAY"""
+        """Удаляет из портала проекты, которые в google отмечены как CXWAY (только для обычных проектов)"""
         if portal_df is None or portal_df.empty or google_df is None or google_df.empty:
             return portal_df
         
         code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
         portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+        client_col = self._find_column(google_df, ['Проекты в  https://ru.checker-soft.com', 'Проекты'])
         
-        if code_col is None or portal_col is None:
+        if code_col is None or portal_col is None or client_col is None:
             return portal_df
         
+        # Находим проекты с ПО CXWAY
         cxway_mask = google_df[portal_col].astype(str).str.strip().str.upper() == 'CXWAY'
-        cxway_codes = google_df.loc[cxway_mask, code_col].astype(str).str.strip().tolist()
+        cxway_df = google_df[cxway_mask].copy()
         
-        if not cxway_codes:
+        if cxway_df.empty:
             return portal_df
         
+        # Создаем ключи (клиент + код) для CXWAY-проектов
+        cxway_df['_key'] = (
+            cxway_df[client_col].astype(str).str.strip() + '|' +
+            cxway_df[code_col].astype(str).str.strip()
+        )
+        
+        # Создаем ключи в портале (клиент + код)
         portal_code_col = self._find_column(portal_df, ['Код анкеты', 'Код'])
-        if portal_code_col is None:
+        portal_client_col = self._find_column(portal_df, ['Имя клиента', 'Client'])
+        
+        if portal_code_col is None or portal_client_col is None:
             return portal_df
         
         portal_df = portal_df.copy()
-        portal_codes = portal_df[portal_code_col].astype(str).str.strip()
-        portal_df = portal_df[~portal_codes.isin(cxway_codes)]
+        portal_df['_key'] = (
+            portal_df[portal_client_col].astype(str).str.strip() + '|' +
+            portal_df[portal_code_col].astype(str).str.strip()
+        )
+        
+        # Определяем семплы и пилоты в портале
+        portal_df['_is_sample_pilot'] = portal_df[portal_code_col].astype(str).str.contains('семпл|пилот', case=False, na=False)
+        
+        # Удаляем ТОЛЬКО обычные проекты (не семплы/пилоты)
+        mask_to_remove = portal_df['_key'].isin(cxway_df['_key']) & ~portal_df['_is_sample_pilot']
+        portal_df = portal_df[~mask_to_remove]
+        
+        # Удаляем временные колонки
+        portal_df = portal_df.drop(['_key', '_is_sample_pilot'], axis=1)
         
         return portal_df
     

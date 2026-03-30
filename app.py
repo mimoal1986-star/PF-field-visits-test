@@ -629,6 +629,30 @@ if st.session_state.cleaned_data.get('полевые_проекты') is not Non
         st.info("Нет данных для выгрузки")
 
 # ============================================
+# ВЫГРУЗКА НЕПОЛЕВЫХ ПРОЕКТОВ
+# ============================================
+if st.session_state.cleaned_data.get('неполевые_проекты') is not None:
+    st.markdown("---")
+    
+    non_field_projects_df = st.session_state.cleaned_data['неполевые_проекты']
+    
+    if not non_field_projects_df.empty:
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            non_field_projects_df.to_excel(writer, sheet_name='Неполевые_проекты', index=False)
+        
+        st.download_button(
+            label="📥 Скачать все неполевые проекты",
+            data=output.getvalue(),
+            file_name=f"неполевые_проекты_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            type="secondary",
+            width='stretch'
+        )
+    else:
+        st.info("Нет данных для выгрузки")
+
+# ============================================
 # ВКЛАДКА 3: НАСТРОЙКИ ПРОЕКТОВ
 # ============================================
 with tab3:

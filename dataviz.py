@@ -697,9 +697,24 @@ class DataVisualizer:
             st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
         
         # Отображаем таблицу
-        display_cols = [
-            'Клиент', 
-            'ПО', 
+        display_cols = ['Клиент']
+        
+        # Добавляем колонки развертки в зависимости от чек-боксов
+        if show_project and 'Проект' in project_data.columns:
+            display_cols.append('Проект')
+        if show_regions and region_col in project_data.columns:
+            display_cols.append(region_col)
+        if show_dsm and 'DSM' in project_data.columns:
+            display_cols.append('DSM')
+        if show_asm and 'ASM' in project_data.columns:
+            display_cols.append('ASM')
+        if show_rs and 'RS' in project_data.columns:
+            display_cols.append('RS')
+        if show_po and 'ПО' in project_data.columns:
+            display_cols.append('ПО')
+        
+        # Колонки, которые показываются всегда
+        always_show = [
             'Длительность',
             'План проекта, шт.', 
             'Факт проекта, шт.', 
@@ -716,8 +731,14 @@ class DataVisualizer:
             'Ср. план на день для 100% плана'
         ]
         
+        # Добавляем всегда показываемые колонки, если они есть в данных
+        for col in always_show:
+            if col in project_data.columns:
+                display_cols.append(col)
+        
         existing_display = [c for c in display_cols if c in project_data.columns]
         st.dataframe(project_data[existing_display], use_container_width=True, hide_index=True)
+
         
         # Кнопка скачивания
         output = BytesIO()

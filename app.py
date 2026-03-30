@@ -190,6 +190,10 @@ def process_all_data(settings_manager=None):
         # Объединяем все проекты в один датасет
         all_projects = pd.concat([field_df, non_field_df], ignore_index=True)
         st.session_state.cleaned_data['all_projects'] = all_projects
+
+        # 2. Создаем обновленные датасеты
+        field_df = all_projects[all_projects['Полевой'] == 1].copy()
+        non_field_df = all_projects[all_projects['Полевой'] == 0].copy()
         
         # Создаем датасеты на основе актуального значения Полевой
         st.session_state.cleaned_data['полевые_проекты'] = all_projects[all_projects['Полевой'] == 1].copy()

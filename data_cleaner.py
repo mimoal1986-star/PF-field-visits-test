@@ -102,6 +102,23 @@ def _enrich_array_with_project_codes_cached(array_df, projects_df):
     
 
 class DataCleaner:
+    
+    def _log_samples(self, df, stage_name):
+        """Вспомогательная функция для отладки семплов"""
+        if df is None or df.empty:
+            st.write(f"🔍 {stage_name}: 0 семплов (DataFrame пуст)")
+            return
+        
+        sample_mask = df['Код анкеты'].astype(str).str.contains('семпл', case=False, na=False)
+        sample_df = df[sample_mask]
+        sample_count = len(sample_df)
+        
+        st.write(f"🔍 {stage_name}: {sample_count} семплов")
+        
+        # Если есть семплы, показываем их коды
+        if sample_count > 0:
+            sample_codes = sample_df['Код анкеты'].unique()
+            st.write(f"   Коды: {list(sample_codes)}")
 
     def _find_column(self, df, possible_names):
         """Находит колонку по возможным названиям"""
@@ -805,12 +822,15 @@ class DataCleaner:
         if df is None or df.empty:
             return pd.DataFrame()
         
+        self._log_samples(df, "1. Исходные данные")
         df_clean = df.copy()
         
         # Удалить строки где Status == "Удалено"
         status_col = self._find_column(df_clean, ['Status', 'Статус', 'status'])
         if status_col:
             df_clean = df_clean[df_clean[status_col].astype(str).str.strip() != 'Удалено']
+       
+        self._log_samples(df_clean, "2. После удаления статуса")
         
         # Удалить строки где Date of Visit < первый день месяца
         date_col = self._find_column(df_clean, ['Date of Visit', 'Дата визита', 'Visit Date'])
@@ -825,6 +845,8 @@ class DataCleaner:
             df_clean[date_col] = pd.to_datetime(df_clean[date_col], errors='coerce')
             mask = pd.isna(df_clean[date_col]) | (df_clean[date_col] >= first_day)
             df_clean = df_clean[mask]
+        
+        self._log_samples(df_clean, "3. После фильтра дат")
         
         # Базовые колонки
         column_mapping = {
@@ -885,9 +907,13 @@ class DataCleaner:
                                 result.at[idx, 'Код анкеты'] = str(project_code).strip()
                                 filled_count += 1
         
+        self._log_samples(result, "4. После обогащения кодами")
+        
         # Определение "Полевой" (векторно)
         if 'Код анкеты' in result.columns and not result.empty:
             result['Полевой'] = self._is_field_project_vectorized(result['Код анкеты'])
+
+        self._log_samples(result, "5. После определения полевого")
         
         # Добавление ЗОД из встроенного справочника (по АСС)
         if 'АСС' in result.columns:
@@ -937,6 +963,8 @@ class DataCleaner:
                 
                 if checker_codes:
                     result = result[~result['Код анкеты'].astype(str).str.strip().isin(checker_codes)]
+        
+        self._log_samples(result, "6. После удаления Чеккер")
         
         # Добавление полного региона
         region_mapping = {

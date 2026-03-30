@@ -1094,7 +1094,8 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('dsm_client_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.dsm_client_mode = client_mode
+                
+                client_mode = st.session_state.dsm_client_mode
                 
                 client_selected = st.multiselect(
                     "Выбрать клиента",
@@ -1112,7 +1113,8 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('dsm_project_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.dsm_project_mode = project_mode
+
+                project_mode = st.session_state.dsm_project_mode
                 
                 project_selected = st.multiselect(
                     "Выбрать проект",
@@ -1130,7 +1132,8 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('dsm_wave_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.dsm_wave_mode = wave_mode
+
+                wave_mode = st.session_state.dsm_wave_mode
                 
                 wave_selected = st.multiselect(
                     "Выбрать волну",
@@ -1148,7 +1151,8 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('dsm_region_mode', 'Включить') == 'Включить' else 1
                 )
-                st.session_state.dsm_region_mode = region_mode
+
+                region_mode = st.session_state.dsm_region_mode
                 
                 region_selected_display = st.multiselect(
                     "Выбрать регион",
@@ -1181,6 +1185,7 @@ class DataVisualizer:
                 region_selected, st.session_state.dsm_region_mode,
                 region_col
             )
+ 
             st.session_state.dsm_filtered_data = filtered_data
         
         if st.session_state.dsm_filtered_data is not None:

@@ -9,6 +9,15 @@
       "fio_om": "",
       "added_at": "2026-03-30T09:20:22.718131",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "3_Волна_Визит в офис продаж",
+      "project_code": "RU00.265.15.03SVZ25",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-03-30T09:35:25.416894",
+      "added_by": "unknown_user"
     }
   ],
   "history": [
@@ -264,8 +273,16 @@
       "project_code": "RU00.013.06.01SVZ24",
       "timestamp": "2026-03-30T09:20:22.718208",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "3_Волна_Визит в офис продаж",
+      "project_code": "RU00.265.15.03SVZ25",
+      "timestamp": "2026-03-30T09:35:25.416910",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-30T09:20:22.718215",
+  "last_updated": "2026-03-30T09:35:25.416915",
   "version": "1.0"
 }

@@ -560,12 +560,14 @@ class DataCleaner:
                     if col not in field_projects.columns:
                         field_projects[col] = '' if col != 'Полевой' else 0
                 field_projects = field_projects.reindex(columns=final_columns)
+                field_projects['Источник'] = 'Портал'
             
             if not non_field_projects.empty:
                 for col in final_columns:
                     if col not in non_field_projects.columns:
                         non_field_projects[col] = '' if col != 'Полевой' else 0
                 non_field_projects = non_field_projects.reindex(columns=final_columns)
+                non_field_projects['Источник'] = 'Портал'
             
             return field_projects, non_field_projects
             
@@ -1262,6 +1264,8 @@ class DataCleaner:
             result['ЗОД'] = result['АСС'].apply(get_zod)
         else:
             result['ЗОД'] = ''
+        
+        result['Источник'] = 'Optima'
         
         return result
     

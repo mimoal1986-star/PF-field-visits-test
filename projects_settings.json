@@ -278,8 +278,16 @@
       "project_code": "RU00.265.15.03SVZ25",
       "timestamp": "2026-03-30T09:35:46.659312",
       "user": "unknown_user"
+    },
+    {
+      "action": "clear_all",
+      "project_name": "",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-03-30T09:36:46.385101",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-30T09:35:46.659321",
+  "last_updated": "2026-03-30T09:36:46.385119",
   "version": "1.0"
 }

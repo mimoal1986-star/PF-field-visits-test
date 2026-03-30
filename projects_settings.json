@@ -9,6 +9,15 @@
       "fio_om": "",
       "added_at": "2026-03-30T10:04:02.301380",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Томскэнергосбыт",
+      "wave_name": "03.2026",
+      "project_code": "",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-03-30T10:19:07.926913",
+      "added_by": "unknown_user"
     }
   ],
   "history": [
@@ -320,8 +329,16 @@
       "project_code": "RU00.013.06.01SVZ24",
       "timestamp": "2026-03-30T10:04:02.301402",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Томскэнергосбыт",
+      "wave_name": "03.2026",
+      "project_code": "",
+      "timestamp": "2026-03-30T10:19:07.926938",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-30T10:04:02.301409",
+  "last_updated": "2026-03-30T10:19:07.926946",
   "version": "1.0"
 }

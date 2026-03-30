@@ -109,15 +109,24 @@ class DataCleaner:
             st.write(f"🔍 {stage_name}: 0 семплов (DataFrame пуст)")
             return
         
-        sample_mask = df['Код анкеты'].astype(str).str.contains('семпл', case=False, na=False)
+        # Проверяем, есть ли колонка с кодом
+        code_col = None
+        if 'Код анкеты' in df.columns:
+            code_col = 'Код анкеты'
+        elif 'Project Code' in df.columns:
+            code_col = 'Project Code'
+        else:
+            st.write(f"🔍 {stage_name}: нет колонки с кодом, пропускаем")
+            return
+        
+        sample_mask = df[code_col].astype(str).str.contains('семпл', case=False, na=False)
         sample_df = df[sample_mask]
         sample_count = len(sample_df)
         
         st.write(f"🔍 {stage_name}: {sample_count} семплов")
         
-        # Если есть семплы, показываем их коды
         if sample_count > 0:
-            sample_codes = sample_df['Код анкеты'].unique()
+            sample_codes = sample_df[code_col].unique()
             st.write(f"   Коды: {list(sample_codes)}")
 
     def _find_column(self, df, possible_names):

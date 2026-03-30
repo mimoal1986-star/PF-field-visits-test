@@ -314,6 +314,12 @@ def process_all_data(settings_manager=None):
             st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
         else:
             st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()
+
+        all_projects_export = pd.concat([
+            st.session_state.cleaned_data['полевые_проекты'],
+            st.session_state.cleaned_data['неполевые_проекты']
+        ], ignore_index=True)
+        st.session_state.cleaned_data['all_projects'] = all_projects_export
     
 
         

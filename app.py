@@ -189,6 +189,7 @@ def process_all_data(settings_manager=None):
         
         # Объединяем все проекты в один датасет
         all_projects = pd.concat([field_df, non_field_df], ignore_index=True)
+        st.session_state.cleaned_data['all_projects'] = all_projects
         
         # Создаем датасеты на основе актуального значения Полевой
         st.session_state.cleaned_data['полевые_проекты'] = all_projects[all_projects['Полевой'] == 1].copy()
@@ -645,6 +646,30 @@ if st.session_state.cleaned_data.get('неполевые_проекты') is not
             label="📥 Скачать все неполевые проекты",
             data=output.getvalue(),
             file_name=f"неполевые_проекты_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            type="secondary",
+            width='stretch'
+        )
+    else:
+        st.info("Нет данных для выгрузки")
+
+# ============================================
+# ВЫГРУЗКА ALL_PROJECTS (ОБЪЕДИНЕННЫЙ ДАТАСЕТ)
+# ============================================
+if 'all_projects' in st.session_state.cleaned_data:
+    st.markdown("---")
+    
+    all_projects_df = st.session_state.cleaned_data['all_projects']
+    
+    if not all_projects_df.empty:
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            all_projects_df.to_excel(writer, sheet_name='Все_проекты', index=False)
+        
+        st.download_button(
+            label="📥 Скачать all_projects (все проекты)",
+            data=output.getvalue(),
+            file_name=f"all_projects_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="secondary",
             width='stretch'

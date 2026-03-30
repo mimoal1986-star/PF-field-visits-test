@@ -294,9 +294,11 @@ def process_all_data(settings_manager=None):
         
         if field_df is not None and not field_df.empty:
             sources_for_merge.append(field_df)
-        
+            
         if cxway_processed is not None and not cxway_processed.empty:
-            sources_for_merge.append(cxway_processed)
+            cxway_field_only = cxway_processed[cxway_processed['Полевой'] == 1].copy()
+            if not cxway_field_only.empty:
+                sources_for_merge.append(cxway_field_only)
         
         if easymerch_processed is not None and not easymerch_processed.empty:
             sources_for_merge.append(easymerch_processed)

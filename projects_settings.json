@@ -1,70 +1,6 @@
 {
   "excluded_projects": [],
-  "included_projects": [
-    {
-      "project_name": "ТАЙНЫЙ ПАССАЖИР",
-      "wave_name": "3_Волна_Визит в офис продаж",
-      "project_code": "RU00.265.15.03SVZ25",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-27T16:35:08.292225",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-03-28T12:24:40.731105",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Sminex ",
-      "wave_name": "Sminex_03.2026",
-      "project_code": "RU00.398.06.01SVZ26",
-      "portal": "CXWAY",
-      "fio_om": "",
-      "added_at": "2026-03-28T12:24:40.731249",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "ТАЙНЫЙ ПАССАЖИР",
-      "wave_name": "3_Волна_Звонки",
-      "project_code": "RU00.265.03.01SVZ25",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-30T09:02:50.191212",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "ГЛАВСТРОЙ",
-      "wave_name": "2026.03",
-      "project_code": "RU00.342.06.01SVZ25",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-30T09:02:50.191365",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "ГЛАВСТРОЙ",
-      "wave_name": "2026.03",
-      "project_code": "RU00.343.06.02SVZ25",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-30T09:08:19.884651",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Roseville",
-      "wave_name": "2026-03",
-      "project_code": "RU00.366.06.01SVZ25",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-30T09:08:19.884776",
-      "added_by": "unknown_user"
-    }
-  ],
+  "included_projects": [],
   "history": [
     {
       "action": "clear_all",
@@ -302,8 +238,16 @@
       "project_code": "RU00.366.06.01SVZ25",
       "timestamp": "2026-03-30T09:08:19.884782",
       "user": "unknown_user"
+    },
+    {
+      "action": "clear_all",
+      "project_name": "",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-03-30T09:09:09.794992",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-30T09:08:19.884786",
+  "last_updated": "2026-03-30T09:09:09.795005",
   "version": "1.0"
 }

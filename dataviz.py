@@ -1030,6 +1030,24 @@ class DataVisualizer:
         with col3:
             pf_percent = (fact_total / plan_total * 100) if plan_total > 0 else 0
             st.metric("🎯 План/Факт проекта", f"{pf_percent:.1f}%")
+            
+        # Второй ряд: План на дату, Факт на дату, План/Факт на дату
+        col4, col5, col6 = st.columns(3)
+        with col4:
+            plan_date_total = region_agg['План на дату, шт.'].sum() if 'План на дату, шт.' in region_agg.columns else 0
+            if include_prodata:
+                plan_date_total += prodata_plan_date_total
+            st.metric("📊 План на дату", f"{plan_date_total:,.0f} шт")
+        
+        with col5:
+            fact_date_total = region_agg['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in region_agg.columns else 0
+            if include_prodata:
+                fact_date_total += prodata_fact_date_total
+            st.metric("✅ Факт на дату", f"{fact_date_total:,.0f} шт")
+        
+        with col6:
+            pf_date_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
+            st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
         
         # Отображаем таблицу
         display_cols = [
@@ -1314,6 +1332,24 @@ class DataVisualizer:
         with col3:
             pf_percent = (fact_total / plan_total * 100) if plan_total > 0 else 0
             st.metric("🎯 План/Факт проекта", f"{pf_percent:.1f}%")
+
+        # Второй ряд: План на дату, Факт на дату, План/Факт на дату
+        col4, col5, col6 = st.columns(3)
+        with col4:
+            plan_date_total = dsm_agg['План на дату, шт.'].sum() if 'План на дату, шт.' in dsm_agg.columns else 0
+            if include_prodata:
+                plan_date_total += prodata_plan_date_total
+            st.metric("📊 План на дату", f"{plan_date_total:,.0f} шт")
+        
+        with col5:
+            fact_date_total = dsm_agg['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in dsm_agg.columns else 0
+            if include_prodata:
+                fact_date_total += prodata_fact_date_total
+            st.metric("✅ Факт на дату", f"{fact_date_total:,.0f} шт")
+        
+        with col6:
+            pf_date_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
+            st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
         
         # Отображаем таблицу
         display_cols = [

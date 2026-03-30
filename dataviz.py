@@ -613,10 +613,8 @@ class DataVisualizer:
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
         
-        if len(group_cols) > 1:
-            project_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
-        else:
-            project_data = display_data
+        # ВСЕГДА группируем (даже если group_cols == ['Клиент'])
+        project_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
         
         # Добавляем вычисляемые метрики
         mask_plan = project_data['План на дату, шт.'] > 0

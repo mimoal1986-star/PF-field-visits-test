@@ -45,6 +45,24 @@
       "fio_om": "",
       "added_at": "2026-03-30T09:02:50.191365",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.03",
+      "project_code": "RU00.343.06.02SVZ25",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-03-30T09:08:19.884651",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Roseville",
+      "wave_name": "2026-03",
+      "project_code": "RU00.366.06.01SVZ25",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-03-30T09:08:19.884776",
+      "added_by": "unknown_user"
     }
   ],
   "history": [
@@ -268,8 +286,24 @@
       "project_code": "RU00.342.06.01SVZ25",
       "timestamp": "2026-03-30T09:02:50.191375",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.03",
+      "project_code": "RU00.343.06.02SVZ25",
+      "timestamp": "2026-03-30T09:08:19.884669",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Roseville",
+      "wave_name": "2026-03",
+      "project_code": "RU00.366.06.01SVZ25",
+      "timestamp": "2026-03-30T09:08:19.884782",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-03-30T09:02:50.191381",
+  "last_updated": "2026-03-30T09:08:19.884786",
   "version": "1.0"
 }

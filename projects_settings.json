@@ -72,6 +72,15 @@
       "fio_om": "",
       "added_at": "2026-04-01T09:59:29.442966",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Банк ДОМ.РФ_Семпл ",
+      "wave_name": "nan",
+      "project_code": "nan",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-01T14:14:27.111165",
+      "added_by": "unknown_user"
     }
   ],
   "history": [
@@ -439,8 +448,16 @@
       "project_code": "RU00.398.06.01SVZ26",
       "timestamp": "2026-04-01T09:59:29.442985",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Банк ДОМ.РФ_Семпл ",
+      "wave_name": "nan",
+      "project_code": "nan",
+      "timestamp": "2026-04-01T14:14:27.111187",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-01T09:59:29.442991",
+  "last_updated": "2026-04-01T14:14:27.111193",
   "version": "1.0"
 }

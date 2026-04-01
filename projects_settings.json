@@ -1,5 +1,132 @@
 {
-  "excluded_projects": [],
+  "excluded_projects": [
+    {
+      "project_name": "Северсталь_Тайный соискатель",
+      "wave_name": "1 волна 12.2025",
+      "project_code": "Мультикод_.385",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.056710",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Philip Morris_КБ_Бристоль",
+      "wave_name": "2026.02_Krasnoe&Beloe",
+      "project_code": "Мультикод_048",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.056819",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "FIBA Retail",
+      "wave_name": "2026_03_OXXO",
+      "project_code": "RU00.021.01.03SVZ24",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.056891",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Северсталь_Тайный соискатель",
+      "wave_name": "1 волна 03.2026 Звонок",
+      "project_code": "Мультикод_.385",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.056957",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Philip Morris Партнеры",
+      "wave_name": "2026.02_ГИПЕРГЛОБУС",
+      "project_code": "RU00.048.01.05SVZ24",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.057023",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Philip Morris_КБ_Бристоль",
+      "wave_name": "2026.02._Bristol",
+      "project_code": "Мультикод_048",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.057086",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Тамбовский бекон ",
+      "wave_name": "nan",
+      "project_code": "RU00.276.02.01SVZ24",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.057152",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Mascotte ",
+      "wave_name": "2026.02 Masscote",
+      "project_code": "RU00.077.01.02SVZ24",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.057279",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "FIBA Retail ",
+      "wave_name": "Club 03.2026",
+      "project_code": "RU00.021.01.04SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.057386",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "МВЭД_ВТБ Банк ",
+      "wave_name": "МВЭД_02-03.2026",
+      "project_code": "RU00.116.01.02SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.057466",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "FIBA Retail ",
+      "wave_name": "NetWork 03.2026",
+      "project_code": "RU00.021.01.04SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.057534",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "FIBA Retail ",
+      "wave_name": "OXXO 03.2026",
+      "project_code": "RU00.021.01.03SVZ24",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.057600",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Mascotte ",
+      "wave_name": "2026.03 Masscote",
+      "project_code": "RU00.077.01.02SVZ24",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.057664",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "FIBA Retail ",
+      "wave_name": "MANGO 03.2026",
+      "project_code": "RU00.021.01.01SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-04-01T16:50:01.057757",
+      "added_by": "unknown_user"
+    }
+  ],
   "included_projects": [
     {
       "project_name": "CarPrice",
@@ -456,8 +583,120 @@
       "project_code": "nan",
       "timestamp": "2026-04-01T14:14:27.111187",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Северсталь_Тайный соискатель",
+      "wave_name": "1 волна 12.2025",
+      "project_code": "Мультикод_.385",
+      "timestamp": "2026-04-01T16:50:01.056727",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Philip Morris_КБ_Бристоль",
+      "wave_name": "2026.02_Krasnoe&Beloe",
+      "project_code": "Мультикод_048",
+      "timestamp": "2026-04-01T16:50:01.056823",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "FIBA Retail",
+      "wave_name": "2026_03_OXXO",
+      "project_code": "RU00.021.01.03SVZ24",
+      "timestamp": "2026-04-01T16:50:01.056895",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Северсталь_Тайный соискатель",
+      "wave_name": "1 волна 03.2026 Звонок",
+      "project_code": "Мультикод_.385",
+      "timestamp": "2026-04-01T16:50:01.056962",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Philip Morris Партнеры",
+      "wave_name": "2026.02_ГИПЕРГЛОБУС",
+      "project_code": "RU00.048.01.05SVZ24",
+      "timestamp": "2026-04-01T16:50:01.057027",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Philip Morris_КБ_Бристоль",
+      "wave_name": "2026.02._Bristol",
+      "project_code": "Мультикод_048",
+      "timestamp": "2026-04-01T16:50:01.057090",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Тамбовский бекон ",
+      "wave_name": "nan",
+      "project_code": "RU00.276.02.01SVZ24",
+      "timestamp": "2026-04-01T16:50:01.057156",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Mascotte ",
+      "wave_name": "2026.02 Masscote",
+      "project_code": "RU00.077.01.02SVZ24",
+      "timestamp": "2026-04-01T16:50:01.057286",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "FIBA Retail ",
+      "wave_name": "Club 03.2026",
+      "project_code": "RU00.021.01.04SVZ24",
+      "timestamp": "2026-04-01T16:50:01.057393",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "МВЭД_ВТБ Банк ",
+      "wave_name": "МВЭД_02-03.2026",
+      "project_code": "RU00.116.01.02SVZ24",
+      "timestamp": "2026-04-01T16:50:01.057471",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "FIBA Retail ",
+      "wave_name": "NetWork 03.2026",
+      "project_code": "RU00.021.01.04SVZ24",
+      "timestamp": "2026-04-01T16:50:01.057539",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "FIBA Retail ",
+      "wave_name": "OXXO 03.2026",
+      "project_code": "RU00.021.01.03SVZ24",
+      "timestamp": "2026-04-01T16:50:01.057605",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Mascotte ",
+      "wave_name": "2026.03 Masscote",
+      "project_code": "RU00.077.01.02SVZ24",
+      "timestamp": "2026-04-01T16:50:01.057669",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "FIBA Retail ",
+      "wave_name": "MANGO 03.2026",
+      "project_code": "RU00.021.01.01SVZ24",
+      "timestamp": "2026-04-01T16:50:01.057762",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-01T14:14:27.111193",
+  "last_updated": "2026-04-01T16:50:01.057765",
   "version": "1.0"
 }

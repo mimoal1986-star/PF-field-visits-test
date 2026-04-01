@@ -316,38 +316,31 @@ def process_all_data(settings_manager=None):
             st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()
 
         # ============================================
-        # ПРИМЕНЕНИЕ НАСТРОЕК GITHUB ДЛЯ CXWAY/EASYMERCH/OPTIMA
+        # ПРИМЕНЕНИЕ НАСТРОЕК ДЛЯ CXWAY/EASYMERCH/OPTIMA
         # ============================================
         
         # 1. Обрабатываем excluded_df (исключаем проекты из расчета)
         if not excluded_df.empty and not all_field_projects.empty:
-            # Создаем ключи для excluded проектов
             excluded_df['_key'] = (
                 excluded_df['Название проекта'].astype(str).str.strip() + '|' +
                 excluded_df['Волна'].astype(str).str.strip() + '|' +
                 excluded_df['Код проекта'].astype(str).str.strip()
             )
             
-            # Создаем ключи в all_field_projects
             all_field_projects['_key'] = (
                 all_field_projects['Имя клиента'].astype(str).str.strip() + '|' +
                 all_field_projects['Название проекта'].astype(str).str.strip() + '|' +
                 all_field_projects['Код анкеты'].astype(str).str.strip()
             )
             
-            # Удаляем исключенные проекты из all_field_projects
             all_field_projects = all_field_projects[~all_field_projects['_key'].isin(excluded_df['_key'])]
-            
-            # Удаляем временные колонки
             all_field_projects = all_field_projects.drop('_key', axis=1)
             excluded_df = excluded_df.drop('_key', axis=1)
             
-            # Сохраняем обновленные полевые проекты
             st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
         
         # 2. Обрабатываем included_df (добавляем проекты в расчет)
         if not included_df.empty:
-            # Создаем ключи для included проектов
             included_df['_key'] = (
                 included_df['Название проекта'].astype(str).str.strip() + '|' +
                 included_df['Волна'].astype(str).str.strip() + '|' +
@@ -364,58 +357,123 @@ def process_all_data(settings_manager=None):
                 existing_keys = set(all_field_projects['_key'])
             else:
                 existing_keys = set()
-                all_field_projects = pd.DataFrame()
             
-            # Находим проекты, которых еще нет в all_field_projects
+            # Находим проекты, которых еще нет
             new_projects = included_df[~included_df['_key'].isin(existing_keys)].copy()
             
             if not new_projects.empty:
-                # Преобразуем в формат all_field_projects
-                new_rows = []
-                for _, row in new_projects.iterrows():
-                    new_rows.append({
-                        'Имя клиента': row['Название проекта'],
-                        'Название проекта': row['Волна'],
-                        'Код анкеты': row['Код проекта'],
-                        'ПО': row['ПО'],
-                        'Полевой': 1,
-                        'Источник': 'Добавлен вручную',
-                        'ЗОД': '',
-                        'АСС': '',
-                        'ЭМ': '',
-                        'Регион short': '',
-                        'Регион': '',
-                        'Статус': '',
-                        'Дата визита': pd.NaT
-                    })
-                new_df = pd.DataFrame(new_rows)
+                all_source_rows = []
+                not_found_projects = []
+                new_keys = set(new_projects['_key'])
                 
-                # Добавляем новые проекты
-                if all_field_projects.empty:
-                    all_field_projects = new_df
-                else:
-                    all_field_projects = pd.concat([all_field_projects, new_df], ignore_index=True)
-                
-                # Также удаляем эти проекты из неполевых_проекты (если они там есть)
-                if 'неполевые_проекты' in st.session_state.cleaned_data:
-                    non_field = st.session_state.cleaned_data['неполевые_проекты']
-                    if not non_field.empty:
-                        non_field['_key'] = (
-                            non_field['Имя клиента'].astype(str).str.strip() + '|' +
-                            non_field['Название проекта'].astype(str).str.strip() + '|' +
-                            non_field['Код анкеты'].astype(str).str.strip()
+                # Создаем ключи в источниках
+                if 'cxway_processed' in locals() and cxway_processed is not None and not cxway_processed.empty:
+                    if '_key' not in cxway_processed.columns:
+                        cxway_processed['_key'] = (
+                            cxway_processed['Имя клиента'].astype(str).str.strip() + '|' +
+                            cxway_processed['Название проекта'].astype(str).str.strip() + '|' +
+                            cxway_processed['Код анкеты'].astype(str).str.strip()
                         )
-                        non_field = non_field[~non_field['_key'].isin(new_projects['_key'])]
-                        non_field = non_field.drop('_key', axis=1)
-                        st.session_state.cleaned_data['неполевые_проекты'] = non_field
+                
+                if 'optima_processed' in locals() and optima_processed is not None and not optima_processed.empty:
+                    if '_key' not in optima_processed.columns:
+                        optima_processed['_key'] = (
+                            optima_processed['Имя клиента'].astype(str).str.strip() + '|' +
+                            optima_processed['Название проекта'].astype(str).str.strip() + '|' +
+                            optima_processed['Код анкеты'].astype(str).str.strip()
+                        )
+                
+                if 'easymerch_processed' in locals() and easymerch_processed is not None and not easymerch_processed.empty:
+                    if '_key' not in easymerch_processed.columns:
+                        easymerch_processed['_key'] = (
+                            easymerch_processed['Имя клиента'].astype(str).str.strip() + '|' +
+                            easymerch_processed['Название проекта'].astype(str).str.strip() + '|' +
+                            easymerch_processed['Код анкеты'].astype(str).str.strip()
+                        )
+                
+                # Портал
+                portal_df = None
+                if 'портал_с_полем' in st.session_state.cleaned_data:
+                    portal_df = st.session_state.cleaned_data['портал_с_полем'].copy()
+                    if portal_df is not None and not portal_df.empty and '_key' not in portal_df.columns:
+                        portal_df['_key'] = (
+                            portal_df['Имя клиента'].astype(str).str.strip() + '|' +
+                            portal_df['Название проекта'].astype(str).str.strip() + '|' +
+                            portal_df['Код анкеты'].astype(str).str.strip()
+                        )
+                
+                # Поиск в CXWAY
+                if 'cxway_processed' in locals() and cxway_processed is not None and not cxway_processed.empty:
+                    matches = cxway_processed[cxway_processed['_key'].isin(new_keys)].copy()
+                    if not matches.empty:
+                        matches['Полевой'] = 1
+                        matches['Источник'] = 'CXWAY (добавлен вручную)'
+                        all_source_rows.append(matches)
+                        new_keys -= set(matches['_key'])
+                
+                # Поиск в портале
+                if new_keys and portal_df is not None and not portal_df.empty:
+                    matches = portal_df[portal_df['_key'].isin(new_keys)].copy()
+                    if not matches.empty:
+                        matches['Полевой'] = 1
+                        matches['Источник'] = 'Портал (добавлен вручную)'
+                        all_source_rows.append(matches)
+                        new_keys -= set(matches['_key'])
+                
+                # Поиск в Optima
+                if new_keys and 'optima_processed' in locals() and optima_processed is not None and not optima_processed.empty:
+                    matches = optima_processed[optima_processed['_key'].isin(new_keys)].copy()
+                    if not matches.empty:
+                        matches['Полевой'] = 1
+                        matches['Источник'] = 'Optima (добавлен вручную)'
+                        all_source_rows.append(matches)
+                        new_keys -= set(matches['_key'])
+                
+                # Поиск в Easymerch
+                if new_keys and 'easymerch_processed' in locals() and easymerch_processed is not None and not easymerch_processed.empty:
+                    matches = easymerch_processed[easymerch_processed['_key'].isin(new_keys)].copy()
+                    if not matches.empty:
+                        matches['Полевой'] = 1
+                        matches['Источник'] = 'Easymerch (добавлен вручную)'
+                        all_source_rows.append(matches)
+                        new_keys -= set(matches['_key'])
+                
+                # Проекты не найдены
+                if new_keys:
+                    not_found_df = new_projects[new_projects['_key'].isin(new_keys)]
+                    for _, row in not_found_df.iterrows():
+                        not_found_projects.append({
+                            'Клиент': row['Название проекта'],
+                            'Волна': row['Волна'],
+                            'Код проекта': row['Код проекта'],
+                            'ПО': row.get('ПО', ''),
+                            'Проверенные источники': 'CXWAY, Портал, Optima, Easymerch'
+                        })
+                
+                # Добавляем найденные строки
+                if all_source_rows:
+                    new_df = pd.concat(all_source_rows, ignore_index=True)
+                    if all_field_projects.empty:
+                        all_field_projects = new_df
+                    else:
+                        all_field_projects = pd.concat([all_field_projects, new_df], ignore_index=True)
+                
+                # Сохраняем список ненайденных проектов
+                if not_found_projects:
+                    st.session_state.not_found_projects = pd.DataFrame(not_found_projects)
+                else:
+                    st.session_state.not_found_projects = pd.DataFrame()
+                
+                # Удаляем временные колонки
+                if '_key' in all_field_projects.columns:
+                    all_field_projects = all_field_projects.drop('_key', axis=1)
             
             # Удаляем временные колонки
-            if '_key' in all_field_projects.columns:
-                all_field_projects = all_field_projects.drop('_key', axis=1)
             included_df = included_df.drop('_key', axis=1)
             
             # Сохраняем обновленные полевые проекты
             st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
+            
     
 
         all_projects_export = pd.concat([
@@ -475,7 +533,12 @@ def process_all_data(settings_manager=None):
                 
         st.session_state.debug_times.append(f"[DEBUG] ВСЕГО: {time.time() - start_total:.2f} сек")
                 
-        
+        # Выводим предупреждение о ненайденных проектах
+        if 'not_found_projects' in st.session_state and not st.session_state.not_found_projects.empty:
+            st.warning("⚠️ Следующие проекты не найдены в загруженных данных:")
+            st.dataframe(st.session_state.not_found_projects, use_container_width=True)
+            st.info("💡 Проверьте: возможно, визиты по этим проектам не были загружены, или указан неверный портал.")
+            
         st.session_state.processing_complete = True
         return True
         

@@ -1,215 +1,6 @@
 {
-  "excluded_projects": [
-    {
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 12.2025",
-      "project_code": "Мультикод_.385",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.056710",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Philip Morris_КБ_Бристоль",
-      "wave_name": "2026.02_Krasnoe&Beloe",
-      "project_code": "Мультикод_048",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.056819",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "FIBA Retail",
-      "wave_name": "2026_03_OXXO",
-      "project_code": "RU00.021.01.03SVZ24",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.056891",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 03.2026 Звонок",
-      "project_code": "Мультикод_.385",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.056957",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Philip Morris Партнеры",
-      "wave_name": "2026.02_ГИПЕРГЛОБУС",
-      "project_code": "RU00.048.01.05SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.057023",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Philip Morris_КБ_Бристоль",
-      "wave_name": "2026.02._Bristol",
-      "project_code": "Мультикод_048",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.057086",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Тамбовский бекон ",
-      "wave_name": "nan",
-      "project_code": "RU00.276.02.01SVZ24",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.057152",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Mascotte ",
-      "wave_name": "2026.02 Masscote",
-      "project_code": "RU00.077.01.02SVZ24",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.057279",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "FIBA Retail ",
-      "wave_name": "Club 03.2026",
-      "project_code": "RU00.021.01.04SVZ24",
-      "portal": "CXWAY",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.057386",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "МВЭД_ВТБ Банк ",
-      "wave_name": "МВЭД_02-03.2026",
-      "project_code": "RU00.116.01.02SVZ24",
-      "portal": "CXWAY",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.057466",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "FIBA Retail ",
-      "wave_name": "NetWork 03.2026",
-      "project_code": "RU00.021.01.04SVZ24",
-      "portal": "CXWAY",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.057534",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "FIBA Retail ",
-      "wave_name": "OXXO 03.2026",
-      "project_code": "RU00.021.01.03SVZ24",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.057600",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Mascotte ",
-      "wave_name": "2026.03 Masscote",
-      "project_code": "RU00.077.01.02SVZ24",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.057664",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "FIBA Retail ",
-      "wave_name": "MANGO 03.2026",
-      "project_code": "RU00.021.01.01SVZ24",
-      "portal": "CXWAY",
-      "fio_om": "",
-      "added_at": "2026-04-01T16:50:01.057757",
-      "added_by": "unknown_user"
-    }
-  ],
-  "included_projects": [
-    {
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-03-30T10:04:02.301380",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Томскэнергосбыт",
-      "wave_name": "03.2026",
-      "project_code": "",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-30T10:19:07.926913",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_ТП (110 волна)",
-      "project_code": "nan",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-30T17:00:45.013838",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_ООО_ТП (110 волна)",
-      "project_code": "nan",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-30T17:00:45.013985",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_POS audit (9 волна)",
-      "project_code": "nan",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-30T17:00:45.014099",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "KARCHER ",
-      "wave_name": "2026_02_Karcher_Звонки",
-      "project_code": "RU00.032.03.01SVZ24",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-30T17:00:45.014216",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_ООО_POS audit (9 волна)",
-      "project_code": "nan",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-03-30T17:00:45.014335",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Sminex ",
-      "wave_name": "Sminex_03.2026",
-      "project_code": "RU00.398.06.01SVZ26",
-      "portal": "CXWAY",
-      "fio_om": "",
-      "added_at": "2026-04-01T09:59:29.442966",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Банк ДОМ.РФ_Семпл ",
-      "wave_name": "nan",
-      "project_code": "nan",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-01T14:14:27.111165",
-      "added_by": "unknown_user"
-    }
-  ],
+  "excluded_projects": [],
+  "included_projects": [],
   "history": [
     {
       "action": "clear_all",
@@ -695,8 +486,16 @@
       "project_code": "RU00.021.01.01SVZ24",
       "timestamp": "2026-04-01T16:50:01.057762",
       "user": "unknown_user"
+    },
+    {
+      "action": "clear_all",
+      "project_name": "",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-04-03T13:34:31.548780",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-01T16:50:01.057765",
+  "last_updated": "2026-04-03T13:34:31.548794",
   "version": "1.0"
 }

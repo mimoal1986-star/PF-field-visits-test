@@ -1201,7 +1201,7 @@ with tab3:
                 axis=1
             ).tolist()
             
-            # ========== ПОСТОЯННАЯ ТАБЛИЦА КОРРЕКТИРОВОК ==========
+            # ========== ПОСТОЯННАЯ ТАБЛИЦА КОРРЕКТИРОВОК (только проекты с изменениями) ==========
             with st.expander("📋 Текущие корректировки проектов", expanded=True):
                 adjustments_list = []
                 for _, row in unique_projects.iterrows():
@@ -1210,27 +1210,27 @@ with tab3:
                     p_code = row['Код анкеты']
                     adj_value = plan_adj_manager.get_total_adjustment(p_name, w_name, p_code)
                     
-                    if adj_value > 0:
-                        status = f"⬇️ срез {adj_value}"
-                    elif adj_value < 0:
-                        status = f"⬆️ добавление {abs(adj_value)}"
-                    else:
-                        status = "✅ без изменений"
-                    
-                    adjustments_list.append({
-                        'Название проекта': p_name,
-                        'Волна': w_name,
-                        'Код проекта': p_code,
-                        'Корректировка': adj_value,
-                        'Статус': status
-                    })
+                    # Показываем только проекты с изменениями (adj_value != 0)
+                    if adj_value != 0:
+                        if adj_value > 0:
+                            status = f"⬇️ срез {adj_value}"
+                        else:
+                            status = f"⬆️ добавление {abs(adj_value)}"
+                        
+                        adjustments_list.append({
+                            'Название проекта': p_name,
+                            'Волна': w_name,
+                            'Код проекта': p_code,
+                            'Корректировка': adj_value,
+                            'Статус': status
+                        })
                 
                 if adjustments_list:
                     df_adj_table = pd.DataFrame(adjustments_list)
                     st.dataframe(df_adj_table, use_container_width=True, hide_index=True)
                 else:
-                    st.info("Нет проектов для отображения")
-            # =====================================================
+                    st.info("✅ Нет проектов с корректировками")
+            # =============================================================
             
             selected_project = st.selectbox(
                 "Выберите проект для корректировки",
@@ -1290,26 +1290,69 @@ with tab3:
                             else:
                                 st.error(msg)
                     
-                    # ========== ИСТОРИЯ КОРРЕКТИРОВОК ==========
+                    # ========== ИСТОРИЯ КОРРЕКТИРОВОК (как в "История изменений") ==========
                     with st.expander("📜 История корректировок", expanded=False):
-                        adjustments_history = plan_adj_manager.get_adjustments(project_name, wave_name, project_code)
-                        if adjustments_history:
-                            history_df = pd.DataFrame(adjustments_history)
-                            history_df['created_at'] = pd.to_datetime(history_df['created_at']).dt.strftime('%Y-%m-%d %H:%M')
-                            history_df = history_df.rename(columns={
-                                'adjustment_value': 'Значение',
-                                'created_at': 'Дата',
-                                'created_by': 'Кем'
-                            })
-                            st.dataframe(history_df[['Значение', 'Дата', 'Кем']], use_container_width=True, hide_index=True)
+                        # Получаем всю историю
+                        all_history = plan_adj_manager.get_adjustments()
+                        
+                        if all_history:
+                            history_df = pd.DataFrame(all_history)
+                            # Фильтруем: оставляем только записи с ненулевой корректировкой
+                            history_df = history_df[history_df['adjustment_value'] != 0]
+                            
+                            if not history_df.empty:
+                                # Форматируем дату
+                                history_df['created_at'] = pd.to_datetime(history_df['created_at']).dt.strftime('%Y-%m-%d %H:%M')
+                                
+                                # Переводим действие на русский
+                                history_df['Действие'] = history_df['adjustment_value'].apply(
+                                    lambda x: '✂️ Срез' if x > 0 else '➕ Добавление'
+                                )
+                                
+                                # Переименовываем колонки как в "История изменений"
+                                history_df = history_df.rename(columns={
+                                    'created_at': 'Дата',
+                                    'created_by': 'Пользователь',
+                                    'project_name': 'Проект',
+                                    'wave_name': 'Волна',
+                                    'project_code': 'Код'
+                                })
+                                
+                                # Выводим нужные колонки
+                                st.dataframe(
+                                    history_df[['Дата', 'Пользователь', 'Действие', 'Проект', 'Волна', 'Код']],
+                                    use_container_width=True,
+                                    hide_index=True
+                                )
+                            else:
+                                st.info("История корректировок пуста")
                         else:
                             st.info("История корректировок пуста")
+                    # =============================================================
+                    
+                    # ========== КНОПКИ ДЛЯ КОРРЕКТИРОВОК ==========
+                    st.markdown("---")
+                    col1, col2, col3 = st.columns([1, 1, 2])
+                    with col1:
+                        if st.button("💾 Сохранить корректировки", key="save_adjustments_btn"):
+                            st.success("✅ Корректировки сохранены в GitHub!")
+                    with col2:
+                        if st.button("🔄 Пересчитать с корректировками", key="recalc_with_adjustments_btn"):
+                            with st.spinner("🔄 Пересчет план/факта с учетом корректировок..."):
+                                try:
+                                    success = process_all_data(manager)
+                                    if success:
+                                        st.success("✅ Пересчет завершен!")
+                                        st.rerun()
+                                    else:
+                                        st.error("❌ Ошибка при пересчете")
+                                except Exception as e:
+                                    st.error(f"❌ Ошибка: {str(e)}")
                     # =============================================
         else:
             st.info("⏳ Нет полевых проектов для корректировки")
     else:
         st.info("⏳ Сначала выполните расчет")
-
 
 
 

@@ -405,26 +405,29 @@ class VisitCalculator:
                     rs_plan_on_date = rs_daily_plan * days_in_period
 
                 
-                # ========== КОРРЕКТИРОВКА (ОДИН РАЗ ДЛЯ ВСЕХ ТИПОВ) ==========
+                # ========== ПРИМЕНЕНИЕ КОРРЕКТИРОВКИ (БЫСТРО) ==========
                 key = (client, wave_name, project_code)
                 adjustment = plan_adjustments.get(key, 0)
                 
                 if adjustment != 0:
-                    if po == 'ПО клиента' and client == 'Мултон' or po == 'Оптима' or po == 'Мониторинги':
-                        new_total_plan = total_plan + adjustment
-                        if new_total_plan < 0:
-                            new_total_plan = 0
-                        total_plan = new_total_plan
-                        rs_plan_on_date = total_plan * (days_in_period / month_days)
-                        rs_daily_plan = rs_plan_on_date / days_in_period if days_in_period > 0 else 0
+                    new_total_plan = total_plan + adjustment
+                    
+                    # Проверка: корректировка не должна делать план отрицательным
+                    if new_total_plan < 0:
+                        st.warning(f"⚠️ Корректировка {adjustment} для проекта {client} | {wave_name} | {project_code} делает план отрицательным ({total_plan} + {adjustment} = {new_total_plan}). Корректировка НЕ применена.")
+                        # Пропускаем, не применяем корректировку
+                        pass
                     else:
-                        new_total_plan = total_plan + adjustment
-                        if new_total_plan < 0:
-                            new_total_plan = 0
                         total_plan = new_total_plan
-                        daily_plan_wave = total_plan / duration
-                        rs_daily_plan = daily_plan_wave * rs_weight
-                        rs_plan_on_date = rs_daily_plan * days_in_period
+                        
+                        if po == 'ПО клиента' and client == 'Мултон' or po == 'Оптима' or po == 'Мониторинги':
+                            rs_plan_on_date = total_plan * (days_in_period / month_days)
+                            rs_daily_plan = rs_plan_on_date / days_in_period if days_in_period > 0 else 0
+                        else:
+                            daily_plan_wave = total_plan / duration
+                            rs_daily_plan = daily_plan_wave * rs_weight
+                            rs_plan_on_date = rs_daily_plan * days_in_period
+                # ===========================================================
                 
                 results.append({
                     'Проект': project_code,

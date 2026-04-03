@@ -1193,11 +1193,44 @@ with tab3:
         field_df = field_df[field_df['Полевой'] == 1]
         
         if not field_df.empty:
-            # Формируем список проектов для выбора
-            project_options = field_df.apply(
+            # Убираем дубликаты по ключевым полям
+            unique_projects = field_df[['Имя клиента', 'Название проекта', 'Код анкеты']].drop_duplicates()
+            
+            project_options = unique_projects.apply(
                 lambda row: f"{row['Имя клиента']} | {row['Название проекта']} | {row['Код анкеты']}",
                 axis=1
             ).tolist()
+            
+            # ========== ПОСТОЯННАЯ ТАБЛИЦА КОРРЕКТИРОВОК ==========
+            with st.expander("📋 Текущие корректировки проектов", expanded=True):
+                adjustments_list = []
+                for _, row in unique_projects.iterrows():
+                    p_name = row['Имя клиента']
+                    w_name = row['Название проекта']
+                    p_code = row['Код анкеты']
+                    adj_value = plan_adj_manager.get_total_adjustment(p_name, w_name, p_code)
+                    
+                    if adj_value > 0:
+                        status = f"⬇️ срез {adj_value}"
+                    elif adj_value < 0:
+                        status = f"⬆️ добавление {abs(adj_value)}"
+                    else:
+                        status = "✅ без изменений"
+                    
+                    adjustments_list.append({
+                        'Название проекта': p_name,
+                        'Волна': w_name,
+                        'Код проекта': p_code,
+                        'Корректировка': adj_value,
+                        'Статус': status
+                    })
+                
+                if adjustments_list:
+                    df_adj_table = pd.DataFrame(adjustments_list)
+                    st.dataframe(df_adj_table, use_container_width=True, hide_index=True)
+                else:
+                    st.info("Нет проектов для отображения")
+            # =====================================================
             
             selected_project = st.selectbox(
                 "Выберите проект для корректировки",
@@ -1257,19 +1290,21 @@ with tab3:
                             else:
                                 st.error(msg)
                     
-                    # История корректировок
-                    adjustments_history = plan_adj_manager.get_adjustments(project_name, wave_name, project_code)
-                    if adjustments_history:
-                        st.markdown("---")
-                        st.caption("📜 История корректировок:")
-                        history_df = pd.DataFrame(adjustments_history)
-                        history_df['created_at'] = pd.to_datetime(history_df['created_at']).dt.strftime('%Y-%m-%d %H:%M')
-                        history_df = history_df.rename(columns={
-                            'adjustment_value': 'Значение',
-                            'created_at': 'Дата',
-                            'created_by': 'Кем'
-                        })
-                        st.dataframe(history_df[['Значение', 'Дата', 'Кем']], use_container_width=True, hide_index=True)
+                    # ========== ИСТОРИЯ КОРРЕКТИРОВОК ==========
+                    with st.expander("📜 История корректировок", expanded=False):
+                        adjustments_history = plan_adj_manager.get_adjustments(project_name, wave_name, project_code)
+                        if adjustments_history:
+                            history_df = pd.DataFrame(adjustments_history)
+                            history_df['created_at'] = pd.to_datetime(history_df['created_at']).dt.strftime('%Y-%m-%d %H:%M')
+                            history_df = history_df.rename(columns={
+                                'adjustment_value': 'Значение',
+                                'created_at': 'Дата',
+                                'created_by': 'Кем'
+                            })
+                            st.dataframe(history_df[['Значение', 'Дата', 'Кем']], use_container_width=True, hide_index=True)
+                        else:
+                            st.info("История корректировок пуста")
+                    # =============================================
         else:
             st.info("⏳ Нет полевых проектов для корректировки")
     else:

@@ -1328,11 +1328,10 @@ with tab3:
                                 st.info("История корректировок пуста")
                         else:
                             st.info("История корректировок пуста")
-                    # =============================================================
                     
                     # ========== КНОПКИ ДЛЯ КОРРЕКТИРОВОК ==========
                     st.markdown("---")
-                    col1, col2, col3 = st.columns([1, 1, 2])
+                    col1, col2, col3 = st.columns([1, 1, 1])
                     with col1:
                         if st.button("💾 Сохранить корректировки", key="save_adjustments_btn"):
                             st.success("✅ Корректировки сохранены в GitHub!")
@@ -1348,7 +1347,27 @@ with tab3:
                                         st.error("❌ Ошибка при пересчете")
                                 except Exception as e:
                                     st.error(f"❌ Ошибка: {str(e)}")
+                    with col3:
+                        if st.button("🗑️ Сбросить все корректировки", key="reset_all_adjustments_btn"):
+                            # Собираем все проекты с корректировками
+                            all_projects_with_adj = []
+                            for _, row in unique_projects.iterrows():
+                                p_name = row['Имя клиента']
+                                w_name = row['Название проекта']
+                                p_code = row['Код анкеты']
+                                adj = plan_adj_manager.get_total_adjustment(p_name, w_name, p_code)
+                                if adj != 0:
+                                    all_projects_with_adj.append((p_name, w_name, p_code))
+                            
+                            if all_projects_with_adj:
+                                for p_name, w_name, p_code in all_projects_with_adj:
+                                    plan_adj_manager.clear_project_adjustments(p_name, w_name, p_code)
+                                st.success(f"✅ Очищены корректировки для {len(all_projects_with_adj)} проектов")
+                                st.rerun()
+                            else:
+                                st.info("Нет проектов с корректировками")
                     # =============================================
+        
         else:
             st.info("⏳ Нет полевых проектов для корректировки")
     else:

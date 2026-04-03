@@ -17,14 +17,6 @@
       "created_by": "unknown_user"
     },
     {
-      "project_name": "Улыбка радуги",
-      "wave_name": "2026_02",
-      "project_code": "RU00.396.01.01SVZ25",
-      "adjustment_value": 1000,
-      "created_at": "2026-04-03T13:09:56.553390",
-      "created_by": "unknown_user"
-    },
-    {
       "project_name": "Haleon",
       "wave_name": "2026.03 (36 волна)",
       "project_code": "RU00.024.02.01SVZ24",
@@ -33,5 +25,5 @@
       "created_by": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-03T13:27:33.293895"
+  "last_updated": "2026-04-03T13:49:20.889491"
 }

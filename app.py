@@ -8,6 +8,9 @@ import traceback
 from datetime import date, datetime, timedelta
 from io import BytesIO
 from github_settings import get_settings_manager, get_plan_adjustment_manager
+# Инициализация временных корректировок
+if 'temp_adjustments' not in st.session_state:
+    st.session_state.temp_adjustments = []
 
 # ФУНКЦИЯ КЭШИРОВАНИЯ ЗАГРУЗКИ EXCEL
 @st.cache_data
@@ -1203,29 +1206,39 @@ with tab3:
             
             # ========== ПОСТОЯННАЯ ТАБЛИЦА КОРРЕКТИРОВОК (только проекты с изменениями) ==========
             with st.expander("📋 Текущие корректировки проектов", expanded=True):
-                adjustments_list = []
+                # Собираем корректировки из GitHub
+                saved_adjustments = {}
                 for _, row in unique_projects.iterrows():
                     p_name = row['Имя клиента']
                     w_name = row['Название проекта']
                     p_code = row['Код анкеты']
                     adj_value = plan_adj_manager.get_total_adjustment(p_name, w_name, p_code)
-                    
-                    # Показываем только проекты с изменениями (adj_value != 0)
                     if adj_value != 0:
-                        if adj_value < 0:
-                            status = f"⬇️ срез {abs(adj_value)}"
-                        elif adj_value > 0:
-                            status = f"⬆️ добавление {adj_value}"
-                        else:
-                            status = "✅ без изменений"
-                        
-                        adjustments_list.append({
-                            'Название проекта': p_name,
-                            'Волна': w_name,
-                            'Код проекта': p_code,
-                            'Корректировка': adj_value,
-                            'Статус': status
-                        })
+                        saved_adjustments[(p_name, w_name, p_code)] = adj_value
+                
+                # Добавляем временные корректировки
+                all_adjustments = saved_adjustments.copy()
+                for temp in st.session_state.temp_adjustments:
+                    key = (temp['project_name'], temp['wave_name'], temp['project_code'])
+                    current = all_adjustments.get(key, 0)
+                    all_adjustments[key] = current + temp['adjustment_value']
+                
+                adjustments_list = []
+                for (p_name, w_name, p_code), adj_value in all_adjustments.items():
+                    if adj_value < 0:
+                        status = f"⬇️ срез {abs(adj_value)}"
+                    elif adj_value > 0:
+                        status = f"⬆️ добавление {adj_value}"
+                    else:
+                        status = "✅ без изменений"
+                    
+                    adjustments_list.append({
+                        'Название проекта': p_name,
+                        'Волна': w_name,
+                        'Код проекта': p_code,
+                        'Корректировка': adj_value,
+                        'Статус': status
+                    })
                 
                 if adjustments_list:
                     df_adj_table = pd.DataFrame(adjustments_list)
@@ -1242,15 +1255,20 @@ with tab3:
                 key="plan_adjustment_select"
             )
             
-            if selected_project:
+            if selected_project and selected_project != "-- Выберите проект --":
                 parts = selected_project.split(' | ')
                 if len(parts) >= 3:
                     project_name = parts[0]
                     wave_name = parts[1]
                     project_code = parts[2]
                     
-                    # Текущая суммарная корректировка
-                    current_adjustment = plan_adj_manager.get_total_adjustment(project_name, wave_name, project_code)
+                    # Текущая суммарная корректировка (сохраненная + временная)
+                    saved_adj = plan_adj_manager.get_total_adjustment(project_name, wave_name, project_code)
+                    temp_adj = sum(t['adjustment_value'] for t in st.session_state.temp_adjustments 
+                                  if t['project_name'] == project_name 
+                                  and t['wave_name'] == wave_name 
+                                  and t['project_code'] == project_code)
+                    current_adjustment = saved_adj + temp_adj
                     
                     # Отображаем текущую корректировку
                     if current_adjustment < 0:
@@ -1271,28 +1289,29 @@ with tab3:
                         )
                     
                     with col2:
-                        if st.button("➕ Добавить корректировку", key="add_adjustment_btn"):
+                        if st.button("➕ Добавить корректировку", key="add_temp_adjustment_btn"):
                             if adjustment_value != 0:
-                                success, msg = plan_adj_manager.add_adjustment(
-                                    project_name, wave_name, project_code, adjustment_value
-                                )
-                                if success:
-                                    st.success(msg)
-                                    st.rerun()
-                                else:
-                                    st.error(msg)
+                                # Добавляем во временный список
+                                st.session_state.temp_adjustments.append({
+                                    'project_name': project_name,
+                                    'wave_name': wave_name,
+                                    'project_code': project_code,
+                                    'adjustment_value': adjustment_value
+                                })
+                                st.success(f"✅ Корректировка {adjustment_value} добавлена во временный список")
+                                st.rerun()
                             else:
                                 st.warning("⚠️ Введите ненулевое значение")
                     
-                    # Кнопка очистки корректировок
-                    if current_adjustment != 0:
-                        if st.button("🗑️ Очистить все корректировки для проекта", key="clear_adjustments_btn"):
-                            success, msg = plan_adj_manager.clear_project_adjustments(project_name, wave_name, project_code)
-                            if success:
-                                st.success(msg)
-                                st.rerun()
-                            else:
-                                st.error(msg)
+                    # Кнопка очистки временных корректировок для проекта
+                    if temp_adj != 0:
+                        if st.button("🗑️ Очистить временные корректировки для проекта", key="clear_temp_adjustments_btn"):
+                            st.session_state.temp_adjustments = [t for t in st.session_state.temp_adjustments 
+                                if not (t['project_name'] == project_name 
+                                       and t['wave_name'] == wave_name 
+                                       and t['project_code'] == project_code)]
+                            st.success("✅ Временные корректировки очищены")
+                            st.rerun()
                     
                     # ========== ИСТОРИЯ КОРРЕКТИРОВОК (как в "История изменений") ==========
                     with st.expander("📜 История корректировок", expanded=False):
@@ -1310,7 +1329,7 @@ with tab3:
                                 
                                 # Переводим действие на русский
                                 history_df['Действие'] = history_df['adjustment_value'].apply(
-                                    lambda x: '✂️ Срез' if x > 0 else '➕ Добавление'
+                                    lambda x: '✂️ Срез' if x < 0 else '➕ Добавление'
                                 )
                                 
                                 # Переименовываем колонки как в "История изменений"
@@ -1319,12 +1338,13 @@ with tab3:
                                     'created_by': 'Пользователь',
                                     'project_name': 'Проект',
                                     'wave_name': 'Волна',
-                                    'project_code': 'Код'
+                                    'project_code': 'Код',
+                                    'adjustment_value': 'Значение'
                                 })
                                 
                                 # Выводим нужные колонки
                                 st.dataframe(
-                                    history_df[['Дата', 'Пользователь', 'Действие', 'Проект', 'Волна', 'Код']],
+                                    history_df[['Дата', 'Пользователь', 'Действие', 'Проект', 'Волна', 'Код', 'Значение']],
                                     use_container_width=True,
                                     hide_index=True
                                 )
@@ -1333,45 +1353,58 @@ with tab3:
                         else:
                             st.info("История корректировок пуста")
                     
-                    # ========== КНОПКИ ДЛЯ КОРРЕКТИРОВОК ==========
-                    st.markdown("---")
-                    col1, col2, col3 = st.columns([1, 1, 1])
-                    with col1:
-                        if st.button("💾 Сохранить корректировки", key="save_adjustments_btn"):
-                            st.success("✅ Корректировки сохранены в GitHub!")
-                    with col2:
-                        if st.button("🔄 Пересчитать с корректировками", key="recalc_with_adjustments_btn"):
-                            with st.spinner("🔄 Пересчет план/факта с учетом корректировок..."):
-                                try:
-                                    success = process_all_data(manager)
-                                    if success:
-                                        st.success("✅ Пересчет завершен!")
-                                        st.rerun()
-                                    else:
-                                        st.error("❌ Ошибка при пересчете")
-                                except Exception as e:
-                                    st.error(f"❌ Ошибка: {str(e)}")
-                    with col3:
-                        if st.button("🗑️ Сбросить все корректировки", key="reset_all_adjustments_btn"):
-                            # Собираем все проекты с корректировками
-                            all_projects_with_adj = []
-                            for _, row in unique_projects.iterrows():
-                                p_name = row['Имя клиента']
-                                w_name = row['Название проекта']
-                                p_code = row['Код анкеты']
-                                adj = plan_adj_manager.get_total_adjustment(p_name, w_name, p_code)
-                                if adj != 0:
-                                    all_projects_with_adj.append((p_name, w_name, p_code))
-                            
-                            if all_projects_with_adj:
-                                for p_name, w_name, p_code in all_projects_with_adj:
-                                    plan_adj_manager.clear_project_adjustments(p_name, w_name, p_code)
-                                st.success(f"✅ Очищены корректировки для {len(all_projects_with_adj)} проектов")
+                    # ========== ВРЕМЕННЫЕ КОРРЕКТИРОВКИ (не сохраненные) ==========
+                    if st.session_state.temp_adjustments:
+                        st.markdown("---")
+                        st.caption("⏳ Несохраненные корректировки:")
+                        temp_df = pd.DataFrame(st.session_state.temp_adjustments)
+                        temp_df = temp_df.rename(columns={
+                            'project_name': 'Проект',
+                            'wave_name': 'Волна',
+                            'project_code': 'Код',
+                            'adjustment_value': 'Значение'
+                        })
+                        st.dataframe(temp_df[['Проект', 'Волна', 'Код', 'Значение']], use_container_width=True, hide_index=True)
+            
+            # ========== КНОПКИ ДЛЯ КОРРЕКТИРОВОК ==========
+            st.markdown("---")
+            col1, col2, col3 = st.columns([1, 1, 1])
+            with col1:
+                if st.button("💾 Сохранить корректировки", key="save_adjustments_btn"):
+                    if st.session_state.temp_adjustments:
+                        for adj in st.session_state.temp_adjustments:
+                            plan_adj_manager.add_adjustment(
+                                adj['project_name'], 
+                                adj['wave_name'], 
+                                adj['project_code'], 
+                                adj['adjustment_value']
+                            )
+                        st.session_state.temp_adjustments = []
+                        st.success("✅ Корректировки сохранены в GitHub!")
+                        st.rerun()
+                    else:
+                        st.info("Нет временных корректировок для сохранения")
+            with col2:
+                if st.button("🔄 Пересчитать с корректировками", key="recalc_with_adjustments_btn"):
+                    with st.spinner("🔄 Пересчет план/факта с учетом корректировок..."):
+                        try:
+                            success = process_all_data(manager)
+                            if success:
+                                st.success("✅ Пересчет завершен!")
                                 st.rerun()
                             else:
-                                st.info("Нет проектов с корректировками")
-                    # =============================================
-        
+                                st.error("❌ Ошибка при пересчете")
+                        except Exception as e:
+                            st.error(f"❌ Ошибка: {str(e)}")
+            with col3:
+                if st.button("🗑️ Сбросить все временные корректировки", key="reset_temp_adjustments_btn"):
+                    if st.session_state.temp_adjustments:
+                        st.session_state.temp_adjustments = []
+                        st.success("✅ Все временные корректировки очищены")
+                        st.rerun()
+                    else:
+                        st.info("Нет временных корректировок")
+            # =============================================
         else:
             st.info("⏳ Нет полевых проектов для корректировки")
     else:

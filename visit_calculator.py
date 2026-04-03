@@ -6,6 +6,7 @@ import streamlit as st
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Tuple, List
 import io
+import calendar
 
 class VisitCalculator:
     
@@ -168,6 +169,7 @@ class VisitCalculator:
             
             start_period = calc_params['start_date']
             end_period = calc_params['end_date']
+            month_days = calendar.monthrange(start_period.year, start_period.month)[1]
             
             # ============================================
             # 1. ПРЕДВАРИТЕЛЬНЫЙ РАСЧЕТ ВСЕХ НУЖНЫХ ДАННЫХ
@@ -292,23 +294,55 @@ class VisitCalculator:
                 po = row['ПО']
                 client = row['Клиент']
                 rs_name = row['RS']
+
+                # ПРОВЕРКА ДАТ
+                start_date = row['Дата старта']
+                finish_date = row['Дата финиша']
+                duration = row['Длительность']
                 
-                # Определяем total_plan
+                if pd.isna(start_date) or pd.isna(finish_date) or duration <= 0:
+                    continue
+                
+                if end_period < start_date.date() or start_period > finish_date.date():
+                    continue
+                
+                period_start = max(start_period, start_date.date())
+                period_end = min(end_period, finish_date.date())
+                days_in_period = max(0, (period_end - period_start).days + 1)
+                
+                if days_in_period == 0:
+                    continue
+                
+                # Определяем total_plan и считаем план на дату
                 if po == 'ПО клиента' and client == 'Мултон':
                     total_plan = multon_quotas.get(project_code, 0)
                     if total_plan <= 0:
                         continue
+                    
+                    # Распределяем квоту по регионам
                     num_regions = len(multon_regions.get(project_code, []))
                     if num_regions > 0:
                         total_plan = total_plan / num_regions
+                    
+                    # Рассчитываем количество дней в месяце
+                    month_days = calendar.monthrange(start_period.year, start_period.month)[1]
+                    
+                    # План на дату = квота на регион × (дней в периоде / дней в месяце)
+                    rs_plan_on_date = total_plan * (days_in_period / month_days)
+                    rs_daily_plan = rs_plan_on_date / days_in_period if days_in_period > 0 else 0
                 
                 elif po == 'Мониторинги':
                     total_plan = prodata_quotas.get(project_code, 0)
                     if total_plan <= 0:
                         continue
+                    
                     num_regions = len(prodata_regions.get(project_code, []))
                     if num_regions > 0:
                         total_plan = total_plan / num_regions
+                    
+                    # Старая логика: вся квота сразу
+                    rs_plan_on_date = total_plan
+                    rs_daily_plan = total_plan
                 
                 elif po == 'Оптима':
                     found_quota = None
@@ -322,44 +356,27 @@ class VisitCalculator:
                     
                     if not found_quota or found_quota <= 0:
                         continue
+                    
                     total_plan = found_quota
+                    
+                    # Распределяем квоту по регионам
                     num_regions = len(optima_regions.get(project_code, []))
                     if num_regions > 0:
                         total_plan = total_plan / num_regions
+                    
+                    # Рассчитываем количество дней в месяце
+                    month_days = calendar.monthrange(start_period.year, start_period.month)[1]
+                    
+                    # План на дату = квота на регион × (дней в периоде / дней в месяце)
+                    rs_plan_on_date = total_plan * (days_in_period / month_days)
+                    rs_daily_plan = rs_plan_on_date / days_in_period if days_in_period > 0 else 0
                 
-                else:
+                else:  # Обычные проекты (Чеккер, CXWAY, Easymerch)
                     plan_key = (project_code, wave_name, region)
                     total_plan = project_wave_region_plans.get(plan_key, 0)
                     if total_plan <= 0:
                         continue
-                
-                # Проверка дат
-                start_date = row['Дата старта']
-                finish_date = row['Дата финиша']
-                duration = row['Длительность']
-                
-                if pd.isna(start_date) or pd.isna(finish_date) or duration <= 0:
-                    continue
-                
-                if end_period < start_date.date() or start_period > finish_date.date():
-                    continue
-                
-                # БЫСТРЫЙ расчет дней в периоде (без цикла)
-                period_start = max(start_period, start_date.date())
-                period_end = min(end_period, finish_date.date())
-                days_in_period = max(0, (period_end - period_start).days + 1)
-                
-                if days_in_period == 0:
-                    continue
-                
-                # Расчет плана на дату
-                # Мултон, ПроДата, Оптима: план = вся квота сразу
-                is_special = (po == 'ПО клиента' and client == 'Мултон') or po == 'Мониторинги' or po == 'Оптима'
-                
-                if is_special:
-                    rs_plan_on_date = total_plan
-                    rs_daily_plan = total_plan
-                else:
+                    
                     # Обычный проект: равномерное распределение с весами RS
                     daily_plan_wave = total_plan / duration
                     key = (project_code, wave_name, region)

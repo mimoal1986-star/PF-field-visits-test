@@ -229,6 +229,20 @@ class VisitCalculator:
                 'Название проекта',
                 'Регион short'
             ]).size().to_dict()
+
+            # ============================================
+            # ЗАГРУЗКА КОРРЕКТИРОВОК ПЛАНА (ОДИН РАЗ)
+            # ============================================
+            plan_adjustments = {}
+            try:
+                adj_manager = get_plan_adjustment_manager()
+                all_adjustments = adj_manager.get_adjustments()
+                for adj in all_adjustments:
+                    key = (adj.get('project_name', ''), adj.get('wave_name', ''), adj.get('project_code', ''))
+                    current = plan_adjustments.get(key, 0)
+                    plan_adjustments[key] = current + adj.get('adjustment_value', 0)
+            except Exception as e:
+                plan_adjustments = {}
             
             # ============================================
             # 2. ПРЕДВАРИТЕЛЬНЫЙ РАСЧЕТ ВЕСОВ RS
@@ -392,28 +406,25 @@ class VisitCalculator:
 
                 
                 # ========== КОРРЕКТИРОВКА (ОДИН РАЗ ДЛЯ ВСЕХ ТИПОВ) ==========
-                try:
-                    adj_manager = get_plan_adjustment_manager()
-                    adjustment = adj_manager.get_total_adjustment(client, wave_name, project_code)
-                    
-                    if adjustment != 0:
-                        if po == 'ПО клиента' and client == 'Мултон' or po == 'Оптима' or po == 'Мониторинги':
-                            new_total_plan = total_plan + adjustment
-                            if new_total_plan < 0:
-                                new_total_plan = 0
-                            total_plan = new_total_plan
-                            rs_plan_on_date = total_plan * (days_in_period / month_days)
-                            rs_daily_plan = rs_plan_on_date / days_in_period if days_in_period > 0 else 0
-                        else:
-                            new_total_plan = total_plan + adjustment
-                            if new_total_plan < 0:
-                                new_total_plan = 0
-                            total_plan = new_total_plan
-                            daily_plan_wave = total_plan / duration
-                            rs_daily_plan = daily_plan_wave * rs_weight
-                            rs_plan_on_date = rs_daily_plan * days_in_period
-                except Exception as e:
-                    pass
+                key = (client, wave_name, project_code)
+                adjustment = plan_adjustments.get(key, 0)
+                
+                if adjustment != 0:
+                    if po == 'ПО клиента' and client == 'Мултон' or po == 'Оптима' or po == 'Мониторинги':
+                        new_total_plan = total_plan + adjustment
+                        if new_total_plan < 0:
+                            new_total_plan = 0
+                        total_plan = new_total_plan
+                        rs_plan_on_date = total_plan * (days_in_period / month_days)
+                        rs_daily_plan = rs_plan_on_date / days_in_period if days_in_period > 0 else 0
+                    else:
+                        new_total_plan = total_plan + adjustment
+                        if new_total_plan < 0:
+                            new_total_plan = 0
+                        total_plan = new_total_plan
+                        daily_plan_wave = total_plan / duration
+                        rs_daily_plan = daily_plan_wave * rs_weight
+                        rs_plan_on_date = rs_daily_plan * days_in_period
                 
                 results.append({
                     'Проект': project_code,

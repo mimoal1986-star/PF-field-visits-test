@@ -238,7 +238,7 @@ class VisitCalculator:
                 adj_manager = get_plan_adjustment_manager()
                 all_adjustments = adj_manager.get_adjustments()
                 for adj in all_adjustments:
-                    key = (adj.get('project_name', ''), adj.get('wave_name', ''), adj.get('project_code', ''))
+                    key = f"{adj.get('project_name', '')}|{adj.get('wave_name', '')}|{adj.get('project_code', '')}"
                     current = plan_adjustments.get(key, 0)
                     plan_adjustments[key] = current + adj.get('adjustment_value', 0)
             except Exception as e:

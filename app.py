@@ -7,7 +7,7 @@ import os
 import traceback
 from datetime import date, datetime, timedelta
 from io import BytesIO
-from github_settings import get_settings_manager
+from github_settings import get_settings_manager, get_plan_adjustment_manager
 
 # ФУНКЦИЯ КЭШИРОВАНИЯ ЗАГРУЗКИ EXCEL
 @st.cache_data
@@ -1179,6 +1179,101 @@ with tab3:
             else:
                 st.error(msg)
 
+    # === КОРРЕКТИРОВКА ПЛАНА ===
+    st.markdown("---")
+    st.subheader("✂️ Корректировка плана")
+    st.caption("Уменьшите или увеличьте план проекта (положительное число = срез, отрицательное = добавление)")
+    
+    # Получаем менеджер корректировок
+    plan_adj_manager = get_plan_adjustment_manager()
+    
+    # Выбираем проект для корректировки
+    if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
+        field_df = st.session_state.cleaned_data['полевые_проекты'].copy()
+        field_df = field_df[field_df['Полевой'] == 1]
+        
+        if not field_df.empty:
+            # Формируем список проектов для выбора
+            project_options = field_df.apply(
+                lambda row: f"{row['Имя клиента']} | {row['Название проекта']} | {row['Код анкеты']}",
+                axis=1
+            ).tolist()
+            
+            selected_project = st.selectbox(
+                "Выберите проект для корректировки",
+                options=project_options,
+                key="plan_adjustment_select"
+            )
+            
+            if selected_project:
+                parts = selected_project.split(' | ')
+                if len(parts) >= 3:
+                    project_name = parts[0]
+                    wave_name = parts[1]
+                    project_code = parts[2]
+                    
+                    # Текущая суммарная корректировка
+                    current_adjustment = plan_adj_manager.get_total_adjustment(project_name, wave_name, project_code)
+                    
+                    # Отображаем текущую корректировку
+                    if current_adjustment > 0:
+                        st.warning(f"📊 Текущая корректировка: **-{current_adjustment}** (план уменьшен)")
+                    elif current_adjustment < 0:
+                        st.info(f"📊 Текущая корректировка: **+{abs(current_adjustment)}** (план увеличен)")
+                    else:
+                        st.success("📊 Текущая корректировка: **0** (план не изменен)")
+                    
+                    # Ввод новой корректировки
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        adjustment_value = st.number_input(
+                            "Введите значение (отрицательное = добавление, положительное = срез)",
+                            value=0,
+                            step=1,
+                            key="plan_adjustment_value"
+                        )
+                    
+                    with col2:
+                        if st.button("➕ Добавить корректировку", key="add_adjustment_btn"):
+                            if adjustment_value != 0:
+                                success, msg = plan_adj_manager.add_adjustment(
+                                    project_name, wave_name, project_code, adjustment_value
+                                )
+                                if success:
+                                    st.success(msg)
+                                    st.rerun()
+                                else:
+                                    st.error(msg)
+                            else:
+                                st.warning("⚠️ Введите ненулевое значение")
+                    
+                    # Кнопка очистки корректировок
+                    if current_adjustment != 0:
+                        if st.button("🗑️ Очистить все корректировки для проекта", key="clear_adjustments_btn"):
+                            success, msg = plan_adj_manager.clear_project_adjustments(project_name, wave_name, project_code)
+                            if success:
+                                st.success(msg)
+                                st.rerun()
+                            else:
+                                st.error(msg)
+                    
+                    # История корректировок
+                    adjustments_history = plan_adj_manager.get_adjustments(project_name, wave_name, project_code)
+                    if adjustments_history:
+                        st.markdown("---")
+                        st.caption("📜 История корректировок:")
+                        history_df = pd.DataFrame(adjustments_history)
+                        history_df['created_at'] = pd.to_datetime(history_df['created_at']).dt.strftime('%Y-%m-%d %H:%M')
+                        history_df = history_df.rename(columns={
+                            'adjustment_value': 'Значение',
+                            'created_at': 'Дата',
+                            'created_by': 'Кем'
+                        })
+                        st.dataframe(history_df[['Значение', 'Дата', 'Кем']], use_container_width=True, hide_index=True)
+        else:
+            st.info("⏳ Нет полевых проектов для корректировки")
+    else:
+        st.info("⏳ Сначала выполните расчет")
 
 
 

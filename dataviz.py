@@ -652,12 +652,21 @@ class DataVisualizer:
             include_prodata = st.checkbox("📊 Продата", key="planfact_include_prodata")
         
         prodata_df = st.session_state.cleaned_data.get('prodata_processed', None)
+        
         prodata_plan_total = 0
         prodata_fact_total = 0
+        prodata_plan_date_total = 0
+        prodata_fact_date_total = 0
         
         if include_prodata and prodata_df is not None and not prodata_df.empty:
-            prodata_plan_total = prodata_df['План проекта, шт.'].sum() if 'План проекта, шт.' in prodata_df.columns else 0
-            prodata_fact_total = prodata_df['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in prodata_df.columns else 0
+            if 'План проекта, шт.' in prodata_df.columns:
+                prodata_plan_total = prodata_df['План проекта, шт.'].sum()
+            if 'Факт проекта, шт.' in prodata_df.columns:
+                prodata_fact_total = prodata_df['Факт проекта, шт.'].sum()
+            if 'План на дату, шт.' in prodata_df.columns:
+                prodata_plan_date_total = prodata_df['План на дату, шт.'].sum()
+            if 'Факт на дату, шт.' in prodata_df.columns:
+                prodata_fact_date_total = prodata_df['Факт на дату, шт.'].sum()
         
         col1, col2, col3 = st.columns(3)
         with col1:

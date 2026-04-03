@@ -405,29 +405,6 @@ class VisitCalculator:
                     rs_plan_on_date = rs_daily_plan * days_in_period
 
                 
-                # ========== ПРИМЕНЕНИЕ КОРРЕКТИРОВКИ (БЫСТРО) ==========
-                key = (client, wave_name, project_code)
-                adjustment = plan_adjustments.get(key, 0)
-                
-                if adjustment != 0:
-                    new_total_plan = total_plan + adjustment
-                    
-                    # Проверка: корректировка не должна делать план отрицательным
-                    if new_total_plan < 0:
-                        st.warning(f"⚠️ Корректировка {adjustment} для проекта {client} | {wave_name} | {project_code} делает план отрицательным ({total_plan} + {adjustment} = {new_total_plan}). Корректировка НЕ применена.")
-                        # Пропускаем, не применяем корректировку
-                        pass
-                    else:
-                        total_plan = new_total_plan
-                        
-                        if po == 'ПО клиента' and client == 'Мултон' or po == 'Оптима' or po == 'Мониторинги':
-                            rs_plan_on_date = total_plan * (days_in_period / month_days)
-                            rs_daily_plan = rs_plan_on_date / days_in_period if days_in_period > 0 else 0
-                        else:
-                            daily_plan_wave = total_plan / duration
-                            rs_daily_plan = daily_plan_wave * rs_weight
-                            rs_plan_on_date = rs_daily_plan * days_in_period
-                # ===========================================================
                 
                 results.append({
                     'Проект': project_code,
@@ -447,7 +424,70 @@ class VisitCalculator:
                     'Дней в периоде': days_in_period,
                     'Дневной план RS, шт.': round(rs_daily_plan, 2)
                 })
+
+
+            # ============================================
+            # ПРИМЕНЕНИЕ КОРРЕКТИРОВОК (ПОСЛЕ СБОРА ВСЕХ ДАННЫХ)
+            # ============================================
             
+            if plan_adjustments and results:
+                # Преобразуем в DataFrame
+                results_df = pd.DataFrame(results)
+                
+                # Создаем ключ проекта (клиент + волна + код)
+                results_df['_project_key'] = (
+                    results_df['Клиент'].astype(str).str.strip() + '|' +
+                    results_df['Волна'].astype(str).str.strip() + '|' +
+                    results_df['Проект'].astype(str).str.strip()
+                )
+                
+                # 1. Считаем общий план проекта
+                project_totals = results_df.groupby('_project_key')['План проекта, шт.'].sum().to_dict()
+                
+                # 2. Применяем корректировки
+                adjusted_totals = {}
+                for key, total in project_totals.items():
+                    adjustment = plan_adjustments.get(key, 0)
+                    new_total = total + adjustment
+                    if new_total < 0:
+                        st.warning(f"⚠️ Корректировка {adjustment} для проекта {key} делает план отрицательным ({total} + {adjustment} = {new_total}). Корректировка НЕ применена.")
+                        adjusted_totals[key] = total
+                    else:
+                        adjusted_totals[key] = new_total
+                
+                # 3. Вычисляем коэффициенты
+                coefficients = {}
+                for key in project_totals:
+                    if project_totals[key] > 0:
+                        coefficients[key] = adjusted_totals[key] / project_totals[key]
+                    else:
+                        coefficients[key] = 1
+                
+                # 4. Применяем коэффициенты к каждой строке
+                for idx, row in results_df.iterrows():
+                    key = row['_project_key']
+                    coeff = coefficients.get(key, 1)
+                    
+                    if coeff != 1:
+                        old_plan = row['План проекта, шт.']
+                        new_plan = old_plan * coeff
+                        
+                        old_plan_date = row['План на дату, шт.']
+                        new_plan_date = old_plan_date * coeff
+                        
+                        results_df.at[idx, 'План проекта, шт.'] = new_plan
+                        results_df.at[idx, 'План на дату, шт.'] = round(new_plan_date, 1)
+                        
+                        if 'Дней в периоде' in results_df.columns:
+                            days = row['Дней в периоде']
+                            if days > 0:
+                                results_df.at[idx, 'Дневной план RS, шт.'] = round(new_plan_date / days, 2)
+                
+                # Удаляем временную колонку
+                results_df = results_df.drop('_project_key', axis=1)
+                
+                # Обновляем results
+                results = results_df.to_dict('records')
             if not results:
                 return pd.DataFrame()
             return pd.DataFrame(results)

@@ -1182,7 +1182,7 @@ with tab3:
     # === КОРРЕКТИРОВКА ПЛАНА ===
     st.markdown("---")
     st.subheader("✂️ Корректировка плана")
-    st.caption("Уменьшите или увеличьте план проекта (положительное число = срез, отрицательное = добавление)")
+    st.caption("✂️ Срез: введите отрицательное число (например, -1000). ➕ Добавление: введите положительное число (например, 1000)")
     
     # Получаем менеджер корректировок
     plan_adj_manager = get_plan_adjustment_manager()
@@ -1212,10 +1212,12 @@ with tab3:
                     
                     # Показываем только проекты с изменениями (adj_value != 0)
                     if adj_value != 0:
-                        if adj_value > 0:
-                            status = f"⬇️ срез {adj_value}"
+                        if adj_value < 0:
+                            status = f"⬇️ срез {abs(adj_value)}"
+                        elif adj_value > 0:
+                            status = f"⬆️ добавление {adj_value}"
                         else:
-                            status = f"⬆️ добавление {abs(adj_value)}"
+                            status = "✅ без изменений"
                         
                         adjustments_list.append({
                             'Название проекта': p_name,
@@ -1232,9 +1234,11 @@ with tab3:
                     st.info("✅ Нет проектов с корректировками")
             # =============================================================
             
+            project_options_with_default = ["-- Выберите проект --"] + project_options
+            
             selected_project = st.selectbox(
                 "Выберите проект для корректировки",
-                options=project_options,
+                options=project_options_with_default,
                 key="plan_adjustment_select"
             )
             
@@ -1249,10 +1253,10 @@ with tab3:
                     current_adjustment = plan_adj_manager.get_total_adjustment(project_name, wave_name, project_code)
                     
                     # Отображаем текущую корректировку
-                    if current_adjustment > 0:
-                        st.warning(f"📊 Текущая корректировка: **-{current_adjustment}** (план уменьшен)")
-                    elif current_adjustment < 0:
-                        st.info(f"📊 Текущая корректировка: **+{abs(current_adjustment)}** (план увеличен)")
+                    if current_adjustment < 0:
+                        st.warning(f"📊 Текущая корректировка: **{current_adjustment}** (план уменьшен)")
+                    elif current_adjustment > 0:
+                        st.info(f"📊 Текущая корректировка: **+{current_adjustment}** (план увеличен)")
                     else:
                         st.success("📊 Текущая корректировка: **0** (план не изменен)")
                     
@@ -1260,7 +1264,7 @@ with tab3:
                     col1, col2 = st.columns(2)
                     with col1:
                         adjustment_value = st.number_input(
-                            "Введите значение (отрицательное = добавление, положительное = срез)",
+                            "Введите значение (отрицательное = срез, положительное = добавление)",
                             value=0,
                             step=1,
                             key="plan_adjustment_value"

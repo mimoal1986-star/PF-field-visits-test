@@ -567,18 +567,20 @@ class DataVisualizer:
         
         st.subheader("📊 Детализация")
         
-        col1, col2, col3, col4, col5, col6 = st.columns(6)
+        col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
         with col1:
             show_project = st.checkbox("Код проекта", key='planfact_show_project')
         with col2:
-            show_regions = st.checkbox("Регионы", key='planfact_show_regions')
+            show_wave = st.checkbox("Волна", key='planfact_show_wave')
         with col3:
-            show_dsm = st.checkbox("DSM", key='planfact_show_dsm')
+            show_regions = st.checkbox("Регионы", key='planfact_show_regions')
         with col4:
-            show_asm = st.checkbox("ASM", key='planfact_show_asm')
+            show_dsm = st.checkbox("DSM", key='planfact_show_dsm')
         with col5:
-            show_rs = st.checkbox("RS", key='planfact_show_rs')
+            show_asm = st.checkbox("ASM", key='planfact_show_asm')
         with col6:
+            show_rs = st.checkbox("RS", key='planfact_show_rs')
+        with col7:
             show_po = st.checkbox("ПО", key='planfact_show_po')
         
         # Формируем groupby в зависимости от чек-боксов
@@ -586,6 +588,8 @@ class DataVisualizer:
         
         if show_project and 'Проект' in display_data.columns:
             group_cols.append('Проект')
+        if show_wave and 'Волна' in display_data.columns:
+            group_cols.append('Волна')
         if show_regions and region_col in display_data.columns:
             group_cols.append(region_col)
         if show_dsm and 'DSM' in display_data.columns:
@@ -709,6 +713,8 @@ class DataVisualizer:
         # Добавляем колонки развертки в зависимости от чек-боксов
         if show_project and 'Проект' in project_data.columns:
             display_cols.append('Проект')
+        if show_wave and 'Волна' in project_data.columns:
+            display_cols.append('Волна')
         if show_regions and region_col in project_data.columns:
             display_cols.append(region_col)
         if show_dsm and 'DSM' in project_data.columns:

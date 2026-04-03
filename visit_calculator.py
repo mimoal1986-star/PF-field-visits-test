@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Tuple, List
 import io
 import calendar
+from github_settings import get_plan_adjustment_manager
 
 class VisitCalculator:
     
@@ -388,6 +389,31 @@ class VisitCalculator:
                     
                     rs_daily_plan = daily_plan_wave * rs_weight
                     rs_plan_on_date = rs_daily_plan * days_in_period
+
+                
+                # ========== КОРРЕКТИРОВКА (ОДИН РАЗ ДЛЯ ВСЕХ ТИПОВ) ==========
+                try:
+                    adj_manager = get_plan_adjustment_manager()
+                    adjustment = adj_manager.get_total_adjustment(client, wave_name, project_code)
+                    
+                    if adjustment != 0:
+                        if po == 'ПО клиента' and client == 'Мултон' or po == 'Оптима' or po == 'Мониторинги':
+                            new_total_plan = total_plan + adjustment
+                            if new_total_plan < 0:
+                                new_total_plan = 0
+                            total_plan = new_total_plan
+                            rs_plan_on_date = total_plan * (days_in_period / month_days)
+                            rs_daily_plan = rs_plan_on_date / days_in_period if days_in_period > 0 else 0
+                        else:
+                            new_total_plan = total_plan + adjustment
+                            if new_total_plan < 0:
+                                new_total_plan = 0
+                            total_plan = new_total_plan
+                            daily_plan_wave = total_plan / duration
+                            rs_daily_plan = daily_plan_wave * rs_weight
+                            rs_plan_on_date = rs_daily_plan * days_in_period
+                except Exception as e:
+                    pass
                 
                 results.append({
                     'Проект': project_code,

@@ -1232,6 +1232,7 @@ class DataVisualizer:
             st.session_state.dsm_filtered_data = None
         
         base_data = st.session_state.dsm_base_data
+        all_dsm = base_data['all_dsm']
         
         # ============================================
         # 2. ФИЛЬТРЫ В ФОРМЕ

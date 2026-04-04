@@ -319,6 +319,22 @@ def process_all_data(settings_manager=None):
             st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()
 
         # ============================================
+        # ДОБАВЛЯЕМ ЗОД ДЛЯ ВСЕХ ПОЛЕВЫХ ПРОЕКТОВ
+        # ============================================
+        if not st.session_state.cleaned_data['полевые_проекты'].empty:
+            all_field_projects_with_zod = data_cleaner.add_zod_from_hierarchy(
+                st.session_state.cleaned_data['полевые_проекты']
+            )
+            st.session_state.cleaned_data['полевые_проекты'] = all_field_projects_with_zod
+        
+        # Добавляем ЗОД для неполевых проектов
+        if not st.session_state.cleaned_data['неполевые_проекты'].empty:
+            non_field_with_zod = data_cleaner.add_zod_from_hierarchy(
+                st.session_state.cleaned_data['неполевые_проекты']
+            )
+            st.session_state.cleaned_data['неполевые_проекты'] = non_field_with_zod
+
+        # ============================================
         # ПРИМЕНЕНИЕ НАСТРОЕК ДЛЯ CXWAY/EASYMERCH/OPTIMA
         # ============================================
         

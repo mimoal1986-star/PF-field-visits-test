@@ -561,14 +561,12 @@ with st.sidebar:
     st.markdown("---")
     
     if st.button("🗑️ Сбросить все данные", type="secondary", width='stretch'):
+        # Очищаем кэш загрузки Excel
+        load_excel.clear()
+        # Сбрасываем все переменные session_state
         for key in list(DEFAULT_STATE.keys()):
             st.session_state[key] = DEFAULT_STATE[key]
-        st.rerun()
-
-    st.markdown("---")
-    if st.button("🗑️ Сбросить кэш файлов", type="secondary", width='stretch'):
-        load_excel.clear()
-        st.success("✅ Кэш файлов очищен")
+        st.success("✅ Все данные и кэш очищены")
         st.rerun()
         
     st.markdown("---")

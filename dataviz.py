@@ -191,6 +191,7 @@ class DataVisualizer:
         """Вычисляет базовые агрегации для вкладки DSM"""
         
         # Уникальные значения
+        all_dsm = sorted(data['DSM'].dropna().unique()) if 'DSM' in data.columns else []
         all_asm = sorted(data['ASM'].dropna().unique()) if 'ASM' in data.columns else []
         all_clients = sorted(data['Клиент'].dropna().unique()) if 'Клиент' in data.columns else []
         all_projects = sorted(data['Проект'].dropna().unique()) if 'Проект' in data.columns else []
@@ -212,6 +213,7 @@ class DataVisualizer:
         
         return {
             'raw_data': data.copy(),
+            'all_dsm': all_dsm,
             'all_asm': all_asm,
             'all_clients': all_clients,
             'all_projects': all_projects,
@@ -255,10 +257,18 @@ class DataVisualizer:
         
         return filtered
     
-    def _apply_dsm_filters(self, data, asm_selected, asm_mode, client_selected, client_mode,
-                           region_selected, region_mode, region_col):
+
+    def _apply_dsm_filters(self, data, dsm_selected, dsm_mode, asm_selected, asm_mode,
+                           client_selected, client_mode, region_selected, region_mode, region_col):
         """Применяет фильтры к данным для вкладки DSM"""
         filtered = data.copy()
+        
+        # DSM
+        if dsm_selected:
+            if dsm_mode == 'Включить':
+                filtered = filtered[filtered['DSM'].isin(dsm_selected)]
+            else:
+                filtered = filtered[~filtered['DSM'].isin(dsm_selected)]
         
         # ASM
         if asm_selected:
@@ -1238,9 +1248,27 @@ class DataVisualizer:
             
             st.markdown("### 🔍 Фильтры")
             
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3, col4 = st.columns(4)
             
             with col1:
+                st.markdown("**DSM**")
+                dsm_mode = st.radio(
+                    "Режим",
+                    ["Включить", "Исключить"],
+                    key="dsm_dsm_mode",
+                    horizontal=True,
+                    index=0 if st.session_state.get('dsm_dsm_mode', 'Включить') == 'Включить' else 1
+                )
+                dsm_mode = st.session_state.dsm_dsm_mode
+                
+                dsm_selected = st.multiselect(
+                    "Выбрать DSM",
+                    all_dsm,
+                    key="dsm_dsm_values",
+                    default=[]
+                )
+            
+            with col2:
                 st.markdown("**ASM**")
                 asm_mode = st.radio(
                     "Режим",
@@ -1251,14 +1279,19 @@ class DataVisualizer:
                 )
                 asm_mode = st.session_state.dsm_asm_mode
                 
+                if dsm_selected:
+                    asm_options = [a for a in all_asm if any(a in d for d in dsm_selected)]
+                else:
+                    asm_options = all_asm
+                
                 asm_selected = st.multiselect(
                     "Выбрать ASM",
-                    all_asm,
+                    asm_options,
                     key="dsm_asm_values",
                     default=[]
                 )
             
-            with col2:
+            with col3:
                 st.markdown("**Клиент**")
                 client_mode = st.radio(
                     "Режим",
@@ -1269,14 +1302,18 @@ class DataVisualizer:
                 )
                 client_mode = st.session_state.dsm_client_mode
                 
+                client_filtered = all_clients
+                if dsm_selected:
+                    client_filtered = [c for c in client_filtered if c in dsm_selected]
+                
                 client_selected = st.multiselect(
                     "Выбрать клиента",
-                    all_clients,
+                    client_filtered,
                     key="dsm_client_values",
                     default=[]
                 )
             
-            with col3:
+            with col4:
                 st.markdown("**Регион**")
                 region_mode = st.radio(
                     "Режим",
@@ -1313,6 +1350,7 @@ class DataVisualizer:
         if apply_filters:
             filtered_data = self._apply_dsm_filters(
                 base_data['raw_data'],
+                dsm_selected, st.session_state.dsm_dsm_mode,
                 asm_selected, st.session_state.dsm_asm_mode,
                 client_selected, st.session_state.dsm_client_mode,
                 region_selected, st.session_state.dsm_region_mode,

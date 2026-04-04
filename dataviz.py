@@ -845,7 +845,7 @@ class DataVisualizer:
         
         region_agg = region_agg.sort_values('Регион')
         return region_agg
-
+        
     def create_region_tab(self, data, hierarchy_df=None):
         """Создает вкладку Регионы с фильтрами в форме"""
         if data is None or data.empty:
@@ -1000,67 +1000,125 @@ class DataVisualizer:
             display_data = base_data['raw_data']
         
         # ============================================
-        # 4. АГРЕГАЦИЯ ПО РЕГИОНАМ
+        # 4. РАЗВЕРТКА И ОТОБРАЖЕНИЕ
         # ============================================
         
-        # Группируем по региону
-        region_agg = display_data.groupby(region_col).agg({
+        st.subheader("📊 Детализация")
+        
+        col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+        with col1:
+            show_client = st.checkbox("Клиент", key='region_show_client')
+        with col2:
+            show_project = st.checkbox("Код проекта", key='region_show_project')
+        with col3:
+            show_wave = st.checkbox("Волна", key='region_show_wave')
+        with col4:
+            show_dsm = st.checkbox("DSM", key='region_show_dsm')
+        with col5:
+            show_asm = st.checkbox("ASM", key='region_show_asm')
+        with col6:
+            show_rs = st.checkbox("RS", key='region_show_rs')
+        with col7:
+            show_po = st.checkbox("ПО", key='region_show_po')
+        
+        # Формируем groupby в зависимости от чек-боксов
+        group_cols = ['Регион']
+        
+        if show_client and 'Клиент' in display_data.columns:
+            group_cols.append('Клиент')
+        if show_project and 'Проект' in display_data.columns:
+            group_cols.append('Проект')
+        if show_wave and 'Волна' in display_data.columns:
+            group_cols.append('Волна')
+        if show_dsm and 'DSM' in display_data.columns:
+            group_cols.append('DSM')
+        if show_asm and 'ASM' in display_data.columns:
+            group_cols.append('ASM')
+        if show_rs and 'RS' in display_data.columns:
+            group_cols.append('RS')
+        if show_po and 'ПО' in display_data.columns:
+            group_cols.append('ПО')
+        
+        # Агрегируем для отображения
+        agg_columns = {
             'План проекта, шт.': 'sum',
             'План на дату, шт.': 'sum',
             'Факт проекта, шт.': 'sum',
             'Факт на дату, шт.': 'sum',
-            'Проект': 'nunique',
-            'RS': 'nunique'
-        }).reset_index()
+            'Длительность': 'first',
+            'Дата старта': 'first',
+            'Дата финиша': 'first',
+            'Дней до конца проекта': 'first',
+            'Утилизация тайминга, %': 'first',
+            'Ср. план на день для 100% плана': 'sum'
+        }
         
-        region_agg = region_agg.rename(columns={
-            'Проект': 'Кол-во проектов',
-            'RS': 'Кол-во сотрудников'
-        })
+        existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
         
-        # Добавляем метрики
-        mask_plan = region_agg['План на дату, шт.'] > 0
-        region_agg['План/Факт на дату,%'] = 0.0
+        # ВСЕГДА группируем
+        region_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+        
+        # Добавляем вычисляемые метрики
+        mask_plan = region_data['План на дату, шт.'] > 0
+        region_data['План/Факт на дату,%'] = 0.0
         if mask_plan.any():
-            region_agg.loc[mask_plan, 'План/Факт на дату,%'] = (
-                region_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
-                region_agg.loc[mask_plan, 'План на дату, шт.'] * 100
+            region_data.loc[mask_plan, 'План/Факт на дату,%'] = (
+                region_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                region_data.loc[mask_plan, 'План на дату, шт.'] * 100
             ).round(1)
         
-        mask_project_plan = region_agg['План проекта, шт.'] > 0
-        region_agg['План/Факт проекта,%'] = 0.0
+        mask_project_plan = region_data['План проекта, шт.'] > 0
+        region_data['План/Факт проекта,%'] = 0.0
         if mask_project_plan.any():
-            region_agg.loc[mask_project_plan, 'План/Факт проекта,%'] = (
-                region_agg.loc[mask_project_plan, 'Факт проекта, шт.'] / 
-                region_agg.loc[mask_project_plan, 'План проекта, шт.'] * 100
+            region_data.loc[mask_project_plan, 'План/Факт проекта,%'] = (
+                region_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                region_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
             ).round(1)
         
-        region_agg['△План/Факт на дату, шт'] = (
-            region_agg['Факт на дату, шт.'] - region_agg['План на дату, шт.']
+        region_data['△План/Факт на дату, шт'] = (
+            region_data['Факт на дату, шт.'] - region_data['План на дату, шт.']
         ).round(1)
+        
+        region_data['△План/Факт на дату, %'] = 0.0
+        if mask_plan.any():
+            region_data.loc[mask_plan, '△План/Факт на дату, %'] = (
+                (region_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                 region_data.loc[mask_plan, 'План на дату, шт.']) - 1
+            ).round(3) * 100
         
         # KPI
         st.markdown("### 📊 Ключевые показатели")
         
-        include_prodata = st.checkbox("📊 Продата", key="region_include_prodata")
+        col_kpi1, col_kpi2, col_kpi3, col_checkbox = st.columns([1, 1, 1, 0.5])
+        with col_checkbox:
+            include_prodata = st.checkbox("📊 Продата", key="region_include_prodata")
         
         prodata_df = st.session_state.cleaned_data.get('prodata_processed', None)
+        
         prodata_plan_total = 0
         prodata_fact_total = 0
+        prodata_plan_date_total = 0
+        prodata_fact_date_total = 0
         
         if include_prodata and prodata_df is not None and not prodata_df.empty:
-            prodata_plan_total = prodata_df['План проекта, шт.'].sum() if 'План проекта, шт.' in prodata_df.columns else 0
-            prodata_fact_total = prodata_df['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in prodata_df.columns else 0
+            if 'План проекта, шт.' in prodata_df.columns:
+                prodata_plan_total = prodata_df['План проекта, шт.'].sum()
+            if 'Факт проекта, шт.' in prodata_df.columns:
+                prodata_fact_total = prodata_df['Факт проекта, шт.'].sum()
+            if 'План на дату, шт.' in prodata_df.columns:
+                prodata_plan_date_total = prodata_df['План на дату, шт.'].sum()
+            if 'Факт на дату, шт.' in prodata_df.columns:
+                prodata_fact_date_total = prodata_df['Факт на дату, шт.'].sum()
         
         col1, col2, col3 = st.columns(3)
         with col1:
-            plan_total = region_agg['План проекта, шт.'].sum() if 'План проекта, шт.' in region_agg.columns else 0
+            plan_total = region_data['План проекта, шт.'].sum() if 'План проекта, шт.' in region_data.columns else 0
             if include_prodata:
                 plan_total += prodata_plan_total
             st.metric("📊 План проекта", f"{plan_total:,.0f} шт")
         
         with col2:
-            fact_total = region_agg['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in region_agg.columns else 0
+            fact_total = region_data['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in region_data.columns else 0
             if include_prodata:
                 fact_total += prodata_fact_total
             st.metric("✅ Факт проекта", f"{fact_total:,.0f} шт")
@@ -1068,17 +1126,17 @@ class DataVisualizer:
         with col3:
             pf_percent = (fact_total / plan_total * 100) if plan_total > 0 else 0
             st.metric("🎯 План/Факт проекта", f"{pf_percent:.1f}%")
-            
+
         # Второй ряд: План на дату, Факт на дату, План/Факт на дату
         col4, col5, col6 = st.columns(3)
         with col4:
-            plan_date_total = region_agg['План на дату, шт.'].sum() if 'План на дату, шт.' in region_agg.columns else 0
+            plan_date_total = region_data['План на дату, шт.'].sum() if 'План на дату, шт.' in region_data.columns else 0
             if include_prodata:
                 plan_date_total += prodata_plan_date_total
             st.metric("📊 План на дату", f"{plan_date_total:,.0f} шт")
         
         with col5:
-            fact_date_total = region_agg['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in region_agg.columns else 0
+            fact_date_total = region_data['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in region_data.columns else 0
             if include_prodata:
                 fact_date_total += prodata_fact_date_total
             st.metric("✅ Факт на дату", f"{fact_date_total:,.0f} шт")
@@ -1088,9 +1146,25 @@ class DataVisualizer:
             st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
         
         # Отображаем таблицу
-        display_cols = [
-            'Клиент', 
-            'ПО', 
+        display_cols = ['Регион']
+        
+        if show_client and 'Клиент' in region_data.columns:
+            display_cols.append('Клиент')
+        if show_project and 'Проект' in region_data.columns:
+            display_cols.append('Проект')
+        if show_wave and 'Волна' in region_data.columns:
+            display_cols.append('Волна')
+        if show_dsm and 'DSM' in region_data.columns:
+            display_cols.append('DSM')
+        if show_asm and 'ASM' in region_data.columns:
+            display_cols.append('ASM')
+        if show_rs and 'RS' in region_data.columns:
+            display_cols.append('RS')
+        if show_po and 'ПО' in region_data.columns:
+            display_cols.append('ПО')
+        
+        # Колонки, которые показываются всегда
+        always_show = [
             'Длительность',
             'План проекта, шт.', 
             'Факт проекта, шт.', 
@@ -1106,18 +1180,23 @@ class DataVisualizer:
             'Утилизация тайминга, %',
             'Ср. план на день для 100% плана'
         ]
-        existing_display = [c for c in display_cols if c in region_agg.columns]
+        
+        for col in always_show:
+            if col in region_data.columns:
+                display_cols.append(col)
+        
+        existing_display = [c for c in display_cols if c in region_data.columns]
         
         # Преобразуем коды регионов в названия
-        if 'Регион' in region_agg.columns:
-            region_agg['Регион'] = region_agg['Регион'].apply(self._get_long_region)
+        if 'Регион' in region_data.columns:
+            region_data['Регион'] = region_data['Регион'].apply(self._get_long_region)
         
-        st.dataframe(region_agg[existing_display], use_container_width=True, hide_index=True)
+        st.dataframe(region_data[existing_display], use_container_width=True, hide_index=True)
         
         # Кнопка скачивания
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            region_agg.to_excel(writer, sheet_name='Регионы', index=False)
+            region_data.to_excel(writer, sheet_name='Регионы', index=False)
         
         st.download_button(
             label="⬇️ Скачать Excel",
@@ -1202,7 +1281,6 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('dsm_client_mode', 'Включить') == 'Включить' else 1
                 )
-                
                 client_mode = st.session_state.dsm_client_mode
                 
                 client_selected = st.multiselect(
@@ -1221,7 +1299,6 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('dsm_project_mode', 'Включить') == 'Включить' else 1
                 )
-
                 project_mode = st.session_state.dsm_project_mode
                 
                 project_selected = st.multiselect(
@@ -1240,7 +1317,6 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('dsm_wave_mode', 'Включить') == 'Включить' else 1
                 )
-
                 wave_mode = st.session_state.dsm_wave_mode
                 
                 wave_selected = st.multiselect(
@@ -1259,7 +1335,6 @@ class DataVisualizer:
                     horizontal=True,
                     index=0 if st.session_state.get('dsm_region_mode', 'Включить') == 'Включить' else 1
                 )
-
                 region_mode = st.session_state.dsm_region_mode
                 
                 region_selected_display = st.multiselect(
@@ -1293,7 +1368,6 @@ class DataVisualizer:
                 region_selected, st.session_state.dsm_region_mode,
                 region_col
             )
- 
             st.session_state.dsm_filtered_data = filtered_data
         
         if st.session_state.dsm_filtered_data is not None:
@@ -1302,67 +1376,125 @@ class DataVisualizer:
             display_data = base_data['raw_data']
         
         # ============================================
-        # 4. АГРЕГАЦИЯ ПО DSM
+        # 4. РАЗВЕРТКА И ОТОБРАЖЕНИЕ
         # ============================================
         
-        # Группируем по DSM
-        dsm_agg = display_data.groupby('DSM').agg({
+        st.subheader("📊 Детализация")
+        
+        col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+        with col1:
+            show_client = st.checkbox("Клиент", key='dsm_show_client')
+        with col2:
+            show_project = st.checkbox("Код проекта", key='dsm_show_project')
+        with col3:
+            show_wave = st.checkbox("Волна", key='dsm_show_wave')
+        with col4:
+            show_region = st.checkbox("Регионы", key='dsm_show_region')
+        with col5:
+            show_asm = st.checkbox("ASM", key='dsm_show_asm')
+        with col6:
+            show_rs = st.checkbox("RS", key='dsm_show_rs')
+        with col7:
+            show_po = st.checkbox("ПО", key='dsm_show_po')
+        
+        # Формируем groupby в зависимости от чек-боксов
+        group_cols = ['DSM']
+        
+        if show_client and 'Клиент' in display_data.columns:
+            group_cols.append('Клиент')
+        if show_project and 'Проект' in display_data.columns:
+            group_cols.append('Проект')
+        if show_wave and 'Волна' in display_data.columns:
+            group_cols.append('Волна')
+        if show_region and region_col in display_data.columns:
+            group_cols.append(region_col)
+        if show_asm and 'ASM' in display_data.columns:
+            group_cols.append('ASM')
+        if show_rs and 'RS' in display_data.columns:
+            group_cols.append('RS')
+        if show_po and 'ПО' in display_data.columns:
+            group_cols.append('ПО')
+        
+        # Агрегируем для отображения
+        agg_columns = {
             'План проекта, шт.': 'sum',
             'План на дату, шт.': 'sum',
             'Факт проекта, шт.': 'sum',
             'Факт на дату, шт.': 'sum',
-            'Проект': 'nunique',
-            'RS': 'nunique'
-        }).reset_index()
+            'Длительность': 'first',
+            'Дата старта': 'first',
+            'Дата финиша': 'first',
+            'Дней до конца проекта': 'first',
+            'Утилизация тайминга, %': 'first',
+            'Ср. план на день для 100% плана': 'sum'
+        }
         
-        dsm_agg = dsm_agg.rename(columns={
-            'Проект': 'Кол-во проектов',
-            'RS': 'Кол-во сотрудников'
-        })
+        existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
         
-        # Добавляем метрики
-        mask_plan = dsm_agg['План на дату, шт.'] > 0
-        dsm_agg['План/Факт на дату,%'] = 0.0
+        # ВСЕГДА группируем
+        dsm_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+        
+        # Добавляем вычисляемые метрики
+        mask_plan = dsm_data['План на дату, шт.'] > 0
+        dsm_data['План/Факт на дату,%'] = 0.0
         if mask_plan.any():
-            dsm_agg.loc[mask_plan, 'План/Факт на дату,%'] = (
-                dsm_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
-                dsm_agg.loc[mask_plan, 'План на дату, шт.'] * 100
+            dsm_data.loc[mask_plan, 'План/Факт на дату,%'] = (
+                dsm_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                dsm_data.loc[mask_plan, 'План на дату, шт.'] * 100
             ).round(1)
         
-        mask_project_plan = dsm_agg['План проекта, шт.'] > 0
-        dsm_agg['План/Факт проекта,%'] = 0.0
+        mask_project_plan = dsm_data['План проекта, шт.'] > 0
+        dsm_data['План/Факт проекта,%'] = 0.0
         if mask_project_plan.any():
-            dsm_agg.loc[mask_project_plan, 'План/Факт проекта,%'] = (
-                dsm_agg.loc[mask_project_plan, 'Факт проекта, шт.'] / 
-                dsm_agg.loc[mask_project_plan, 'План проекта, шт.'] * 100
+            dsm_data.loc[mask_project_plan, 'План/Факт проекта,%'] = (
+                dsm_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                dsm_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
             ).round(1)
         
-        dsm_agg['△План/Факт на дату, шт'] = (
-            dsm_agg['Факт на дату, шт.'] - dsm_agg['План на дату, шт.']
+        dsm_data['△План/Факт на дату, шт'] = (
+            dsm_data['Факт на дату, шт.'] - dsm_data['План на дату, шт.']
         ).round(1)
+        
+        dsm_data['△План/Факт на дату, %'] = 0.0
+        if mask_plan.any():
+            dsm_data.loc[mask_plan, '△План/Факт на дату, %'] = (
+                (dsm_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                 dsm_data.loc[mask_plan, 'План на дату, шт.']) - 1
+            ).round(3) * 100
         
         # KPI
         st.markdown("### 📊 Ключевые показатели")
         
-        include_prodata = st.checkbox("📊 Продата", key="dsm_include_prodata")
+        col_kpi1, col_kpi2, col_kpi3, col_checkbox = st.columns([1, 1, 1, 0.5])
+        with col_checkbox:
+            include_prodata = st.checkbox("📊 Продата", key="dsm_include_prodata")
         
         prodata_df = st.session_state.cleaned_data.get('prodata_processed', None)
+        
         prodata_plan_total = 0
         prodata_fact_total = 0
+        prodata_plan_date_total = 0
+        prodata_fact_date_total = 0
         
         if include_prodata and prodata_df is not None and not prodata_df.empty:
-            prodata_plan_total = prodata_df['План проекта, шт.'].sum() if 'План проекта, шт.' in prodata_df.columns else 0
-            prodata_fact_total = prodata_df['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in prodata_df.columns else 0
+            if 'План проекта, шт.' in prodata_df.columns:
+                prodata_plan_total = prodata_df['План проекта, шт.'].sum()
+            if 'Факт проекта, шт.' in prodata_df.columns:
+                prodata_fact_total = prodata_df['Факт проекта, шт.'].sum()
+            if 'План на дату, шт.' in prodata_df.columns:
+                prodata_plan_date_total = prodata_df['План на дату, шт.'].sum()
+            if 'Факт на дату, шт.' in prodata_df.columns:
+                prodata_fact_date_total = prodata_df['Факт на дату, шт.'].sum()
         
         col1, col2, col3 = st.columns(3)
         with col1:
-            plan_total = dsm_agg['План проекта, шт.'].sum() if 'План проекта, шт.' in dsm_agg.columns else 0
+            plan_total = dsm_data['План проекта, шт.'].sum() if 'План проекта, шт.' in dsm_data.columns else 0
             if include_prodata:
                 plan_total += prodata_plan_total
             st.metric("📊 План проекта", f"{plan_total:,.0f} шт")
         
         with col2:
-            fact_total = dsm_agg['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in dsm_agg.columns else 0
+            fact_total = dsm_data['Факт проекта, шт.'].sum() if 'Факт проекта, шт.' in dsm_data.columns else 0
             if include_prodata:
                 fact_total += prodata_fact_total
             st.metric("✅ Факт проекта", f"{fact_total:,.0f} шт")
@@ -1374,13 +1506,13 @@ class DataVisualizer:
         # Второй ряд: План на дату, Факт на дату, План/Факт на дату
         col4, col5, col6 = st.columns(3)
         with col4:
-            plan_date_total = dsm_agg['План на дату, шт.'].sum() if 'План на дату, шт.' in dsm_agg.columns else 0
+            plan_date_total = dsm_data['План на дату, шт.'].sum() if 'План на дату, шт.' in dsm_data.columns else 0
             if include_prodata:
                 plan_date_total += prodata_plan_date_total
             st.metric("📊 План на дату", f"{plan_date_total:,.0f} шт")
         
         with col5:
-            fact_date_total = dsm_agg['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in dsm_agg.columns else 0
+            fact_date_total = dsm_data['Факт на дату, шт.'].sum() if 'Факт на дату, шт.' in dsm_data.columns else 0
             if include_prodata:
                 fact_date_total += prodata_fact_date_total
             st.metric("✅ Факт на дату", f"{fact_date_total:,.0f} шт")
@@ -1390,9 +1522,25 @@ class DataVisualizer:
             st.metric("🎯 План/Факт на дату", f"{pf_date_percent:.1f}%")
         
         # Отображаем таблицу
-        display_cols = [
-            'Клиент', 
-            'ПО', 
+        display_cols = ['DSM']
+        
+        if show_client and 'Клиент' in dsm_data.columns:
+            display_cols.append('Клиент')
+        if show_project and 'Проект' in dsm_data.columns:
+            display_cols.append('Проект')
+        if show_wave and 'Волна' in dsm_data.columns:
+            display_cols.append('Волна')
+        if show_region and region_col in dsm_data.columns:
+            display_cols.append(region_col)
+        if show_asm and 'ASM' in dsm_data.columns:
+            display_cols.append('ASM')
+        if show_rs and 'RS' in dsm_data.columns:
+            display_cols.append('RS')
+        if show_po and 'ПО' in dsm_data.columns:
+            display_cols.append('ПО')
+        
+        # Колонки, которые показываются всегда
+        always_show = [
             'Длительность',
             'План проекта, шт.', 
             'Факт проекта, шт.', 
@@ -1408,15 +1556,19 @@ class DataVisualizer:
             'Утилизация тайминга, %',
             'Ср. план на день для 100% плана'
         ]
-
-        existing_display = [c for c in display_cols if c in dsm_agg.columns]
         
-        st.dataframe(dsm_agg[existing_display], use_container_width=True, hide_index=True)
+        for col in always_show:
+            if col in dsm_data.columns:
+                display_cols.append(col)
+        
+        existing_display = [c for c in display_cols if c in dsm_data.columns]
+        
+        st.dataframe(dsm_data[existing_display], use_container_width=True, hide_index=True)
         
         # Кнопка скачивания
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            dsm_agg.to_excel(writer, sheet_name='DSM', index=False)
+            dsm_data.to_excel(writer, sheet_name='DSM', index=False)
         
         st.download_button(
             label="⬇️ Скачать Excel",

@@ -483,18 +483,18 @@ class VisitCalculator:
                     else:
                         adjusted_totals[key] = new_total
                 
-                # 3. Вычисляем коэффициенты
-                coefficients = {}
+                # 3. Вычисляем коэффициенты корректировки
+                correction_factors = {}
                 for key in project_totals:
                     if project_totals[key] > 0:
-                        coefficients[key] = adjusted_totals[key] / project_totals[key]
+                        correction_factors[key] = adjusted_totals[key] / project_totals[key]
                     else:
-                        coefficients[key] = 1
+                        correction_factors[key] = 1
                 
                 # 4. Применяем коэффициенты к каждой строке
                 for idx, row in results_df.iterrows():
                     key = row['_project_key']
-                    coeff = coefficients.get(key, 1)
+                    coeff = correction_factors.get(key, 1)
                     
                     if coeff != 1:
                         old_plan = row['План проекта, шт.']

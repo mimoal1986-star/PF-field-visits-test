@@ -60,6 +60,16 @@ class VisitCalculator:
         if total_plan == 0 or duration == 0:
             return 0.0, 0.0
         
+        # ПРИВОДИМ ВСЕ ДАТЫ К ТИПУ datetime.date
+        if hasattr(start_date, 'date'):
+            start_date = start_date.date()
+        if hasattr(finish_date, 'date'):
+            finish_date = finish_date.date()
+        if hasattr(period_start, 'date'):
+            period_start = period_start.date()
+        if hasattr(period_end, 'date'):
+            period_end = period_end.date()
+        
         # 1. Разбиваем проект на этапы
         stage_days = duration // 4
         extra_days = duration % 4

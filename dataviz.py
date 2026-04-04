@@ -256,7 +256,6 @@ class DataVisualizer:
         return filtered
     
     def _apply_dsm_filters(self, data, asm_selected, asm_mode, client_selected, client_mode,
-                           project_selected, project_mode, wave_selected, wave_mode,
                            region_selected, region_mode, region_col):
         """Применяет фильтры к данным для вкладки DSM"""
         filtered = data.copy()
@@ -275,20 +274,6 @@ class DataVisualizer:
             else:
                 filtered = filtered[~filtered['Клиент'].isin(client_selected)]
         
-        # Проект
-        if project_selected:
-            if project_mode == 'Включить':
-                filtered = filtered[filtered['Проект'].isin(project_selected)]
-            else:
-                filtered = filtered[~filtered['Проект'].isin(project_selected)]
-        
-        # Волна
-        if wave_selected:
-            if wave_mode == 'Включить':
-                filtered = filtered[filtered['Волна'].isin(wave_selected)]
-            else:
-                filtered = filtered[~filtered['Волна'].isin(wave_selected)]
-        
         # Регион
         if region_selected:
             if region_mode == 'Включить':
@@ -297,6 +282,7 @@ class DataVisualizer:
                 filtered = filtered[~filtered[region_col].isin(region_selected)]
         
         return filtered
+                               
     
     def _get_long_region(self, short_code):
         """Преобразует короткий код региона в длинное название"""
@@ -1252,7 +1238,7 @@ class DataVisualizer:
             
             st.markdown("### 🔍 Фильтры")
             
-            col1, col2, col3, col4, col5 = st.columns(5)
+            col1, col2, col3 = st.columns(3)
             
             with col1:
                 st.markdown("**ASM**")
@@ -1291,42 +1277,6 @@ class DataVisualizer:
                 )
             
             with col3:
-                st.markdown("**Код проекта**")
-                project_mode = st.radio(
-                    "Режим",
-                    ["Включить", "Исключить"],
-                    key="dsm_project_mode",
-                    horizontal=True,
-                    index=0 if st.session_state.get('dsm_project_mode', 'Включить') == 'Включить' else 1
-                )
-                project_mode = st.session_state.dsm_project_mode
-                
-                project_selected = st.multiselect(
-                    "Выбрать проект",
-                    all_projects,
-                    key="dsm_project_values",
-                    default=[]
-                )
-            
-            with col4:
-                st.markdown("**Волна**")
-                wave_mode = st.radio(
-                    "Режим",
-                    ["Включить", "Исключить"],
-                    key="dsm_wave_mode",
-                    horizontal=True,
-                    index=0 if st.session_state.get('dsm_wave_mode', 'Включить') == 'Включить' else 1
-                )
-                wave_mode = st.session_state.dsm_wave_mode
-                
-                wave_selected = st.multiselect(
-                    "Выбрать волну",
-                    all_waves,
-                    key="dsm_wave_values",
-                    default=[]
-                )
-            
-            with col5:
                 st.markdown("**Регион**")
                 region_mode = st.radio(
                     "Режим",
@@ -1344,6 +1294,8 @@ class DataVisualizer:
                     default=[]
                 )
                 region_selected = [region_map.get(name, name) for name in region_selected_display]
+                
+                region_mode = st.session_state.dsm_region_mode
             
             st.markdown("---")
             
@@ -1363,8 +1315,6 @@ class DataVisualizer:
                 base_data['raw_data'],
                 asm_selected, st.session_state.dsm_asm_mode,
                 client_selected, st.session_state.dsm_client_mode,
-                project_selected, st.session_state.dsm_project_mode,
-                wave_selected, st.session_state.dsm_wave_mode,
                 region_selected, st.session_state.dsm_region_mode,
                 region_col
             )
@@ -1433,6 +1383,10 @@ class DataVisualizer:
         
         # ВСЕГДА группируем
         dsm_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+
+        # Преобразуем коды регионов в длинные названия
+        if 'Регион' in dsm_data.columns:
+            dsm_data['Регион'] = dsm_data['Регион'].apply(self._get_long_region)
         
         # Добавляем вычисляемые метрики
         mask_plan = dsm_data['План на дату, шт.'] > 0

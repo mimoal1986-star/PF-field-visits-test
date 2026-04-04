@@ -54,6 +54,53 @@ class VisitCalculator:
             return {}
     
     
+
+    def calculate_plan_with_stages(self, total_plan, duration, coefficients, start_date, finish_date, period_start, period_end):
+        
+        if total_plan == 0 or duration == 0:
+            return 0.0, 0.0
+        
+        # 1. Разбиваем проект на этапы
+        stage_days = duration // 4
+        extra_days = duration % 4
+        
+        stages = []  # каждый элемент: (days, plan, daily_plan)
+        plan_remaining = total_plan
+        
+        for i in range(4):
+            days = stage_days + (1 if i < extra_days else 0)
+            if i < 3:
+                plan = total_plan * coefficients[i]
+            else:
+                plan = plan_remaining
+            plan_remaining -= plan
+            daily_plan = plan / days if days > 0 else 0
+            stages.append((days, plan, daily_plan))
+        
+        # 2. Считаем план на дату
+        plan_on_date = 0.0
+        current_day = 0
+        
+        for days, plan, daily_plan in stages:
+            stage_start = start_date + timedelta(days=current_day)
+            stage_end = start_date + timedelta(days=current_day + days - 1)
+            
+            # Пересечение с отчетным периодом
+            intersect_start = max(period_start, stage_start)
+            intersect_end = min(period_end, stage_end)
+            
+            if intersect_start <= intersect_end:
+                days_in_period = (intersect_end - intersect_start).days + 1
+                plan_on_date += daily_plan * days_in_period
+            
+            current_day += days
+        
+        # Средний дневной план
+        period_days = (period_end - period_start).days + 1
+        daily_plan_avg = plan_on_date / period_days if period_days > 0 else 0
+        
+        return plan_on_date, daily_plan_avg
+            
     def extract_hierarchical_data(self, visits_df, google_df=None):
         """
         Создаёт полную иерархию Проект→Клиент→Волна→Регион→DSM→ASM→RS
@@ -161,9 +208,9 @@ class VisitCalculator:
             return pd.DataFrame()
     
     def calculate_hierarchical_plan_on_date(self, hierarchy_df, visits_df, calc_params, google_df=None):
-        """
-        РАССЧИТЫВАЕТ ПЛАН ТОЛЬКО ДЛЯ УРОВНЯ RS (ОПТИМИЗИРОВАННО)
-        """
+        
+        coefficients = calc_params.get('coefficients', [0.25, 0.25, 0.25, 0.25])
+        
         try:
             if hierarchy_df.empty or visits_df.empty:
                 return pd.DataFrame()
@@ -329,80 +376,61 @@ class VisitCalculator:
                     continue
                 
                 # Определяем total_plan и считаем план на дату
-                if po == 'ПО клиента' and client == 'Мултон':
-                    total_plan = multon_quotas.get(project_code, 0)
-                    if total_plan <= 0:
-                        continue
-                    
-                    # Распределяем квоту по регионам
-                    num_regions = len(multon_regions.get(project_code, []))
-                    if num_regions > 0:
-                        total_plan = total_plan / num_regions
-                    
-                    # Рассчитываем количество дней в месяце
-                    month_days = calendar.monthrange(start_period.year, start_period.month)[1]
-                    
-                    # План на дату = квота на регион × (дней в периоде / дней в месяце)
-                    rs_plan_on_date = total_plan * (days_in_period / month_days)
-                    rs_daily_plan = rs_plan_on_date / days_in_period if days_in_period > 0 else 0
-                
-                elif po == 'Мониторинги':
+                if po == 'Мониторинги':
                     total_plan = prodata_quotas.get(project_code, 0)
                     if total_plan <= 0:
                         continue
-                    
                     num_regions = len(prodata_regions.get(project_code, []))
                     if num_regions > 0:
                         total_plan = total_plan / num_regions
-                    
-                    # Старая логика: вся квота сразу
+                    # Мониторинги: старая логика, без этапов
                     rs_plan_on_date = total_plan
                     rs_daily_plan = total_plan
                 
-                elif po == 'Оптима':
-                    found_quota = None
-                    if '\\' in project_code:
-                        for code in project_code.split('\\'):
-                            if code.strip() in optima_quotas:
-                                found_quota = optima_quotas[code.strip()]
-                                break
-                    else:
-                        found_quota = optima_quotas.get(project_code)
+                else:
+                    # Для всех остальных типов (Чеккер, CXWAY, Easymerch, Мултон, Оптима)
+                    # Сначала рассчитываем total_plan (как раньше)
                     
-                    if not found_quota or found_quota <= 0:
-                        continue
+                    if po == 'ПО клиента' and client == 'Мултон':
+                        total_plan = multon_quotas.get(project_code, 0)
+                        if total_plan <= 0:
+                            continue
+                        num_regions = len(multon_regions.get(project_code, []))
+                        if num_regions > 0:
+                            total_plan = total_plan / num_regions
                     
-                    total_plan = found_quota
+                    elif po == 'Оптима':
+                        found_quota = None
+                        if '\\' in project_code:
+                            for code in project_code.split('\\'):
+                                if code.strip() in optima_quotas:
+                                    found_quota = optima_quotas[code.strip()]
+                                    break
+                        else:
+                            found_quota = optima_quotas.get(project_code)
+                        if not found_quota or found_quota <= 0:
+                            continue
+                        total_plan = found_quota
+                        num_regions = len(optima_regions.get(project_code, []))
+                        if num_regions > 0:
+                            total_plan = total_plan / num_regions
                     
-                    # Распределяем квоту по регионам
-                    num_regions = len(optima_regions.get(project_code, []))
-                    if num_regions > 0:
-                        total_plan = total_plan / num_regions
+                    else:  # Чеккер, CXWAY, Easymerch
+                        plan_key = (project_code, wave_name, region)
+                        total_plan = project_wave_region_plans.get(plan_key, 0)
+                        if total_plan <= 0:
+                            continue
                     
-                    # Рассчитываем количество дней в месяце
-                    month_days = calendar.monthrange(start_period.year, start_period.month)[1]
-                    
-                    # План на дату = квота на регион × (дней в периоде / дней в месяце)
-                    rs_plan_on_date = total_plan * (days_in_period / month_days)
-                    rs_daily_plan = rs_plan_on_date / days_in_period if days_in_period > 0 else 0
-                
-                else:  # Обычные проекты (Чеккер, CXWAY, Easymerch)
-                    plan_key = (project_code, wave_name, region)
-                    total_plan = project_wave_region_plans.get(plan_key, 0)
-                    if total_plan <= 0:
-                        continue
-                    
-                    # Обычный проект: равномерное распределение с весами RS
-                    daily_plan_wave = total_plan / duration
-                    key = (project_code, wave_name, region)
-                    rs_weights = rs_weights_cache.get(key, {})
-                    rs_weight = rs_weights.get(rs_name, 0)
-                    
-                    if rs_weight <= 0:
-                        continue
-                    
-                    rs_daily_plan = daily_plan_wave * rs_weight
-                    rs_plan_on_date = rs_daily_plan * days_in_period
+                    # Рассчитываем план на дату с учетом этапов
+                    rs_plan_on_date, rs_daily_plan = self.calculate_plan_with_stages(
+                        total_plan,
+                        duration,
+                        coefficients,
+                        start_date,
+                        finish_date,
+                        period_start,
+                        period_end
+                    )
 
                 
                 

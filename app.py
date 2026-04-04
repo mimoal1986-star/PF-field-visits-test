@@ -759,9 +759,7 @@ with tab1:
                         
                         st.success("✅ Расчет завершен!")
                         
-                        # Кнопка для перехода
-                        if st.button("📊 Перейти к отчетам"):
-                            st.rerun()
+
                     else:
                         st.error("❌ Ошибка при расчете")
         else:

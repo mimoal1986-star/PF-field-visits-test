@@ -513,7 +513,7 @@ class VisitCalculator:
                         old_plan_date = row['План на дату, шт.']
                         new_plan_date = old_plan_date * coeff
                         
-                        results_df.at[idx, 'План проекта, шт.'] = new_plan
+                        results_df.at[idx, 'План проекта, шт.'] = float(new_plan)
                         results_df.at[idx, 'План на дату, шт.'] = round(new_plan_date, 1)
                         
                         if 'Дней в периоде' in results_df.columns:

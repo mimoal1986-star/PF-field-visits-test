@@ -318,41 +318,43 @@ class DataCleaner:
         return df_clean
     
     def add_zod_from_hierarchy(self, array_df, hierarchy_df=None):
-        """
-        Добавляет колонку ЗОД в массив на основе встроенного справочника
-        hierarchy_df больше не используется, оставлен для совместимости
-        """
         try:
             if array_df is None or array_df.empty:
                 return array_df
             
             array_clean = array_df.copy()
             
-            # Находим колонку АСС в массиве
-            array_acc_col = self._find_column(array_clean, ['АСС', 'ACC', 'АСМ'])
+            # Ищем колонку АСС (только точное совпадение)
+            acc_col = None
+            for col in array_clean.columns:
+                if col == 'АСС' or col == 'ACC' or col == 'АСМ':
+                    acc_col = col
+                    break
             
-            if not array_acc_col:
-                return array_df
+            if not acc_col:
+                return array_clean
             
-            # Добавляем или обновляем колонку ЗОД
-            if 'ЗОД' in array_clean.columns:
+            # Создаем колонку ЗОД если её нет
+            if 'ЗОД' not in array_clean.columns:
                 array_clean['ЗОД'] = ''
-            else:
-                array_clean['ЗОД'] = ''
             
-            # Заполняем ЗОД на основе АСС из встроенного справочника
-            def get_zod_by_acc(acc_value):
-                if pd.isna(acc_value) or str(acc_value).strip().lower() in ['nan', 'none', 'null', '']:
-                    return ''
-                clean_acc = str(acc_value).strip()
-                return ZOD_MAPPING.get(clean_acc, '')
+            # Заполняем ТОЛЬКО пустые значения ЗОД (НЕ стираем существующие)
+            mask_empty = (array_clean['ЗОД'] == '') | (array_clean['ЗОД'].isna())
             
-            array_clean['ЗОД'] = array_clean[array_acc_col].apply(get_zod_by_acc)
+            if mask_empty.any():
+                def get_zod_by_acc(acc_value):
+                    if pd.isna(acc_value) or str(acc_value).strip().lower() in ['nan', 'none', 'null', '']:
+                        return ''
+                    clean_acc = str(acc_value).strip()
+                    return ZOD_MAPPING.get(clean_acc, '')
+                
+                array_clean.loc[mask_empty, 'ЗОД'] = array_clean.loc[mask_empty, acc_col].apply(get_zod_by_acc)
             
             return array_clean
             
         except Exception as e:
             return array_df
+        
 
     def export_array_to_excel(self, cleaned_array_df, filename="очищенный_массив"):
         """Создает Excel файл для очищенного массива"""

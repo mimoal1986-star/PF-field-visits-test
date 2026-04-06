@@ -810,83 +810,83 @@ with tab2:
             data = st.session_state.visit_report['calculated_data']
             dataviz.create_dsm_tab(data, None)
 
-# ============================================
-# ВЫГРУЗКА ПОЛЕВЫХ ПРОЕКТОВ
-# ============================================
-if st.session_state.cleaned_data.get('полевые_проекты') is not None:
-    st.markdown("---")
-    st.subheader("📥 Выгрузка данных")
+# # ============================================
+# # ВЫГРУЗКА ПОЛЕВЫХ ПРОЕКТОВ
+# # ============================================
+# if st.session_state.cleaned_data.get('полевые_проекты') is not None:
+#     st.markdown("---")
+#     st.subheader("📥 Выгрузка данных")
     
-    field_projects_df = st.session_state.cleaned_data['полевые_проекты']
+#     field_projects_df = st.session_state.cleaned_data['полевые_проекты']
     
     
-    # Исключаем ПроДата из выгрузки
-    if 'Источник' in field_projects_df.columns:
-        field_projects_df = field_projects_df[field_projects_df['Источник'] != 'Мониторинги']
+#     # Исключаем ПроДата из выгрузки
+#     if 'Источник' in field_projects_df.columns:
+#         field_projects_df = field_projects_df[field_projects_df['Источник'] != 'Мониторинги']
     
-    if not field_projects_df.empty:
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            field_projects_df.to_excel(writer, sheet_name='Полевые_проекты', index=False)
+#     if not field_projects_df.empty:
+#         output = BytesIO()
+#         with pd.ExcelWriter(output, engine='openpyxl') as writer:
+#             field_projects_df.to_excel(writer, sheet_name='Полевые_проекты', index=False)
         
-        st.download_button(
-            label="📥 Скачать все полевые проекты",
-            data=output.getvalue(),
-            file_name=f"полевые_проекты_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            type="primary",
-            width='stretch'
-        )
-    else:
-        st.info("Нет данных для выгрузки")
+#         st.download_button(
+#             label="📥 Скачать все полевые проекты",
+#             data=output.getvalue(),
+#             file_name=f"полевые_проекты_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+#             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+#             type="primary",
+#             width='stretch'
+#         )
+#     else:
+#         st.info("Нет данных для выгрузки")
 
-# ============================================
-# ВЫГРУЗКА НЕПОЛЕВЫХ ПРОЕКТОВ
-# ============================================
-if st.session_state.cleaned_data.get('неполевые_проекты') is not None:
-    st.markdown("---")
+# # ============================================
+# # ВЫГРУЗКА НЕПОЛЕВЫХ ПРОЕКТОВ
+# # ============================================
+# if st.session_state.cleaned_data.get('неполевые_проекты') is not None:
+#     st.markdown("---")
     
-    non_field_projects_df = st.session_state.cleaned_data['неполевые_проекты']
+#     non_field_projects_df = st.session_state.cleaned_data['неполевые_проекты']
     
-    if not non_field_projects_df.empty:
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            non_field_projects_df.to_excel(writer, sheet_name='Неполевые_проекты', index=False)
+#     if not non_field_projects_df.empty:
+#         output = BytesIO()
+#         with pd.ExcelWriter(output, engine='openpyxl') as writer:
+#             non_field_projects_df.to_excel(writer, sheet_name='Неполевые_проекты', index=False)
         
-        st.download_button(
-            label="📥 Скачать все неполевые проекты",
-            data=output.getvalue(),
-            file_name=f"неполевые_проекты_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            type="secondary",
-            width='stretch'
-        )
-    else:
-        st.info("Нет данных для выгрузки")
+#         st.download_button(
+#             label="📥 Скачать все неполевые проекты",
+#             data=output.getvalue(),
+#             file_name=f"неполевые_проекты_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+#             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+#             type="secondary",
+#             width='stretch'
+#         )
+#     else:
+#         st.info("Нет данных для выгрузки")
 
-# ============================================
-# ВЫГРУЗКА ALL_PROJECTS (ОБЪЕДИНЕННЫЙ ДАТАСЕТ)
-# ============================================
-if 'all_projects' in st.session_state.cleaned_data:
-    st.markdown("---")
+# # ============================================
+# # ВЫГРУЗКА ALL_PROJECTS (ОБЪЕДИНЕННЫЙ ДАТАСЕТ)
+# # ============================================
+# if 'all_projects' in st.session_state.cleaned_data:
+#     st.markdown("---")
     
-    all_projects_df = st.session_state.cleaned_data['all_projects']
+#     all_projects_df = st.session_state.cleaned_data['all_projects']
     
-    if not all_projects_df.empty:
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            all_projects_df.to_excel(writer, sheet_name='Все_проекты', index=False)
+#     if not all_projects_df.empty:
+#         output = BytesIO()
+#         with pd.ExcelWriter(output, engine='openpyxl') as writer:
+#             all_projects_df.to_excel(writer, sheet_name='Все_проекты', index=False)
         
-        st.download_button(
-            label="📥 Скачать all_projects (все проекты)",
-            data=output.getvalue(),
-            file_name=f"all_projects_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            type="secondary",
-            width='stretch'
-        )
-    else:
-        st.info("Нет данных для выгрузки")
+#         st.download_button(
+#             label="📥 Скачать all_projects (все проекты)",
+#             data=output.getvalue(),
+#             file_name=f"all_projects_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+#             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+#             type="secondary",
+#             width='stretch'
+#         )
+#     else:
+#         st.info("Нет данных для выгрузки")
 
 # ============================================
 # ВКЛАДКА 3: НАСТРОЙКИ ПРОЕКТОВ

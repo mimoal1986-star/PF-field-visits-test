@@ -571,7 +571,7 @@ def process_all_data(settings_manager=None, force_recalc=False):
         # Выводим предупреждение о ненайденных проектах
         if 'not_found_projects' in st.session_state and not st.session_state.not_found_projects.empty:
             st.warning("⚠️ Следующие проекты не найдены в загруженных данных:")
-            st.dataframe(st.session_state.not_found_projects, use_container_width=True)
+            st.dataframe(st.session_state.not_found_projects, width='stretch')
             st.info("💡 Проверьте: возможно, визиты по этим проектам не были загружены, или указан неверный портал.")
             
         st.session_state.processing_complete = True
@@ -1257,7 +1257,7 @@ with tab3:
                 
                 if adjustments_list:
                     df_adj_table = pd.DataFrame(adjustments_list)
-                    st.dataframe(df_adj_table, use_container_width=True, hide_index=True)
+                    st.dataframe(df_adj_table, width='stretch', hide_index=True)
                 else:
                     st.info("✅ Нет проектов с корректировками")
             # =============================================================
@@ -1358,7 +1358,7 @@ with tab3:
                                 # Выводим нужные колонки
                                 st.dataframe(
                                     history_df[['Дата', 'Пользователь', 'Действие', 'Проект', 'Волна', 'Код', 'Значение']],
-                                    use_container_width=True,
+                                    width='stretch',
                                     hide_index=True
                                 )
                             else:
@@ -1377,7 +1377,7 @@ with tab3:
                             'project_code': 'Код',
                             'adjustment_value': 'Значение'
                         })
-                        st.dataframe(temp_df[['Проект', 'Волна', 'Код', 'Значение']], use_container_width=True, hide_index=True)
+                        st.dataframe(temp_df[['Проект', 'Волна', 'Код', 'Значение']], width='stretch', hide_index=True)
             
             # ========== КНОПКИ ДЛЯ КОРРЕКТИРОВОК ==========
             st.markdown("---")

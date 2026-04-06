@@ -13,7 +13,9 @@ ZOD_MAPPING = {
     'Карлышева Алиса': 'Герасименко Лика',
     'Механошина Елена': 'Герасименко Лика',
     'Солодникова Виктория': 'Герасименко Лика',
-    'Шавлюк Юлия': 'Устинов Игорь'
+    'Шавлюк Юлия': 'Устинов Игорь',
+    'Воронин Евгений': 'Устинов Игорь',
+    'Яцевич Максим': 'Устинов Игорь'
 }
 
 @st.cache_data
@@ -1150,19 +1152,12 @@ class DataCleaner:
         
         
         # Добавление ЗОД из встроенного справочника (по АСС) с учетом новых сотрудников
-        if 'АСС' in result.columns:
-            # Расширяем словарь для поиска (можно вынести в начало файла)
-            extended_zod_mapping = ZOD_MAPPING.copy()
-            extended_zod_mapping.update({
-                'Воронин Евгений': 'Устинов Игорь',
-                'Яцевич Максим': 'Устинов Игорь'
-            })
-            
+        if 'АСС' in result.columns:            
             def get_zod(acc_value):
                 if pd.isna(acc_value) or str(acc_value).strip() == '':
                     return ''
                 clean_acc = str(acc_value).strip()
-                return extended_zod_mapping.get(clean_acc, '')
+                return ZOD_MAPPING.get(clean_acc, '')
             
             result['ЗОД'] = result['АСС'].apply(get_zod)
         else:
@@ -1306,17 +1301,12 @@ class DataCleaner:
         
         # Добавление ЗОД из встроенного справочника (по АСС)
         if 'АСС' in result.columns:
-            extended_zod_mapping = ZOD_MAPPING.copy()
-            extended_zod_mapping.update({
-                'Воронин Евгений': 'Устинов Игорь',
-                'Яцевич Максим': 'Устинов Игорь'
-            })
             
             def get_zod(acc_value):
                 if pd.isna(acc_value) or str(acc_value).strip() in ['', 'nan', 'none', 'null']:
                     return ''
                 clean_acc = str(acc_value).strip()
-                return extended_zod_mapping.get(clean_acc, '')
+                return ZOD_MAPPING.get(clean_acc, '')
             
             result['ЗОД'] = result['АСС'].apply(get_zod)
         else:
@@ -1500,17 +1490,12 @@ class DataCleaner:
         
         # Добавление ЗОД из встроенного справочника (по АСС)
         if 'АСС' in result.columns:
-            extended_zod_mapping = ZOD_MAPPING.copy()
-            extended_zod_mapping.update({
-                'Воронин Евгений': 'Устинов Игорь',
-                'Яцевич Максим': 'Устинов Игорь'
-            })
             
             def get_zod(acc_value):
                 if pd.isna(acc_value) or str(acc_value).strip() in ['', 'nan', 'none', 'null']:
                     return ''
                 clean_acc = str(acc_value).strip()
-                return extended_zod_mapping.get(clean_acc, '')
+                return ZOD_MAPPING.get(clean_acc, '')
             
             result['ЗОД'] = result['АСС'].apply(get_zod)
         else:

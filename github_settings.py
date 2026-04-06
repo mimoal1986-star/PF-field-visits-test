@@ -440,6 +440,15 @@ class PlanAdjustmentManager:
         self.headers = settings_manager.headers
         self.branch = settings_manager.branch
         self.current_user = st.session_state.get('username', 'unknown_user')
+
+    def get_all_adjustments(self) -> dict:
+        """Возвращает словарь {ключ: сумма_корректировок} за один запрос"""
+        adjustments = self._read_adjustments()
+        result = {}
+        for adj in adjustments:
+            key = (adj.get('project_name', ''), adj.get('wave_name', ''), adj.get('project_code', ''))
+            result[key] = result.get(key, 0) + adj.get('adjustment_value', 0)
+        return result
     
     def _get_file_sha(self):
         """Получает SHA текущего файла"""

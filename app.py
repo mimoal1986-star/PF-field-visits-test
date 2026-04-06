@@ -63,7 +63,9 @@ DEFAULT_STATE = {
     'processing_complete': False,
     'last_error': None,
     'visit_report': {},
-    'plan_calc_params': None
+    'plan_calc_params': None,
+    'data_calculated': False,  # ← ДОБАВИТЬ
+    'last_calculation_hash': None  # ← ДОБАВИТЬ
 }
 
 for key, default_value in DEFAULT_STATE.items():
@@ -72,8 +74,14 @@ for key, default_value in DEFAULT_STATE.items():
 
 # Вспомогательные функции
 
-def process_all_data(settings_manager=None):
+def process_all_data(settings_manager=None, force_recalc=False):
     """Полная обработка данных и расчет план/факт"""
+    
+    # Если данные уже посчитаны - сразу выходим
+    if not force_recalc and st.session_state.get('data_calculated', False):
+        return True
+    
+    # Загрузка, очистка    
     try:
         import time
         start_total = time.time()
@@ -742,6 +750,9 @@ with tab1:
                     if prodata_df is not None:
                         st.session_state.uploaded_files['prodata'] = prodata_df
                     
+                    # Сбрасываем флаг перед расчетом
+                    st.session_state.data_calculated = False
+                    
                     # 3. ЗАПУСКАЕМ РАСЧЕТ
                     if 'settings_manager' in st.session_state:
                         settings_manager = st.session_state.settings_manager
@@ -769,10 +780,10 @@ with tab1:
 
 with tab2:
     st.title("📈 Отчеты по полевым визитам")
+
+    if not st.session_state.get('data_calculated', False):
+        st.info("📌 Сначала выполните расчет на вкладке 'Загрузка данных'")
     
-    if ('visit_report' not in st.session_state or 
-        st.session_state.visit_report.get('calculated_data') is None):
-        st.info("Сначала выполните расчет на странице 'Загрузка данных'")
     else:
         tab_projects, tab_regions, tab_dsm = st.tabs(["📊 ПФ проекты", "🗺️ Регионы", "👥 DSM"])
         
@@ -1171,28 +1182,17 @@ with tab3:
     
     with col2:
         if st.button("🔄 Пересчитать", type="secondary", width='stretch'):
-            with st.spinner("🔄 Пересчет план/факта с учетом настроек..."):
-                try:
-                    # Просто вызываем ту же функцию, что и при первом расчете
-                    success = process_all_data(manager)
+            st.warning("⚠️ Чтобы применить настройки, нажмите 'РАССЧИТАТЬ' на вкладке 'Загрузка данных'")
                     
-                    if success:
-                        st.success("✅ Пересчет завершен! Перейдите на вкладку 'Отчеты'")
-                        st.rerun()
-                    else:
-                        st.error("❌ Ошибка при пересчете")
-                except Exception as e:
-                    st.error(f"❌ Ошибка: {str(e)}")
-                
-    
-    with col3:
-        if st.button("🗑️ Сбросить все настройки", width='stretch'):
-            success, msg = manager.clear_all_settings()
-            if success:
-                st.success(msg)
-                st.rerun()
-            else:
-                st.error(msg)
+        
+        with col3:
+            if st.button("🗑️ Сбросить все настройки", width='stretch'):
+                success, msg = manager.clear_all_settings()
+                if success:
+                    st.success(msg)
+                    st.rerun()
+                else:
+                    st.error(msg)
 
     # === КОРРЕКТИРОВКА ПЛАНА ===
     st.markdown("---")
@@ -1400,8 +1400,10 @@ with tab3:
                 if st.button("🔄 Пересчитать с корректировками", key="recalc_with_adjustments_btn"):
                     with st.spinner("🔄 Пересчет план/факта с учетом корректировок..."):
                         try:
-                            success = process_all_data(manager)
+                            st.session_state.data_calculated = False
+                            success = process_all_data(manager, force_recalc=True)
                             if success:
+                                st.session_state.data_calculated = True
                                 st.success("✅ Пересчет завершен!")
                                 st.rerun()
                             else:

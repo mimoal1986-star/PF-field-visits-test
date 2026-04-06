@@ -1198,12 +1198,19 @@ with tab3:
                     st.error(msg)
 
     # === КОРРЕКТИРОВКА ПЛАНА ===
+    
     st.markdown("---")
     st.subheader("✂️ Корректировка плана")
     st.caption("✂️ Срез: введите отрицательное число (например, -1000). ➕ Добавление: введите положительное число (например, 1000)")
-    
+
     # Получаем менеджер корректировок
     plan_adj_manager = get_plan_adjustment_manager()
+
+    # Кэшируем корректировки из GitHub (один раз)
+    if 'cached_saved_adjustments' not in st.session_state:
+        st.session_state.cached_saved_adjustments = plan_adj_manager.get_all_adjustments()
+    
+    saved_adjustments = st.session_state.cached_saved_adjustments
     
     # Выбираем проект для корректировки
     if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
@@ -1211,26 +1218,24 @@ with tab3:
         field_df = field_df[field_df['Полевой'] == 1]
         
         if not field_df.empty:
-            # Убираем дубликаты по ключевым полям
-            unique_projects = field_df[['Имя клиента', 'Название проекта', 'Код анкеты']].drop_duplicates()
+            # Кэшируем уникальные проекты для корректировки
+            field_df_hash = hash(field_df.values.tobytes()) if not field_df.empty else 0
             
-            project_options = unique_projects.apply(
-                lambda row: f"{row['Имя клиента']} | {row['Название проекта']} | {row['Код анкеты']}",
-                axis=1
-            ).tolist()
+            if st.session_state.get('cached_projects_hash') != field_df_hash:
+                st.session_state.cached_unique_projects = field_df[['Имя клиента', 'Название проекта', 'Код анкеты']].drop_duplicates()
+                st.session_state.cached_project_options = st.session_state.cached_unique_projects.apply(
+                    lambda row: f"{row['Имя клиента']} | {row['Название проекта']} | {row['Код анкеты']}",
+                    axis=1
+                ).tolist()
+                st.session_state.cached_projects_hash = field_df_hash
+            
+            unique_projects = st.session_state.get('cached_unique_projects', pd.DataFrame())
+            project_options = st.session_state.get('cached_project_options', [])
+
             
             # ========== ПОСТОЯННАЯ ТАБЛИЦА КОРРЕКТИРОВОК (только проекты с изменениями) ==========
             with st.expander("📋 Текущие корректировки проектов", expanded=True):
-                # Собираем корректировки из GitHub
-                saved_adjustments = {}
-                for _, row in unique_projects.iterrows():
-                    p_name = row['Имя клиента']
-                    w_name = row['Название проекта']
-                    p_code = row['Код анкеты']
-                    adj_value = plan_adj_manager.get_total_adjustment(p_name, w_name, p_code)
-                    if adj_value != 0:
-                        saved_adjustments[(p_name, w_name, p_code)] = adj_value
-                
+           
                 # Добавляем временные корректировки
                 all_adjustments = saved_adjustments.copy()
                 for temp in st.session_state.temp_adjustments:
@@ -1393,6 +1398,7 @@ with tab3:
                                 adj['adjustment_value']
                             )
                         st.session_state.temp_adjustments = []
+                        st.session_state.pop('cached_saved_adjustments', None)
                         st.success("✅ Корректировки сохранены в GitHub!")
                     else:
                         st.info("Нет временных корректировок для сохранения")

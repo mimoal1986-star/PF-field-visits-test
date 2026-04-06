@@ -19,53 +19,7 @@
       "added_by": "unknown_user"
     }
   ],
-  "included_projects": [
-    {
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-04-04T17:17:48.670052",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Банк ДОМ.РФ_Семпл ",
-      "wave_name": "nan",
-      "project_code": "nan",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-06T07:30:39.601192",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_ТП (110 волна)",
-      "project_code": "nan",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-06T08:25:24.462831",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_ООО_ТП (110 волна)",
-      "project_code": "nan",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-06T08:25:24.462974",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_POS audit (9 волна)",
-      "project_code": "nan",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-06T08:25:24.463073",
-      "added_by": "unknown_user"
-    }
-  ],
+  "included_projects": [],
   "history": [
     {
       "action": "clear_all",
@@ -615,8 +569,48 @@
       "project_code": "nan",
       "timestamp": "2026-04-06T08:25:24.463083",
       "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "CarPrice",
+      "wave_name": "2026.03",
+      "project_code": "RU00.013.06.01SVZ24",
+      "timestamp": "2026-04-06T08:42:41.484313",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Банк ДОМ.РФ_Семпл ",
+      "wave_name": "nan",
+      "project_code": "nan",
+      "timestamp": "2026-04-06T08:42:41.484393",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "KARCHER ",
+      "wave_name": "2026_03_Karcher_ТП (110 волна)",
+      "project_code": "nan",
+      "timestamp": "2026-04-06T08:42:41.484450",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "KARCHER ",
+      "wave_name": "2026_03_Karcher_ООО_ТП (110 волна)",
+      "project_code": "nan",
+      "timestamp": "2026-04-06T08:42:41.484505",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "KARCHER ",
+      "wave_name": "2026_03_Karcher_POS audit (9 волна)",
+      "project_code": "nan",
+      "timestamp": "2026-04-06T08:42:41.484557",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-06T08:25:24.463089",
+  "last_updated": "2026-04-06T08:42:41.484563",
   "version": "1.0"
 }

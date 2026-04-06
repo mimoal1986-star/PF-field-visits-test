@@ -1106,7 +1106,6 @@ with tab3:
                     success, msg = manager.remove_from_excluded(excluded_df)
                     if success:
                         st.success("Список исключенных очищен")
-                        st.rerun()
             else:
                 st.info("Список пуст")
         
@@ -1119,7 +1118,6 @@ with tab3:
                     success, msg = manager.remove_from_included(included_df)
                     if success:
                         st.success("Список добавленных очищен")
-                        st.rerun()
             else:
                 st.info("Список пуст")
     
@@ -1313,7 +1311,6 @@ with tab3:
                                     'adjustment_value': adjustment_value
                                 })
                                 st.success(f"✅ Корректировка {adjustment_value} добавлена во временный список")
-                                st.rerun()
                             else:
                                 st.warning("⚠️ Введите ненулевое значение")
                     
@@ -1325,7 +1322,6 @@ with tab3:
                                        and t['wave_name'] == wave_name 
                                        and t['project_code'] == project_code)]
                             st.success("✅ Временные корректировки очищены")
-                            st.rerun()
                     
                     # ========== ИСТОРИЯ КОРРЕКТИРОВОК (как в "История изменений") ==========
                     with st.expander("📜 История корректировок", expanded=False):
@@ -1395,7 +1391,6 @@ with tab3:
                             )
                         st.session_state.temp_adjustments = []
                         st.success("✅ Корректировки сохранены в GitHub!")
-                        st.rerun()
                     else:
                         st.info("Нет временных корректировок для сохранения")
             with col2:
@@ -1417,7 +1412,6 @@ with tab3:
                     if st.session_state.temp_adjustments:
                         st.session_state.temp_adjustments = []
                         st.success("✅ Все временные корректировки очищены")
-                        st.rerun()
                     else:
                         st.info("Нет временных корректировок")
             # =============================================

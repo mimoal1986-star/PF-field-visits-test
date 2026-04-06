@@ -56,13 +56,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Показываем сообщения о расчете после перезагрузки
-if 'show_messages' in st.session_state and st.session_state.show_messages:
-    st.write("### ⏱️ Время выполнения:")
-    for msg in st.session_state.calculation_messages:
-        st.write(msg)
-    st.success("✅ Расчет завершен!")
-    st.session_state.show_messages = False
+
 
 # Инициализация session_state
 DEFAULT_STATE = {
@@ -656,6 +650,14 @@ with st.sidebar:
 tab1, tab2, tab3 = st.tabs(["📤 Загрузка данных", "📈 Отчеты", "⚙️ Настройки проектов"])
 
 with tab1:
+    # Показываем сообщения о расчете после перезагрузки
+    if 'show_messages' in st.session_state and st.session_state.show_messages:
+        st.write("### ⏱️ Время выполнения:")
+        for msg in st.session_state.calculation_messages:
+            st.write(msg)
+        st.success("✅ Расчет завершен!")
+        st.session_state.show_messages = False
+        
     st.title("📤 Загрузка исходных данных")
     st.markdown("Загрузите необходимые Excel файлы")
     
@@ -996,7 +998,6 @@ with tab3:
                     success, msg = manager.add_to_excluded(selected_df)
                     if success:
                         st.success(msg)
-                        st.rerun()
                     else:
                         st.error(msg)
                     
@@ -1084,7 +1085,6 @@ with tab3:
                             success, msg = manager.add_to_included(selected_df)
                             if success:
                                 st.success(msg)
-                                st.rerun()
                             else:
                                 st.error(msg)
                 else:

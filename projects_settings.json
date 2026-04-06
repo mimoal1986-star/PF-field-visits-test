@@ -1,6 +1,25 @@
 {
   "excluded_projects": [],
-  "included_projects": [],
+  "included_projects": [
+    {
+      "project_name": "Северсталь_Тайный соискатель",
+      "wave_name": "1 волна 12.2025",
+      "project_code": "Мультикод_.385",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-06T13:07:47.522975",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Северсталь_Тайный соискатель",
+      "wave_name": "1 волна 03.2026 Звонок",
+      "project_code": "Мультикод_.385",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-06T13:07:47.523073",
+      "added_by": "unknown_user"
+    }
+  ],
   "history": [
     {
       "action": "clear_all",
@@ -606,8 +625,24 @@
       "project_code": "Мультикод_.385",
       "timestamp": "2026-04-06T13:07:20.860762",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Северсталь_Тайный соискатель",
+      "wave_name": "1 волна 12.2025",
+      "project_code": "Мультикод_.385",
+      "timestamp": "2026-04-06T13:07:47.522992",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Северсталь_Тайный соискатель",
+      "wave_name": "1 волна 03.2026 Звонок",
+      "project_code": "Мультикод_.385",
+      "timestamp": "2026-04-06T13:07:47.523078",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-06T13:07:20.860769",
+  "last_updated": "2026-04-06T13:07:47.523082",
   "version": "1.0"
 }

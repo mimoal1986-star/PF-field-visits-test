@@ -56,6 +56,14 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Показываем сообщения о расчете после перезагрузки
+if 'show_messages' in st.session_state and st.session_state.show_messages:
+    st.write("### ⏱️ Время выполнения:")
+    for msg in st.session_state.calculation_messages:
+        st.write(msg)
+    st.success("✅ Расчет завершен!")
+    st.session_state.show_messages = False
+
 # Инициализация session_state
 DEFAULT_STATE = {
     'uploaded_files': {},
@@ -763,16 +771,11 @@ with tab1:
                     success = process_all_data(settings_manager)
                     
                     if success:
-                        # Показываем замеры
-                        st.write("### ⏱️ Время выполнения:")
-                        for msg in st.session_state.debug_times:
-                            st.write(msg)
-                        
-                        st.success("✅ Расчет завершен!")
-                        
+                        # Сохраняем сообщения в память
+                        st.session_state.calculation_messages = st.session_state.debug_times.copy()
+                        st.session_state.show_messages = True 
                         st.session_state.data_calculated = True
                         st.rerun()
-
                     else:
                         st.error("❌ Ошибка при расчете")
         else:

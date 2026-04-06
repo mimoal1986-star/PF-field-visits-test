@@ -306,7 +306,7 @@ def process_all_data(settings_manager=None, force_recalc=False):
         sources_for_merge = []
         
         if field_df is not None and not field_df.empty:
-            sources_for_merge.append(field_df)
+            sources_for_merge.append(field_df_with_zod)
             
         if cxway_processed is not None and not cxway_processed.empty:
             cxway_field_only = cxway_processed[cxway_processed['Полевой'] == 1].copy()

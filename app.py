@@ -1262,16 +1262,16 @@ with tab3:
                     st.info("✅ Нет проектов с корректировками")
             # =============================================================
             
-            project_options_with_default = ["-- Выберите проект --"] + project_options
             
-            selected_project = st.selectbox(
+            selected_projects = st.multiselect(
                 "Выберите проект для корректировки",
-                options=project_options_with_default,
-                key="plan_adjustment_select"
+                options=project_options,
+                key="plan_adjustment_select",
+                max_selections=1
             )
             
-            if selected_project and selected_project != "-- Выберите проект --":
-                parts = selected_project.split(' | ')
+            if selected_projects:
+                parts = selected_projects[0].split(' | ')
                 if len(parts) >= 3:
                     project_name = parts[0]
                     wave_name = parts[1]

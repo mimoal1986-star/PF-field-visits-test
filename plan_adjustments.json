@@ -39,7 +39,15 @@
       "adjustment_value": 1000,
       "created_at": "2026-04-06T13:48:55.827520",
       "created_by": "unknown_user"
+    },
+    {
+      "project_name": "Haleon",
+      "wave_name": "2026.03 (36 волна)",
+      "project_code": "RU00.024.02.01SVZ24",
+      "adjustment_value": -1000,
+      "created_at": "2026-04-07T07:26:38.262917",
+      "created_by": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-06T13:48:55.995316"
+  "last_updated": "2026-04-07T07:26:38.460362"
 }

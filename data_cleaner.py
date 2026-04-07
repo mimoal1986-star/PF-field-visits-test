@@ -1309,7 +1309,7 @@ class DataCleaner:
         result['Полевой'] = 1
         
         # Источник
-        result['Источник'] = 'Optima'
+        result['Источник'] = 'Оптима'
         
         # ПО (портал) - по умолчанию Optima
         result['ПО'] = 'Optima'

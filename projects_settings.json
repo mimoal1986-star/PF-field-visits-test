@@ -9,6 +9,15 @@
       "fio_om": "",
       "added_at": "2026-04-07T07:12:59.347512",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Roseville ",
+      "wave_name": "Rosseville_03-2026",
+      "project_code": "RU00.366.06.01SVZ25",
+      "portal": "не определено",
+      "fio_om": "",
+      "added_at": "2026-04-07T07:29:13.991965",
+      "added_by": "unknown_user"
     }
   ],
   "history": [
@@ -672,8 +681,16 @@
       "project_code": "RU00.013.06.01SVZ24",
       "timestamp": "2026-04-07T07:12:59.347534",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Roseville ",
+      "wave_name": "Rosseville_03-2026",
+      "project_code": "RU00.366.06.01SVZ25",
+      "timestamp": "2026-04-07T07:29:13.991985",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-07T07:12:59.347541",
+  "last_updated": "2026-04-07T07:29:13.991992",
   "version": "1.0"
 }

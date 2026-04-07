@@ -1,34 +1,6 @@
 {
   "excluded_projects": [],
-  "included_projects": [
-    {
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 12.2025",
-      "project_code": "Мультикод_.385",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-06T13:07:47.522975",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 03.2026 Звонок",
-      "project_code": "Мультикод_.385",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-06T13:07:47.523073",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-06T17:40:19.130570",
-      "added_by": "unknown_user"
-    }
-  ],
+  "included_projects": [],
   "history": [
     {
       "action": "clear_all",
@@ -658,8 +630,32 @@
       "project_code": "RU00.013.06.01SVZ24",
       "timestamp": "2026-04-06T17:40:19.130590",
       "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Северсталь_Тайный соискатель",
+      "wave_name": "1 волна 12.2025",
+      "project_code": "Мультикод_.385",
+      "timestamp": "2026-04-07T06:46:24.218942",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Северсталь_Тайный соискатель",
+      "wave_name": "1 волна 03.2026 Звонок",
+      "project_code": "Мультикод_.385",
+      "timestamp": "2026-04-07T06:46:24.219084",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "CarPrice",
+      "wave_name": "2026.03",
+      "project_code": "RU00.013.06.01SVZ24",
+      "timestamp": "2026-04-07T06:46:24.219199",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-06T17:40:19.130596",
+  "last_updated": "2026-04-07T06:46:24.219210",
   "version": "1.0"
 }

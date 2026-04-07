@@ -615,6 +615,11 @@ class DataVisualizer:
         
         # ВСЕГДА группируем (даже если group_cols == ['Клиент'])
         project_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+        # Преобразуем коды регионов в длинные названия
+        if 'Регион' in project_data.columns:
+            project_data['Регион'] = project_data['Регион'].apply(self._get_long_region)
+        elif region_col in project_data.columns and region_col != 'Регион':
+            project_data[region_col] = project_data[region_col].apply(self._get_long_region)
         
         # Добавляем вычисляемые метрики
         mask_plan = project_data['План на дату, шт.'] > 0

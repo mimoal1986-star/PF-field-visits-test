@@ -8,6 +8,7 @@ from typing import Optional, Dict, Tuple, List
 import io
 import calendar
 from github_settings import get_plan_adjustment_manager
+from data_cleaner import REGION_NAME_TO_CODE
 
 class VisitCalculator:
     

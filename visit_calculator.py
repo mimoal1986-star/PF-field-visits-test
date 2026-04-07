@@ -55,27 +55,21 @@ class VisitCalculator:
             return {}
 
     def _calculate_optima_weights(self, optima_df):
-        """Рассчитывает веса RS для проектов Optima"""
         if optima_df is None or optima_df.empty:
             return {}
         
         weights = {}
         
-        # Группировка по Проект, Регион Чекер, Координатор
-        rs_counts = optima_df.groupby(['Проект', 'Регион Чекер', 'Координатор']).size().reset_index(name='count_rs')
+        # Группировка по КОДУ проекта (Код анкеты), а не по имени клиента
+        rs_counts = optima_df.groupby(['Код анкеты', 'Регион short', 'ЭМ']).size().reset_index(name='count_rs')
         
-        # Общее количество записей по проекту
-        project_totals = optima_df.groupby('Проект').size().reset_index(name='total_count')
+        project_totals = optima_df.groupby('Код анкеты').size().reset_index(name='total_count')
         
-        # Объединяем и рассчитываем вес
-        merged = rs_counts.merge(project_totals, on='Проект')
+        merged = rs_counts.merge(project_totals, on='Код анкеты')
         merged['weight'] = merged['count_rs'] / merged['total_count']
         
-        # Сохраняем в словарь, преобразуя название региона в код
         for _, row in merged.iterrows():
-            region_name = row['Регион Чекер']
-            region_code = REGION_NAME_TO_CODE.get(region_name, region_name)
-            key = (row['Проект'], region_code, row['Координатор'])
+            key = (row['Код анкеты'], row['Регион short'], row['ЭМ'])
             weights[key] = row['weight']
         
         return weights

@@ -1312,7 +1312,7 @@ class DataCleaner:
         result['Источник'] = 'Оптима'
         
         # ПО (портал) - по умолчанию Optima
-        result['ПО'] = 'Optima'
+        result['ПО'] = 'Оптима'
         
         # Обогащение из Google-таблицы
         if google_df is not None and 'Код анкеты' in result.columns:
@@ -1329,11 +1329,11 @@ class DataCleaner:
                 
                 def get_portal(code_value):
                     if pd.isna(code_value) or str(code_value).strip() in ['', 'nan', 'none', 'null']:
-                        return 'Optima'
+                        return 'Оптима'
                     clean_code = str(code_value).strip()
                     if '\\' in clean_code:
                         clean_code = clean_code.split('\\')[0].strip()
-                    return portal_mapping.get(clean_code, 'Optima')
+                    return portal_mapping.get(clean_code, 'Оптима')
                 
                 result['ПО'] = result['Код анкеты'].apply(get_portal)
         
@@ -1350,7 +1350,7 @@ class DataCleaner:
         else:
             result['ЗОД'] = ''
         
-        result['Источник'] = 'Optima'
+        result['Источник'] = 'Оптима'
         
         return result
     

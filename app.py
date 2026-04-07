@@ -538,7 +538,9 @@ def process_all_data(settings_manager=None, force_recalc=False):
             source_df = st.session_state.cleaned_data['полевые_проекты']
             
             plan_result = visit_calculator.calculate_hierarchical_plan_on_date(
-                base_data, source_df, params, st.session_state.cleaned_data['сервизория']
+                base_data, source_df, params, 
+                google_df=st.session_state.cleaned_data['сервизория'],
+                optima_df=st.session_state.cleaned_data.get('optima_processed')
             )
             
             st.session_state.debug_times.append(f"[DEBUG] План: {time.time() - start:.2f} сек")

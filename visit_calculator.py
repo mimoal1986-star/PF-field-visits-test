@@ -71,9 +71,11 @@ class VisitCalculator:
         merged = rs_counts.merge(project_totals, on='Проект')
         merged['weight'] = merged['count_rs'] / merged['total_count']
         
-        # Сохраняем в словарь
+        # Сохраняем в словарь, преобразуя название региона в код
         for _, row in merged.iterrows():
-            key = (row['Проект'], row['Регион Чекер'], row['Координатор'])
+            region_name = row['Регион Чекер']
+            region_code = REGION_NAME_TO_CODE.get(region_name, region_name)
+            key = (row['Проект'], region_code, row['Координатор'])
             weights[key] = row['weight']
         
         return weights

@@ -1182,8 +1182,7 @@ with tab3:
     with col1:
         if st.button("💾 Сохранить настройки", type="primary", width='stretch'):
             st.success("Настройки сохранены в GitHub!")
-    
-    with col2:
+
     with col2:
         if st.button("🔄 Пересчитать", type="secondary", width='stretch'):
             with st.spinner("🔄 Пересчет с учетом настроек..."):

@@ -1184,8 +1184,17 @@ with tab3:
             st.success("Настройки сохранены в GitHub!")
     
     with col2:
+    with col2:
         if st.button("🔄 Пересчитать", type="secondary", width='stretch'):
-            st.warning("⚠️ Чтобы применить настройки, нажмите 'РАССЧИТАТЬ' на вкладке 'Загрузка данных'")
+            with st.spinner("🔄 Пересчет с учетом настроек..."):
+                st.session_state.data_calculated = False
+                success = process_all_data(manager, force_recalc=True)
+                if success:
+                    st.session_state.data_calculated = True
+                    st.success("✅ Пересчет завершен!")
+                    st.rerun()
+                else:
+                    st.error("❌ Ошибка при пересчете")
                     
         
         with col3:

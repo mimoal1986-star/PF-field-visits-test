@@ -1,25 +1,6 @@
 {
   "excluded_projects": [],
-  "included_projects": [
-    {
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-04-07T07:12:59.347512",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Roseville ",
-      "wave_name": "Rosseville_03-2026",
-      "project_code": "RU00.366.06.01SVZ25",
-      "portal": "не определено",
-      "fio_om": "",
-      "added_at": "2026-04-07T07:29:13.991965",
-      "added_by": "unknown_user"
-    }
-  ],
+  "included_projects": [],
   "history": [
     {
       "action": "clear_all",
@@ -689,8 +670,24 @@
       "project_code": "RU00.366.06.01SVZ25",
       "timestamp": "2026-04-07T07:29:13.991985",
       "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "CarPrice",
+      "wave_name": "2026.03",
+      "project_code": "RU00.013.06.01SVZ24",
+      "timestamp": "2026-04-07T09:12:51.430846",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Roseville ",
+      "wave_name": "Rosseville_03-2026",
+      "project_code": "RU00.366.06.01SVZ25",
+      "timestamp": "2026-04-07T09:12:51.430962",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-07T07:29:13.991992",
+  "last_updated": "2026-04-07T09:12:51.430971",
   "version": "1.0"
 }

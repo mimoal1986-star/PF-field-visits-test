@@ -1,5 +1,15 @@
 {
-  "excluded_projects": [],
+  "excluded_projects": [
+    {
+      "project_name": "Дентекс ",
+      "wave_name": "2026.04_отзыв",
+      "project_code": "Семпл",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-04-07T13:16:33.735927",
+      "added_by": "unknown_user"
+    }
+  ],
   "included_projects": [
     {
       "project_name": "Лепим и Варим ",
@@ -712,8 +722,16 @@
       "project_code": "SNG00.030.01.03SPK25",
       "timestamp": "2026-04-07T13:14:59.557038",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Дентекс ",
+      "wave_name": "2026.04_отзыв",
+      "project_code": "Семпл",
+      "timestamp": "2026-04-07T13:16:33.735952",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-07T13:14:59.557049",
+  "last_updated": "2026-04-07T13:16:33.735959",
   "version": "1.0"
 }

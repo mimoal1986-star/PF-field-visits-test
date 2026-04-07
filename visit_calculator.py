@@ -52,6 +52,30 @@ class VisitCalculator:
         except Exception as e:
             print(f"[DEBUG] Ошибка расчета долей RS: {e}")
             return {}
+
+    def _calculate_optima_weights(self, optima_df):
+        """Рассчитывает веса RS для проектов Optima"""
+        if optima_df is None or optima_df.empty:
+            return {}
+        
+        weights = {}
+        
+        # Группировка по Проект, Регион Чекер, Координатор
+        rs_counts = optima_df.groupby(['Проект', 'Регион Чекер', 'Координатор']).size().reset_index(name='count_rs')
+        
+        # Общее количество записей по проекту
+        project_totals = optima_df.groupby('Проект').size().reset_index(name='total_count')
+        
+        # Объединяем и рассчитываем вес
+        merged = rs_counts.merge(project_totals, on='Проект')
+        merged['weight'] = merged['count_rs'] / merged['total_count']
+        
+        # Сохраняем в словарь
+        for _, row in merged.iterrows():
+            key = (row['Проект'], row['Регион Чекер'], row['Координатор'])
+            weights[key] = row['weight']
+        
+        return weights
     
     
 
@@ -217,7 +241,7 @@ class VisitCalculator:
         except Exception as e:
             return pd.DataFrame()
     
-    def calculate_hierarchical_plan_on_date(self, hierarchy_df, visits_df, calc_params, google_df=None):
+    def calculate_hierarchical_plan_on_date(self, hierarchy_df, visits_df, calc_params, google_df=None, optima_df=None):
         
         coefficients = calc_params.get('coefficients', [0.25, 0.25, 0.25, 0.25])
         
@@ -329,7 +353,7 @@ class VisitCalculator:
             # 3. ПРЕДВАРИТЕЛЬНЫЙ РАСЧЕТ РАСПРЕДЕЛЕНИЯ ПО РЕГИОНАМ
             # ============================================
             
-            # Для Мултон, Оптима и ПроДата считаем количество регионов
+            # Для Мултон и ПроДата считаем количество регионов
             multon_regions = {}
             optima_regions = {}
             prodata_regions = {}
@@ -344,10 +368,7 @@ class VisitCalculator:
                     if project_code not in multon_regions:
                         multon_regions[project_code] = set()
                     multon_regions[project_code].add(region)
-                elif po == 'Оптима':
-                    if project_code not in optima_regions:
-                        optima_regions[project_code] = set()
-                    optima_regions[project_code].add(region)
+
                 elif po == 'Мониторинги':
                     if project_code not in prodata_regions:
                         prodata_regions[project_code] = set()
@@ -420,10 +441,18 @@ class VisitCalculator:
                             found_quota = optima_quotas.get(project_code)
                         if not found_quota or found_quota <= 0:
                             continue
-                        total_plan = found_quota
-                        num_regions = len(optima_regions.get(project_code, []))
-                        if num_regions > 0:
-                            total_plan = total_plan / num_regions
+                        
+                        project_total_plan = found_quota
+                        
+                        # Получаем веса RS
+                        weights_dict = self._calculate_optima_weights(optima_df)
+                        key = (project_code, region, rs_name)
+                        weight = weights_dict.get(key, 0)
+                        
+                        if weight == 0:
+                            continue
+                        
+                        total_plan = project_total_plan * weight
                     
                     else:  # Чеккер, CXWAY, Easymerch
                         plan_key = (project_code, wave_name, region)

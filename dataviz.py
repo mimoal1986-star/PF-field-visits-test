@@ -1058,7 +1058,19 @@ class DataVisualizer:
         
         # ВСЕГДА группируем
         region_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+        region_data['Фокус'] = 'Нет'
+        if 'Исполнение проекта,%' in region_data.columns and 'Утилизация тайминга, %' in region_data.columns:
+            mask_focus = (
+                (region_data['Исполнение проекта,%'] < 80) & 
+                (region_data['Утилизация тайминга, %'] > 80) & 
+                (region_data['Утилизация тайминга, %'] < 100)
+            )
+            region_data.loc[mask_focus, 'Фокус'] = 'Да'
         
+        # Преобразуем коды регионов в длинные названия
+        if 'Регион' in region_data.columns:
+            region_data['Регион'] = region_data['Регион'].apply(self._get_long_region)
+    
         # Добавляем вычисляемые метрики
         mask_plan = region_data['План на дату, шт.'] > 0
         region_data['План/Факт на дату,%'] = 0.0
@@ -1427,6 +1439,18 @@ class DataVisualizer:
         
         # ВСЕГДА группируем
         dsm_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+
+        dsm_data['Фокус'] = 'Нет'
+        if 'Исполнение проекта,%' in dsm_data.columns and 'Утилизация тайминга, %' in dsm_data.columns:
+            mask_focus = (
+                (dsm_data['Исполнение проекта,%'] < 80) & 
+                (dsm_data['Утилизация тайминга, %'] > 80) & 
+                (dsm_data['Утилизация тайминга, %'] < 100)
+            )
+            dsm_data.loc[mask_focus, 'Фокус'] = 'Да'
+        
+        # Добавляем вычисляемые метрики
+        mask_plan = dsm_data['План на дату, шт.'] > 0
 
         # Преобразуем коды регионов в длинные названия
         if 'Регион' in dsm_data.columns:

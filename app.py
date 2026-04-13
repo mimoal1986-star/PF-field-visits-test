@@ -329,18 +329,22 @@ def process_all_data(settings_manager=None, force_recalc=False):
 
 
         # ============================================
-        # УДАЛЕНИЕ ИЗ ПОРТАЛА ПРОЕКТОВ, КОТОРЫЕ ЕСТЬ В CXWAY
+        # УДАЛЕНИЕ ДУБЛЕЙ ПО ПРИОРИТЕТУ ИЗ GOOGLE (ВЕКТОРИЗИРОВАННО)
         # ============================================
         
         if cxway_processed is not None and not cxway_processed.empty and field_df is not None and not field_df.empty:
-            # Ключи проектов из CXWAY
-            cxway_keys = set(
+            # Ключи проектов
+            cxway_keys = (
                 cxway_processed['Код анкеты'].astype(str).str.strip() + '|' +
                 cxway_processed['Название проекта'].astype(str).str.strip()
             )
+            portal_keys = (
+                field_df['Код анкеты'].astype(str).str.strip() + '|' +
+                field_df['Название проекта'].astype(str).str.strip()
+            )
             
             # Какие проекты в Google отмечены как Чеккер
-            checker_in_google = set()
+            checker_keys = set()
             if google_with_field is not None and not google_with_field.empty:
                 google_code_col = data_cleaner._find_column(google_with_field, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
                 google_portal_col = data_cleaner._find_column(google_with_field, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
@@ -352,15 +356,29 @@ def process_all_data(settings_manager=None, force_recalc=False):
                         wave = str(row.get(google_wave_col, '')).strip() if google_wave_col else ''
                         portal = str(row.get(google_portal_col, '')).strip()
                         if code and portal == 'Чеккер':
-                            checker_in_google.add(f"{code}|{wave}")
+                            checker_keys.add(f"{code}|{wave}")
             
-            # Удаляем из портала
-            portal_keys = (
-                field_df['Код анкеты'].astype(str).str.strip() + '|' +
-                field_df['Название проекта'].astype(str).str.strip()
-            )
-            mask_to_remove = portal_keys.isin(cxway_keys) & ~portal_keys.isin(checker_in_google)
-            field_df = field_df[~mask_to_remove]
+            # Находим пересекающиеся проекты
+            common_mask = cxway_keys.isin(portal_keys)
+            common_keys = cxway_keys[common_mask].unique()
+            
+            # Разделяем на два множества
+            remove_from_cxway = [k for k in common_keys if k in checker_keys]
+            remove_from_portal = [k for k in common_keys if k not in checker_keys]
+            
+            # Векторизированное удаление из CXWAY
+            if remove_from_cxway:
+                cxway_processed = cxway_processed[~cxway_keys.isin(remove_from_cxway)]
+            
+            # Векторизированное удаление из портала
+            if remove_from_portal:
+                field_df = field_df[~portal_keys.isin(remove_from_portal)]
+                # Обновляем field_df_with_zod для слияния
+                if not field_df.empty:
+                    field_df_with_zod = data_cleaner.add_zod_from_hierarchy(field_df)
+                else:
+                    field_df_with_zod = pd.DataFrame()
+                    
             
         
         # ============================================

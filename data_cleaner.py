@@ -547,9 +547,9 @@ class DataCleaner:
             
             def get_portal(code):
                 if pd.isna(code):
-                    return 'не определено'
+                    return 'Чеккер'
                 clean_code = str(code).strip()
-                return portal_mapping.get(clean_code, 'не определено')
+                return portal_mapping.get(clean_code, 'Чеккер')
             
             array_df['ПО'] = array_df[array_code_col].apply(get_portal)
             
@@ -976,7 +976,10 @@ class DataCleaner:
         else:
             result['ЗОД'] = ''
         
-        # Добавление ПО из гугла
+        # Добавление ПО
+        result['ПО'] = 'CXWAY'  # значение по умолчанию
+        
+        # Если есть Google, пытаемся найти более точное ПО
         if google_df is not None and 'Код анкеты' in result.columns:
             google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
             google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
@@ -986,20 +989,16 @@ class DataCleaner:
                 for _, row in google_df.iterrows():
                     code = str(row.get(google_code_col, '')).strip()
                     portal = str(row.get(google_portal_col, '')).strip()
-                    if code:
+                    if code and code.lower() not in ['nan', 'none', 'null', '']:
                         portal_mapping[code] = portal
                 
-                def get_portal(code_value):
+                def get_portal_from_google(code_value):
                     if pd.isna(code_value) or str(code_value).strip() == '':
-                        return 'не определено'
+                        return 'CXWAY'
                     clean_code = str(code_value).strip()
-                    return portal_mapping.get(clean_code, 'не определено')
+                    return portal_mapping.get(clean_code, 'CXWAY')
                 
-                result['ПО'] = result['Код анкеты'].apply(get_portal)
-            else:
-                result['ПО'] = 'не определено'
-        else:
-            result['ПО'] = 'не определено'
+                result['ПО'] = result['Код анкеты'].apply(get_portal_from_google)
         
         # Удаляем проекты, которые в Google отмечены как Чеккер
         if google_df is not None and not google_df.empty:

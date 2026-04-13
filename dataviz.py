@@ -359,10 +359,10 @@ class DataVisualizer:
             ).round(3) * 100
         
         # 4. Исполнение проекта,% (было %ПФ проекта)
-        project_agg['Исполнение проекта,%'] = 0.0
+        project_agg['План/Факт проекта,%'] = 0.0
         mask_project_plan = project_agg['План проекта, шт.'] > 0
         if mask_project_plan.any():
-            project_agg.loc[mask_project_plan, 'Исполнение проекта,%'] = (
+            project_agg.loc[mask_project_plan, 'План/Факт проекта,%'] = (
                 project_agg.loc[mask_project_plan, 'Факт проекта, шт.'] / 
                 project_agg.loc[mask_project_plan, 'План проекта, шт.'] * 100
             ).round(1)
@@ -380,9 +380,9 @@ class DataVisualizer:
         
         # 6. Фокус
         project_agg['Фокус'] = 'Нет'
-        if all(col in project_agg.columns for col in ['Исполнение проекта,%', 'Утилизация тайминга, %']):
+        if all(col in project_agg.columns for col in ['План/Факт проекта,%', 'Утилизация тайминга, %']):
             mask_focus = (
-                (project_agg['Исполнение проекта,%'] < 80) & 
+                (project_agg['План/Факт проекта,%'] < 80) & 
                 (project_agg['Утилизация тайминга, %'] > 80) & 
                 (project_agg['Утилизация тайминга, %'] < 100)
             )
@@ -1059,9 +1059,9 @@ class DataVisualizer:
         # ВСЕГДА группируем
         region_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
         region_data['Фокус'] = 'Нет'
-        if 'Исполнение проекта,%' in region_data.columns and 'Утилизация тайминга, %' in region_data.columns:
+        if 'План/Факт проекта,%' in region_data.columns and 'Утилизация тайминга, %' in region_data.columns:
             mask_focus = (
-                (region_data['Исполнение проекта,%'] < 80) & 
+                (region_data['План/Факт проекта,%'] < 80) & 
                 (region_data['Утилизация тайминга, %'] > 80) & 
                 (region_data['Утилизация тайминга, %'] < 100)
             )
@@ -1441,9 +1441,9 @@ class DataVisualizer:
         dsm_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
 
         dsm_data['Фокус'] = 'Нет'
-        if 'Исполнение проекта,%' in dsm_data.columns and 'Утилизация тайминга, %' in dsm_data.columns:
+        if 'План/Факт проекта,%' in dsm_data.columns and 'Утилизация тайминга, %' in dsm_data.columns:
             mask_focus = (
-                (dsm_data['Исполнение проекта,%'] < 80) & 
+                (dsm_data['План/Факт проекта,%'] < 80) & 
                 (dsm_data['Утилизация тайминга, %'] > 80) & 
                 (dsm_data['Утилизация тайминга, %'] < 100)
             )

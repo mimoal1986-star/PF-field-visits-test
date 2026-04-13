@@ -352,11 +352,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
         
         if sources_for_merge:
             all_field_projects = pd.concat(sources_for_merge, ignore_index=True)
-            
-            # Дедупликация по приоритету источников
-            priority_sources = ['CXWAY', 'Чеккер', 'Easymerch', 'Оптима', 'Мониторинги']
-            all_field_projects = deduplicate_by_priority(all_field_projects, priority_sources)
-            
             st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
         else:
             st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()

@@ -76,6 +76,34 @@ for key, default_value in DEFAULT_STATE.items():
 
 # Вспомогательные функции
 
+def deduplicate_by_priority(df, priority_sources):
+    """
+    Удаляет дубли по ключу (Код анкеты + Название проекта)
+    Оставляет только проект с наивысшим приоритетом источника
+    """
+    if df is None or df.empty:
+        return df
+    
+    df = df.copy()
+    
+    # Создаем уникальный ключ
+    df['_dedup_key'] = (
+        df['Код анкеты'].astype(str).str.strip() + '|' +
+        df['Название проекта'].astype(str).str.strip()
+    )
+    
+    # Создаем колонку с приоритетом (меньше = выше приоритет)
+    priority_map = {source: idx for idx, source in enumerate(priority_sources)}
+    df['_priority'] = df['ПО'].map(priority_map).fillna(len(priority_sources))
+    
+    # Сортируем по приоритету и удаляем дубли
+    df = df.sort_values('_priority').drop_duplicates(subset=['_dedup_key'], keep='first')
+    
+    # Удаляем временные колонки
+    df = df.drop(['_dedup_key', '_priority'], axis=1)
+    
+    return df
+    
 def process_all_data(settings_manager=None, force_recalc=False):
     """Полная обработка данных и расчет план/факт"""
     
@@ -324,6 +352,11 @@ def process_all_data(settings_manager=None, force_recalc=False):
         
         if sources_for_merge:
             all_field_projects = pd.concat(sources_for_merge, ignore_index=True)
+            
+            # Дедупликация по приоритету источников
+            priority_sources = ['CXWAY', 'Чеккер', 'Easymerch', 'Оптима', 'Мониторинги']
+            all_field_projects = deduplicate_by_priority(all_field_projects, priority_sources)
+            
             st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
         else:
             st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()

@@ -326,6 +326,42 @@ def process_all_data(settings_manager=None, force_recalc=False):
                         st.session_state.cleaned_data['неполевые_проекты'],
                         cxway_non_field
                     ], ignore_index=True)
+
+
+        # ============================================
+        # УДАЛЕНИЕ ИЗ ПОРТАЛА ПРОЕКТОВ, КОТОРЫЕ ЕСТЬ В CXWAY
+        # ============================================
+        
+        if cxway_processed is not None and not cxway_processed.empty and field_df is not None and not field_df.empty:
+            # Ключи проектов из CXWAY
+            cxway_keys = set(
+                cxway_processed['Код анкеты'].astype(str).str.strip() + '|' +
+                cxway_processed['Название проекта'].astype(str).str.strip()
+            )
+            
+            # Какие проекты в Google отмечены как Чеккер
+            checker_in_google = set()
+            if google_with_field is not None and not google_with_field.empty:
+                google_code_col = data_cleaner._find_column(google_with_field, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
+                google_portal_col = data_cleaner._find_column(google_with_field, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+                google_wave_col = data_cleaner._find_column(google_with_field, ['Название волны на Чекере/ином ПО', 'Волна'])
+                
+                if google_code_col and google_portal_col:
+                    for _, row in google_with_field.iterrows():
+                        code = str(row.get(google_code_col, '')).strip()
+                        wave = str(row.get(google_wave_col, '')).strip() if google_wave_col else ''
+                        portal = str(row.get(google_portal_col, '')).strip()
+                        if code and portal == 'Чеккер':
+                            checker_in_google.add(f"{code}|{wave}")
+            
+            # Удаляем из портала
+            portal_keys = (
+                field_df['Код анкеты'].astype(str).str.strip() + '|' +
+                field_df['Название проекта'].astype(str).str.strip()
+            )
+            mask_to_remove = portal_keys.isin(cxway_keys) & ~portal_keys.isin(checker_in_google)
+            field_df = field_df[~mask_to_remove]
+            
         
         # ============================================
         # ФИНАЛЬНОЕ ОБЪЕДИНЕНИЕ ВСЕХ ИСТОЧНИКОВ

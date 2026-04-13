@@ -300,98 +300,98 @@ class DataVisualizer:
             return short_code
         return self.region_mapping.get(str(short_code).strip().upper(), short_code)
 
-    def create_project_summary(self, df):
-        """
-        Агрегация данных по проектам
-        Одна строка = один проект
-        """
-        if df is None or df.empty:
-            return pd.DataFrame()
+    # def create_project_summary(self, df):
+    #     """
+    #     Агрегация данных по проектам
+    #     Одна строка = один проект
+    #     """
+    #     if df is None or df.empty:
+    #         return pd.DataFrame()
         
-        # Проверяем наличие колонки 'Проект'
-        project_col = 'Проект'
-        if project_col not in df.columns:
-            st.error(f"❌ В данных нет колонки '{project_col}'")
-            return pd.DataFrame()
+    #     # Проверяем наличие колонки 'Проект'
+    #     project_col = 'Проект'
+    #     if project_col not in df.columns:
+    #         st.error(f"❌ В данных нет колонки '{project_col}'")
+    #         return pd.DataFrame()
         
-        # Список колонок для агрегации
-        agg_columns = {
-            'План проекта, шт.': 'sum',
-            'План на дату, шт.': 'sum',
-            'Факт проекта, шт.': 'sum',
-            'Факт на дату, шт.': 'sum',
-            'Длительность': 'first',
-            'Дата старта': 'first',
-            'Дата финиша': 'first',
-            'Клиент': 'first',
-            'ПО': 'first',
-            'Дней до конца проекта': 'first',
-            'Утилизация тайминга, %': 'first',
-            'Ср. план на день для 100% плана': 'sum'
-        }
+    #     # Список колонок для агрегации
+    #     agg_columns = {
+    #         'План проекта, шт.': 'sum',
+    #         'План на дату, шт.': 'sum',
+    #         'Факт проекта, шт.': 'sum',
+    #         'Факт на дату, шт.': 'sum',
+    #         'Длительность': 'first',
+    #         'Дата старта': 'first',
+    #         'Дата финиша': 'first',
+    #         'Клиент': 'first',
+    #         'ПО': 'first',
+    #         'Дней до конца проекта': 'first',
+    #         'Утилизация тайминга, %': 'first',
+    #         'Ср. план на день для 100% плана': 'sum'
+    #     }
         
-        # Только существующие колонки
-        existing_agg = {k: v for k, v in agg_columns.items() if k in df.columns}
+    #     # Только существующие колонки
+    #     existing_agg = {k: v for k, v in agg_columns.items() if k in df.columns}
         
-        # Группируем по проекту
-        project_agg = df.groupby(project_col).agg(existing_agg).reset_index()
+    #     # Группируем по проекту
+    #     project_agg = df.groupby(project_col).agg(existing_agg).reset_index()
         
-        # 1. План/Факт на дату,% (было Исполнение проекта,%)
-        project_agg['План/Факт на дату,%'] = 0.0
-        mask_plan = project_agg['План на дату, шт.'] > 0
-        if mask_plan.any():
-            project_agg.loc[mask_plan, 'План/Факт на дату,%'] = (
-                project_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
-                project_agg.loc[mask_plan, 'План на дату, шт.'] * 100
-            ).round(1)
+    #     # 1. План/Факт на дату,% (было Исполнение проекта,%)
+    #     project_agg['План/Факт на дату,%'] = 0.0
+    #     mask_plan = project_agg['План на дату, шт.'] > 0
+    #     if mask_plan.any():
+    #         project_agg.loc[mask_plan, 'План/Факт на дату,%'] = (
+    #             project_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
+    #             project_agg.loc[mask_plan, 'План на дату, шт.'] * 100
+    #         ).round(1)
         
-        # 2. △План/Факт на дату, шт (исправленная формула: Факт - План)
-        project_agg['△План/Факт на дату, шт'] = (
-            project_agg['Факт на дату, шт.'] - project_agg['План на дату, шт.']
-        ).round(1)
+    #     # 2. △План/Факт на дату, шт (исправленная формула: Факт - План)
+    #     project_agg['△План/Факт на дату, шт'] = (
+    #         project_agg['Факт на дату, шт.'] - project_agg['План на дату, шт.']
+    #     ).round(1)
         
-        # 3. △План/Факт на дату, % (исправленная формула)
-        project_agg['△План/Факт на дату, %'] = 0.0
-        if mask_plan.any():
-            project_agg.loc[mask_plan, '△План/Факт на дату, %'] = (
-                (project_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
-                 project_agg.loc[mask_plan, 'План на дату, шт.']) - 1
-            ).round(3) * 100
+    #     # 3. △План/Факт на дату, % (исправленная формула)
+    #     project_agg['△План/Факт на дату, %'] = 0.0
+    #     if mask_plan.any():
+    #         project_agg.loc[mask_plan, '△План/Факт на дату, %'] = (
+    #             (project_agg.loc[mask_plan, 'Факт на дату, шт.'] / 
+    #              project_agg.loc[mask_plan, 'План на дату, шт.']) - 1
+    #         ).round(3) * 100
         
-        # 4. Исполнение проекта,% (было %ПФ проекта)
-        project_agg['План/Факт проекта,%'] = 0.0
-        mask_project_plan = project_agg['План проекта, шт.'] > 0
-        if mask_project_plan.any():
-            project_agg.loc[mask_project_plan, 'План/Факт проекта,%'] = (
-                project_agg.loc[mask_project_plan, 'Факт проекта, шт.'] / 
-                project_agg.loc[mask_project_plan, 'План проекта, шт.'] * 100
-            ).round(1)
+    #     # 4. Исполнение проекта,% (было %ПФ проекта)
+    #     project_agg['План/Факт проекта,%'] = 0.0
+    #     mask_project_plan = project_agg['План проекта, шт.'] > 0
+    #     if mask_project_plan.any():
+    #         project_agg.loc[mask_project_plan, 'План/Факт проекта,%'] = (
+    #             project_agg.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+    #             project_agg.loc[mask_project_plan, 'План проекта, шт.'] * 100
+    #         ).round(1)
         
-        # 5. Прогноз на месяц, шт.
-        if 'plan_calc_params' in st.session_state:
-            days_in_period = (st.session_state['plan_calc_params']['end_date'] - 
-                            st.session_state['plan_calc_params']['start_date']).days + 1
-        else:
-            days_in_period = 12
+    #     # 5. Прогноз на месяц, шт.
+    #     if 'plan_calc_params' in st.session_state:
+    #         days_in_period = (st.session_state['plan_calc_params']['end_date'] - 
+    #                         st.session_state['plan_calc_params']['start_date']).days + 1
+    #     else:
+    #         days_in_period = 12
             
-        project_agg['Прогноз на месяц, шт.'] = (
-            project_agg['Факт на дату, шт.'] / days_in_period * 28
-        ).round(1)
+    #     project_agg['Прогноз на месяц, шт.'] = (
+    #         project_agg['Факт на дату, шт.'] / days_in_period * 28
+    #     ).round(1)
         
-        # 6. Фокус
-        project_agg['Фокус'] = 'Нет'
-        if all(col in project_agg.columns for col in ['План/Факт проекта,%', 'Утилизация тайминга, %']):
-            mask_focus = (
-                (project_agg['План/Факт проекта,%'] < 80) & 
-                (project_agg['Утилизация тайминга, %'] > 80) & 
-                (project_agg['Утилизация тайминга, %'] < 100)
-            )
-            project_agg.loc[mask_focus, 'Фокус'] = 'Да'
+    #     # 6. Фокус
+    #     project_agg['Фокус'] = 'Нет'
+    #     if all(col in project_agg.columns for col in ['План/Факт проекта,%', 'Утилизация тайминга, %']):
+    #         mask_focus = (
+    #             (project_agg['План/Факт проекта,%'] < 80) & 
+    #             (project_agg['Утилизация тайминга, %'] > 80) & 
+    #             (project_agg['Утилизация тайминга, %'] < 100)
+    #         )
+    #         project_agg.loc[mask_focus, 'Фокус'] = 'Да'
         
-        # Сортируем по План/Факт на дату,%
-        project_agg = project_agg.sort_values('План/Факт на дату,%', ascending=True)
+    #     # Сортируем по План/Факт на дату,%
+    #     project_agg = project_agg.sort_values('План/Факт на дату,%', ascending=True)
         
-        return project_agg
+    #     return project_agg
     
     def create_planfact_tab(self, data, hierarchy_df=None):
         """Создает вкладку ПланФакт на дату с фильтрами в форме"""
@@ -621,6 +621,15 @@ class DataVisualizer:
         elif region_col in project_data.columns and region_col != 'Регион':
             project_data[region_col] = project_data[region_col].apply(self._get_long_region)
         
+        project_data['Фокус'] = 'Нет'
+        if 'План/Факт проекта,%' in project_data.columns and 'Утилизация тайминга, %' in project_data.columns:
+            mask_focus = (
+                (project_data['План/Факт проекта,%'] < 80) & 
+                (project_data['Утилизация тайминга, %'] > 80) & 
+                (project_data['Утилизация тайминга, %'] < 100)
+            )
+            project_data.loc[mask_focus, 'Фокус'] = 'Да'
+        
         # Добавляем вычисляемые метрики
         mask_plan = project_data['План на дату, шт.'] > 0
         project_data['План/Факт на дату,%'] = 0.0
@@ -733,13 +742,13 @@ class DataVisualizer:
             'План проекта, шт.', 
             'Факт проекта, шт.', 
             'План/Факт проекта,%',
+            'Фокус',
             'План на дату, шт.',
             'Факт на дату, шт.',
             'План/Факт на дату,%',
             '△План/Факт на дату, шт',
             '△План/Факт на дату, %',
             'Прогноз на месяц, шт.',
-            'Фокус',
             'Дней до конца проекта',
             'Утилизация тайминга, %',
             'Ср. план на день для 100% плана'

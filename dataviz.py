@@ -472,11 +472,8 @@ class DataVisualizer:
                 )
                 asm_mode = st.session_state.planfact_asm_mode
                 
-                if dsm_selected:
-                    asm_options = [a for a in all_asm if any(a in d for d in dsm_selected)]
-                else:
-                    asm_options = all_asm
                 
+                asm_options = all_asm
                 asm_selected = st.multiselect(
                     "Выбрать ASM",
                     asm_options,
@@ -516,8 +513,8 @@ class DataVisualizer:
                 
                 # Ограничиваем клиентов выбранными фильтрами
                 client_filtered = all_clients
-                if dsm_selected:
-                    client_filtered = [c for c in client_filtered if c in dsm_selected]
+                # if dsm_selected:
+                #     client_filtered = [c for c in client_filtered if c in dsm_selected]
                 
                 client_selected = st.multiselect(
                     "Выбрать клиента",
@@ -931,11 +928,8 @@ class DataVisualizer:
                 )
                 asm_mode = st.session_state.region_asm_mode
                 
-                if dsm_selected:
-                    asm_options = [a for a in all_asm if any(a in d for d in dsm_selected)]
-                else:
-                    asm_options = all_asm
                 
+                asm_options = all_asm
                 asm_selected = st.multiselect(
                     "Выбрать ASM",
                     asm_options,
@@ -1305,12 +1299,8 @@ class DataVisualizer:
                     index=0 if st.session_state.get('dsm_asm_mode', 'Включить') == 'Включить' else 1
                 )
                 asm_mode = st.session_state.dsm_asm_mode
-                
-                if dsm_selected:
-                    asm_options = [a for a in all_asm if any(a in d for d in dsm_selected)]
-                else:
-                    asm_options = all_asm
-                
+
+                asm_options = all_asm
                 asm_selected = st.multiselect(
                     "Выбрать ASM",
                     asm_options,

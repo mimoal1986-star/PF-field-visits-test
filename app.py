@@ -103,11 +103,9 @@ def deduplicate_by_priority(df, priority_sources):
     df = df.drop(['_dedup_key', '_priority'], axis=1)
     
     return df
-
     
 def process_all_data(settings_manager=None, force_recalc=False):
     """Полная обработка данных и расчет план/факт"""
-    
     
     # Если данные уже посчитаны - сразу выходим
     if not force_recalc and st.session_state.get('data_calculated', False):
@@ -687,7 +685,9 @@ def process_all_data(settings_manager=None, force_recalc=False):
             st.warning("⚠️ Следующие проекты не найдены в загруженных данных:")
             st.dataframe(st.session_state.not_found_projects, width='stretch')
             st.info("💡 Проверьте: возможно, визиты по этим проектам не были загружены, или указан неверный портал.")
-
+            
+        st.session_state.processing_complete = True
+        return True
         
     except Exception as e:
         st.session_state.last_error = {
@@ -696,7 +696,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
             'traceback': traceback.format_exc()
         }
         return False
-        
 
 # ==============================================
 # САЙДБАР
@@ -1555,7 +1554,6 @@ with tab3:
             st.info("⏳ Нет полевых проектов для корректировки")
     else:
         st.info("⏳ Сначала выполните расчет")
-
 
 
 

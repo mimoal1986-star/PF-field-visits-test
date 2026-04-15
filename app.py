@@ -106,26 +106,30 @@ def deduplicate_by_priority(df, priority_sources):
 
 def debug_malltech(df, stage):
     if df is None or df.empty:
-        st.write(f"{stage}: 0 строк")
-        return
+        msg = f"{stage}: 0 строк"
+    else:
+        wave_col = None
+        for col in ['Название проекта', 'Волна']:
+            if col in df.columns:
+                wave_col = col
+                break
+        if wave_col is None:
+            msg = f"{stage}: {len(df)} строк (колонка не найдена)"
+        else:
+            mask = df[wave_col] == '2026.04_ТРЦ_Malltech'
+            msg = f"{stage}: {len(df)} строк, Malltech: {mask.sum()}"
     
-    # Пробуем разные названия колонки
-    wave_col = None
-    for col in ['Название проекта', 'Волна']:
-        if col in df.columns:
-            wave_col = col
-            break
-    
-    if wave_col is None:
-        st.write(f"{stage}: {len(df)} строк (колонка '{wave_col}' не найдена)")
-        return
-    
-    mask = df[wave_col] == '2026.04_ТРЦ_Malltech'
-    st.write(f"{stage}: {len(df)} строк, Malltech: {mask.sum()}")
+    # Сохраняем в session_state
+    if 'debug_messages' not in st.session_state:
+        st.session_state.debug_messages = []
+    st.session_state.debug_messages.append(msg)
     
     
 def process_all_data(settings_manager=None, force_recalc=False):
     """Полная обработка данных и расчет план/факт"""
+    
+    # Очищаем диагностические сообщения
+    st.session_state.debug_messages = []
     
     # Если данные уже посчитаны - сразу выходим
     if not force_recalc and st.session_state.get('data_calculated', False):
@@ -711,9 +715,16 @@ def process_all_data(settings_manager=None, force_recalc=False):
             st.warning("⚠️ Следующие проекты не найдены в загруженных данных:")
             st.dataframe(st.session_state.not_found_projects, width='stretch')
             st.info("💡 Проверьте: возможно, визиты по этим проектам не были загружены, или указан неверный портал.")
+
+        # Выводим диагностику
+        if st.session_state.debug_messages:
+            st.write("### 📊 Диагностика Malltech")
+            for msg in st.session_state.debug_messages:
+                st.write(msg)
             
         st.session_state.processing_complete = True
         return True
+        
         
     except Exception as e:
         st.session_state.last_error = {
@@ -722,6 +733,7 @@ def process_all_data(settings_manager=None, force_recalc=False):
             'traceback': traceback.format_exc()
         }
         return False
+        
 
 # ==============================================
 # САЙДБАР

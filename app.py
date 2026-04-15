@@ -104,23 +104,6 @@ def deduplicate_by_priority(df, priority_sources):
     
     return df
 
-def debug_malltech(df, stage):
-    st.sidebar.write(f"DEBUG {stage}: тип df={type(df)}, empty={df is None or df.empty}")
-    if df is None or df.empty:
-        st.sidebar.write(f"{stage}: 0 строк")
-        return
-    st.sidebar.write(f"DEBUG {stage}: колонки: {df.columns.tolist()[:5]}")
-    wave_col = None
-    for col in ['Название проекта', 'Волна']:
-        if col in df.columns:
-            wave_col = col
-            break
-    if wave_col is None:
-        st.sidebar.write(f"{stage}: {len(df)} строк (колонка не найдена)")
-    else:
-        mask = df[wave_col] == '2026.04_ТРЦ_Malltech'
-        st.sidebar.write(f"{stage}: {len(df)} строк, Malltech: {mask.sum()}")
-    
     
 def process_all_data(settings_manager=None, force_recalc=False):
     """Полная обработка данных и расчет план/факт"""
@@ -333,13 +316,11 @@ def process_all_data(settings_manager=None, force_recalc=False):
         cxway_raw = st.session_state.uploaded_files.get('cxway')
         if cxway_raw is not None:
             cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
-            debug_malltech(cxway_processed, "1. CXWAY очищенный")
             
             # Разделяем CXWAY на полевые и неполевые
             if cxway_processed is not None and not cxway_processed.empty:
                 cxway_field = cxway_processed[cxway_processed['Полевой'] == 1]
                 cxway_non_field = cxway_processed[cxway_processed['Полевой'] == 0]
-                debug_malltech(cxway_field, "2. CXWAY полевые")
                 
                 # Неполевые добавляем в неполевые проекты сразу
                 if not cxway_non_field.empty:
@@ -428,7 +409,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
         if sources_for_merge:
             all_field_projects = pd.concat(sources_for_merge, ignore_index=True)
             st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
-            debug_malltech(all_field_projects, "3. Все полевые")
         else:
             st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()
 
@@ -626,7 +606,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
             st.session_state.cleaned_data['полевые_проекты'],
             st.session_state.cleaned_data['сервизория']
         )
-        debug_malltech(base_data, "4. Hierarchy")
 
         st.write(f"🔍 КОНЕЦ ИЕРАРХИИ: {tm.time() - start_hier:.2f} сек (время выполнения)")
         st.write(f"🔍 ВСЕГО СТРОК В ИЕРАРХИИ: {len(base_data)}")
@@ -664,7 +643,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
                 google_df=st.session_state.cleaned_data['сервизория'],
                 optima_df=st.session_state.cleaned_data.get('optima_processed')
             )
-            debug_malltech(plan_result, "5. Plan result")
             
             # ============================================
             # ВЫГРУЗКА PLAN_RESULT В EXCEL
@@ -690,7 +668,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
                 fact_result = visit_calculator.calculate_hierarchical_fact_on_date(
                     plan_result, source_df, params
                 )
-                debug_malltech(fact_result, "6. Fact result")
                 
                 st.session_state.debug_times.append(f"[DEBUG] Факт: {time.time() - start:.2f} сек")
                 start = time.time()

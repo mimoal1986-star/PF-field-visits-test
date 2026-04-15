@@ -105,9 +105,11 @@ def deduplicate_by_priority(df, priority_sources):
     return df
 
 def debug_malltech(df, stage):
+    st.sidebar.write(f"DEBUG {stage}: тип df={type(df)}, empty={df is None or df.empty}")
     if df is None or df.empty:
         st.sidebar.write(f"{stage}: 0 строк")
         return
+    st.sidebar.write(f"DEBUG {stage}: колонки: {df.columns.tolist()[:5]}")
     wave_col = None
     for col in ['Название проекта', 'Волна']:
         if col in df.columns:

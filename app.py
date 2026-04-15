@@ -608,6 +608,23 @@ def process_all_data(settings_manager=None, force_recalc=False):
         st.write(f"🔍 КОНЕЦ ИЕРАРХИИ: {tm.time() - start_hier:.2f} сек (время выполнения)")
         st.write(f"🔍 ВСЕГО СТРОК В ИЕРАРХИИ: {len(base_data)}")
         
+        # ============================================
+        # ВЫГРУЗКА HIERARCHY_DF В EXCEL
+        # ============================================
+        if not base_data.empty:
+            output_hierarchy = BytesIO()
+            with pd.ExcelWriter(output_hierarchy, engine='openpyxl') as writer:
+                base_data.to_excel(writer, sheet_name='hierarchy_df', index=False)
+            
+            st.download_button(
+                label="📥 Скачать hierarchy_df (иерархия)",
+                data=output_hierarchy.getvalue(),
+                file_name=f"hierarchy_df_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                type="secondary"
+            )
+
+        
         st.session_state.visit_report['base_data'] = base_data
         st.session_state.visit_report['timestamp'] = datetime.now().isoformat()
 

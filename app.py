@@ -642,8 +642,25 @@ def process_all_data(settings_manager=None, force_recalc=False):
                 optima_df=st.session_state.cleaned_data.get('optima_processed')
             )
             
+            # ============================================
+            # ВЫГРУЗКА PLAN_RESULT В EXCEL
+            # ============================================
+            if plan_result is not None and not plan_result.empty:
+                output_plan = BytesIO()
+                with pd.ExcelWriter(output_plan, engine='openpyxl') as writer:
+                    plan_result.to_excel(writer, sheet_name='plan_result', index=False)
+                
+                st.download_button(
+                    label="📥 Скачать plan_result (план по RS)",
+                    data=output_plan.getvalue(),
+                    file_name=f"plan_result_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="secondary"
+                )
+            
             st.session_state.debug_times.append(f"[DEBUG] План: {time.time() - start:.2f} сек")
             start = time.time()
+            
             
             if plan_result is not None and not plan_result.empty:
                 fact_result = visit_calculator.calculate_hierarchical_fact_on_date(

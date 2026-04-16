@@ -1767,13 +1767,18 @@ class DataVisualizer:
         
         # Фильтруем визиты (оптимизированно)
         filter_keys = ['Клиент', 'Проект', 'Волна', region_col, 'DSM', 'ASM', 'RS']
-        existing_filter_keys = [k for k in filter_keys if k in filtered_data.columns and k in visits_df.columns]
+        
+        # 🔧 ПЕРЕИМЕНОВЫВАЕМ колонку 'Имя клиента' в 'Клиент' для единообразия
+        visits_df_copy = visits_df.copy()
+        if 'Имя клиента' in visits_df_copy.columns and 'Клиент' not in visits_df_copy.columns:
+            visits_df_copy = visits_df_copy.rename(columns={'Имя клиента': 'Клиент'})
+        
+        existing_filter_keys = [k for k in filter_keys if k in filtered_data.columns and k in visits_df_copy.columns]
         
         if not existing_filter_keys:
             st.warning("⚠️ Нет общих полей для фильтрации визитов")
             return
         
-        visits_df_copy = visits_df.copy()
         visits_df_copy['_filter_key'] = visits_df_copy[existing_filter_keys].astype(str).agg('|'.join, axis=1)
         
         valid_keys = set()

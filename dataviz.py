@@ -1748,6 +1748,25 @@ class DataVisualizer:
                 filtered_data = filtered_data[filtered_data['Клиент'].isin(client_selected)]
             else:
                 filtered_data = filtered_data[~filtered_data['Клиент'].isin(client_selected)]
+
+        # ============================================
+        # 🔧 ОТЛАДКА (временная)
+        # ============================================
+        with st.expander("🔧 Отладка динамики"):
+            st.write("### filtered_data (агрегированные данные)")
+            st.write(f"Колонки: {list(filtered_data.columns)}")
+            st.write(f"Количество строк: {len(filtered_data)}")
+            st.write(filtered_data.head(5))
+            
+            st.write("### visits_df (исходные визиты)")
+            st.write(f"Колонки: {list(visits_df.columns)}")
+            st.write(f"Количество строк: {len(visits_df)}")
+            st.write(visits_df.head(5))
+            
+            st.write("### Параметры")
+            st.write(f"region_col: {region_col}")
+            st.write(f"visits_region_col: {visits_region_col}")
+        # ============================================
         
         # Формируем группы для детализации
         group_cols = ['Клиент']
@@ -1795,6 +1814,13 @@ class DataVisualizer:
         
         # Расчет динамики
         dynamics_df = visit_calculator.calculate_dynamics_fact(visits_filtered, calc_params, group_cols)
+        
+        # 🔧 ОТЛАДКА dynamics_df
+        with st.expander("🔧 Отладка dynamics_df"):
+            st.write(f"Колонки: {list(dynamics_df.columns)}")
+            st.write(f"Количество строк: {len(dynamics_df)}")
+            st.write(dynamics_df.head(10))
+            st.write(f"Уникальные даты: {sorted(dynamics_df['Дата'].unique())}")
         
         if dynamics_df.empty:
             st.warning("⚠️ Нет данных для отображения динамики")

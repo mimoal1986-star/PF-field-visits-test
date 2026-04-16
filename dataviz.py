@@ -1766,6 +1766,25 @@ class DataVisualizer:
             st.write("### Параметры")
             st.write(f"region_col: {region_col}")
             st.write(f"visits_region_col: {visits_region_col}")
+
+        # ============================================
+        # СОЗДАЕМ КОПИЮ И ПЕРЕИМЕНОВЫВАЕМ КОЛОНКИ
+        # ============================================
+        visits_df_for_dynamics = visits_df.copy()
+        
+        # Переименовываем колонки в соответствии с filtered_data
+        visits_df_for_dynamics = visits_df_for_dynamics.rename(columns={
+            'Код анкеты': 'Проект',
+            'Название проекта': 'Волна',
+            'ЗОД': 'DSM',
+            'АСС': 'ASM',
+            'Имя клиента': 'Клиент',
+            'ЭМ': 'RS'
+        })
+        
+        # Если регион называется 'Регион short' - переименовываем
+        if 'Регион short' in visits_df_for_dynamics.columns and region_col not in visits_df_for_dynamics.columns:
+            visits_df_for_dynamics = visits_df_for_dynamics.rename(columns={'Регион short': region_col})
         # ============================================
         
         # Формируем группы для детализации
@@ -1784,28 +1803,23 @@ class DataVisualizer:
         if show_rs and 'RS' in filtered_data.columns:
             group_cols.append('RS')
         
-        # Фильтруем визиты (оптимизированно)
+        # Фильтруем визиты (используем переименованную копию)
         filter_keys = ['Клиент', 'Проект', 'Волна', region_col, 'DSM', 'ASM', 'RS']
         
-        # 🔧 ПЕРЕИМЕНОВЫВАЕМ колонку 'Имя клиента' в 'Клиент' для единообразия
-        visits_df_copy = visits_df.copy()
-        if 'Имя клиента' in visits_df_copy.columns and 'Клиент' not in visits_df_copy.columns:
-            visits_df_copy = visits_df_copy.rename(columns={'Имя клиента': 'Клиент'})
-        
-        existing_filter_keys = [k for k in filter_keys if k in filtered_data.columns and k in visits_df_copy.columns]
+        existing_filter_keys = [k for k in filter_keys if k in filtered_data.columns and k in visits_df_for_dynamics.columns]
         
         if not existing_filter_keys:
             st.warning("⚠️ Нет общих полей для фильтрации визитов")
             return
         
-        visits_df_copy['_filter_key'] = visits_df_copy[existing_filter_keys].astype(str).agg('|'.join, axis=1)
+        visits_df_for_dynamics['_filter_key'] = visits_df_for_dynamics[existing_filter_keys].astype(str).agg('|'.join, axis=1)
         
         valid_keys = set()
         for _, row in filtered_data[existing_filter_keys].drop_duplicates().iterrows():
             key = '|'.join(str(row[k]) for k in existing_filter_keys)
             valid_keys.add(key)
         
-        visits_filtered = visits_df_copy[visits_df_copy['_filter_key'].isin(valid_keys)].copy()
+        visits_filtered = visits_df_for_dynamics[visits_df_for_dynamics['_filter_key'].isin(valid_keys)].copy()
         visits_filtered = visits_filtered.drop('_filter_key', axis=1)
         
         if visits_filtered.empty:
@@ -1842,12 +1856,24 @@ class DataVisualizer:
             aggfunc='sum'
         )
         
+        # ============================================
+        # ДОБАВЛЯЕМ ВСЕ ДАТЫ ПЕРИОДА
+        # ============================================
+        all_dates = pd.date_range(start=calc_params['start_date'], end=calc_params['end_date'], freq='D')
+        all_dates_str = [d.strftime('%d.%b') for d in all_dates]
+        
+        # Переименовываем колонки в формат дд.мес
         pivot_df.columns = [col.strftime('%d.%b') if hasattr(col, 'strftime') else str(col) for col in pivot_df.columns]
         
-        try:
-            pivot_df = pivot_df.reindex(sorted(pivot_df.columns, key=lambda x: x.split('.')[0].zfill(2) if '.' in x else x), axis=1)
-        except:
-            pass
+        # Добавляем недостающие даты
+        for date_str in all_dates_str:
+            if date_str not in pivot_df.columns:
+                pivot_df[date_str] = 0
+        
+        # Сортируем колонки по датам
+        pivot_df = pivot_df.reindex(sorted(pivot_df.columns, key=lambda x: x.split('.')[0].zfill(2)), axis=1)
+        # ============================================
+        
         
         result_df = pivot_df.reset_index()
         

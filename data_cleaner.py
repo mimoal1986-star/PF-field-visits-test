@@ -480,38 +480,40 @@ class DataCleaner:
         """
         try:
             array_df = array_df.copy()
+            # ВСЕ ПРОЕКТЫ СТАНОВЯТСЯ ПОЛЕВЫМИ
+            array_df['Полевой'] = 1
             
-            code_col = self._find_column(array_df, ['Код анкеты'])
-            if not code_col:
-                return array_df
+            # code_col = self._find_column(array_df, ['Код анкеты'])
+            # if not code_col:
+            #     return array_df
             
-            def is_field_project(code):
-                try:
-                    if pd.isna(code):
-                        return 0
+            # def is_field_project(code):
+            #     try:
+            #         if pd.isna(code):
+            #             return 0
                         
-                    code_str = str(code).strip()
-                    lower_code = code_str.lower()
+            #         code_str = str(code).strip()
+            #         lower_code = code_str.lower()
                     
-                    if any(word in lower_code for word in ['мультикод', 'пилот', 'семпл']):
-                        return 1
+            #         if any(word in lower_code for word in ['мультикод', 'пилот', 'семпл']):
+            #             return 1
                     
-                    parts = code_str.split('.')
-                    if len(parts) >= 4:
-                        country = parts[0]
-                        if len(parts[2]) >= 2:
-                            direction = '.' + parts[2][:2]
-                        else:
-                            direction = ''
+            #         parts = code_str.split('.')
+            #         if len(parts) >= 4:
+            #             country = parts[0]
+            #             if len(parts[2]) >= 2:
+            #                 direction = '.' + parts[2][:2]
+            #             else:
+            #                 direction = ''
                         
-                        if country in ['RU00', 'RU01', 'RU02', 'RU03', 'RU04'] and direction in ['.01', '.02']:
-                            return 1
+            #             if country in ['RU00', 'RU01', 'RU02', 'RU03', 'RU04'] and direction in ['.01', '.02']:
+            #                 return 1
                             
-                    return 0
-                except:
-                    return 0
+            #         return 0
+            #     except:
+            #         return 0
             
-            array_df['Полевой'] = self._is_field_project_vectorized(array_df[code_col])
+            # array_df['Полевой'] = self._is_field_project_vectorized(array_df[code_col])
             
             return array_df
             
@@ -958,11 +960,14 @@ class DataCleaner:
         
         self._log_samples(result, "4. После обогащения кодами")
         
-        # Определение "Полевой" (векторно)
-        if 'Код анкеты' in result.columns and not result.empty:
-            result['Полевой'] = self._is_field_project_vectorized(result['Код анкеты'])
+        # все CXWAY проекты полевые
+        result['Полевой'] = 1
+        
+        # # Определение "Полевой" (векторно)
+        # if 'Код анкеты' in result.columns and not result.empty:
+        #     result['Полевой'] = self._is_field_project_vectorized(result['Код анкеты'])
 
-        self._log_samples(result, "5. После определения полевого")
+        # self._log_samples(result, "5. После определения полевого")
         
         # Добавление ЗОД из встроенного справочника (по АСС)
         if 'АСС' in result.columns:

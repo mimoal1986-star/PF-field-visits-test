@@ -1631,6 +1631,212 @@ class DataVisualizer:
                 use_container_width=True
             )
 
+    def create_dynamics_tab(self, data, visits_df, calc_params):
+        """
+        Создает вкладку Динамика с фактом визитов по дням
+        """
+        if data is None or data.empty:
+            st.warning("⚠️ Нет данных для отчета")
+            return
+        
+        if visits_df is None or visits_df.empty:
+            st.warning("⚠️ Нет данных визитов для динамики")
+            return
+        
+        st.subheader("📈 Динамика факта визитов")
+        
+        # Переименовываем колонки
+        rename_cols = {'ЗОД': 'DSM', 'АСС': 'ASM', 'ЭМ': 'RS'}
+        data = data.rename(columns=rename_cols)
+        
+        if 'RS' not in visits_df.columns and 'ЭМ' in visits_df.columns:
+            visits_df = visits_df.rename(columns={'ЭМ': 'RS'})
+        
+        region_col = 'Регион'
+        if 'Регион short' in data.columns and 'Регион' not in data.columns:
+            region_col = 'Регион short'
+        
+        visits_region_col = region_col
+        if visits_region_col not in visits_df.columns and 'Регион short' in visits_df.columns:
+            visits_region_col = 'Регион short'
+        
+        # Базовые агрегации
+        all_dsm = sorted(data['DSM'].dropna().unique()) if 'DSM' in data.columns else []
+        all_asm = sorted(data['ASM'].dropna().unique()) if 'ASM' in data.columns else []
+        all_clients = sorted(data['Клиент'].dropna().unique()) if 'Клиент' in data.columns else []
+        
+        region_map = {}
+        regions_display = []
+        if region_col in data.columns:
+            unique_codes = data[region_col].dropna().unique()
+            for code in unique_codes:
+                long_name = self._get_long_region(code)
+                region_map[long_name] = code
+                regions_display.append(long_name)
+            regions_display.sort()
+        
+        # Форма с фильтрами
+        with st.form("dynamics_filters_form"):
+            st.markdown("### 🔍 Фильтры")
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.markdown("**DSM**")
+                dsm_mode = st.radio("Режим", ["Включить", "Исключить"], key="dynamics_dsm_mode", horizontal=True, index=0)
+                dsm_selected = st.multiselect("Выбрать DSM", all_dsm, key="dynamics_dsm_values", default=[])
+            
+            with col2:
+                st.markdown("**ASM**")
+                asm_mode = st.radio("Режим", ["Включить", "Исключить"], key="dynamics_asm_mode", horizontal=True, index=0)
+                asm_selected = st.multiselect("Выбрать ASM", all_asm, key="dynamics_asm_values", default=[])
+            
+            with col3:
+                st.markdown("**Регион**")
+                region_mode = st.radio("Режим", ["Включить", "Исключить"], key="dynamics_region_mode", horizontal=True, index=0)
+                region_selected_display = st.multiselect("Выбрать регион", regions_display, key="dynamics_region_values", default=[])
+                region_selected = [region_map.get(name, name) for name in region_selected_display]
+            
+            with col4:
+                st.markdown("**Клиент**")
+                client_mode = st.radio("Режим", ["Включить", "Исключить"], key="dynamics_client_mode", horizontal=True, index=0)
+                client_selected = st.multiselect("Выбрать клиента", all_clients, key="dynamics_client_values", default=[])
+            
+            st.markdown("---")
+            st.markdown("### 📊 Детализация")
+            
+            col_detail1, col_detail2, col_detail3, col_detail4, col_detail5, col_detail6 = st.columns(6)
+            
+            with col_detail1:
+                show_project = st.checkbox("Код проекта", key="dynamics_show_project")
+            with col_detail2:
+                show_wave = st.checkbox("Волна", key="dynamics_show_wave")
+            with col_detail3:
+                show_region_detail = st.checkbox("Регионы", key="dynamics_show_region")
+            with col_detail4:
+                show_dsm = st.checkbox("DSM", key="dynamics_show_dsm")
+            with col_detail5:
+                show_asm = st.checkbox("ASM", key="dynamics_show_asm")
+            with col_detail6:
+                show_rs = st.checkbox("RS", key="dynamics_show_rs")
+            
+            apply_filters = st.form_submit_button("✅ Применить фильтры", type="primary", use_container_width=True)
+        
+        # Применяем фильтры
+        filtered_data = data.copy()
+        
+        if dsm_selected:
+            if dsm_mode == 'Включить':
+                filtered_data = filtered_data[filtered_data['DSM'].isin(dsm_selected)]
+            else:
+                filtered_data = filtered_data[~filtered_data['DSM'].isin(dsm_selected)]
+        
+        if asm_selected:
+            if asm_mode == 'Включить':
+                filtered_data = filtered_data[filtered_data['ASM'].isin(asm_selected)]
+            else:
+                filtered_data = filtered_data[~filtered_data['ASM'].isin(asm_selected)]
+        
+        if region_selected:
+            if region_mode == 'Включить':
+                filtered_data = filtered_data[filtered_data[region_col].isin(region_selected)]
+            else:
+                filtered_data = filtered_data[~filtered_data[region_col].isin(region_selected)]
+        
+        if client_selected:
+            if client_mode == 'Включить':
+                filtered_data = filtered_data[filtered_data['Клиент'].isin(client_selected)]
+            else:
+                filtered_data = filtered_data[~filtered_data['Клиент'].isin(client_selected)]
+        
+        # Формируем группы для детализации
+        group_cols = ['Клиент']
+        
+        if show_project and 'Проект' in filtered_data.columns:
+            group_cols.append('Проект')
+        if show_wave and 'Волна' in filtered_data.columns:
+            group_cols.append('Волна')
+        if show_region_detail and region_col in filtered_data.columns:
+            group_cols.append(region_col)
+        if show_dsm and 'DSM' in filtered_data.columns:
+            group_cols.append('DSM')
+        if show_asm and 'ASM' in filtered_data.columns:
+            group_cols.append('ASM')
+        if show_rs and 'RS' in filtered_data.columns:
+            group_cols.append('RS')
+        
+        # Фильтруем визиты (оптимизированно)
+        filter_keys = ['Клиент', 'Проект', 'Волна', region_col, 'DSM', 'ASM', 'RS']
+        existing_filter_keys = [k for k in filter_keys if k in filtered_data.columns and k in visits_df.columns]
+        
+        if not existing_filter_keys:
+            st.warning("⚠️ Нет общих полей для фильтрации визитов")
+            return
+        
+        visits_df_copy = visits_df.copy()
+        visits_df_copy['_filter_key'] = visits_df_copy[existing_filter_keys].astype(str).agg('|'.join, axis=1)
+        
+        valid_keys = set()
+        for _, row in filtered_data[existing_filter_keys].drop_duplicates().iterrows():
+            key = '|'.join(str(row[k]) for k in existing_filter_keys)
+            valid_keys.add(key)
+        
+        visits_filtered = visits_df_copy[visits_df_copy['_filter_key'].isin(valid_keys)].copy()
+        visits_filtered = visits_filtered.drop('_filter_key', axis=1)
+        
+        if visits_filtered.empty:
+            st.warning("⚠️ Нет визитов, соответствующих выбранным фильтрам")
+            return
+        
+        # Расчет динамики
+        dynamics_df = visit_calculator.calculate_dynamics_fact(visits_filtered, calc_params, group_cols)
+        
+        if dynamics_df.empty:
+            st.warning("⚠️ Нет данных для отображения динамики")
+            return
+        
+        # Сводная таблица
+        pivot_df = dynamics_df.pivot_table(
+            index=group_cols,
+            columns='Дата',
+            values='Факт',
+            fill_value=0,
+            aggfunc='sum'
+        )
+        
+        pivot_df.columns = [col.strftime('%d.%b') if hasattr(col, 'strftime') else str(col) for col in pivot_df.columns]
+        
+        try:
+            pivot_df = pivot_df.reindex(sorted(pivot_df.columns, key=lambda x: x.split('.')[0].zfill(2) if '.' in x else x), axis=1)
+        except:
+            pass
+        
+        result_df = pivot_df.reset_index()
+        
+        if show_region_detail and region_col in result_df.columns:
+            result_df[region_col] = result_df[region_col].apply(self._get_long_region)
+        
+        # Отображение
+        total_fact = dynamics_df['Факт'].sum()
+        st.metric("📊 Всего визитов за период", f"{total_fact:,.0f}")
+        st.markdown("---")
+        
+        st.dataframe(result_df, use_container_width=True, hide_index=True)
+        
+        # Скачивание
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            result_df.to_excel(writer, sheet_name='Динамика_факта', index=False)
+        
+        st.download_button(
+            label="⬇️ Скачать Excel",
+            data=output.getvalue(),
+            file_name=f"динамика_факта_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            type="primary",
+            use_container_width=True
+        )
+
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()

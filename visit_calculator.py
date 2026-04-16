@@ -9,7 +9,6 @@ import io
 import calendar
 from github_settings import get_plan_adjustment_manager
 from data_cleaner import REGION_NAME_TO_CODE
-from io import BytesIO
 
 class VisitCalculator:
     
@@ -642,23 +641,6 @@ class VisitCalculator:
                     (visits_df['Дата визита'] <= end_date)
                 )
                 completed_in_period = visits_df[completed_mask & period_mask]
-                
-                # ============================================
-                # ВЫГРУЗКА COMPLETED_DF В EXCEL (для отладки)
-                # ============================================
-                if not completed_df.empty:
-                    output_completed = io.BytesIO()
-                    with pd.ExcelWriter(output_completed, engine='openpyxl') as writer:
-                        completed_df.to_excel(writer, sheet_name='completed_df', index=False)
-                    
-                    st.download_button(
-                        label="📥 Скачать completed_df (выполненные визиты)",
-                        data=output_completed.getvalue(),
-                        file_name=f"completed_df_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        type="secondary"
-                    )
-                
                 rs_facts_period = completed_in_period.groupby([
                     'Код анкеты',
                     'Название проекта',
@@ -781,8 +763,6 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
-
-
 
 
 

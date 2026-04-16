@@ -868,7 +868,6 @@ with tab1:
             st.info("📌 Загрузите оба основных файла для расчета")
             st.button("🚀 РАССЧИТАТЬ ПЛАН/ФАКТ", type="primary", width='stretch', disabled=True)
             
-
 with tab2:
     st.title("📈 Отчеты по полевым визитам")
 
@@ -876,7 +875,7 @@ with tab2:
         st.info("📌 Сначала выполните расчет на вкладке 'Загрузка данных'")
     
     else:
-        tab_projects, tab_regions, tab_dsm = st.tabs(["📊 ПФ проекты", "🗺️ Регионы", "👥 DSM"])
+        tab_projects, tab_regions, tab_dsm, tab_dynamics = st.tabs(["📊 ПФ проекты", "🗺️ Регионы", "👥 DSM", "📈 Динамика"])
         
         with tab_projects:
             data = st.session_state.visit_report['calculated_data']
@@ -893,6 +892,24 @@ with tab2:
         with tab_dsm:
             data = st.session_state.visit_report['calculated_data']
             dataviz.create_dsm_tab(data, None)
+        
+        with tab_dynamics:
+            visits_for_dynamics = st.session_state.cleaned_data.get('полевые_проекты')
+            
+            if visits_for_dynamics is not None and not visits_for_dynamics.empty:
+                if 'Источник' in visits_for_dynamics.columns:
+                    visits_for_dynamics = visits_for_dynamics[visits_for_dynamics['Источник'] != 'Мониторинги']
+                
+                if 'RS' not in visits_for_dynamics.columns and 'ЭМ' in visits_for_dynamics.columns:
+                    visits_for_dynamics = visits_for_dynamics.rename(columns={'ЭМ': 'RS'})
+                
+                dataviz.create_dynamics_tab(
+                    st.session_state.visit_report['calculated_data'],
+                    visits_for_dynamics,
+                    st.session_state.plan_calc_params
+                )
+            else:
+                st.warning("⚠️ Нет данных для динамики")
 
 # # ============================================
 # # ВЫГРУЗКА ПОЛЕВЫХ ПРОЕКТОВ

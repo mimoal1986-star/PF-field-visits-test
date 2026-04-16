@@ -301,8 +301,9 @@ class VisitCalculator:
                             except:
                                 pass
             
-            # Планы проектов+волн+регионов
+            # Планы клиентов+проектов+волн+регионов
             project_wave_region_plans = visits_df.groupby([
+                'Имя клиента',
                 'Код анкеты', 
                 'Название проекта',
                 'Регион short'
@@ -452,7 +453,8 @@ class VisitCalculator:
                         total_plan = project_total_plan * weight
                     
                     else:  # Чеккер, CXWAY, Easymerch
-                        plan_key = (project_code, wave_name, region)
+                        client_name = row['Клиент']
+                        plan_key = (client_name, project_code, wave_name, region)
                         total_plan = project_wave_region_plans.get(plan_key, 0)
                         if total_plan <= 0:
                             continue

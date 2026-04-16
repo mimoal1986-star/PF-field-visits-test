@@ -1800,9 +1800,16 @@ class DataVisualizer:
             st.warning("⚠️ Нет данных для отображения динамики")
             return
         
+        # Фильтруем group_cols - оставляем только те, что есть в dynamics_df
+        available_group_cols = [col for col in group_cols if col in dynamics_df.columns]
+        
+        if not available_group_cols:
+            st.warning("⚠️ Нет доступных колонок для группировки в данных динамики")
+            return
+        
         # Сводная таблица
         pivot_df = dynamics_df.pivot_table(
-            index=group_cols,
+            index=available_group_cols,
             columns='Дата',
             values='Факт',
             fill_value=0,

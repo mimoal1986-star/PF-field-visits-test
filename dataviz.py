@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime
 from io import BytesIO
+from visit_calculator import visit_calculator
 
 class DataVisualizer:
 
@@ -1629,6 +1630,29 @@ class DataVisualizer:
                 type="secondary",
                 use_container_width=True
             )
+
+with tab3:
+    st.title("📊 Динамика факта визитов")
+    
+    if not st.session_state.get('data_calculated', False):
+        st.info("📌 Сначала выполните расчет на вкладке 'Загрузка данных'")
+    else:
+        visits_for_dynamics = st.session_state.cleaned_data.get('полевые_проекты')
+        
+        if visits_for_dynamics is not None and not visits_for_dynamics.empty:
+            if 'Источник' in visits_for_dynamics.columns:
+                visits_for_dynamics = visits_for_dynamics[visits_for_dynamics['Источник'] != 'Мониторинги']
+            
+            if 'RS' not in visits_for_dynamics.columns and 'ЭМ' in visits_for_dynamics.columns:
+                visits_for_dynamics = visits_for_dynamics.rename(columns={'ЭМ': 'RS'})
+            
+            dataviz.create_dynamics_tab(
+                st.session_state.visit_report['calculated_data'],
+                visits_for_dynamics,
+                st.session_state.plan_calc_params
+            )
+        else:
+            st.warning("⚠️ Нет данных для динамики")
 
 # Глобальный экземпляр
 dataviz = DataVisualizer()

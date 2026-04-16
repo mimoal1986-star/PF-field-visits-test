@@ -1,5 +1,24 @@
 {
-  "excluded_projects": [],
+  "excluded_projects": [
+    {
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.04",
+      "project_code": "RU00.343.06.02SVZ25",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-04-16T07:41:24.261813",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.04",
+      "project_code": "RU00.342.06.01SVZ25",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-04-16T07:41:24.261962",
+      "added_by": "unknown_user"
+    }
+  ],
   "included_projects": [],
   "history": [
     {
@@ -718,8 +737,24 @@
       "project_code": "",
       "timestamp": "2026-04-07T15:34:16.141710",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.04",
+      "project_code": "RU00.343.06.02SVZ25",
+      "timestamp": "2026-04-16T07:41:24.261834",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.04",
+      "project_code": "RU00.342.06.01SVZ25",
+      "timestamp": "2026-04-16T07:41:24.261972",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-07T15:34:16.141736",
+  "last_updated": "2026-04-16T07:41:24.261978",
   "version": "1.0"
 }

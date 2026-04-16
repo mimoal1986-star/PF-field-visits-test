@@ -897,6 +897,7 @@ with tab2:
             visits_for_dynamics = st.session_state.cleaned_data.get('полевые_проекты')
             
             if visits_for_dynamics is not None and not visits_for_dynamics.empty:
+                # Исключаем ПроДата из динамики
                 if 'Источник' in visits_for_dynamics.columns:
                     visits_for_dynamics = visits_for_dynamics[visits_for_dynamics['Источник'] != 'Мониторинги']
                 

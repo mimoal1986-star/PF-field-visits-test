@@ -1630,7 +1630,6 @@ class DataVisualizer:
                 type="secondary",
                 use_container_width=True
             )
-
     def create_dynamics_tab(self, data, visits_df, calc_params):
         """
         Создает вкладку Динамика с фактом визитов по дням
@@ -1641,10 +1640,9 @@ class DataVisualizer:
         
         st.subheader("📈 Динамика факта визитов")
         
-        # Определяем колонки в visits_df
-        # (названия колонок из data_cleaner)
-        col_project = 'Код анкеты'
+        # Реальные имена колонок в visits_df (полевые_проекты)
         col_client = 'Имя клиента'
+        col_project = 'Код анкеты'
         col_wave = 'Название проекта'
         col_dsm = 'ЗОД'
         col_asm = 'АСС'
@@ -1653,14 +1651,7 @@ class DataVisualizer:
         col_status = 'Статус'
         col_date = 'Дата визита'
         
-        # Проверяем наличие необходимых колонок
-        required_cols = [col_project, col_client, col_wave, col_dsm, col_asm, col_rs, col_region, col_status, col_date]
-        missing_cols = [c for c in required_cols if c not in visits_df.columns]
-        if missing_cols:
-            st.warning(f"⚠️ В данных визитов отсутствуют колонки: {missing_cols}")
-            return
-        
-        # Получаем уникальные значения для фильтров из visits_df
+        # Получаем уникальные значения для фильтров
         all_dsm = sorted(visits_df[col_dsm].dropna().unique())
         all_asm = sorted(visits_df[col_asm].dropna().unique())
         all_clients = sorted(visits_df[col_client].dropna().unique())
@@ -1701,9 +1692,7 @@ class DataVisualizer:
             
             apply_filters = st.form_submit_button("✅ Применить фильтры", type="primary", use_container_width=True)
         
-        # ============================================
-        # ПРИМЕНЯЕМ ФИЛЬТРЫ НАПРЯМУЮ К visits_df
-        # ============================================
+        # Применяем фильтры напрямую к visits_df
         filtered_visits = visits_df.copy()
         
         if dsm_selected:
@@ -1719,41 +1708,24 @@ class DataVisualizer:
             st.warning("⚠️ Нет визитов, соответствующих выбранным фильтрам")
             return
         
-        # ============================================
-        # ПЕРЕИМЕНОВЫВАЕМ КОЛОНКИ ДЛЯ УДОБСТВА
-        # ============================================
-        visits_for_dynamics = filtered_visits.rename(columns={
-            col_project: 'Проект',
-            col_client: 'Клиент',
-            col_wave: 'Волна',
-            col_dsm: 'DSM',
-            col_asm: 'ASM',
-            col_rs: 'RS',
-            col_region: 'Регион'
-        })
-        
-        # ============================================
-        # ФОРМИРУЕМ group_cols
-        # ============================================
-        group_cols = ['Клиент']
+        # Формируем group_cols с реальными именами колонок
+        group_cols = [col_client]  # 'Имя клиента'
         
         if show_project:
-            group_cols.append('Проект')
+            group_cols.append(col_project)   # 'Код анкеты'
         if show_wave:
-            group_cols.append('Волна')
+            group_cols.append(col_wave)      # 'Название проекта'
         if show_region_detail:
-            group_cols.append('Регион')
+            group_cols.append(col_region)    # 'Регион short'
         if show_dsm:
-            group_cols.append('DSM')
+            group_cols.append(col_dsm)       # 'ЗОД'
         if show_asm:
-            group_cols.append('ASM')
+            group_cols.append(col_asm)       # 'АСС'
         if show_rs:
-            group_cols.append('RS')
+            group_cols.append(col_rs)        # 'ЭМ'
         
-        # ============================================
-        # РАСЧЕТ ДИНАМИКИ
-        # ============================================
-        dynamics_df = visit_calculator.calculate_dynamics_fact(visits_for_dynamics, calc_params, group_cols)
+        # Расчет динамики (без переименования!)
+        dynamics_df = visit_calculator.calculate_dynamics_fact(filtered_visits, calc_params, group_cols)
         
         if dynamics_df.empty:
             st.warning("⚠️ Нет данных для отображения динамики (нет выполненных визитов за период)")
@@ -1766,9 +1738,7 @@ class DataVisualizer:
             st.warning("⚠️ Нет доступных колонок для группировки в данных динамики")
             return
         
-        # ============================================
-        # СВОДНАЯ ТАБЛИЦА
-        # ============================================
+        # Сводная таблица
         pivot_df = dynamics_df.pivot_table(
             index=available_group_cols,
             columns='Дата',
@@ -1799,18 +1769,26 @@ class DataVisualizer:
         
         result_df = pivot_df.reset_index()
         
-        # ============================================
-        # ОТОБРАЖЕНИЕ
-        # ============================================
+        # Переименовываем колонки для отображения (только для красоты)
+        display_name_map = {
+            col_client: 'Клиент',
+            col_project: 'Проект',
+            col_wave: 'Волна',
+            col_dsm: 'DSM',
+            col_asm: 'ASM',
+            col_rs: 'RS',
+            col_region: 'Регион'
+        }
+        result_df = result_df.rename(columns=display_name_map)
+        
+        # Отображение
         total_fact = dynamics_df['Факт'].sum()
         st.metric("📊 Всего визитов за период", f"{total_fact:,.0f}")
         st.markdown("---")
         
         st.dataframe(result_df, use_container_width=True, hide_index=True)
         
-        # ============================================
-        # СКАЧИВАНИЕ
-        # ============================================
+        # Скачивание
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             result_df.to_excel(writer, sheet_name='Динамика_факта', index=False)

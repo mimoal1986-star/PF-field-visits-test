@@ -564,7 +564,76 @@ class VisitCalculator:
             traceback.print_exc()
             return pd.DataFrame()
         
-        
+    def calculate_dynamics_fact(self, visits_df, calc_params, group_cols):
+    """
+    Рассчитывает факт визитов в динамике по дням
+    """
+    if visits_df is None or visits_df.empty:
+        return pd.DataFrame()
+    
+    df = visits_df.copy()
+    
+    # 1. Проверка наличия даты визита
+    if 'Дата визита' not in df.columns:
+        return pd.DataFrame()
+    
+    # 2. Приводим дату к типу date
+    df['Дата визита'] = pd.to_datetime(df['Дата визита'], errors='coerce', dayfirst=True)
+    df['Дата'] = df['Дата визита'].dt.date
+    
+    df = df[df['Дата'].notna()].copy()
+    
+    if df.empty:
+        return pd.DataFrame()
+    
+    # 3. Фильтруем по периоду
+    start_date = calc_params['start_date']
+    end_date = calc_params['end_date']
+    
+    if hasattr(start_date, 'date'):
+        start_date = start_date.date()
+    if hasattr(end_date, 'date'):
+        end_date = end_date.date()
+    
+    mask = (df['Дата'] >= start_date) & (df['Дата'] <= end_date)
+    df = df[mask].copy()
+    
+    if df.empty:
+        return pd.DataFrame()
+    
+    # 4. Фильтруем только выполненные визиты
+    status_col = None
+    for col in df.columns:
+        col_clean = col.strip()
+        if col_clean == 'Статус':
+            status_col = col
+            break
+    
+    if status_col:
+        completed_statuses = [
+            'Выполнено', 'выполнен',
+            'Заполнена', 'Проверена',
+            'Завершено', 'Готово'
+        ]
+        completed_mask = df[status_col].isin(completed_statuses)
+        df = df[completed_mask].copy()
+    
+    if df.empty:
+        return pd.DataFrame()
+    
+    # 5. Проверяем наличие колонок для группировки
+    existing_group_cols = [col for col in group_cols if col in df.columns]
+    
+    if not existing_group_cols:
+        result = df.groupby(['Дата']).size().reset_index(name='Факт')
+        return result
+    
+    # 6. Группировка
+    groupby_cols = existing_group_cols + ['Дата']
+    result = df.groupby(groupby_cols).size().reset_index(name='Факт')
+    
+    return result
+    
     def calculate_hierarchical_fact_on_date(self, plan_df, visits_df, calc_params):
         try:
             if plan_df.empty or visits_df.empty:

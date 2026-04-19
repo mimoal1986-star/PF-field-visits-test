@@ -1633,6 +1633,7 @@ class DataVisualizer:
     def create_dynamics_tab(self, data, visits_df, calc_params):
         """
         Создает вкладку Динамика с фактом визитов по дням
+        АСМ — основные строки, Клиент — в детализацию
         """
         if visits_df is None or visits_df.empty:
             st.warning("⚠️ Нет данных визитов для динамики")
@@ -1675,18 +1676,19 @@ class DataVisualizer:
             st.markdown("---")
             st.markdown("### 📊 Детализация")
             
+            # 6 колонок для галочек (АСМ убран, так как всегда в таблице)
             col_detail1, col_detail2, col_detail3, col_detail4, col_detail5, col_detail6 = st.columns(6)
             
             with col_detail1:
-                show_project = st.checkbox("Код проекта", key="dynamics_show_project")
+                show_client = st.checkbox("Клиент", key="dynamics_show_client")
             with col_detail2:
-                show_wave = st.checkbox("Волна", key="dynamics_show_wave")
+                show_project = st.checkbox("Код проекта", key="dynamics_show_project")
             with col_detail3:
-                show_region_detail = st.checkbox("Регионы", key="dynamics_show_region")
+                show_wave = st.checkbox("Волна", key="dynamics_show_wave")
             with col_detail4:
-                show_dsm = st.checkbox("DSM", key="dynamics_show_dsm")
+                show_region_detail = st.checkbox("Регионы", key="dynamics_show_region")
             with col_detail5:
-                show_asm = st.checkbox("ASM", key="dynamics_show_asm")
+                show_dsm = st.checkbox("DSM", key="dynamics_show_dsm")
             with col_detail6:
                 show_rs = st.checkbox("RS", key="dynamics_show_rs")
             
@@ -1708,23 +1710,24 @@ class DataVisualizer:
             st.warning("⚠️ Нет визитов, соответствующих выбранным фильтрам")
             return
         
-        # Формируем group_cols с реальными именами колонок
-        group_cols = [col_client]  # 'Имя клиента'
+        # Формируем group_cols
+        # АСМ (col_asm) — всегда в основных строках
+        group_cols = [col_asm]  # 'АСС'
         
+        if show_client:
+            group_cols.append(col_client)   # 'Имя клиента'
         if show_project:
-            group_cols.append(col_project)   # 'Код анкеты'
+            group_cols.append(col_project)  # 'Код анкеты'
         if show_wave:
-            group_cols.append(col_wave)      # 'Название проекта'
+            group_cols.append(col_wave)     # 'Название проекта'
         if show_region_detail:
-            group_cols.append(col_region)    # 'Регион short'
+            group_cols.append(col_region)   # 'Регион short'
         if show_dsm:
-            group_cols.append(col_dsm)       # 'ЗОД'
-        if show_asm:
-            group_cols.append(col_asm)       # 'АСС'
+            group_cols.append(col_dsm)      # 'ЗОД'
         if show_rs:
-            group_cols.append(col_rs)        # 'ЭМ'
+            group_cols.append(col_rs)       # 'ЭМ'
         
-        # Расчет динамики (без переименования!)
+        # Расчет динамики
         dynamics_df = visit_calculator.calculate_dynamics_fact(filtered_visits, calc_params, group_cols)
         
         if dynamics_df.empty:
@@ -1769,13 +1772,13 @@ class DataVisualizer:
         
         result_df = pivot_df.reset_index()
         
-        # Переименовываем колонки для отображения (только для красоты)
+        # Переименовываем колонки для отображения (АСМ — первая)
         display_name_map = {
+            col_asm: 'АСМ',              # ← основная колонка
             col_client: 'Клиент',
             col_project: 'Проект',
             col_wave: 'Волна',
             col_dsm: 'DSM',
-            col_asm: 'ASM',
             col_rs: 'RS',
             col_region: 'Регион'
         }

@@ -1247,6 +1247,39 @@ class DataCleaner:
         
         df_clean = df.copy()
         
+        # Словарь для преобразования длинных названий регионов в короткие коды
+        long_to_short_region = {
+            'Республика Адыгея': 'AD', 'Алтайский край': 'AL', 'Амурская область': 'AM',
+            'Архангельская область': 'AR', 'Астраханская область': 'AS', 'Республика Башкортостан': 'BK',
+            'Белгородская область': 'BL', 'Брянская область': 'BR', 'Республика Бурятия': 'BU',
+            'Чукотский автономный округ': 'CK', 'Челябинская область': 'CL', 'Чеченская Республика': 'CN',
+            'Чувашская Республика': 'CV', 'Республика Дагестан': 'DA', 'Донецкая Народная Республика': 'DN',
+            'Республика Алтай': 'GA', 'Республика Ингушетия': 'IN', 'Иркутская область': 'IR',
+            'Ивановская область': 'IV', 'Камчатский край': 'KA', 'Кабардино-Балкарская Республика': 'KB',
+            'Карачаево-Черкесская Республика': 'KC', 'Краснодарский край': 'KD', 'Кемеровская область': 'KE',
+            'Калужская область': 'KG', 'Хабаровский край': 'KH', 'Республика Карелия': 'KI',
+            'Республика Хакасия': 'KK', 'Республика Калмыкия': 'KL', 'Ханты-Мансийский автономный округ': 'KM',
+            'Калининградская область': 'KN', 'Республика Коми': 'KO', 'Курская область': 'KS',
+            'Костромская область': 'KT', 'Курганская область': 'KU', 'Кировская область': 'KV',
+            'Красноярский край': 'KY', 'Луганская Народная Республика': 'LG', 'Ленинградская область': 'LN',
+            'Липецкая область': 'LP', 'Московская область': 'MS', 'Республика Марий Эл': 'ME',
+            'Магаданская область': 'MG', 'Мурманская область': 'MM', 'Республика Мордовия': 'MR',
+            'Новгородская область': 'NG', 'Ненецкий автономный округ': 'NN', 'Республика Северная Осетия': 'NO',
+            'Новосибирская область': 'NS', 'Нижегородская область': 'NZ', 'Оренбургская область': 'OB',
+            'Орловская область': 'OL', 'Омская область': 'OM', 'Пермский край': 'PE',
+            'Приморский край': 'PR', 'Псковская область': 'PS', 'Пензенская область': 'PZ',
+            'Республика Крым': 'RK', 'Ростовская область': 'RO', 'Рязанская область': 'RZ',
+            'Самарская область': 'SA', 'Республика Саха (Якутия)': 'SK', 'Сахалинская область': 'SL',
+            'Смоленская область': 'SM', 'Саратовская область': 'SR', 'Ставропольский край': 'ST',
+            'Свердловская область': 'SV', 'Тамбовская область': 'TB', 'Тульская область': 'TL',
+            'Томская область': 'TO', 'Республика Татарстан': 'TT', 'Республика Тыва': 'TU',
+            'Тверская область': 'TV', 'Тюменская область': 'TY', 'Удмуртская Республика': 'UD',
+            'Ульяновская область': 'UL', 'Волгоградская область': 'VG', 'Владимирская область': 'VL',
+            'Вологодская область': 'VO', 'Воронежская область': 'VR', 'Ямало-Ненецкий автономный округ': 'YN',
+            'Ярославская область': 'YS', 'Еврейская автономная область': 'YV', 'Забайкальский край': 'ZK',
+            'Запорожская область': 'ZO'
+        }
+        
         # Маппинг колонок Optima → стандартные названия
         column_mapping = {
             'Код анкеты': ['Project Code'],
@@ -1254,7 +1287,7 @@ class DataCleaner:
             'Название проекта': ['Wave Name'],
             'АСС': ['АСС'],
             'ЭМ': ['Координатор'],
-            'Регион short': ['Регион Чекер'],  # ← изменено: сразу берем короткий регион
+            'Регион long': ['Регион Чекер'],
             'Статус': ['Статус анкеты'],
             'Дата визита': ['Дата визита']
         }
@@ -1270,10 +1303,15 @@ class DataCleaner:
                     result[std_col] = codes.apply(
                         lambda x: x.split('\\')[0].strip() if '\\' in x else x.strip()
                     )
+                elif std_col == 'Регион long':
+                    result['Регион long'] = df_clean[source_col].astype(str).fillna('')
                 else:
                     result[std_col] = df_clean[source_col].astype(str).fillna('')
             else:
-                result[std_col] = ''
+                if std_col == 'Регион long':
+                    result['Регион long'] = ''
+                else:
+                    result[std_col] = ''
         
         # Конвертация даты
         if 'Дата визита' in result.columns:
@@ -1282,30 +1320,23 @@ class DataCleaner:
                 errors='coerce',
                 dayfirst=True
             )
-            # Заменяем фейковые даты (1900-01-01) на NaT
-            fake_date = pd.Timestamp('1900-01-01')
-            result['Дата визита'] = result['Дата визита'].replace(fake_date, pd.NaT)
         
-        # Функция преобразования региона (формат 'AD - Республика Адыгея' → 'AD')
-        def get_short_region(region_value):
-            if pd.isna(region_value) or str(region_value).strip() in ['', 'nan', 'none', 'null']:
+        # Преобразуем длинные названия регионов в короткие коды
+        def get_short_region(long_name):
+            if pd.isna(long_name) or str(long_name).strip() in ['', 'nan', 'none', 'null']:
                 return 'не определен'
-            
-            region_str = str(region_value).strip()
-            
-            # Формат 'AD - Республика Адыгея' — берем код до тире
-            if ' - ' in region_str:
-                code = region_str.split(' - ')[0].strip()
-                if len(code) == 2:  # код региона обычно 2 буквы
-                    return code
-            
-            # Если нет тире — возвращаем как есть или 'не определен'
+            clean_name = str(long_name).strip()
+            # Прямое соответствие
+            if clean_name in long_to_short_region:
+                return long_to_short_region[clean_name]
+            # Поиск по вхождению
+            for long, short in long_to_short_region.items():
+                if long in clean_name or clean_name in long:
+                    return short
             return 'не определен'
         
-        # Применяем преобразование региона
-        if 'Регион short' in result.columns:
-            result['Регион short'] = result['Регион short'].apply(get_short_region)
-            result['Регион'] = result['Регион short']  # для отчетов
+        result['Регион short'] = result['Регион long'].apply(get_short_region)
+        result['Регион'] = result['Регион long']  # сохраняем полное название для отчетов
         
         # Все записи Optima - полевые
         result['Полевой'] = 1
@@ -1313,11 +1344,38 @@ class DataCleaner:
         # Источник
         result['Источник'] = 'Оптима'
         
-        # ПО (портал) - по умолчанию Optima (больше не переопределяется из Google)
+        # ПО (портал) - по умолчанию Optima
         result['ПО'] = 'Оптима'
+        
+        # Обогащение из Google-таблицы
+        if google_df is not None and 'Код анкеты' in result.columns:
+            google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
+            google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+            
+            if google_code_col and google_portal_col:
+                portal_mapping = {}
+                for _, row in google_df.iterrows():
+                    code = str(row.get(google_code_col, '')).strip()
+                    portal = str(row.get(google_portal_col, '')).strip()
+                    if code and code.lower() not in ['nan', 'none', 'null', '']:
+                        portal_mapping[code] = portal
+                
+                def get_portal(code_value):
+                    if pd.isna(code_value) or str(code_value).strip() in ['', 'nan', 'none', 'null']:
+                        return 'Оптима'
+                    clean_code = str(code_value).strip()
+                    if '\\' in clean_code:
+                        clean_code = clean_code.split('\\')[0].strip()
+                    # Если код неуникальный — не переопределяем
+                    if self.is_non_unique_code(clean_code):
+                        return 'Оптима'
+                    return portal_mapping.get(clean_code, 'Оптима')
+                
+                result['ПО'] = result['Код анкеты'].apply(get_portal)
         
         # Добавление ЗОД из встроенного справочника (по АСС)
         if 'АСС' in result.columns:
+            
             def get_zod(acc_value):
                 if pd.isna(acc_value) or str(acc_value).strip() in ['', 'nan', 'none', 'null']:
                     return ''
@@ -1327,6 +1385,8 @@ class DataCleaner:
             result['ЗОД'] = result['АСС'].apply(get_zod)
         else:
             result['ЗОД'] = ''
+        
+        result['Источник'] = 'Оптима'
         
         return result
     
@@ -1682,7 +1742,6 @@ class DataCleaner:
         
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
-
 
 
 

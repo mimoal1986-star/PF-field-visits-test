@@ -540,17 +540,23 @@ class DataCleaner:
                 return array_df
             
             portal_mapping = {}
+            cxway_mapping = {}
             for _, row in google_df.iterrows():
                 code = str(row.get(google_code_col, '')).strip()
                 portal = str(row.get(google_portal_col, '')).strip()
                 
                 if code and code.lower() not in ['nan', 'none', 'null', '']:
                     portal_mapping[code] = portal
+                    if portal.upper() == 'CXWAY':
+                        cxway_mapping[code] = 'CXWAY'
             
             def get_portal(code):
                 if pd.isna(code):
                     return 'Чеккер'
                 clean_code = str(code).strip()
+                # Переопределяем только если в Google проект отмечен как CXWAY
+                if clean_code in cxway_mapping:
+                    return 'CXWAY'
                 return portal_mapping.get(clean_code, 'Чеккер')
             
             array_df['ПО'] = array_df[array_code_col].apply(get_portal)
@@ -984,24 +990,28 @@ class DataCleaner:
         # Добавление ПО
         result['ПО'] = 'CXWAY'  # значение по умолчанию
         
-        # Если есть Google, пытаемся найти более точное ПО
+        # Если есть Google, проверяем только на 'Чеккер'
         if google_df is not None and 'Код анкеты' in result.columns:
             google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
             google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
             
             if google_code_col and google_portal_col:
-                portal_mapping = {}
+                # Создаем словарь только для проектов с ПО 'Чеккер'
+                checker_mapping = {}
                 for _, row in google_df.iterrows():
                     code = str(row.get(google_code_col, '')).strip()
                     portal = str(row.get(google_portal_col, '')).strip()
-                    if code and code.lower() not in ['nan', 'none', 'null', '']:
-                        portal_mapping[code] = portal
+                    if code and portal.upper() == 'ЧЕККЕР':
+                        checker_mapping[code] = 'Чеккер'
                 
                 def get_portal_from_google(code_value):
                     if pd.isna(code_value) or str(code_value).strip() == '':
                         return 'CXWAY'
                     clean_code = str(code_value).strip()
-                    return portal_mapping.get(clean_code, 'CXWAY')
+                    # Переопределяем только если в Google проект отмечен как Чеккер
+                    if clean_code in checker_mapping:
+                        return 'Чеккер'
+                    return 'CXWAY'
                 
                 result['ПО'] = result['Код анкеты'].apply(get_portal_from_google)
         

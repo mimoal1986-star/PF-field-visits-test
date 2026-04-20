@@ -53,26 +53,6 @@ class VisitCalculator:
         except Exception as e:
             print(f"[DEBUG] Ошибка расчета долей RS: {e}")
             return {}
-
-    def _calculate_optima_weights(self, optima_df):
-        if optima_df is None or optima_df.empty:
-            return {}
-        
-        weights = {}
-        
-        # Группировка по КОДУ проекта (Код анкеты), а не по имени клиента
-        rs_counts = optima_df.groupby(['Код анкеты', 'Регион short', 'ЭМ']).size().reset_index(name='count_rs')
-        
-        project_totals = optima_df.groupby('Код анкеты').size().reset_index(name='total_count')
-        
-        merged = rs_counts.merge(project_totals, on='Код анкеты')
-        merged['weight'] = merged['count_rs'] / merged['total_count']
-        
-        for _, row in merged.iterrows():
-            key = (row['Код анкеты'], row['Регион short'], row['ЭМ'])
-            weights[key] = row['weight']
-        
-        return weights
     
     
 
@@ -270,20 +250,6 @@ class VisitCalculator:
                             except:
                                 pass
             
-            # КВОТЫ OPTIMA
-            optima_quotas = {}
-            if google_df is not None and not google_df.empty:
-                project_col = 'Проекты в  https://ru.checker-soft.com'
-                code_col = 'Код проекта RU00.000.00.01SVZ24'
-                kvota_col = 'Квота'
-                if all(col in google_df.columns for col in [project_col, code_col, kvota_col]):
-                    for _, row in google_df.iterrows():
-                        code = str(row.get(code_col, '')).strip()
-                        if code and code not in ['', 'nan', 'None', 'null']:
-                            try:
-                                optima_quotas[code] = float(row.get(kvota_col, 0))
-                            except:
-                                pass
             
             # КВОТЫ ПРОДАТА
             prodata_quotas = {}
@@ -353,7 +319,6 @@ class VisitCalculator:
             
             # Для Мултон и ПроДата считаем количество регионов
             multon_regions = {}
-            optima_regions = {}
             prodata_regions = {}
             
             for _, row in hierarchy_df.iterrows():
@@ -428,31 +393,7 @@ class VisitCalculator:
                         if num_regions > 0:
                             total_plan = total_plan / num_regions
                     
-                    elif po == 'Оптима':
-                        found_quota = None
-                        if '\\' in project_code:
-                            for code in project_code.split('\\'):
-                                if code.strip() in optima_quotas:
-                                    found_quota = optima_quotas[code.strip()]
-                                    break
-                        else:
-                            found_quota = optima_quotas.get(project_code)
-                        if not found_quota or found_quota <= 0:
-                            continue
-                        
-                        project_total_plan = found_quota
-                        
-                        # Получаем веса RS
-                        weights_dict = self._calculate_optima_weights(optima_df)
-                        key = (project_code, region, rs_name)
-                        weight = weights_dict.get(key, 0)
-                        
-                        if weight == 0:
-                            continue
-                        
-                        total_plan = project_total_plan * weight
-                    
-                    else:  # Чеккер, CXWAY, Easymerch
+                    else:  # Чеккер, CXWAY, Easymerch,Optima
                         client_name = row['Клиент']
                         plan_key = (client_name, project_code, wave_name, region)
                         total_plan = project_wave_region_plans.get(plan_key, 0)
@@ -684,7 +625,7 @@ class VisitCalculator:
             # ФИЛЬТРЫ
             completed_mask = visits_df[status_col].isin([
                 'Выполнено', 'выполнен',
-                'Заполнена', 'Проверена',
+                'Заполнена', 'Проверена','Принята',
                 'Завершено', 'Готово'
             ])
             start_date = pd.Timestamp(calc_params['start_date'])

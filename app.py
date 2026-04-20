@@ -15,11 +15,20 @@ if 'temp_adjustments' not in st.session_state:
 # ФУНКЦИЯ КЭШИРОВАНИЯ ЗАГРУЗКИ EXCEL
 @st.cache_data
 def load_excel(file_obj, file_key):
-    """Загружает Excel с кэшированием. file_key - уникальный ключ для кэша"""
+    """Загружает Excel с кэшированием и сжимает пробелы во всех строковых колонках"""
     if file_obj is None:
         return None
     try:
-        return pd.read_excel(file_obj, dtype=str)
+        df = pd.read_excel(file_obj, dtype=str)
+        
+        # Сжимаем пробелы во всех строковых колонках
+        for col in df.columns:
+            if df[col].dtype == 'object':  # строковые колонки
+                df[col] = df[col].astype(str).str.strip()
+                # Заменяем пустые строки и 'nan' на пустую строку
+                df[col] = df[col].replace(['nan', 'None', 'null', ''], '')
+        
+        return df
     except Exception as e:
         st.error(f"Ошибка загрузки файла {file_key}: {e}")
         return None

@@ -141,6 +141,14 @@ def _enrich_array_with_project_codes_cached(array_df, projects_df):
 
 class DataCleaner:
     
+    def is_non_unique_code(self, code):
+        """Проверяет, является ли код неуникальным (Мультикод, Пилот, Семпл и т.д.)"""
+        if pd.isna(code):
+            return False
+        code_str = str(code).strip().lower()
+        non_unique_keywords = ['мультикод', 'пилот', 'семпл']
+        return any(keyword in code_str for keyword in non_unique_keywords)
+    
     def _log_samples(self, df, stage_name):
         """Вспомогательная функция для отладки семплов"""
         if df is None or df.empty:
@@ -554,6 +562,9 @@ class DataCleaner:
                 if pd.isna(code):
                     return 'Чеккер'
                 clean_code = str(code).strip()
+                # Если код неуникальный — не переопределяем, оставляем Чеккер
+                if self.is_non_unique_code(clean_code):
+                    return 'Чеккер'
                 # Переопределяем только если в Google проект отмечен как CXWAY
                 if clean_code in cxway_mapping:
                     return 'CXWAY'
@@ -1008,6 +1019,9 @@ class DataCleaner:
                     if pd.isna(code_value) or str(code_value).strip() == '':
                         return 'CXWAY'
                     clean_code = str(code_value).strip()
+                    # Если код неуникальный — не переопределяем, оставляем CXWAY
+                    if self.is_non_unique_code(clean_code):
+                        return 'CXWAY'
                     # Переопределяем только если в Google проект отмечен как Чеккер
                     if clean_code in checker_mapping:
                         return 'Чеккер'
@@ -1151,11 +1165,13 @@ class DataCleaner:
                     if code and code.lower() not in ['nan', 'none', 'null', '']:
                         portal_mapping[code] = portal
                 
-                # Применяем маппинг
                 def get_portal(code_value):
                     if pd.isna(code_value) or str(code_value).strip() == '':
                         return 'Easymerch'
                     clean_code = str(code_value).strip()
+                    # Если код неуникальный — не переопределяем
+                    if self.is_non_unique_code(clean_code):
+                        return 'Easymerch'
                     return portal_mapping.get(clean_code, 'Easymerch')
                 
                 result['ПО'] = result['Код анкеты'].apply(get_portal)
@@ -1350,6 +1366,9 @@ class DataCleaner:
                     clean_code = str(code_value).strip()
                     if '\\' in clean_code:
                         clean_code = clean_code.split('\\')[0].strip()
+                    # Если код неуникальный — не переопределяем
+                    if self.is_non_unique_code(clean_code):
+                        return 'Оптима'
                     return portal_mapping.get(clean_code, 'Оптима')
                 
                 result['ПО'] = result['Код анкеты'].apply(get_portal)

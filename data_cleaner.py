@@ -1434,6 +1434,10 @@ class DataCleaner:
                 errors='coerce',
                 dayfirst=True
             )
+
+        # Заменяем фейковые даты (1900-01-01) на NaT
+        fake_date = pd.Timestamp('1900-01-01')
+        result['Дата визита'] = result['Дата визита'].replace(fake_date, pd.NaT)
         
         # --- СПЕЦИАЛЬНАЯ ОБРАБОТКА РЕГИОНА ---
         # Словарь для поиска региона по ключевым словам

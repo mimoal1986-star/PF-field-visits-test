@@ -701,6 +701,7 @@ class VisitCalculator:
             # СЧИТАЕМ ФАКТЫ
             completed_df = visits_df[completed_mask]
             rs_facts_total = completed_df.groupby([
+                'Имя клиента',
                 'Код анкеты',
                 'Название проекта',
                 region_col,
@@ -717,6 +718,7 @@ class VisitCalculator:
                 )
                 completed_in_period = visits_df[completed_mask & period_mask]
                 rs_facts_period = completed_in_period.groupby([
+                    'Имя клиента',
                     'Код анкеты',
                     'Название проекта',
                     region_col,
@@ -739,7 +741,8 @@ class VisitCalculator:
                 region = str(row['Регион']).strip()
                 rs = str(row['RS']).strip()
                 
-                key = (project, wave, region, rs)
+                client_name = str(row['Клиент']).strip()
+                key = (client_name, project, wave, region, rs)
                 result_df.at[idx, 'Факт проекта, шт.'] = rs_facts_total.get(key, 0)
                 result_df.at[idx, 'Факт на дату, шт.'] = rs_facts_period.get(key, 0)
     

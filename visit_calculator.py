@@ -275,13 +275,17 @@ class VisitCalculator:
             if google_df is not None and not google_df.empty:
                 project_col = 'Проекты в  https://ru.checker-soft.com'
                 code_col = 'Код проекта RU00.000.00.01SVZ24'
+                wave_col = 'Название волны на Чекере/ином ПО'
                 kvota_col = 'Квота'
-                if all(col in google_df.columns for col in [project_col, code_col, kvota_col]):
+                if all(col in google_df.columns for col in [project_col, code_col, wave_col, kvota_col]):
                     for _, row in google_df.iterrows():
                         code = str(row.get(code_col, '')).strip()
+                        client = str(row.get(project_col, '')).strip()
+                        wave = str(row.get(wave_col, '')).strip()
                         if code and code not in ['', 'nan', 'None', 'null']:
                             try:
-                                optima_quotas[code] = float(row.get(kvota_col, 0))
+                                key = (code, client, wave)
+                                optima_quotas[key] = float(row.get(kvota_col, 0))
                             except:
                                 pass
             

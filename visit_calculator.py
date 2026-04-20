@@ -683,9 +683,9 @@ class VisitCalculator:
             
             # ФИЛЬТРЫ
             completed_mask = visits_df[status_col].isin([
-                'Выполнено', 'выполнен',      # существующие
-                'Заполнена',     # новое для Optima
-                'Проверена'      # новое для Optima
+                'Выполнено', 'выполнен',
+                'Заполнена', 'Проверена',
+                'Завершено', 'Готово'
             ])
             start_date = pd.Timestamp(calc_params['start_date'])
             end_date = pd.Timestamp(calc_params['end_date'])

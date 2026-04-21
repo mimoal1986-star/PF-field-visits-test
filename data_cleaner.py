@@ -1249,7 +1249,7 @@ class DataCleaner:
         
         # Словарь для преобразования длинных названий регионов в короткие коды
         long_to_short_region = {
-            'Республика Адыгея': 'AD', 'Алтайский край': 'AL', 'Амурская область': 'AM',
+            'Республика Адыгея': 'AD', 'Алтайский край': 'AL','Алтай': 'AL', 'Амурская область': 'AM',
             'Архангельская область': 'AR', 'Астраханская область': 'AS', 'Республика Башкортостан': 'BK',
             'Белгородская область': 'BL', 'Брянская область': 'BR', 'Республика Бурятия': 'BU',
             'Чукотский автономный округ': 'CK', 'Челябинская область': 'CL', 'Чеченская Республика': 'CN',
@@ -1347,31 +1347,7 @@ class DataCleaner:
         # ПО (портал) - по умолчанию Optima
         result['ПО'] = 'Оптима'
         
-        # Обогащение из Google-таблицы
-        if google_df is not None and 'Код анкеты' in result.columns:
-            google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
-            google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
-            
-            if google_code_col and google_portal_col:
-                portal_mapping = {}
-                for _, row in google_df.iterrows():
-                    code = str(row.get(google_code_col, '')).strip()
-                    portal = str(row.get(google_portal_col, '')).strip()
-                    if code and code.lower() not in ['nan', 'none', 'null', '']:
-                        portal_mapping[code] = portal
-                
-                def get_portal(code_value):
-                    if pd.isna(code_value) or str(code_value).strip() in ['', 'nan', 'none', 'null']:
-                        return 'Оптима'
-                    clean_code = str(code_value).strip()
-                    if '\\' in clean_code:
-                        clean_code = clean_code.split('\\')[0].strip()
-                    # Если код неуникальный — не переопределяем
-                    if self.is_non_unique_code(clean_code):
-                        return 'Оптима'
-                    return portal_mapping.get(clean_code, 'Оптима')
-                
-                result['ПО'] = result['Код анкеты'].apply(get_portal)
+
         
         # Добавление ЗОД из встроенного справочника (по АСС)
         if 'АСС' in result.columns:

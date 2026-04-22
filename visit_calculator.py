@@ -276,6 +276,47 @@ class VisitCalculator:
             ]).size().to_dict()
 
             # ============================================
+            # РАСЧЕТ ВЕСОВ RS ДЛЯ РАСПРЕДЕЛЕНИЯ ПЛАНА
+            # ============================================
+            rs_weights_for_plan = {}
+            
+            # Фильтруем только УДАЛЕННЫЕ записи (исключаем их)
+            status_col = None
+            for col in visits_df.columns:
+                if col.strip() == 'Статус':
+                    status_col = col
+                    break
+            
+            if status_col:
+                # Исключаем только 'Удалено'
+                not_deleted_mask = visits_df[status_col].astype(str).str.strip() != 'Удалено'
+                visits_for_weights = visits_df[not_deleted_mask].copy()
+            else:
+                visits_for_weights = visits_df.copy()
+            
+            # Группируем по (клиент, код, волна, регион, RS)
+            rs_counts = visits_for_weights.groupby([
+                'Имя клиента',
+                'Код анкеты',
+                'Название проекта',
+                'Регион short',
+                'ЭМ'  # RS
+            ]).size().reset_index(name='count')
+            
+            # Для каждой группы (клиент, код, волна, регион) считаем доли
+            if not rs_counts.empty:
+                for _, group in rs_counts.groupby(['Имя клиента', 'Код анкеты', 'Название проекта', 'Регион short']):
+                    key = (group['Имя клиента'].iloc[0], 
+                           group['Код анкеты'].iloc[0], 
+                           group['Название проекта'].iloc[0], 
+                           group['Регион short'].iloc[0])
+                    total = group['count'].sum()
+                    if total > 0:
+                        for _, row in group.iterrows():
+                            weight_key = key + (row['ЭМ'],)
+                            rs_weights_for_plan[weight_key] = row['count'] / total
+
+            # ============================================
             # ЗАГРУЗКА КОРРЕКТИРОВОК ПЛАНА (ОДИН РАЗ)
             # ============================================
             plan_adjustments = {}
@@ -393,12 +434,19 @@ class VisitCalculator:
                         if num_regions > 0:
                             total_plan = total_plan / num_regions
                     
-                    else:  # Чеккер, CXWAY, Easymerch,Optima
+                    else:  # Чеккер, CXWAY, Easymerch, Optima
                         client_name = row['Клиент']
                         plan_key = (client_name, project_code, wave_name, region)
                         total_plan = project_wave_region_plans.get(plan_key, 0)
                         if total_plan <= 0:
                             continue
+                        
+                        # Распределяем план по RS с помощью весов
+                        weight_key = (client_name, project_code, wave_name, region, rs_name)
+                        weight = rs_weights_for_plan.get(weight_key, 0)
+                        
+                        if weight > 0:
+                            total_plan = round(total_plan * weight, 1)
                     
                     # Рассчитываем план на дату с учетом этапов
                     rs_plan_on_date, rs_daily_plan = self.calculate_plan_with_stages(

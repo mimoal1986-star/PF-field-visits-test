@@ -152,6 +152,24 @@
       "fio_om": "",
       "added_at": "2026-04-27T06:39:49.864331",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "4_Волна_Звонки",
+      "project_code": "RU00.265.03.01SVZ25",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-04-27T06:43:08.844884",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "4_Волна_Визит в офис продаж",
+      "project_code": "RU00.265.15.03SVZ25",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-04-27T06:43:08.844986",
+      "added_by": "unknown_user"
     }
   ],
   "included_projects": [],
@@ -1032,8 +1050,24 @@
       "project_code": "RU00.177.05.04SVZ25",
       "timestamp": "2026-04-27T06:39:49.864342",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "4_Волна_Звонки",
+      "project_code": "RU00.265.03.01SVZ25",
+      "timestamp": "2026-04-27T06:43:08.844904",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "4_Волна_Визит в офис продаж",
+      "project_code": "RU00.265.15.03SVZ25",
+      "timestamp": "2026-04-27T06:43:08.844993",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-27T06:39:49.864348",
+  "last_updated": "2026-04-27T06:43:08.844996",
   "version": "1.0"
 }

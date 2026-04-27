@@ -53,6 +53,51 @@
       "fio_om": "",
       "added_at": "2026-04-27T06:06:15.848141",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.04",
+      "project_code": "RU00.343.06.02SVZ25",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-04-27T06:07:17.229532",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.04",
+      "project_code": "RU00.342.06.01SVZ25",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-04-27T06:07:17.229696",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Марафон Сервиса",
+      "wave_name": "2026.04_Марафон Сервиса",
+      "project_code": "Семпл",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-04-27T06:07:17.229815",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Апрель 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ26",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T06:07:17.229938",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Апрель 2026",
+      "project_code": "RU00.390.02.01SVZ26",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T06:07:17.230049",
+      "added_by": "unknown_user"
     }
   ],
   "included_projects": [],
@@ -845,8 +890,48 @@
       "project_code": "RU00.366.06.03SVZ26",
       "timestamp": "2026-04-27T06:06:15.848154",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.04",
+      "project_code": "RU00.343.06.02SVZ25",
+      "timestamp": "2026-04-27T06:07:17.229555",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.04",
+      "project_code": "RU00.342.06.01SVZ25",
+      "timestamp": "2026-04-27T06:07:17.229706",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Марафон Сервиса",
+      "wave_name": "2026.04_Марафон Сервиса",
+      "project_code": "Семпл",
+      "timestamp": "2026-04-27T06:07:17.229823",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Апрель 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ26",
+      "timestamp": "2026-04-27T06:07:17.229947",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Апрель 2026",
+      "project_code": "RU00.390.02.01SVZ26",
+      "timestamp": "2026-04-27T06:07:17.230057",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-27T06:06:15.848162",
+  "last_updated": "2026-04-27T06:07:17.230062",
   "version": "1.0"
 }

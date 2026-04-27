@@ -1,5 +1,42 @@
 {
-  "excluded_projects": [],
+  "excluded_projects": [
+    {
+      "project_name": "Avito ФО",
+      "wave_name": "",
+      "project_code": "",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T06:02:47.790014",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Банк ВТБ УТО ФО",
+      "wave_name": "",
+      "project_code": "",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T06:02:47.790167",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Керамир Аудит",
+      "wave_name": "",
+      "project_code": "",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T06:02:47.790310",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Керамир Аудит_ТП",
+      "wave_name": "",
+      "project_code": "",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T06:02:47.790590",
+      "added_by": "unknown_user"
+    }
+  ],
   "included_projects": [],
   "history": [
     {
@@ -742,8 +779,40 @@
       "project_code": "",
       "timestamp": "2026-04-16T07:41:57.563940",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Avito ФО",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-04-27T06:02:47.790032",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Банк ВТБ УТО ФО",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-04-27T06:02:47.790174",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Керамир Аудит",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-04-27T06:02:47.790319",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Керамир Аудит_ТП",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-04-27T06:02:47.790599",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-16T07:41:57.563957",
+  "last_updated": "2026-04-27T06:02:47.790605",
   "version": "1.0"
 }

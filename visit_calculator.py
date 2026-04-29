@@ -464,8 +464,8 @@ class VisitCalculator:
                 period_start = max(start_period, start_date.date())
                 period_end = min(end_period, finish_date.date())
                 days_in_period = max(0, (period_end - period_start).days + 1)
-                
 
+                
                 # ============================================
                 # РАСЧЕТ КОЭФФИЦИЕНТА МЕСЯЦА
                 # ============================================
@@ -477,25 +477,32 @@ class VisitCalculator:
                 if pd.isna(finish_date_google):
                     finish_date_google = finish_date
                 
-                # Границы текущего месяца
-                month_start = pd.Timestamp(calc_params['start_date']).date()
-                month_end = month_start + pd.offsets.MonthEnd(1)
+                # Приводим все к Timestamp (чтобы можно было сравнивать)
+                if hasattr(start_date_google, 'date'):
+                    start_ts = pd.Timestamp(start_date_google.date())
+                elif hasattr(start_date_google, 'year'):
+                    start_ts = pd.Timestamp(start_date_google)
+                else:
+                    start_ts = pd.Timestamp(start_date.date())
                 
-                # Преобразуем в date (защита от NaT)
-                try:
-                    start_date_google_date = start_date_google.date() if hasattr(start_date_google, 'date') else start_date_google
-                    finish_date_google_date = finish_date_google.date() if hasattr(finish_date_google, 'date') else finish_date_google
-                except AttributeError:
-                    start_date_google_date = start_date.date()
-                    finish_date_google_date = finish_date.date()
+                if hasattr(finish_date_google, 'date'):
+                    finish_ts = pd.Timestamp(finish_date_google.date())
+                elif hasattr(finish_date_google, 'year'):
+                    finish_ts = pd.Timestamp(finish_date_google)
+                else:
+                    finish_ts = pd.Timestamp(finish_date.date())
+                
+                # Границы текущего месяца (как Timestamp)
+                month_start_ts = pd.Timestamp(calc_params['start_date'])
+                month_end_ts = month_start_ts + pd.offsets.MonthEnd(1)
                 
                 # Рабочие дни проекта в текущем месяце (числитель)
-                project_in_month_start = max(start_date_google_date, month_start)
-                project_in_month_end = min(finish_date_google_date, month_end)
-                working_days_in_month = self._get_working_days_in_range(project_in_month_start, project_in_month_end)
+                project_start_in_month = max(start_ts, month_start_ts)
+                project_end_in_month = min(finish_ts, month_end_ts)
+                working_days_in_month = self._get_working_days_in_range(project_start_in_month, project_end_in_month)
                 
                 # Общие рабочие дни проекта (знаменатель)
-                total_working_days = self._get_working_days_in_range(start_date_google_date, finish_date_google_date)
+                total_working_days = self._get_working_days_in_range(start_ts, finish_ts)
                 
                 if total_working_days > 0:
                     month_coefficient = working_days_in_month / total_working_days

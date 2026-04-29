@@ -557,6 +557,9 @@ class VisitCalculator:
                     'Длительность': int(duration),
                     'Дата старта': start_date,
                     'Дата финиша': finish_date,
+                    'Дата старта_гугл': start_date_google,     
+                    'Дата финиша_гугл': finish_date_google,    
+                    'Коэффициент месяца': month_coefficient, 
                     'Дней в периоде': days_in_period,
                     'Дневной план RS, шт.': round(rs_daily_plan, 2)
                 })
@@ -827,8 +830,16 @@ class VisitCalculator:
         df = fact_df.copy()
         
         # 1. ПЛАН (из plan_df если есть)
-        if plan_df is not None and 'План на дату, шт.' in plan_df.columns:
-            df['План на дату, шт.'] = plan_df['План на дату, шт.']
+        if plan_df is not None:
+            if 'План на дату, шт.' in plan_df.columns:
+                df['План на дату, шт.'] = plan_df['План на дату, шт.']
+            # Сохраняем дополнительные колонки из plan_df
+            if 'Дата старта_гугл' in plan_df.columns:
+                df['Дата старта_гугл'] = plan_df['Дата старта_гугл']
+            if 'Дата финиша_гугл' in plan_df.columns:
+                df['Дата финиша_гугл'] = plan_df['Дата финиша_гугл']
+            if 'Коэффициент месяца' in plan_df.columns:
+                df['Коэффициент месяца'] = plan_df['Коэффициент месяца']
         elif 'План на дату, шт.' not in df.columns:
             df['План на дату, шт.'] = 0
         

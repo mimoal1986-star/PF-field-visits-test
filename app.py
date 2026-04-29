@@ -152,6 +152,7 @@ def process_all_data(settings_manager=None, force_recalc=False):
         if google_cleaned is None:
             google_cleaned = google_raw
         st.session_state.cleaned_data['сервизория'] = google_cleaned
+        st.session_state.cleaned_data['сервизория_original'] = google_raw.copy() 
         
         # Обогащение массива кодами проектов
         enriched_result = data_cleaner.enrich_array_with_project_codes(
@@ -611,7 +612,8 @@ def process_all_data(settings_manager=None, force_recalc=False):
         
         base_data = visit_calculator.extract_hierarchical_data(
             st.session_state.cleaned_data['полевые_проекты'],
-            st.session_state.cleaned_data['сервизория']
+            st.session_state.cleaned_data['сервизория'],
+            st.session_state.cleaned_data.get('сервизория_original')
         )
 
         st.write(f"🔍 КОНЕЦ ИЕРАРХИИ: {tm.time() - start_hier:.2f} сек (время выполнения)")

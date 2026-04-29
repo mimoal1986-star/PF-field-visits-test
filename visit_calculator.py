@@ -476,11 +476,20 @@ class VisitCalculator:
                 if pd.isna(finish_date_google):
                     finish_date_google = finish_date
                 
-                project_working_days = self._get_working_days_in_range(start_date_google, finish_date_google)
-                period_working_days = self._get_working_days_in_range(period_start, period_end)
+                # Границы текущего месяца
+                month_start = pd.Timestamp(calc_params['start_date']).date()
+                month_end = month_start + pd.offsets.MonthEnd(1)
                 
-                if project_working_days > 0:
-                    month_coefficient = period_working_days / project_working_days
+                # Рабочие дни проекта в текущем месяце (числитель)
+                project_in_month_start = max(start_date_google.date(), month_start)
+                project_in_month_end = min(finish_date_google.date(), month_end)
+                working_days_in_month = self._get_working_days_in_range(project_in_month_start, project_in_month_end)
+                
+                # Общие рабочие дни проекта (знаменатель)
+                total_working_days = self._get_working_days_in_range(start_date_google.date(), finish_date_google.date())
+                
+                if total_working_days > 0:
+                    month_coefficient = working_days_in_month / total_working_days
                 else:
                     month_coefficient = 1.0
                 # ============================================

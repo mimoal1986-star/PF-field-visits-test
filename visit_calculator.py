@@ -129,7 +129,7 @@ class VisitCalculator:
         
         return plan_on_date, daily_plan_avg
             
-    def extract_hierarchical_data(self, visits_df, google_df=None):
+    def extract_hierarchical_data(self, visits_df, google_df=None, google_df_original=None):
         """
         Создаёт полную иерархию Проект→Клиент→Волна→Регион→DSM→ASM→RS
         с базовой информацией о проекте
@@ -171,7 +171,10 @@ class VisitCalculator:
             hierarchy['Дата старта'] = pd.NaT
             hierarchy['Дата финиша'] = pd.NaT
             
-            # Обогащаем датами из google_df
+
+            # ============================================
+            # 1. ОСНОВНЫЕ ДАТЫ (из очищенного google_df)
+            # ============================================
             if google_df is not None and not google_df.empty:
                 start = time.time()
                 try:
@@ -189,13 +192,8 @@ class VisitCalculator:
                             if pd.notna(finish_date):
                                 finish_mapping[code] = finish_date
                     
-                    # Сохраняем оригинальные даты из Google
-                    hierarchy['Дата старта_гугл'] = hierarchy['Проект'].map(start_mapping)
-                    hierarchy['Дата финиша_гугл'] = hierarchy['Проект'].map(finish_mapping)
-                    
-                    # Для основных колонок делаем копию оригиналов
-                    hierarchy['Дата старта'] = hierarchy['Дата старта_гугл'].copy()
-                    hierarchy['Дата финиша'] = hierarchy['Дата финиша_гугл'].copy()
+                    hierarchy['Дата старта'] = hierarchy['Проект'].map(start_mapping)
+                    hierarchy['Дата финиша'] = hierarchy['Проект'].map(finish_mapping)
                     
                     # Если дат нет, ставим первый и последний день месяца
                     if 'plan_calc_params' in st.session_state:
@@ -210,13 +208,9 @@ class VisitCalculator:
                     hierarchy['Дата финиша'] = hierarchy['Дата финиша'].fillna(last_day)
                     
                 except Exception as e:
-                    # Если ошибка, создаем пустые колонки и заполняем датами по умолчанию
-                    hierarchy['Дата старта_гугл'] = pd.NaT
-                    hierarchy['Дата финиша_гугл'] = pd.NaT
                     hierarchy['Дата старта'] = pd.NaT
                     hierarchy['Дата финиша'] = pd.NaT
                     
-                    # Заполняем даты по умолчанию
                     if 'plan_calc_params' in st.session_state:
                         first_day = pd.Timestamp(st.session_state['plan_calc_params']['start_date'])
                         last_day = first_day + pd.offsets.MonthEnd(1)
@@ -228,15 +222,9 @@ class VisitCalculator:
                     hierarchy['Дата старта'] = hierarchy['Дата старта'].fillna(first_day)
                     hierarchy['Дата финиша'] = hierarchy['Дата финиша'].fillna(last_day)
                     pass
-                st.write(f"[DETAIL] Обогащение датами: {time.time() - start:.2f} сек")
+                st.write(f"[DETAIL] Основные даты: {time.time() - start:.2f} сек")
             else:
-                # Если google_df нет, создаем пустые колонки
-                hierarchy['Дата старта_гугл'] = pd.NaT
-                hierarchy['Дата финиша_гугл'] = pd.NaT
-                hierarchy['Дата старта'] = pd.NaT
-                hierarchy['Дата финиша'] = pd.NaT
-                
-                # Ставим даты по умолчанию
+                # Если google_df нет, ставим даты по умолчанию
                 if 'plan_calc_params' in st.session_state:
                     first_day = pd.Timestamp(st.session_state['plan_calc_params']['start_date'])
                     last_day = first_day + pd.offsets.MonthEnd(1)
@@ -245,8 +233,40 @@ class VisitCalculator:
                     first_day = pd.Timestamp(year=today.year, month=today.month, day=1)
                     last_day = first_day + pd.offsets.MonthEnd(1)
                 
-                hierarchy['Дата старта'] = hierarchy['Дата старта'].fillna(first_day)
-                hierarchy['Дата финиша'] = hierarchy['Дата финиша'].fillna(last_day)
+                hierarchy['Дата старта'] = first_day
+                hierarchy['Дата финиша'] = last_day
+            
+            # ============================================
+            # 2. ОРИГИНАЛЬНЫЕ ДАТЫ ИЗ GOOGLE (для информации и коэффициента)
+            # ============================================
+            if google_df_original is not None and not google_df_original.empty:
+                start = time.time()
+                try:
+                    start_mapping_orig = {}
+                    finish_mapping_orig = {}
+                    
+                    for idx, row in google_df_original.iterrows():
+                        code = str(row.get('Код проекта RU00.000.00.01SVZ24', '')).strip()
+                        if code and code not in ['nan', '']:
+                            start_date = row.get('Дата старта')
+                            finish_date = row.get('Дата финиша с продлением')
+                            
+                            if pd.notna(start_date):
+                                start_mapping_orig[code] = start_date
+                            if pd.notna(finish_date):
+                                finish_mapping_orig[code] = finish_date
+                    
+                    hierarchy['Дата старта_гугл'] = hierarchy['Проект'].map(start_mapping_orig)
+                    hierarchy['Дата финиша_гугл'] = hierarchy['Проект'].map(finish_mapping_orig)
+                    
+                except Exception as e:
+                    hierarchy['Дата старта_гугл'] = pd.NaT
+                    hierarchy['Дата финиша_гугл'] = pd.NaT
+                    pass
+                st.write(f"[DETAIL] Оригинальные даты: {time.time() - start:.2f} сек")
+            else:
+                hierarchy['Дата старта_гугл'] = pd.NaT
+                hierarchy['Дата финиша_гугл'] = pd.NaT
                 
             
             # Рассчитываем длительность

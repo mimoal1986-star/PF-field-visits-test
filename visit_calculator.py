@@ -258,6 +258,9 @@ class VisitCalculator:
                     
                     hierarchy['Дата старта_гугл'] = hierarchy['Проект'].map(start_mapping_orig)
                     hierarchy['Дата финиша_гугл'] = hierarchy['Проект'].map(finish_mapping_orig)
+                    # ПРЕОБРАЗУЕМ В DATETIME
+                    hierarchy['Дата старта_гугл'] = pd.to_datetime(hierarchy['Дата старта_гугл'], errors='coerce')
+                    hierarchy['Дата финиша_гугл'] = pd.to_datetime(hierarchy['Дата финиша_гугл'], errors='coerce')
                     
                 except Exception as e:
                     hierarchy['Дата старта_гугл'] = pd.NaT

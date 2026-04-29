@@ -665,6 +665,8 @@ def process_all_data(settings_manager=None, force_recalc=False):
         return True
         
     except Exception as e:
+        st.error(f"❌ ОШИБКА: {e}")
+        st.error(traceback.format_exc())
         st.session_state.last_error = {
             'step': 'Общая обработка',
             'error': str(e),

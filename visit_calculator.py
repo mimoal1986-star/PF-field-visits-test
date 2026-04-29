@@ -465,6 +465,7 @@ class VisitCalculator:
                 period_end = min(end_period, finish_date.date())
                 days_in_period = max(0, (period_end - period_start).days + 1)
                 
+
                 # ============================================
                 # РАСЧЕТ КОЭФФИЦИЕНТА МЕСЯЦА
                 # ============================================
@@ -476,14 +477,32 @@ class VisitCalculator:
                 if pd.isna(finish_date_google):
                     finish_date_google = finish_date
                 
-                project_working_days = self._get_working_days_in_range(start_date_google, finish_date_google)
-                period_working_days = self._get_working_days_in_range(period_start, period_end)
+                # Границы текущего месяца
+                month_start = pd.Timestamp(calc_params['start_date']).date()
+                month_end = month_start + pd.offsets.MonthEnd(1)
                 
-                if project_working_days > 0:
-                    month_coefficient = period_working_days / project_working_days
+                # Преобразуем в date (защита от NaT)
+                try:
+                    start_date_google_date = start_date_google.date() if hasattr(start_date_google, 'date') else start_date_google
+                    finish_date_google_date = finish_date_google.date() if hasattr(finish_date_google, 'date') else finish_date_google
+                except AttributeError:
+                    start_date_google_date = start_date.date()
+                    finish_date_google_date = finish_date.date()
+                
+                # Рабочие дни проекта в текущем месяце (числитель)
+                project_in_month_start = max(start_date_google_date, month_start)
+                project_in_month_end = min(finish_date_google_date, month_end)
+                working_days_in_month = self._get_working_days_in_range(project_in_month_start, project_in_month_end)
+                
+                # Общие рабочие дни проекта (знаменатель)
+                total_working_days = self._get_working_days_in_range(start_date_google_date, finish_date_google_date)
+                
+                if total_working_days > 0:
+                    month_coefficient = working_days_in_month / total_working_days
                 else:
                     month_coefficient = 1.0
                 # ============================================
+                
                 
                 if days_in_period == 0:
                     continue

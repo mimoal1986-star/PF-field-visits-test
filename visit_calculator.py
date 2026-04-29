@@ -332,6 +332,18 @@ class VisitCalculator:
                 'Название проекта',
                 'Регион short'
             ]).size().to_dict()
+            
+            # Оригинальные даты из Google
+            google_start_dates = {}
+            google_finish_dates = {}
+            if google_df is not None:
+                for _, row in google_df.iterrows():
+                    code = str(row.get('Код проекта RU00.000.00.01SVZ24', '')).strip()
+                    if code and code not in ['', 'nan', 'None', 'null']:
+                        if pd.notna(row.get('Дата старта')):
+                            google_start_dates[code] = row.get('Дата старта')
+                        if pd.notna(row.get('Дата финиша с продлением')):
+                            google_finish_dates[code] = row.get('Дата финиша с продлением')
 
             # ============================================
             # РАСЧЕТ ВЕСОВ RS ДЛЯ РАСПРЕДЕЛЕНИЯ ПЛАНА
@@ -469,45 +481,30 @@ class VisitCalculator:
                 # ============================================
                 # РАСЧЕТ КОЭФФИЦИЕНТА МЕСЯЦА
                 # ============================================
-                start_date_google = row.get('Дата старта_гугл', None)
-                finish_date_google = row.get('Дата финиша_гугл', None)
+                project_code = row['Проект']
+                start_orig = google_start_dates.get(project_code, start_date)
+                finish_orig = google_finish_dates.get(project_code, finish_date)
                 
-                if pd.isna(start_date_google):
-                    start_date_google = start_date
-                if pd.isna(finish_date_google):
-                    finish_date_google = finish_date
-                
-                # Приводим все к Timestamp (чтобы можно было сравнивать)
-                if hasattr(start_date_google, 'date'):
-                    start_ts = pd.Timestamp(start_date_google.date())
-                elif hasattr(start_date_google, 'year'):
-                    start_ts = pd.Timestamp(start_date_google)
+                # Приводим к Timestamp
+                if hasattr(start_orig, 'date'):
+                    start_orig = pd.Timestamp(start_orig.date())
                 else:
-                    start_ts = pd.Timestamp(start_date.date())
-                
-                if hasattr(finish_date_google, 'date'):
-                    finish_ts = pd.Timestamp(finish_date_google.date())
-                elif hasattr(finish_date_google, 'year'):
-                    finish_ts = pd.Timestamp(finish_date_google)
+                    start_orig = pd.Timestamp(start_orig)
+                if hasattr(finish_orig, 'date'):
+                    finish_orig = pd.Timestamp(finish_orig.date())
                 else:
-                    finish_ts = pd.Timestamp(finish_date.date())
+                    finish_orig = pd.Timestamp(finish_orig)
                 
-                # Границы текущего месяца (как Timestamp)
-                month_start_ts = pd.Timestamp(calc_params['start_date'])
-                month_end_ts = month_start_ts + pd.offsets.MonthEnd(1)
+                month_start_ts = pd.Timestamp(start_period)
+                month_end_ts = pd.Timestamp(end_period)
                 
-                # Рабочие дни проекта в текущем месяце (числитель)
-                project_start_in_month = max(start_ts, month_start_ts)
-                project_end_in_month = min(finish_ts, month_end_ts)
-                working_days_in_month = self._get_working_days_in_range(project_start_in_month, project_end_in_month)
+                proj_start = max(start_orig, month_start_ts)
+                proj_end = min(finish_orig, month_end_ts)
+                days_in_month = self._get_working_days_in_range(proj_start, proj_end)
                 
-                # Общие рабочие дни проекта (знаменатель)
-                total_working_days = self._get_working_days_in_range(start_ts, finish_ts)
+                total_days = self._get_working_days_in_range(start_orig, finish_orig)
                 
-                if total_working_days > 0:
-                    month_coefficient = working_days_in_month / total_working_days
-                else:
-                    month_coefficient = 1.0
+                month_coefficient = days_in_month / total_days if total_days > 0 else 1.0
                 # ============================================
                 
                 
@@ -583,8 +580,8 @@ class VisitCalculator:
                     'Длительность': int(duration),
                     'Дата старта': start_date,
                     'Дата финиша': finish_date,
-                    'Дата старта_гугл': start_date_google,     
-                    'Дата финиша_гугл': finish_date_google,    
+                    'Дата старта_гугл': start_orig,
+                    'Дата финиша_гугл': finish_orig,  
                     'Коэффициент месяца': month_coefficient, 
                     'Дней в периоде': days_in_period,
                     'Дневной план RS, шт.': round(rs_daily_plan, 2)

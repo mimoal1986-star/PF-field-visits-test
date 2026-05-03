@@ -543,6 +543,9 @@ class DataVisualizer:
             group_cols.append('RS')
         if show_po and 'ПО' in display_data.columns:
             group_cols.append('ПО')
+
+        # Рассчитываем фокус на уровне волны ДО агрегации
+        display_data = self.calculate_focus(display_data, aggregation_level='auto')
         
         # Агрегируем для отображения
         agg_columns = {
@@ -565,8 +568,6 @@ class DataVisualizer:
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
 
-        # Рассчитываем фокус на уровне волны ДО агрегации
-        display_data = self.calculate_focus(display_data, aggregation_level='auto')
         # ВСЕГДА группируем (даже если group_cols == ['Клиент'])
         project_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
         # Преобразуем коды регионов в длинные названия
@@ -574,8 +575,7 @@ class DataVisualizer:
             project_data['Регион'] = project_data['Регион'].apply(self._get_long_region)
         elif region_col in project_data.columns and region_col != 'Регион':
             project_data[region_col] = project_data[region_col].apply(self._get_long_region)
-        
-        
+            
         # Добавляем вычисляемые метрики
         mask_plan = project_data['План на дату, шт.'] > 0
         project_data['План/Факт на дату,%'] = 0.0
@@ -992,7 +992,8 @@ class DataVisualizer:
             group_cols.append('RS')
         if show_po and 'ПО' in display_data.columns:
             group_cols.append('ПО')
-        
+
+        display_data = self.calculate_focus(display_data, aggregation_level='auto')
         # Агрегируем для отображения
         agg_columns = {
             'План проекта, шт.': 'sum',
@@ -1010,7 +1011,6 @@ class DataVisualizer:
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
         
-        display_data = self.calculate_focus(display_data, aggregation_level='auto')
         # ВСЕГДА группируем
         region_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
         
@@ -1365,6 +1365,8 @@ class DataVisualizer:
         if show_po and 'ПО' in display_data.columns:
             group_cols.append('ПО')
         
+        display_data = self.calculate_focus(display_data, aggregation_level='auto')
+        
         # Агрегируем для отображения
         agg_columns = {
             'План проекта, шт.': 'sum',
@@ -1382,7 +1384,6 @@ class DataVisualizer:
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
         
-        display_data = self.calculate_focus(display_data, aggregation_level='auto')
         # ВСЕГДА группируем
         dsm_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
 

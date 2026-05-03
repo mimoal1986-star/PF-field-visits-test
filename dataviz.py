@@ -566,20 +566,14 @@ class DataVisualizer:
         
         # ВСЕГДА группируем (даже если group_cols == ['Клиент'])
         project_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+        # Применяем новую логику фокуса
+        project_data = self.calculate_focus(project_data, aggregation_level='aggregated')
         # Преобразуем коды регионов в длинные названия
         if 'Регион' in project_data.columns:
             project_data['Регион'] = project_data['Регион'].apply(self._get_long_region)
         elif region_col in project_data.columns and region_col != 'Регион':
             project_data[region_col] = project_data[region_col].apply(self._get_long_region)
         
-        project_data['Фокус'] = 'Нет'
-        if 'План/Факт проекта,%' in project_data.columns and 'Утилизация тайминга, %' in project_data.columns:
-            mask_focus = (
-                (project_data['План/Факт проекта,%'] < 80) & 
-                (project_data['Утилизация тайминга, %'] > 80) & 
-                (project_data['Утилизация тайминга, %'] < 100)
-            )
-            project_data.loc[mask_focus, 'Фокус'] = 'Да'
         
         # Добавляем вычисляемые метрики
         mask_plan = project_data['План на дату, шт.'] > 0
@@ -1016,14 +1010,7 @@ class DataVisualizer:
         
         # ВСЕГДА группируем
         region_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
-        region_data['Фокус'] = 'Нет'
-        if 'План/Факт проекта,%' in region_data.columns and 'Утилизация тайминга, %' in region_data.columns:
-            mask_focus = (
-                (region_data['План/Факт проекта,%'] < 80) & 
-                (region_data['Утилизация тайминга, %'] > 80) & 
-                (region_data['Утилизация тайминга, %'] < 100)
-            )
-            region_data.loc[mask_focus, 'Фокус'] = 'Да'
+        region_data = self.calculate_focus(region_data, aggregation_level='aggregated')
         
         # Преобразуем коды регионов в длинные названия
         if 'Регион' in region_data.columns:
@@ -1394,15 +1381,8 @@ class DataVisualizer:
         
         # ВСЕГДА группируем
         dsm_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+        dsm_data = self.calculate_focus(dsm_data, aggregation_level='aggregated')
 
-        dsm_data['Фокус'] = 'Нет'
-        if 'План/Факт проекта,%' in dsm_data.columns and 'Утилизация тайминга, %' in dsm_data.columns:
-            mask_focus = (
-                (dsm_data['План/Факт проекта,%'] < 80) & 
-                (dsm_data['Утилизация тайминга, %'] > 80) & 
-                (dsm_data['Утилизация тайминга, %'] < 100)
-            )
-            dsm_data.loc[mask_focus, 'Фокус'] = 'Да'
         
         # Добавляем вычисляемые метрики
         mask_plan = dsm_data['План на дату, шт.'] > 0
@@ -1811,7 +1791,55 @@ class DataVisualizer:
             type="primary",
             use_container_width=True
         )
-
-
+    
+    def calculate_focus(self, df, aggregation_level='auto'):
+        """
+        Рассчитывает метрику Фокус по новой логике.
+        
+        aggregation_level:
+            - 'wave': данные на уровне волны (рассчитываем заново)
+            - 'aggregated': данные агрегированы выше волны (наследуем)
+            - 'auto': определяем автоматически
+        """
+        if df is None or df.empty:
+            return df
+        
+        df = df.copy()
+        
+        # Определяем уровень детализации
+        has_wave = 'Волна' in df.columns
+        is_wave_level = has_wave and (df['Волна'].nunique() > 1 or len(df) == df['Волна'].nunique())
+        
+        if is_wave_level or aggregation_level == 'wave':
+            # === УРОВЕНЬ ВОЛНЫ: рассчитываем фокус ===
+            wave_focus = {}
+            
+            for (project, client, wave), group in df.groupby(['Проект', 'Клиент', 'Волна']):
+                plan_total = group['План проекта, шт.'].sum()
+                fact_total = group['Факт проекта, шт.'].sum()
+                plan_vs_fact = (fact_total / plan_total * 100) if plan_total > 0 else 0
+                
+                timing_col = 'Утилизация тайминга, %'
+                timing = group[timing_col].iloc[0] if timing_col in group.columns and len(group) > 0 else 0
+                
+                is_focus = (plan_vs_fact < 80) and (timing > 80) and (timing < 100)
+                wave_focus[(project, client, wave)] = 'Да' if is_focus else 'Нет'
+            
+            df['Фокус'] = df.apply(lambda row: wave_focus.get((row['Проект'], row['Клиент'], row['Волна']), 'Нет'), axis=1)
+            
+        else:
+            # === АГРЕГИРОВАННЫЙ УРОВЕНЬ: наследуем фокус (если есть колонка Фокус) ===
+            if 'Фокус' not in df.columns:
+                df['Фокус'] = 'Нет'
+            else:
+                # Для уровней выше волны: если хотя бы одна строка в группе имеет 'Да'
+                higher_levels = [col for col in ['Клиент', 'Проект'] if col in df.columns]
+                if higher_levels:
+                    for _, group in df.groupby(higher_levels):
+                        if (group['Фокус'] == 'Да').any():
+                            df.loc[group.index, 'Фокус'] = 'Да'
+        
+        return df
+    
 # Глобальный экземпляр
 dataviz = DataVisualizer()

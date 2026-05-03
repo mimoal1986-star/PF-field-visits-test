@@ -559,15 +559,16 @@ class DataVisualizer:
             'Метод подбора дат': 'first',
             'Дней до конца проекта': 'first',
             'Утилизация тайминга, %': 'first',
-            'Ср. план на день для 100% плана': 'sum'
+            'Ср. план на день для 100% плана': 'sum',
+            'Фокус': 'first'
         }
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
-        
+
+        # Рассчитываем фокус на уровне волны ДО агрегации
+        display_data = self.calculate_focus(display_data, aggregation_level='auto')
         # ВСЕГДА группируем (даже если group_cols == ['Клиент'])
         project_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
-        # Применяем новую логику фокуса
-        project_data = self.calculate_focus(project_data, aggregation_level='aggregated')
         # Преобразуем коды регионов в длинные названия
         if 'Регион' in project_data.columns:
             project_data['Регион'] = project_data['Регион'].apply(self._get_long_region)
@@ -1003,14 +1004,15 @@ class DataVisualizer:
             'Дата финиша': 'first',
             'Дней до конца проекта': 'first',
             'Утилизация тайминга, %': 'first',
-            'Ср. план на день для 100% плана': 'sum'
+            'Ср. план на день для 100% плана': 'sum',
+            'Фокус': 'first'
         }
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
         
+        display_data = self.calculate_focus(display_data, aggregation_level='auto')
         # ВСЕГДА группируем
         region_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
-        region_data = self.calculate_focus(region_data, aggregation_level='aggregated')
         
         # Преобразуем коды регионов в длинные названия
         if 'Регион' in region_data.columns:
@@ -1374,16 +1376,16 @@ class DataVisualizer:
             'Дата финиша': 'first',
             'Дней до конца проекта': 'first',
             'Утилизация тайминга, %': 'first',
-            'Ср. план на день для 100% плана': 'sum'
+            'Ср. план на день для 100% плана': 'sum',
+            'Фокус': 'first'
         }
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
         
+        display_data = self.calculate_focus(display_data, aggregation_level='auto')
         # ВСЕГДА группируем
         dsm_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
-        dsm_data = self.calculate_focus(dsm_data, aggregation_level='aggregated')
 
-        
         # Добавляем вычисляемые метрики
         mask_plan = dsm_data['План на дату, шт.'] > 0
 

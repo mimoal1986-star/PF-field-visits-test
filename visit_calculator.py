@@ -640,10 +640,10 @@ class VisitCalculator:
                     'Дата финиша': finish_date,
                     'Дата старта_гугл': start_date_google,     
                     'Дата финиша_гугл': finish_date_google,    
-                    'Коэффициент месяца': month_coefficient, 
+                    'Коэффициент месяца': month_coefficient,
+                    'Метод подбора дат': row['Метод подбора дат'],
                     'Дней в периоде': days_in_period,
-                    'Дневной план RS, шт.': round(rs_daily_plan, 2),
-                    'Метод подбора дат': row['Метод подбора дат']
+                    'Дневной план RS, шт.': round(rs_daily_plan, 2)
                 })
 
 

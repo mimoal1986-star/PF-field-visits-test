@@ -270,19 +270,17 @@ class VisitCalculator:
                         code = row['Проект']
                         wave = row['Волна']
                         
-                        # Сначала ищем по (код, волна)
-                        key = (code, wave)
-                        if key in date_mapping:
-                            start, finish, method = date_mapping[key]
+                        # Точное совпадение по коду и волне
+                        if (code, wave) in date_mapping:
+                            start, finish, method = date_mapping[(code, wave)]
                             return pd.Series([start, finish, method])
                         
-                        # Затем по (код, None)
-                        key = (code, None)
-                        if key in date_mapping:
-                            start, finish, method = date_mapping[key]
-                            return pd.Series([start, finish, method])
+                        # Код есть, но волна не совпала (или пустая/с разделителями)
+                        for (c, w), (start, finish, _) in date_mapping.items():
+                            if c == code:
+                                return pd.Series([start, finish, 'К'])
                         
-                        # Не найдено
+                        # Код не найден
                         return pd.Series([pd.NaT, pd.NaT, 'МП'])
                     
                     # Применяем маппинг

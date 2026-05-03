@@ -545,7 +545,7 @@ class DataVisualizer:
             group_cols.append('ПО')
 
         # Рассчитываем фокус на уровне волны ДО агрегации
-        display_data = self.calculate_focus(display_data, aggregation_level='auto')
+        display_data = self.calculate_focus(display_data, aggregation_level='wave')
         
         # Агрегируем для отображения
         agg_columns = {
@@ -993,7 +993,7 @@ class DataVisualizer:
         if show_po and 'ПО' in display_data.columns:
             group_cols.append('ПО')
 
-        display_data = self.calculate_focus(display_data, aggregation_level='auto')
+        display_data = self.calculate_focus(display_data, aggregation_level='wave')
         # Агрегируем для отображения
         agg_columns = {
             'План проекта, шт.': 'sum',
@@ -1365,7 +1365,7 @@ class DataVisualizer:
         if show_po and 'ПО' in display_data.columns:
             group_cols.append('ПО')
         
-        display_data = self.calculate_focus(display_data, aggregation_level='auto')
+        display_data = self.calculate_focus(display_data, aggregation_level='wave')
         
         # Агрегируем для отображения
         agg_columns = {

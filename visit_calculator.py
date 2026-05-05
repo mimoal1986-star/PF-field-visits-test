@@ -645,7 +645,7 @@ class VisitCalculator:
                             # Ищем план по (код_проекта, регион, RS)
                             mask = (plan_df['project_code'] == project_code) & \
                                    (plan_df['region'] == region) & \
-                                   (plan_df['rs'] == rs_name)
+                                   (plan_df['rs'] == row['ASM'])
                             
                             if mask.any():
                                 total_plan = plan_df.loc[mask, 'plan'].iloc[0]

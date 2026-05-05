@@ -654,6 +654,42 @@ def process_all_data(settings_manager=None, force_recalc=False):
                 )
                 
                 st.session_state.visit_report['calculated_data'] = final_result
+                
+
+                # === ОТЛАДКА МУЛТОН (5 шагов) ===
+                st.write("### 🔍 Отладка Мултон")
+                
+                # Шаг 1: JSON с планами
+                from github_settings import get_multon_plan_manager
+                multon_manager = get_multon_plan_manager()
+                plan_json = multon_manager.load_plan()
+                st.write(f"1. JSON: {len(plan_json)} записей, суммарный план = {plan_json['plan'].sum() if not plan_json.empty else 0:.0f} визитов")
+                
+                # Шаг 2: Полевые проекты (исходные данные для калькулятора)
+                if 'полевые_проекты' in st.session_state.cleaned_data:
+                    field_df = st.session_state.cleaned_data['полевые_проекты']
+                    multon_field = field_df[field_df['Имя клиента'] == 'Мултон']
+                    st.write(f"2. Полевые проекты: {len(multon_field)} строк с Мултон")
+                    if not multon_field.empty:
+                        st.write(f"   ПО = {multon_field['ПО'].iloc[0]}, Пример кода = {multon_field['Код анкеты'].iloc[0]}")
+                
+                # Шаг 3: План из калькулятора
+                if 'calculated_data' in st.session_state.visit_report:
+                    calc_data = st.session_state.visit_report['calculated_data']
+                    multon_plan = calc_data[calc_data['Клиент'] == 'Мултон']
+                    st.write(f"3. Мултон в calculated_data: {len(multon_plan)} строк")
+                    if not multon_plan.empty:
+                        st.write(f"   Суммарный план проекта = {multon_plan['План проекта, шт.'].sum():.0f} визитов")
+                
+                # Шаг 4: Факт из калькулятора
+                if 'calculated_data' in st.session_state.visit_report:
+                    st.write(f"4. Суммарный факт проекта = {multon_plan['Факт проекта, шт.'].sum() if not multon_plan.empty else 0:.0f} визитов")
+                
+                # Шаг 5: Проверка отображения (будет видно в UI)
+                st.write(f"5. Мултон {'✅ попал' if not multon_plan.empty else '❌ не попал'} в таблицы отчетов")
+                st.write("### ---")
+                # === ОТЛАДКА МУЛТОН (5 шагов) ===
+
             
                 st.session_state.debug_times.append(f"[DEBUG] Метрики: {time.time() - start:.2f} сек")
                 

@@ -8,6 +8,8 @@ import traceback
 from datetime import date, datetime, timedelta
 from io import BytesIO
 from github_settings import get_settings_manager, get_plan_adjustment_manager
+from multon_excel_parser import parse_multon_excel_to_df, preview_multon_plan
+
 # Инициализация временных корректировок
 if 'temp_adjustments' not in st.session_state:
     st.session_state.temp_adjustments = []
@@ -1549,6 +1551,80 @@ with tab3:
             st.info("⏳ Нет полевых проектов для корректировки")
     else:
         st.info("⏳ Сначала выполните расчет")
+
+    # ============================================
+    # БЛОК: РАСПРЕДЕЛЕНИЕ ПЛАНА МУЛТОН
+    # ============================================
+    
+    st.markdown("---")
+    st.subheader("📊 Распределение плана Мултон")
+    st.caption("Загрузите Excel-файл с распределением плана по регионам и RS")
+    
+    # Инициализируем менеджер
+    from multon_excel_parser import parse_multon_excel_to_df, preview_multon_plan
+    from github_settings import get_multon_plan_manager
+    
+    multon_manager = get_multon_plan_manager()
+    
+    # Текущее распределение
+    current_plan = multon_manager.load_plan()
+    
+    # Отображение текущего распределения (если есть)
+    if not current_plan.empty:
+        with st.expander("📋 Текущее распределение плана", expanded=False):
+            preview_df = preview_multon_plan(current_plan)
+            st.dataframe(preview_df, use_container_width=True, hide_index=True)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.caption(f"📊 Всего записей: {len(current_plan)}")
+            with col2:
+                if st.button("🗑️ Удалить текущее распределение", key="delete_multon_plan"):
+                    success, msg = multon_manager.delete_plan()
+                    if success:
+                        st.success(msg)
+                        st.rerun()
+                    else:
+                        st.error(msg)
+    
+    # Загрузка нового файла
+    uploaded_file = st.file_uploader(
+        "📂 Загрузить Excel с распределением плана Мултон",
+        type=['xlsx', 'xls'],
+        key="multon_plan_uploader",
+        help="Файл должен содержать колонки: 'регион', 'RS' и колонки с кодами проектов (начинаются с RU00.)"
+    )
+    
+    if uploaded_file is not None:
+        # Парсим файл
+        parsed_df = parse_multon_excel_to_df(uploaded_file)
+        
+        if not parsed_df.empty:
+            # Показываем предпросмотр
+            st.markdown("### 📋 Предпросмотр загружаемых данных")
+            preview_df = preview_multon_plan(parsed_df)
+            st.dataframe(preview_df, use_container_width=True, hide_index=True)
+            
+            # Группировка по проектам для статистики
+            st.markdown("### 📊 Статистика")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("📁 Проектов", parsed_df['project_code'].nunique())
+            with col2:
+                st.metric("📍 Регионов", parsed_df['region'].nunique())
+            with col3:
+                st.metric("👥 Сотрудников (RS)", parsed_df['rs'].nunique())
+            
+            # Кнопка сохранения
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                if st.button("💾 Сохранить распределение", type="primary", use_container_width=True):
+                    success, msg = multon_manager.save_plan(parsed_df)
+                    if success:
+                        st.success(msg)
+                        st.rerun()
+                    else:
+                        st.error(msg)
 
 
 

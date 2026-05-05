@@ -910,7 +910,7 @@ with tab1:
                         st.session_state.calculation_messages = st.session_state.debug_times.copy()
                         st.session_state.show_messages = True 
                         st.session_state.data_calculated = True
-                        st.rerun()
+                        # st.rerun()
                     else:
                         st.error("❌ Ошибка при расчете")
         else:

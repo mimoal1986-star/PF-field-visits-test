@@ -1,0 +1,293 @@
+{
+  "last_updated": "2026-05-05T11:06:19.398524",
+  "data": [
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "VG",
+      "rs": "Яцевич Максим",
+      "plan": 153.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "VG",
+      "rs": "Яцевич Максим",
+      "plan": 7.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "VG",
+      "rs": "Яцевич Максим",
+      "plan": 4.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "VR",
+      "rs": "Воронин Евгений",
+      "plan": 184.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "VR",
+      "rs": "Воронин Евгений",
+      "plan": 4.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "VR",
+      "rs": "Воронин Евгений",
+      "plan": 8.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "SV",
+      "rs": "Яцевич Максим",
+      "plan": 310.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "SV",
+      "rs": "Яцевич Максим",
+      "plan": 11.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "SV",
+      "rs": "Яцевич Максим",
+      "plan": 23.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "TT",
+      "rs": "Голдакова Светлана",
+      "plan": 239.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "TT",
+      "rs": "Голдакова Светлана",
+      "plan": 4.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "TT",
+      "rs": "Голдакова Светлана",
+      "plan": 8.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "KD",
+      "rs": "Воронин Евгений",
+      "plan": 282.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "KD",
+      "rs": "Воронин Евгений",
+      "plan": 9.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "KD",
+      "rs": "Воронин Евгений",
+      "plan": 7.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "KY",
+      "rs": "Воронин Евгений",
+      "plan": 146.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "KY",
+      "rs": "Воронин Евгений",
+      "plan": 6.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "KY",
+      "rs": "Воронин Евгений",
+      "plan": 6.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "MC",
+      "rs": "Яцевич Максим",
+      "plan": 1126.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "MC",
+      "rs": "Яцевич Максим",
+      "plan": 18.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "MC",
+      "rs": "Яцевич Максим",
+      "plan": 164.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "NZ",
+      "rs": "Голдакова Светлана",
+      "plan": 170.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "NZ",
+      "rs": "Голдакова Светлана",
+      "plan": 5.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "NZ",
+      "rs": "Голдакова Светлана",
+      "plan": 11.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "NS",
+      "rs": "Воронин Евгений",
+      "plan": 326.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "NS",
+      "rs": "Воронин Евгений",
+      "plan": 7.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "NS",
+      "rs": "Воронин Евгений",
+      "plan": 12.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "OM",
+      "rs": "Воронин Евгений",
+      "plan": 197.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "OM",
+      "rs": "Воронин Евгений",
+      "plan": 4.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "OM",
+      "rs": "Воронин Евгений",
+      "plan": 3.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "PE",
+      "rs": "Воронин Евгений",
+      "plan": 216.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "PE",
+      "rs": "Воронин Евгений",
+      "plan": 4.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "PE",
+      "rs": "Воронин Евгений",
+      "plan": 7.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "RO",
+      "rs": "Голдакова Светлана",
+      "plan": 209.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "RO",
+      "rs": "Голдакова Светлана",
+      "plan": 5.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "RO",
+      "rs": "Голдакова Светлана",
+      "plan": 6.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "SA",
+      "rs": "Воронин Евгений",
+      "plan": 169.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "SA",
+      "rs": "Воронин Евгений",
+      "plan": 5.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "SA",
+      "rs": "Воронин Евгений",
+      "plan": 10.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "LN",
+      "rs": "Яцевич Максим",
+      "plan": 574.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "LN",
+      "rs": "Яцевич Максим",
+      "plan": 18.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "LN",
+      "rs": "Яцевич Максим",
+      "plan": 56.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "BK",
+      "rs": "Воронин Евгений",
+      "plan": 242.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "BK",
+      "rs": "Воронин Евгений",
+      "plan": 5.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "BK",
+      "rs": "Воронин Евгений",
+      "plan": 3.0
+    },
+    {
+      "project_code": "RU00.381.02.03SVZ25",
+      "region": "CL",
+      "rs": "Яцевич Максим",
+      "plan": 207.0
+    },
+    {
+      "project_code": "RU00.381.02.01SVZ25",
+      "region": "CL",
+      "rs": "Яцевич Максим",
+      "plan": 8.0
+    },
+    {
+      "project_code": "RU00.381.02.02SVZ25",
+      "region": "CL",
+      "rs": "Яцевич Максим",
+      "plan": 6.0
+    }
+  ]
+}

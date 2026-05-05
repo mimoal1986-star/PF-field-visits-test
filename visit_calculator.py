@@ -8,6 +8,7 @@ from typing import Optional, Dict, Tuple, List
 import io
 import calendar
 from github_settings import get_plan_adjustment_manager
+from github_settings import get_multon_plan_manager
 from data_cleaner import REGION_NAME_TO_CODE
 
 class VisitCalculator:
@@ -584,12 +585,27 @@ class VisitCalculator:
                     # Сначала рассчитываем total_plan (как раньше)
                     
                     if po == 'ПО клиента' and client == 'Мултон':
-                        total_plan = multon_quotas.get(project_code, 0)
+                        # Загружаем распределение плана из JSON
+                        from github_settings import get_multon_plan_manager
+                        multon_manager = get_multon_plan_manager()
+                        plan_df = multon_manager.load_plan()
+                        
+                        if plan_df.empty:
+                            # Нет распределения → проект не существует
+                            total_plan = 0
+                        else:
+                            # Ищем план по (код_проекта, регион, RS)
+                            mask = (plan_df['project_code'] == project_code) & \
+                                   (plan_df['region'] == region) & \
+                                   (plan_df['rs'] == rs_name)
+                            
+                            if mask.any():
+                                total_plan = plan_df.loc[mask, 'plan'].iloc[0]
+                            else:
+                                total_plan = 0
+                        
                         if total_plan <= 0:
                             continue
-                        num_regions = len(multon_regions.get(project_code, []))
-                        if num_regions > 0:
-                            total_plan = total_plan / num_regions
                     
                     else:  # Чеккер, CXWAY, Easymerch, Optima
                         client_name = row['Клиент']

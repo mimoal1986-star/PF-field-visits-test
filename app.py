@@ -911,6 +911,7 @@ with tab1:
                         st.session_state.show_messages = True 
                         st.session_state.data_calculated = True
                         # st.rerun()
+                        return True
                     else:
                         st.error("❌ Ошибка при расчете")
         else:

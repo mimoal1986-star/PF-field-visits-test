@@ -537,6 +537,51 @@ class VisitCalculator:
                     if project_code not in prodata_regions:
                         prodata_regions[project_code] = set()
                     prodata_regions[project_code].add(region)
+                    
+
+            # === РАСШИРЕНИЕ ИЕРАРХИИ ДЛЯ МУЛТОН (добавляем проекты без визитов) ===
+            from github_settings import get_multon_plan_manager
+            multon_manager = get_multon_plan_manager()
+            plan_df = multon_manager.load_plan()
+            
+            if not plan_df.empty:
+                # Получаем существующие комбинации из иерархии
+                existing_combinations = set(zip(
+                    hierarchy_df[hierarchy_df['Клиент'] == 'Мултон']['Проект'],
+                    hierarchy_df[hierarchy_df['Клиент'] == 'Мултон']['Регион'],
+                    hierarchy_df[hierarchy_df['Клиент'] == 'Мултон']['ASM']
+                ))
+                
+                # Получаем все комбинации из JSON
+                json_combinations = set(zip(plan_df['project_code'], plan_df['region'], plan_df['rs']))
+                
+                # Находим недостающие комбинации
+                missing_combinations = json_combinations - existing_combinations
+                
+                if missing_combinations:
+                    # Создаем строки для недостающих комбинаций
+                    new_rows = []
+                    for project_code, region, asm in missing_combinations:
+                        new_rows.append({
+                            'Проект': project_code,
+                            'Клиент': 'Мултон',
+                            'Волна': 'не указано',
+                            'Регион': region,
+                            'DSM': 'не указано',
+                            'ASM': asm,
+                            'RS': 'нет',
+                            'ПО': 'ПО клиента',
+                            'Полевой': 1,
+                            'Дата старта': pd.Timestamp(start_period),
+                            'Дата финиша': pd.Timestamp(end_period),
+                            'Длительность': (pd.Timestamp(end_period) - pd.Timestamp(start_period)).days + 1,
+                            'Метод подбора дат': 'План (нет визитов)'
+                        })
+                    
+                    # Добавляем в иерархию
+                    new_rows_df = pd.DataFrame(new_rows)
+                    hierarchy_df = pd.concat([hierarchy_df, new_rows_df], ignore_index=True)
+        
             
             # ============================================
             # 4. ОСНОВНОЙ ЦИКЛ (ОПТИМИЗИРОВАННЫЙ)

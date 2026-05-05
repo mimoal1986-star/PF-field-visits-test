@@ -441,7 +441,55 @@ class VisitCalculator:
                     plan_adjustments[key] = current + adj.get('adjustment_value', 0)
             except Exception as e:
                 plan_adjustments = {}
+
+
+
+            # === ОТЛАДКА МУЛТОН: сравнение иерархии и JSON ===
+            from github_settings import get_multon_plan_manager
+            multon_manager = get_multon_plan_manager()
+            plan_df = multon_manager.load_plan()
             
+            if not plan_df.empty:
+                # Получаем уникальные значения из иерархии для Мултон
+                multon_hierarchy = hierarchy_df[hierarchy_df['Клиент'] == 'Мултон']
+                
+                if not multon_hierarchy.empty:
+                    unique_codes = multon_hierarchy['Проект'].unique()
+                    unique_regions = multon_hierarchy['Регион'].unique()
+                    unique_rs = multon_hierarchy['RS'].unique()
+                    
+                    st.write("### 🔍 Сравнение иерархии и JSON (Мултон)")
+                    
+                    # Шаг 1: Совпадения по коду проекта
+                    codes_in_json = set(plan_df['project_code'].unique())
+                    codes_in_hierarchy = set(unique_codes)
+                    common_codes = codes_in_hierarchy & codes_in_json
+                    st.write(f"1. Совпадений по коду: {len(common_codes)} из {len(codes_in_hierarchy)}")
+                    if len(common_codes) < len(codes_in_hierarchy):
+                        missing = codes_in_hierarchy - codes_in_json
+                        st.write(f"   Коды не найденные в JSON: {list(missing)[:5]}")
+                    
+                    # Шаг 2: Совпадения по коду+регион
+                    hierarchy_pairs = set(zip(multon_hierarchy['Проект'], multon_hierarchy['Регион']))
+                    json_pairs = set(zip(plan_df['project_code'], plan_df['region']))
+                    common_pairs = hierarchy_pairs & json_pairs
+                    st.write(f"2. Совпадений по коду+регион: {len(common_pairs)} из {len(hierarchy_pairs)}")
+                    
+                    # Шаг 3: Совпадения по коду+регион+RS
+                    hierarchy_triplets = set(zip(multon_hierarchy['Проект'], multon_hierarchy['Регион'], multon_hierarchy['RS']))
+                    json_triplets = set(zip(plan_df['project_code'], plan_df['region'], plan_df['rs']))
+                    common_triplets = hierarchy_triplets & json_triplets
+                    st.write(f"3. Совпадений по коду+регион+RS: {len(common_triplets)} из {len(hierarchy_triplets)}")
+                    
+                    # Пример первых 5 строк из иерархии
+                    st.write("### Пример строк из иерархии (Мултон):")
+                    st.dataframe(multon_hierarchy[['Проект', 'Регион', 'RS']].head(5))
+                    
+                    st.write("### Пример строк из JSON:")
+                    st.dataframe(plan_df[['project_code', 'region', 'rs']].head(5))
+
+
+        
             # ============================================
             # 2. ПРЕДВАРИТЕЛЬНЫЙ РАСЧЕТ ВЕСОВ RS
             # ============================================

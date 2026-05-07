@@ -77,8 +77,9 @@ DEFAULT_STATE = {
     'last_error': None,
     'visit_report': {},
     'plan_calc_params': None,
-    'data_calculated': False,  # ← ДОБАВИТЬ
-    'last_calculation_hash': None  # ← ДОБАВИТЬ
+    'data_calculated': False,
+    'last_calculation_hash': None,
+    'last_files_hash': None
 }
 
 for key, default_value in DEFAULT_STATE.items():
@@ -117,6 +118,12 @@ def deduplicate_by_priority(df, priority_sources):
     
 def process_all_data(settings_manager=None, force_recalc=False):
     """Полная обработка данных и расчет план/факт"""
+
+    # Проверяем, изменились ли загруженные файлы
+    current_files_hash = hash(frozenset(st.session_state.uploaded_files.keys()))
+    if st.session_state.get('last_files_hash') != current_files_hash:
+        st.session_state.data_calculated = False
+        st.session_state.last_files_hash = current_files_hash
     
     # Если данные уже посчитаны - сразу выходим
     if not force_recalc and st.session_state.get('data_calculated', False):

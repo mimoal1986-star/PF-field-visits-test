@@ -632,6 +632,10 @@ class VisitCalculator:
                     # Сначала рассчитываем total_plan (как раньше)
                     
                     if po == 'ПО клиента' and client == 'Мултон':
+                        # Проверяем, загружен ли Easymerch
+                        if 'easymerch' not in st.session_state.uploaded_files:
+                            continue
+                            
                         # Загружаем распределение плана из JSON
                         from github_settings import get_multon_plan_manager
                         multon_manager = get_multon_plan_manager()

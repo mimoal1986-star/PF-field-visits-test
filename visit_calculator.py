@@ -1056,7 +1056,7 @@ class VisitCalculator:
             ).round(3) * 100
         
         # Исполнение проекта
-        df['Исполнение Проекта,%'] = df['%ПФ на дату']
+        df['Исполнение Проекта,%'] = df['План/Факт на дату,%']
         
         # 4. МЕТРИКИ ПО ДНЯМ (если есть calc_params)
         if calc_params and 'Дата старта' in df.columns and 'Дата финиша' in df.columns:

@@ -728,8 +728,11 @@ class DataVisualizer:
         
         # Кнопка скачивания
         output = BytesIO()
+        # Используем existing_display для правильного порядка колонок
+        project_data_for_excel = project_data[existing_display]
+        
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            project_data.to_excel(writer, sheet_name='План_факт_проекты', index=False)
+            project_data_for_excel.to_excel(writer, sheet_name='План_факт_проекты', index=False)
         
         st.download_button(
             label="⬇️ Скачать Excel",
@@ -1186,8 +1189,11 @@ class DataVisualizer:
         
         # Кнопка скачивания
         output = BytesIO()
+        # Используем existing_display для правильного порядка колонок
+        region_data_for_excel = region_data[existing_display]
+        
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            region_data.to_excel(writer, sheet_name='Регионы', index=False)
+            region_data_for_excel.to_excel(writer, sheet_name='Регионы', index=False)
         
         st.download_button(
             label="⬇️ Скачать Excel",
@@ -1572,8 +1578,11 @@ class DataVisualizer:
         
         # Кнопка скачивания
         output = BytesIO()
+        # Используем existing_display для правильного порядка колонок
+        dsm_data_for_excel = dsm_data[existing_display]
+        
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            dsm_data.to_excel(writer, sheet_name='DSM', index=False)
+            dsm_data_for_excel.to_excel(writer, sheet_name='DSM', index=False)
         
         st.download_button(
             label="⬇️ Скачать Excel",

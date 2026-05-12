@@ -1031,6 +1031,28 @@ class VisitCalculator:
         
         # Исполнение проекта
         df['Исполнение Проекта,%'] = df['%ПФ на дату']
+
+        # План/Факт проекта, %
+        mask_project = df['План проекта, шт.'] > 0
+        df['План/Факт проекта,%'] = 0.0
+        if mask_project.any():
+            df.loc[mask_project, 'План/Факт проекта,%'] = (
+                df.loc[mask_project, 'Факт проекта, шт.'] / 
+                df.loc[mask_project, 'План проекта, шт.'] * 100
+            ).round(1)
+        
+        # △План/Факт проекта, шт
+        df['△План/Факт проекта, шт'] = (
+            df['Факт проекта, шт.'] - df['План проекта, шт.']
+        ).round(1)
+        
+        # △План/Факт проекта, %
+        df['△План/Факт проекта, %'] = 0.0
+        if mask_project.any():
+            df.loc[mask_project, '△План/Факт проекта, %'] = (
+                (df.loc[mask_project, 'Факт проекта, шт.'] / 
+                 df.loc[mask_project, 'План проекта, шт.']) - 1
+            ).round(3) * 100
         
         # 4. МЕТРИКИ ПО ДНЯМ (если есть calc_params)
         if calc_params and 'Дата старта' in df.columns and 'Дата финиша' in df.columns:

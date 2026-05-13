@@ -939,22 +939,34 @@ class VisitCalculator:
                     ])].shape[0]
                     st.write(f"Из них со статусом 'Выполнено': {completed_count}")
                 
-                # Даты
+                # Даты (после преобразования)
                 if 'Дата визита' in optima_check.columns:
                     dates = optima_check['Дата визита'].dropna()
                     st.write(f"Строк с датой: {len(dates)}")
-                    st.write(f"Уникальные даты: {dates.unique().tolist()}")
+                    
+                    # Уникальные даты в формате ДД.ММ.ГГГГ
+                    unique_dates = dates.dt.strftime('%d.%m.%Y').unique()
+                    st.write(f"Уникальные даты (ДД.ММ.ГГГГ): {sorted(unique_dates)}")
                     
                     # Проверка period_mask
                     in_period = optima_check[period_mask]
-                    st.write(f"Попало в период ({start_date.date()} - {end_date.date()}): {len(in_period)}")
+                    st.write(f"Попало в период ({start_date.strftime('%d.%m.%Y')} - {end_date.strftime('%d.%m.%Y')}): {len(in_period)}")
                     
-                    # Детали по каждой дате
+                    # Детали по каждой дате (с сортировкой)
                     st.write("### Детали по датам:")
-                    for date in dates.unique():
-                        count = len(optima_check[optima_check['Дата визита'] == date])
-                        in_range = (start_date <= date <= end_date)
-                        st.write(f"  {date.date()}: {count} строк, в периоде: {in_range}")
+                    
+                    # Группируем по дате
+                    date_stats = optima_check.groupby(optima_check['Дата визита'].dt.date).agg({
+                        status_col: lambda x: sum(x.isin([
+                            'Выполнено', 'выполнен', 'Заполнена', 'Проверена', 'Принята', 'Завершено', 'Готово'
+                        ])),
+                        'Дата визита': 'count'
+                    }).rename(columns={status_col: 'выполнено', 'Дата визита': 'всего'})
+                    
+                    for date, row in date_stats.iterrows():
+                        in_range = (pd.Timestamp(date) >= start_date) and (pd.Timestamp(date) <= end_date)
+                        status = "✅ В периоде" if in_range else "❌ Не в периоде"
+                        st.write(f"  {date.strftime('%d.%m.%Y')}: {row['всего']} строк, выполнено: {row['выполнено']}, {status}")
                 
                 st.write("### ---")
                 # === ПРОВЕРКА ДЛЯ OPTIMA ===

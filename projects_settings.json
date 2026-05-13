@@ -1,39 +1,21 @@
 {
   "excluded_projects": [
     {
-      "project_name": "Avito ФО",
-      "wave_name": "",
-      "project_code": "",
-      "portal": "Оптима",
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.04",
+      "project_code": "RU00.343.06.02SVZ25",
+      "portal": "Чеккер",
       "fio_om": "",
-      "added_at": "2026-04-27T06:02:47.790014",
+      "added_at": "2026-04-27T09:46:01.142299",
       "added_by": "unknown_user"
     },
     {
-      "project_name": "Банк ВТБ УТО ФО",
-      "wave_name": "",
-      "project_code": "",
-      "portal": "Оптима",
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.04",
+      "project_code": "RU00.342.06.01SVZ25",
+      "portal": "Чеккер",
       "fio_om": "",
-      "added_at": "2026-04-27T06:02:47.790167",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Керамир Аудит",
-      "wave_name": "",
-      "project_code": "",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T06:02:47.790310",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Керамир Аудит_ТП",
-      "wave_name": "",
-      "project_code": "",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T06:02:47.790590",
+      "added_at": "2026-04-27T09:46:01.142416",
       "added_by": "unknown_user"
     },
     {
@@ -42,7 +24,7 @@
       "project_code": "RU00.366.06.01SVZ25",
       "portal": "CXWAY",
       "fio_om": "",
-      "added_at": "2026-04-27T06:06:15.847863",
+      "added_at": "2026-04-27T09:46:01.142537",
       "added_by": "unknown_user"
     },
     {
@@ -51,25 +33,7 @@
       "project_code": "RU00.366.06.03SVZ26",
       "portal": "CXWAY",
       "fio_om": "",
-      "added_at": "2026-04-27T06:06:15.848141",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "ГЛАВСТРОЙ",
-      "wave_name": "2026.04",
-      "project_code": "RU00.343.06.02SVZ25",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-04-27T06:07:17.229532",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "ГЛАВСТРОЙ",
-      "wave_name": "2026.04",
-      "project_code": "RU00.342.06.01SVZ25",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-04-27T06:07:17.229696",
+      "added_at": "2026-04-27T09:46:01.142626",
       "added_by": "unknown_user"
     },
     {
@@ -78,7 +42,97 @@
       "project_code": "Семпл",
       "portal": "CXWAY",
       "fio_om": "",
-      "added_at": "2026-04-27T06:07:17.229815",
+      "added_at": "2026-04-27T09:46:01.142695",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Avito ФО",
+      "wave_name": "",
+      "project_code": "",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T09:46:01.142760",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Банк ВТБ УТО ФО",
+      "wave_name": "",
+      "project_code": "",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T09:46:01.142823",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Керамир Аудит",
+      "wave_name": "",
+      "project_code": "",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T09:46:01.142885",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Керамир Аудит_ТП",
+      "wave_name": "",
+      "project_code": "",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T09:46:01.142951",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл",
+      "wave_name": "Март 2026",
+      "project_code": "RU00.177.05.03SVZ25",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T09:46:01.143019",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл",
+      "wave_name": "Март 2026",
+      "project_code": "RU00.177.05.04SVZ25",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T09:46:01.143080",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл",
+      "wave_name": "Январь 2026",
+      "project_code": "RU00.177.05.04SVZ25",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T09:46:01.143142",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл",
+      "wave_name": "Январь 2026",
+      "project_code": "RU00.177.05.03SVZ25",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T09:46:01.143211",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл",
+      "wave_name": "",
+      "project_code": "RU00.177.05.04SVZ25",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T09:46:01.143276",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл",
+      "wave_name": "Апрель 2026",
+      "project_code": "RU00.177.05.04SVZ25",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-04-27T09:46:01.143338",
       "added_by": "unknown_user"
     },
     {
@@ -87,7 +141,7 @@
       "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ26",
       "portal": "Оптима",
       "fio_om": "",
-      "added_at": "2026-04-27T06:07:17.229938",
+      "added_at": "2026-04-27T09:46:01.143400",
       "added_by": "unknown_user"
     },
     {
@@ -96,61 +150,7 @@
       "project_code": "RU00.390.02.01SVZ26",
       "portal": "Оптима",
       "fio_om": "",
-      "added_at": "2026-04-27T06:07:17.230049",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Лукойл",
-      "wave_name": "Март 2026",
-      "project_code": "RU00.177.05.03SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T06:39:49.863262",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Лукойл",
-      "wave_name": "Март 2026",
-      "project_code": "RU00.177.05.04SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T06:39:49.863424",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Лукойл",
-      "wave_name": "Январь 2026",
-      "project_code": "RU00.177.05.04SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T06:39:49.863521",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Лукойл",
-      "wave_name": "Январь 2026",
-      "project_code": "RU00.177.05.03SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T06:39:49.863605",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Лукойл",
-      "wave_name": "",
-      "project_code": "RU00.177.05.04SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T06:39:49.863715",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Лукойл",
-      "wave_name": "Апрель 2026",
-      "project_code": "RU00.177.05.04SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T06:39:49.864331",
+      "added_at": "2026-04-27T09:46:01.143459",
       "added_by": "unknown_user"
     },
     {
@@ -159,249 +159,98 @@
       "project_code": "RU00.265.03.01SVZ25",
       "portal": "Чеккер",
       "fio_om": "",
-      "added_at": "2026-04-27T06:43:08.844884",
+      "added_at": "2026-05-12T07:32:18.011092",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "4_Волна_Визит в офис продаж",
+      "project_code": "RU00.265.15.03SVZ25",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-05-12T07:32:18.011256",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "4 _Волна_Тайный пассажир",
+      "project_code": "RU00.265.01.05SVZ25",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-05-12T07:32:18.011348",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "Тестирование для Визитов",
+      "project_code": "RU00.265.01.05SVZ25",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-05-12T07:40:36.997211",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.177.05.04SVZ25",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-13T09:31:44.282274",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.177.05.03SVZ25",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-13T09:31:44.282548",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг очные",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ26",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-13T09:31:44.282849",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.390.02.01SVZ26",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-13T09:31:44.283017",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ26",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-13T09:31:44.283175",
       "added_by": "unknown_user"
     }
   ],
-  "included_projects": [
-
-  ],
+  "included_projects": [],
   "history": [
     {
-      "action": "clear_all",
-      "timestamp": "2026-03-19T12:59:45.852714",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-19T13:19:48.411090",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Киномакс",
-      "wave_name": "2026.03",
-      "project_code": "RU00.155.01.01SVZ24",
-      "timestamp": "2026-03-19T13:37:36.395850",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "ТЕХНОПАРК",
-      "wave_name": "2026.02-03",
-      "project_code": "RU00.284.01.01SPK24",
-      "timestamp": "2026-03-19T13:51:37.296503",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-19T17:53:55.227171",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Ёбидоёби",
-      "wave_name": "2026.03 (аудит)",
-      "project_code": "RU00.140.01.01SPK24",
-      "timestamp": "2026-03-19T17:58:10.452705",
-      "user": "unknown_user"
-    },
-    {
-      "action": "clear_all",
-      "project_name": "",
-      "wave_name": "",
-      "project_code": "",
-      "timestamp": "2026-03-20T08:54:01.296099",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Киномакс",
-      "wave_name": "2026.03",
-      "project_code": "RU00.155.01.01SVZ24",
-      "timestamp": "2026-03-20T12:45:03.087804",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "Томскэнергосбыт",
-      "wave_name": "03.2026",
-      "project_code": "",
-      "timestamp": "2026-03-20T12:45:56.502623",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-20T12:49:43.429913",
-      "user": "unknown_user"
-    },
-    {
-      "action": "clear_all",
-      "project_name": "",
-      "wave_name": "",
-      "project_code": "",
-      "timestamp": "2026-03-20T12:54:26.271386",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-20T14:11:19.251402",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Триколор",
-      "wave_name": "02.2026_(3 волна)_ФСМ",
-      "project_code": "Мультикод_.0357",
-      "timestamp": "2026-03-20T14:12:57.016248",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Триколор",
-      "wave_name": "02.2026_(1 волна)_СМ",
-      "project_code": "Мультикод_.0357",
-      "timestamp": "2026-03-20T14:12:57.016337",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 03.2026 Звонок",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-03-20T14:14:54.124008",
-      "user": "unknown_user"
-    },
-    {
-      "action": "clear_all",
-      "project_name": "",
-      "wave_name": "",
-      "project_code": "",
-      "timestamp": "2026-03-21T09:23:01.925548",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 12.2025",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-03-23T10:10:50.331674",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 03.2026 Звонок",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-03-23T10:10:50.331766",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-26T07:55:06.303205",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-26T08:12:45.940311",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "Томскэнергосбыт",
-      "wave_name": "03.2026",
-      "project_code": "",
-      "timestamp": "2026-03-26T08:16:35.645428",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-26T08:24:28.974488",
-      "user": "unknown_user"
-    },
-    {
-      "action": "clear_all",
-      "project_name": "",
-      "wave_name": "",
-      "project_code": "",
-      "timestamp": "2026-03-26T09:08:51.501343",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "ТАЙНЫЙ ПАССАЖИР",
-      "wave_name": "3_Волна_Визит в офис продаж",
-      "project_code": "RU00.265.15.03SVZ25",
-      "timestamp": "2026-03-27T16:35:08.292248",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-28T12:24:40.731123",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "Sminex ",
-      "wave_name": "Sminex_03.2026",
-      "project_code": "RU00.398.06.01SVZ26",
-      "timestamp": "2026-03-28T12:24:40.731256",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "ТАЙНЫЙ ПАССАЖИР",
-      "wave_name": "3_Волна_Звонки",
-      "project_code": "RU00.265.03.01SVZ25",
-      "timestamp": "2026-03-30T09:02:50.191235",
-      "user": "unknown_user"
-    },
-    {
       "action": "add_to_included",
       "project_name": "ГЛАВСТРОЙ",
-      "wave_name": "2026.03",
-      "project_code": "RU00.342.06.01SVZ25",
-      "timestamp": "2026-03-30T09:02:50.191375",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "ГЛАВСТРОЙ",
-      "wave_name": "2026.03",
+      "wave_name": "2026.04",
       "project_code": "RU00.343.06.02SVZ25",
-      "timestamp": "2026-03-30T09:08:19.884669",
+      "timestamp": "2026-04-07T14:51:57.150821",
       "user": "unknown_user"
     },
     {
-      "action": "add_to_included",
-      "project_name": "Roseville",
-      "wave_name": "2026-03",
-      "project_code": "RU00.366.06.01SVZ25",
-      "timestamp": "2026-03-30T09:08:19.884782",
+      "action": "add_to_excluded",
+      "project_name": "ВТБ Лизинг",
+      "wave_name": "2026.01 Б/у техника",
+      "project_code": "RU00.389.02.01SVZ25",
+      "timestamp": "2026-04-07T14:52:03.229364",
       "user": "unknown_user"
     },
     {
@@ -409,455 +258,23 @@
       "project_name": "",
       "wave_name": "",
       "project_code": "",
-      "timestamp": "2026-03-30T09:09:09.794992",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-30T09:20:22.718208",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "ТАЙНЫЙ ПАССАЖИР",
-      "wave_name": "3_Волна_Визит в офис продаж",
-      "project_code": "RU00.265.15.03SVZ25",
-      "timestamp": "2026-03-30T09:35:25.416910",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-30T09:35:46.659178",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "ТАЙНЫЙ ПАССАЖИР",
-      "wave_name": "3_Волна_Визит в офис продаж",
-      "project_code": "RU00.265.15.03SVZ25",
-      "timestamp": "2026-03-30T09:35:46.659312",
-      "user": "unknown_user"
-    },
-    {
-      "action": "clear_all",
-      "project_name": "",
-      "wave_name": "",
-      "project_code": "",
-      "timestamp": "2026-03-30T09:36:46.385101",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-30T09:37:56.692793",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-30T09:48:49.135605",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-03-30T10:04:02.301402",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "Томскэнергосбыт",
-      "wave_name": "03.2026",
-      "project_code": "",
-      "timestamp": "2026-03-30T10:19:07.926938",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_ТП (110 волна)",
-      "project_code": "nan",
-      "timestamp": "2026-03-30T17:00:45.013861",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_ООО_ТП (110 волна)",
-      "project_code": "nan",
-      "timestamp": "2026-03-30T17:00:45.013994",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_POS audit (9 волна)",
-      "project_code": "nan",
-      "timestamp": "2026-03-30T17:00:45.014109",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "KARCHER ",
-      "wave_name": "2026_02_Karcher_Звонки",
-      "project_code": "RU00.032.03.01SVZ24",
-      "timestamp": "2026-03-30T17:00:45.014227",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_ООО_POS audit (9 волна)",
-      "project_code": "nan",
-      "timestamp": "2026-03-30T17:00:45.014345",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "Sminex ",
-      "wave_name": "Sminex_03.2026",
-      "project_code": "RU00.398.06.01SVZ26",
-      "timestamp": "2026-04-01T09:59:29.442985",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "Банк ДОМ.РФ_Семпл ",
-      "wave_name": "nan",
-      "project_code": "nan",
-      "timestamp": "2026-04-01T14:14:27.111187",
+      "timestamp": "2026-04-07T15:34:41.225427",
       "user": "unknown_user"
     },
     {
       "action": "add_to_excluded",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 12.2025",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-04-01T16:50:01.056727",
+      "project_name": "ЭКОНИКА",
+      "wave_name": "2026.04 (VIP)",
+      "project_code": "RU00.306.01.01SVZ24",
+      "timestamp": "2026-04-10T14:04:47.931009",
       "user": "unknown_user"
     },
     {
       "action": "add_to_excluded",
-      "project_name": "Philip Morris_КБ_Бристоль",
-      "wave_name": "2026.02_Krasnoe&Beloe",
-      "project_code": "Мультикод_048",
-      "timestamp": "2026-04-01T16:50:01.056823",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "FIBA Retail",
-      "wave_name": "2026_03_OXXO",
-      "project_code": "RU00.021.01.03SVZ24",
-      "timestamp": "2026-04-01T16:50:01.056895",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 03.2026 Звонок",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-04-01T16:50:01.056962",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Philip Morris Партнеры",
-      "wave_name": "2026.02_ГИПЕРГЛОБУС",
-      "project_code": "RU00.048.01.05SVZ24",
-      "timestamp": "2026-04-01T16:50:01.057027",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Philip Morris_КБ_Бристоль",
-      "wave_name": "2026.02._Bristol",
-      "project_code": "Мультикод_048",
-      "timestamp": "2026-04-01T16:50:01.057090",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Тамбовский бекон ",
-      "wave_name": "nan",
-      "project_code": "RU00.276.02.01SVZ24",
-      "timestamp": "2026-04-01T16:50:01.057156",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Mascotte ",
-      "wave_name": "2026.02 Masscote",
-      "project_code": "RU00.077.01.02SVZ24",
-      "timestamp": "2026-04-01T16:50:01.057286",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "FIBA Retail ",
-      "wave_name": "Club 03.2026",
-      "project_code": "RU00.021.01.04SVZ24",
-      "timestamp": "2026-04-01T16:50:01.057393",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "МВЭД_ВТБ Банк ",
-      "wave_name": "МВЭД_02-03.2026",
-      "project_code": "RU00.116.01.02SVZ24",
-      "timestamp": "2026-04-01T16:50:01.057471",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "FIBA Retail ",
-      "wave_name": "NetWork 03.2026",
-      "project_code": "RU00.021.01.04SVZ24",
-      "timestamp": "2026-04-01T16:50:01.057539",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "FIBA Retail ",
-      "wave_name": "OXXO 03.2026",
-      "project_code": "RU00.021.01.03SVZ24",
-      "timestamp": "2026-04-01T16:50:01.057605",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Mascotte ",
-      "wave_name": "2026.03 Masscote",
-      "project_code": "RU00.077.01.02SVZ24",
-      "timestamp": "2026-04-01T16:50:01.057669",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "FIBA Retail ",
-      "wave_name": "MANGO 03.2026",
-      "project_code": "RU00.021.01.01SVZ24",
-      "timestamp": "2026-04-01T16:50:01.057762",
-      "user": "unknown_user"
-    },
-    {
-      "action": "clear_all",
-      "project_name": "",
-      "wave_name": "",
-      "project_code": "",
-      "timestamp": "2026-04-03T13:34:31.548780",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 12.2025",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-04-04T17:17:28.387948",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 03.2026 Звонок",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-04-04T17:17:28.388037",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-04-04T17:17:48.670064",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "Банк ДОМ.РФ_Семпл ",
-      "wave_name": "nan",
-      "project_code": "nan",
-      "timestamp": "2026-04-06T07:30:39.601212",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_ТП (110 волна)",
-      "project_code": "nan",
-      "timestamp": "2026-04-06T08:25:24.462847",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_ООО_ТП (110 волна)",
-      "project_code": "nan",
-      "timestamp": "2026-04-06T08:25:24.462981",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_POS audit (9 волна)",
-      "project_code": "nan",
-      "timestamp": "2026-04-06T08:25:24.463083",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-04-06T08:42:41.484313",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "Банк ДОМ.РФ_Семпл ",
-      "wave_name": "nan",
-      "project_code": "nan",
-      "timestamp": "2026-04-06T08:42:41.484393",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_ТП (110 волна)",
-      "project_code": "nan",
-      "timestamp": "2026-04-06T08:42:41.484450",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_ООО_ТП (110 волна)",
-      "project_code": "nan",
-      "timestamp": "2026-04-06T08:42:41.484505",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "KARCHER ",
-      "wave_name": "2026_03_Karcher_POS audit (9 волна)",
-      "project_code": "nan",
-      "timestamp": "2026-04-06T08:42:41.484557",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_excluded",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 12.2025",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-04-06T13:07:20.860676",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_excluded",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 03.2026 Звонок",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-04-06T13:07:20.860762",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 12.2025",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-04-06T13:07:47.522992",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 03.2026 Звонок",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-04-06T13:07:47.523078",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-04-06T17:40:19.130590",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 12.2025",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-04-07T06:46:24.218942",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "Северсталь_Тайный соискатель",
-      "wave_name": "1 волна 03.2026 Звонок",
-      "project_code": "Мультикод_.385",
-      "timestamp": "2026-04-07T06:46:24.219084",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-04-07T06:46:24.219199",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-04-07T07:12:59.347534",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_included",
-      "project_name": "Roseville ",
-      "wave_name": "Rosseville_03-2026",
-      "project_code": "RU00.366.06.01SVZ25",
-      "timestamp": "2026-04-07T07:29:13.991985",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "CarPrice",
-      "wave_name": "2026.03",
-      "project_code": "RU00.013.06.01SVZ24",
-      "timestamp": "2026-04-07T09:12:51.430846",
-      "user": "unknown_user"
-    },
-    {
-      "action": "remove_from_included",
-      "project_name": "Roseville ",
-      "wave_name": "Rosseville_03-2026",
-      "project_code": "RU00.366.06.01SVZ25",
-      "timestamp": "2026-04-07T09:12:51.430962",
-      "user": "unknown_user"
-    },
-    {
-      "action": "clear_all",
-      "project_name": "",
-      "wave_name": "",
-      "project_code": "",
-      "timestamp": "2026-04-07T09:13:04.172661",
+      "project_name": "ЭКОНИКА",
+      "wave_name": "2026.04 (72 волна)",
+      "project_code": "RU00.306.01.01SVZ24",
+      "timestamp": "2026-04-10T14:04:47.931157",
       "user": "unknown_user"
     },
     {
@@ -865,15 +282,23 @@
       "project_name": "Лепим и Варим ",
       "wave_name": "2026.04_Казахстан",
       "project_code": "SNG00.030.01.03SPK25",
-      "timestamp": "2026-04-07T13:14:59.557038",
+      "timestamp": "2026-04-10T14:05:00.499725",
       "user": "unknown_user"
     },
     {
       "action": "add_to_excluded",
-      "project_name": "Дентекс ",
-      "wave_name": "2026.04_отзыв",
-      "project_code": "Семпл",
-      "timestamp": "2026-04-07T13:16:33.735952",
+      "project_name": "Эконика ",
+      "wave_name": "Эконика_2026.04 (72 волна)",
+      "project_code": "Мультикод_.306",
+      "timestamp": "2026-04-10T14:05:13.766686",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Эконика ",
+      "wave_name": "Эконика_2026.04_ВИП",
+      "project_code": "Мультикод_.306",
+      "timestamp": "2026-04-10T14:05:13.766887",
       "user": "unknown_user"
     },
     {
@@ -881,7 +306,79 @@
       "project_name": "",
       "wave_name": "",
       "project_code": "",
-      "timestamp": "2026-04-07T15:34:16.141710",
+      "timestamp": "2026-04-13T12:03:30.963778",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Askona ",
+      "wave_name": "2026.04_Home",
+      "project_code": "nan",
+      "timestamp": "2026-04-14T08:41:44.837309",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Malltech ",
+      "wave_name": "2026.04_Malltech_Подарочные карты",
+      "project_code": "nan",
+      "timestamp": "2026-04-14T08:45:51.121647",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Servizoria_Sushimaster ",
+      "wave_name": "2026.04_Servizoria_Sushimaster",
+      "project_code": "nan",
+      "timestamp": "2026-04-14T08:45:51.121821",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "АО «АКРИХИН»\t ",
+      "wave_name": "nan",
+      "project_code": "nan",
+      "timestamp": "2026-04-14T08:45:51.121980",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Абсолют Банк ",
+      "wave_name": "nan",
+      "project_code": "nan",
+      "timestamp": "2026-04-14T08:45:51.122100",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Абсолют Банк ",
+      "wave_name": "2026.04_Звонки Абсолют банк",
+      "project_code": "nan",
+      "timestamp": "2026-04-14T08:45:51.122214",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Абсолют Банк ",
+      "wave_name": "2026.04_Визиты Абсолют банк",
+      "project_code": "nan",
+      "timestamp": "2026-04-14T08:45:51.122334",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Айкрафт ",
+      "wave_name": "2026.04 Контрольная закупка Айкрафт",
+      "project_code": "nan",
+      "timestamp": "2026-04-14T08:45:51.122459",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Аптеки Johnson & Johnson ",
+      "wave_name": "nan",
+      "project_code": "nan",
+      "timestamp": "2026-04-14T08:45:51.122570",
       "user": "unknown_user"
     },
     {
@@ -889,7 +386,7 @@
       "project_name": "ГЛАВСТРОЙ",
       "wave_name": "2026.04",
       "project_code": "RU00.343.06.02SVZ25",
-      "timestamp": "2026-04-16T07:41:24.261834",
+      "timestamp": "2026-04-27T09:46:01.142313",
       "user": "unknown_user"
     },
     {
@@ -897,47 +394,7 @@
       "project_name": "ГЛАВСТРОЙ",
       "wave_name": "2026.04",
       "project_code": "RU00.342.06.01SVZ25",
-      "timestamp": "2026-04-16T07:41:24.261972",
-      "user": "unknown_user"
-    },
-    {
-      "action": "clear_all",
-      "project_name": "",
-      "wave_name": "",
-      "project_code": "",
-      "timestamp": "2026-04-16T07:41:57.563940",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Avito ФО",
-      "wave_name": "",
-      "project_code": "",
-      "timestamp": "2026-04-27T06:02:47.790032",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Банк ВТБ УТО ФО",
-      "wave_name": "",
-      "project_code": "",
-      "timestamp": "2026-04-27T06:02:47.790174",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Керамир Аудит",
-      "wave_name": "",
-      "project_code": "",
-      "timestamp": "2026-04-27T06:02:47.790319",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Керамир Аудит_ТП",
-      "wave_name": "",
-      "project_code": "",
-      "timestamp": "2026-04-27T06:02:47.790599",
+      "timestamp": "2026-04-27T09:46:01.142421",
       "user": "unknown_user"
     },
     {
@@ -945,7 +402,7 @@
       "project_name": "Roseville",
       "wave_name": "Rosseville_04-2026",
       "project_code": "RU00.366.06.01SVZ25",
-      "timestamp": "2026-04-27T06:06:15.847892",
+      "timestamp": "2026-04-27T09:46:01.142545",
       "user": "unknown_user"
     },
     {
@@ -953,23 +410,7 @@
       "project_name": "Roseville",
       "wave_name": "Rosseville_04-2026 (ECOM)",
       "project_code": "RU00.366.06.03SVZ26",
-      "timestamp": "2026-04-27T06:06:15.848154",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "ГЛАВСТРОЙ",
-      "wave_name": "2026.04",
-      "project_code": "RU00.343.06.02SVZ25",
-      "timestamp": "2026-04-27T06:07:17.229555",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "ГЛАВСТРОЙ",
-      "wave_name": "2026.04",
-      "project_code": "RU00.342.06.01SVZ25",
-      "timestamp": "2026-04-27T06:07:17.229706",
+      "timestamp": "2026-04-27T09:46:01.142631",
       "user": "unknown_user"
     },
     {
@@ -977,23 +418,39 @@
       "project_name": "Марафон Сервиса",
       "wave_name": "2026.04_Марафон Сервиса",
       "project_code": "Семпл",
-      "timestamp": "2026-04-27T06:07:17.229823",
+      "timestamp": "2026-04-27T09:46:01.142700",
       "user": "unknown_user"
     },
     {
       "action": "add_to_excluded",
-      "project_name": "Лукойл франчайзинг ФО",
-      "wave_name": "Апрель 2026",
-      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ26",
-      "timestamp": "2026-04-27T06:07:17.229947",
+      "project_name": "Avito ФО",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-04-27T09:46:01.142764",
       "user": "unknown_user"
     },
     {
       "action": "add_to_excluded",
-      "project_name": "Лукойл франчайзинг ФО",
-      "wave_name": "Апрель 2026",
-      "project_code": "RU00.390.02.01SVZ26",
-      "timestamp": "2026-04-27T06:07:17.230057",
+      "project_name": "Банк ВТБ УТО ФО",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-04-27T09:46:01.142827",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Керамир Аудит",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-04-27T09:46:01.142889",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Керамир Аудит_ТП",
+      "wave_name": "",
+      "project_code": "",
+      "timestamp": "2026-04-27T09:46:01.142956",
       "user": "unknown_user"
     },
     {
@@ -1001,7 +458,7 @@
       "project_name": "Лукойл",
       "wave_name": "Март 2026",
       "project_code": "RU00.177.05.03SVZ25",
-      "timestamp": "2026-04-27T06:39:49.863289",
+      "timestamp": "2026-04-27T09:46:01.143023",
       "user": "unknown_user"
     },
     {
@@ -1009,7 +466,7 @@
       "project_name": "Лукойл",
       "wave_name": "Март 2026",
       "project_code": "RU00.177.05.04SVZ25",
-      "timestamp": "2026-04-27T06:39:49.863432",
+      "timestamp": "2026-04-27T09:46:01.143085",
       "user": "unknown_user"
     },
     {
@@ -1017,7 +474,7 @@
       "project_name": "Лукойл",
       "wave_name": "Январь 2026",
       "project_code": "RU00.177.05.04SVZ25",
-      "timestamp": "2026-04-27T06:39:49.863528",
+      "timestamp": "2026-04-27T09:46:01.143147",
       "user": "unknown_user"
     },
     {
@@ -1025,7 +482,7 @@
       "project_name": "Лукойл",
       "wave_name": "Январь 2026",
       "project_code": "RU00.177.05.03SVZ25",
-      "timestamp": "2026-04-27T06:39:49.863612",
+      "timestamp": "2026-04-27T09:46:01.143216",
       "user": "unknown_user"
     },
     {
@@ -1033,7 +490,7 @@
       "project_name": "Лукойл",
       "wave_name": "",
       "project_code": "RU00.177.05.04SVZ25",
-      "timestamp": "2026-04-27T06:39:49.863727",
+      "timestamp": "2026-04-27T09:46:01.143280",
       "user": "unknown_user"
     },
     {
@@ -1041,7 +498,95 @@
       "project_name": "Лукойл",
       "wave_name": "Апрель 2026",
       "project_code": "RU00.177.05.04SVZ25",
-      "timestamp": "2026-04-27T06:39:49.864342",
+      "timestamp": "2026-04-27T09:46:01.143344",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Апрель 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ26",
+      "timestamp": "2026-04-27T09:46:01.143405",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Апрель 2026",
+      "project_code": "RU00.390.02.01SVZ26",
+      "timestamp": "2026-04-27T09:46:01.143464",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Askona ",
+      "wave_name": "2026.04_Home",
+      "project_code": "nan",
+      "timestamp": "2026-04-27T09:46:21.214244",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Malltech ",
+      "wave_name": "2026.04_Malltech_Подарочные карты",
+      "project_code": "nan",
+      "timestamp": "2026-04-27T09:46:21.214336",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Servizoria_Sushimaster ",
+      "wave_name": "2026.04_Servizoria_Sushimaster",
+      "project_code": "nan",
+      "timestamp": "2026-04-27T09:46:21.214399",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "АО «АКРИХИН»\t ",
+      "wave_name": "nan",
+      "project_code": "nan",
+      "timestamp": "2026-04-27T09:46:21.214454",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Абсолют Банк ",
+      "wave_name": "nan",
+      "project_code": "nan",
+      "timestamp": "2026-04-27T09:46:21.214538",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Абсолют Банк ",
+      "wave_name": "2026.04_Звонки Абсолют банк",
+      "project_code": "nan",
+      "timestamp": "2026-04-27T09:46:21.214623",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Абсолют Банк ",
+      "wave_name": "2026.04_Визиты Абсолют банк",
+      "project_code": "nan",
+      "timestamp": "2026-04-27T09:46:21.214720",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Айкрафт ",
+      "wave_name": "2026.04 Контрольная закупка Айкрафт",
+      "project_code": "nan",
+      "timestamp": "2026-04-27T09:46:21.214777",
+      "user": "unknown_user"
+    },
+    {
+      "action": "remove_from_included",
+      "project_name": "Аптеки Johnson & Johnson ",
+      "wave_name": "nan",
+      "project_code": "nan",
+      "timestamp": "2026-04-27T09:46:21.214828",
       "user": "unknown_user"
     },
     {
@@ -1049,7 +594,7 @@
       "project_name": "ТАЙНЫЙ ПАССАЖИР",
       "wave_name": "4_Волна_Звонки",
       "project_code": "RU00.265.03.01SVZ25",
-      "timestamp": "2026-04-27T06:43:08.844904",
+      "timestamp": "2026-05-12T07:32:18.011120",
       "user": "unknown_user"
     },
     {
@@ -1057,18 +602,66 @@
       "project_name": "ТАЙНЫЙ ПАССАЖИР",
       "wave_name": "4_Волна_Визит в офис продаж",
       "project_code": "RU00.265.15.03SVZ25",
-      "timestamp": "2026-04-27T06:43:08.844993",
+      "timestamp": "2026-05-12T07:32:18.011265",
       "user": "unknown_user"
     },
     {
-      "action": "add_to_included",
+      "action": "add_to_excluded",
       "project_name": "ТАЙНЫЙ ПАССАЖИР",
-      "wave_name": "4_Волна_Визит в офис продаж",
-      "project_code": "RU00.265.15.03SVZ25",
-      "timestamp": "2026-04-27T06:44:22.248870",
+      "wave_name": "4 _Волна_Тайный пассажир",
+      "project_code": "RU00.265.01.05SVZ25",
+      "timestamp": "2026-05-12T07:32:18.011355",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "Тестирование для Визитов",
+      "project_code": "RU00.265.01.05SVZ25",
+      "timestamp": "2026-05-12T07:40:36.997230",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.177.05.04SVZ25",
+      "timestamp": "2026-05-13T09:31:44.282309",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.177.05.03SVZ25",
+      "timestamp": "2026-05-13T09:31:44.282569",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг очные",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ26",
+      "timestamp": "2026-05-13T09:31:44.282867",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.390.02.01SVZ26",
+      "timestamp": "2026-05-13T09:31:44.283032",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ26",
+      "timestamp": "2026-05-13T09:31:44.283188",
       "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-04-27T06:44:22.248875",
+  "last_updated": "2026-05-13T09:31:44.283196",
   "version": "1.0"
 }

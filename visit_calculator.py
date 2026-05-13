@@ -1101,39 +1101,39 @@ class VisitCalculator:
                 ).round(1)
             
 
-            # Средний план на день для 100% плана
-            df['Ср. план на день для 100% плана'] = 0.0
-            if mask_duration.any() and mask.any():
-                remaining_plan = df.loc[mask & mask_duration, 'План проекта, шт.'] - df.loc[mask & mask_duration, 'Факт проекта, шт.']
-                remaining_plan = remaining_plan.clip(lower=0)  # защита от отрицательных
-                days_left = df.loc[mask & mask_duration, 'Дней до конца проекта'].replace(0, 1)
-                df.loc[mask & mask_duration, 'Ср. план на день для 100% плана'] = (
-                    np.ceil(remaining_plan / days_left)
-                ).astype(int)
+            # # Средний план на день для 100% плана
+            # df['Ср. план на день для 100% плана'] = 0.0
+            # if mask_duration.any() and mask.any():
+            #     remaining_plan = df.loc[mask & mask_duration, 'План проекта, шт.'] - df.loc[mask & mask_duration, 'Факт проекта, шт.']
+            #     remaining_plan = remaining_plan.clip(lower=0)  # защита от отрицательных
+            #     days_left = df.loc[mask & mask_duration, 'Дней до конца проекта'].replace(0, 1)
+            #     df.loc[mask & mask_duration, 'Ср. план на день для 100% плана'] = (
+            #         np.ceil(remaining_plan / days_left)
+            #     ).astype(int)
 
-            # === ОТЛАДКА ===
-            st.write("### 🔍 Отладка: Средний план на день (план ≥ 200)")
+            # # === ОТЛАДКА ===
+            # st.write("### 🔍 Отладка: Средний план на день (план ≥ 200)")
             
-            # Фильтруем строки с планом ≥ 200
-            high_plan_mask = (mask & mask_duration) & (df['План проекта, шт.'] >= 200)
+            # # Фильтруем строки с планом ≥ 200
+            # high_plan_mask = (mask & mask_duration) & (df['План проекта, шт.'] >= 200)
             
-            if high_plan_mask.any():
-                # Получаем первые 3 индекса
-                sample_indices = df.index[high_plan_mask][:3]
+            # if high_plan_mask.any():
+            #     # Получаем первые 3 индекса
+            #     sample_indices = df.index[high_plan_mask][:3]
                 
-                for idx in sample_indices:
-                    st.write(f"**Проект:** {df.loc[idx, 'Проект']}")
-                    st.write(f"**Клиент:** {df.loc[idx, 'Клиент']}")
-                    st.write(f"  План проекта: {df.loc[idx, 'План проекта, шт.']}")
-                    st.write(f"  Факт проекта: {df.loc[idx, 'Факт проекта, шт.']}")
-                    st.write(f"  remaining_plan: {remaining_plan.loc[idx]}")
-                    st.write(f"  Дней до конца проекта: {df.loc[idx, 'Дней до конца проекта']}")
-                    st.write(f"  days_left (после replace): {days_left.loc[idx]}")
-                    st.write(f"  Ср. план на день: {df.loc[idx, 'Ср. план на день для 100% плана']}")
-                    st.write("---")
-            else:
-                st.write("Нет проектов с планом ≥ 200")
-             # === ОТЛАДКА ===
+            #     for idx in sample_indices:
+            #         st.write(f"**Проект:** {df.loc[idx, 'Проект']}")
+            #         st.write(f"**Клиент:** {df.loc[idx, 'Клиент']}")
+            #         st.write(f"  План проекта: {df.loc[idx, 'План проекта, шт.']}")
+            #         st.write(f"  Факт проекта: {df.loc[idx, 'Факт проекта, шт.']}")
+            #         st.write(f"  remaining_plan: {remaining_plan.loc[idx]}")
+            #         st.write(f"  Дней до конца проекта: {df.loc[idx, 'Дней до конца проекта']}")
+            #         st.write(f"  days_left (после replace): {days_left.loc[idx]}")
+            #         st.write(f"  Ср. план на день: {df.loc[idx, 'Ср. план на день для 100% плана']}")
+            #         st.write("---")
+            # else:
+            #     st.write("Нет проектов с планом ≥ 200")
+            #  # === ОТЛАДКА ===
         
         return df
         

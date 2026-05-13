@@ -1100,7 +1100,8 @@ class VisitCalculator:
                     df.loc[mask_duration, 'Длительность'] * 100
                 ).round(1)
             
-            # Средний план на день
+
+            # Средний план на день для 100% плана
             df['Ср. план на день для 100% плана'] = 0.0
             if mask_duration.any() and mask.any():
                 remaining_plan = df.loc[mask & mask_duration, 'План проекта, шт.'] - df.loc[mask & mask_duration, 'Факт проекта, шт.']

@@ -923,7 +923,42 @@ class VisitCalculator:
                 (visits_df['Дата визита'] >= start_date) &
                 (visits_df['Дата визита'] <= end_date)
             )
-            
+
+            # === ПРОВЕРКА ДЛЯ OPTIMA ===
+            optima_check = visits_df[(visits_df['Источник'] == 'Оптима') | (visits_df['Имя клиента'] == 'Optima')]
+            if not optima_check.empty:
+                st.write("### 🔍 Проверка Optima")
+                
+                total_rows = len(optima_check)
+                st.write(f"Всего строк в Optima: {total_rows}")
+                
+                # Статусы
+                if status_col in optima_check.columns:
+                    completed_count = optima_check[optima_check[status_col].isin([
+                        'Выполнено', 'выполнен', 'Заполнена', 'Проверена', 'Принята', 'Завершено', 'Готово'
+                    ])].shape[0]
+                    st.write(f"Из них со статусом 'Выполнено': {completed_count}")
+                
+                # Даты
+                if 'Дата визита' in optima_check.columns:
+                    dates = optima_check['Дата визита'].dropna()
+                    st.write(f"Строк с датой: {len(dates)}")
+                    st.write(f"Уникальные даты: {dates.unique().tolist()}")
+                    
+                    # Проверка period_mask
+                    in_period = optima_check[period_mask]
+                    st.write(f"Попало в период ({start_date.date()} - {end_date.date()}): {len(in_period)}")
+                    
+                    # Детали по каждой дате
+                    st.write("### Детали по датам:")
+                    for date in dates.unique():
+                        count = len(optima_check[optima_check['Дата визита'] == date])
+                        in_range = (start_date <= date <= end_date)
+                        st.write(f"  {date.date()}: {count} строк, в периоде: {in_range}")
+                
+                st.write("### ---")
+                # === ПРОВЕРКА ДЛЯ OPTIMA ===
+                
             # СЧИТАЕМ ФАКТЫ
             completed_df = visits_df[completed_mask]
             rs_facts_total = completed_df.groupby([

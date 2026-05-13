@@ -1313,13 +1313,13 @@ class DataCleaner:
                 else:
                     result[std_col] = ''
         
-        # Конвертация даты
-        if 'Дата визита' in result.columns:
-            result['Дата визита'] = pd.to_datetime(
-                result['Дата визита'], 
-                errors='coerce',
-                dayfirst=True
-            )
+        # # Конвертация даты
+        # if 'Дата визита' in result.columns:
+        #     result['Дата визита'] = pd.to_datetime(
+        #         result['Дата визита'], 
+        #         errors='coerce',
+        #         dayfirst=True
+        #     )
         
         # Преобразуем длинные названия регионов в короткие коды
         def get_short_region(long_name):

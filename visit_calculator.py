@@ -931,6 +931,7 @@ class VisitCalculator:
                 'Код анкеты',
                 'Название проекта',
                 region_col,
+                'АСС',
                 rs_col
             ]).size().to_dict()
             
@@ -948,6 +949,7 @@ class VisitCalculator:
                     'Код анкеты',
                     'Название проекта',
                     region_col,
+                    'АСС',
                     rs_col
                 ]).size().to_dict()
             else:
@@ -968,7 +970,8 @@ class VisitCalculator:
                 rs = str(row['RS']).strip()
                 
                 client_name = str(row['Клиент']).strip()
-                key = (client_name, project, wave, region, rs)
+                asm = str(row['ASM']).strip()
+                key = (client_name, project, wave, region, asm, rs)
                 result_df.at[idx, 'Факт проекта, шт.'] = rs_facts_total.get(key, 0)
                 result_df.at[idx, 'Факт на дату, шт.'] = rs_facts_period.get(key, 0)
     

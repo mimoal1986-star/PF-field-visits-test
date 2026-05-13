@@ -1,6 +1,7 @@
 # utils/dataviz.py
 # draft 4.1 
 import pandas as pd
+import numpy as np
 import streamlit as st
 from datetime import datetime
 from io import BytesIO
@@ -570,6 +571,15 @@ class DataVisualizer:
 
         # ВСЕГДА группируем (даже если group_cols == ['Клиент'])
         project_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+
+        # === СРЕДНИЙ ПЛАН НА ДЕНЬ ДЛЯ 100% ПЛАНА ===
+        remaining_plan = project_data['План проекта, шт.'] - project_data['Факт проекта, шт.']
+        remaining_plan = remaining_plan.clip(lower=0)
+        days_left = project_data['Дней до конца проекта'].replace(0, 1)
+        
+        project_data['Ср. план на день для 100% плана'] = (
+            np.ceil(remaining_plan / days_left)
+        ).astype(int)
         # Преобразуем коды регионов в длинные названия
         if 'Регион' in project_data.columns:
             project_data['Регион'] = project_data['Регион'].apply(self._get_long_region)
@@ -1030,6 +1040,15 @@ class DataVisualizer:
         # ВСЕГДА группируем
         region_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
         
+        # === СРЕДНИЙ ПЛАН НА ДЕНЬ ДЛЯ 100% ПЛАНА ===
+        remaining_plan = region_data['План проекта, шт.'] - region_data['Факт проекта, шт.']
+        remaining_plan = remaining_plan.clip(lower=0)
+        days_left = region_data['Дней до конца проекта'].replace(0, 1)
+        
+        region_data['Ср. план на день для 100% плана'] = (
+            np.ceil(remaining_plan / days_left)
+        ).astype(int)
+        
         # Преобразуем коды регионов в длинные названия
         if 'Регион' in region_data.columns:
             region_data['Регион'] = region_data['Регион'].apply(self._get_long_region)
@@ -1416,6 +1435,15 @@ class DataVisualizer:
         
         # ВСЕГДА группируем
         dsm_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+        
+        # === СРЕДНИЙ ПЛАН НА ДЕНЬ ДЛЯ 100% ПЛАНА ===
+        remaining_plan = dsm_data['План проекта, шт.'] - dsm_data['Факт проекта, шт.']
+        remaining_plan = remaining_plan.clip(lower=0)
+        days_left = dsm_data['Дней до конца проекта'].replace(0, 1)
+        
+        dsm_data['Ср. план на день для 100% плана'] = (
+            np.ceil(remaining_plan / days_left)
+        ).astype(int)
 
         # Добавляем вычисляемые метрики
         mask_plan = dsm_data['План на дату, шт.'] > 0

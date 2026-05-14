@@ -269,6 +269,33 @@
       "fio_om": "",
       "added_at": "2026-05-14T11:51:17.222511",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Марафон Сервиса",
+      "wave_name": "2026.04_Марафон Сервиса",
+      "project_code": "",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-14T11:52:56.056105",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "МВЭД_ВТБ Банк",
+      "wave_name": "МВЭД_05-06.2026",
+      "project_code": "RU00.116.01.02SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-14T11:52:56.056282",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Марафон Сервиса",
+      "wave_name": "",
+      "project_code": "Sample_Марафон Сервиса_Улыбка радуги",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-14T11:52:56.056390",
+      "added_by": "unknown_user"
     }
   ],
   "included_projects": [],
@@ -728,8 +755,32 @@
       "project_code": "RU00.343.06.02SVZ25",
       "timestamp": "2026-05-14T11:51:17.222520",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Марафон Сервиса",
+      "wave_name": "2026.04_Марафон Сервиса",
+      "project_code": "",
+      "timestamp": "2026-05-14T11:52:56.056131",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "МВЭД_ВТБ Банк",
+      "wave_name": "МВЭД_05-06.2026",
+      "project_code": "RU00.116.01.02SVZ24",
+      "timestamp": "2026-05-14T11:52:56.056295",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Марафон Сервиса",
+      "wave_name": "",
+      "project_code": "Sample_Марафон Сервиса_Улыбка радуги",
+      "timestamp": "2026-05-14T11:52:56.056400",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-05-14T11:51:17.222523",
+  "last_updated": "2026-05-14T11:52:56.056404",
   "version": "1.0"
 }

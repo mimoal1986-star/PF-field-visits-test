@@ -10,22 +10,6 @@ from io import BytesIO
 from github_settings import get_settings_manager, get_plan_adjustment_manager
 from multon_excel_parser import parse_multon_excel_to_df, preview_multon_plan
 
-# === ФУНКЦИЯ ОТЛАДКИ HERBALIFE ===
-def debug_herbalife(df, stage_name):
-    """Выводит количество строк с Herbalife на каждом этапе"""
-    if df is None or df.empty:
-        st.write(f"{stage_name}: ❌ DataFrame пуст")
-        return
-    herbalife_df = df[df['Имя клиента'] == 'Herbalife']
-    st.write(f"{stage_name}: ✅ {len(herbalife_df)} строк с Herbalife")
-    if not herbalife_df.empty:
-        st.write(f"   Коды проектов: {herbalife_df['Код анкеты'].unique().tolist()}")
-        if 'ПО' in herbalife_df.columns:
-            st.write(f"   ПО: {herbalife_df['ПО'].iloc[0]}")
-        if 'Полевой' in herbalife_df.columns:
-            st.write(f"   Полевой: {herbalife_df['Полевой'].iloc[0]}")
-# === ФУНКЦИЯ ОТЛАДКИ HERBALIFE ===
-
 # Инициализация временных корректировок
 if 'temp_adjustments' not in st.session_state:
     st.session_state.temp_adjustments = []
@@ -195,8 +179,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
         st.session_state.debug_times.append(f"[DEBUG] Очистка: {time.time() - start:.2f} сек")
         start = time.time()
 
-        debug_herbalife(portal_cleaned, "1. После clean_array (портал)")
-
         
         # ============================================
         # ОБОГАЩЕНИЕ ДАННЫХ (ОПТИМИЗИРОВАННО)
@@ -364,8 +346,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
                         cxway_non_field
                     ], ignore_index=True)
 
-        debug_herbalife(cxway_processed, "2. После clean_cxway")
-
 
         # ============================================
         # УДАЛЕНИЕ ДУБЛЕЙ ПО ПРИОРИТЕТУ ИЗ GOOGLE (ВЕКТОРИЗИРОВАННО)
@@ -448,8 +428,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
             st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
         else:
             st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()
-
-        debug_herbalife(st.session_state.cleaned_data['полевые_проекты'], "3. После объединения в полевые_проекты")
 
         # ============================================
         # ДОБАВЛЯЕМ ЗОД ДЛЯ ВСЕХ ПОЛЕВЫХ ПРОЕКТОВ
@@ -655,8 +633,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
 
         st.session_state.debug_times.append(f"[DEBUG] Иерархия: {time.time() - start:.2f} сек")
         start = time.time()
-
-        debug_herbalife(base_data, "4. После extract_hierarchical_data (base_data)")
         
         # Расчет план/факт
         if st.session_state.plan_calc_params and not base_data.empty:
@@ -668,8 +644,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
                 google_df=st.session_state.cleaned_data['сервизория'],
                 optima_df=st.session_state.cleaned_data.get('optima_processed')
             )
-
-            debug_herbalife(plan_result, "5. После calculate_hierarchical_plan_on_date")
             
             st.session_state.debug_times.append(f"[DEBUG] План: {time.time() - start:.2f} сек")
             start = time.time()
@@ -685,7 +659,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
                 final_result = visit_calculator._calculate_metrics(
                     fact_result, params, plan_result
                 )
-                debug_herbalife(final_result, "6. После _calculate_metrics (final_result)")
                 
                 st.session_state.visit_report['calculated_data'] = final_result
                 
@@ -910,7 +883,7 @@ with tab1:
                         st.session_state.calculation_messages = st.session_state.debug_times.copy()
                         st.session_state.show_messages = True 
                         st.session_state.data_calculated = True
-                        # st.rerun()
+                        st.rerun()
                     else:
                         st.error("❌ Ошибка при расчете")
         else:
@@ -1661,7 +1634,6 @@ with tab3:
                         st.rerun()
                     else:
                         st.error(msg)
-
 
 
 

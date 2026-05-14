@@ -233,6 +233,24 @@
       "fio_om": "",
       "added_at": "2026-05-13T09:31:44.283175",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Roseville",
+      "wave_name": "05.2026_Roseville",
+      "project_code": "RU00.366.06.01SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-14T11:50:59.646990",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Roseville",
+      "wave_name": "05.2026 (ECOM)_Roseville",
+      "project_code": "RU00.366.06.03SVZ26",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-14T11:50:59.647105",
+      "added_by": "unknown_user"
     }
   ],
   "included_projects": [],
@@ -660,8 +678,24 @@
       "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ26",
       "timestamp": "2026-05-13T09:31:44.283188",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Roseville",
+      "wave_name": "05.2026_Roseville",
+      "project_code": "RU00.366.06.01SVZ25",
+      "timestamp": "2026-05-14T11:50:59.647018",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Roseville",
+      "wave_name": "05.2026 (ECOM)_Roseville",
+      "project_code": "RU00.366.06.03SVZ26",
+      "timestamp": "2026-05-14T11:50:59.647113",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-05-13T09:31:44.283196",
+  "last_updated": "2026-05-14T11:50:59.647117",
   "version": "1.0"
 }

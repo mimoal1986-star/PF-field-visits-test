@@ -79,7 +79,7 @@ def parse_optima_rs_excel(excel_file):
         for col in df.columns:
             if 'Москва' in str(col):
                 moscow_client_col = col
-            if col == 'ЭМ' and moscow_client_col is not None:
+            if col.strip() == 'ЭМ' and moscow_client_col is not None:
                 moscow_rs_col = col
         
         if moscow_client_col and moscow_rs_col:
@@ -99,7 +99,7 @@ def parse_optima_rs_excel(excel_file):
         for col in df.columns:
             if 'Питер' in str(col) or 'распределение по Питеру' in str(col):
                 spb_client_col = col
-            if col == 'эм' and spb_client_col is not None:
+            if col.strip().lower() == 'эм' and spb_client_col is not None:
                 spb_rs_col = col
         
         if spb_client_col and spb_rs_col:

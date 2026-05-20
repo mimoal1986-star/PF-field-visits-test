@@ -1245,6 +1245,13 @@ class DataCleaner:
         """
         if df is None or df.empty:
             return pd.DataFrame()
+
+        # Загружаем распределение RS для Optima
+        from github_settings import get_optima_rs_manager
+        optima_rs_manager = get_optima_rs_manager()
+        region_mapping, moscow_mapping, spb_mapping = optima_rs_manager.load_distribution()
+        
+        has_distribution = bool(region_mapping or moscow_mapping or spb_mapping)
         
         df_clean = df.copy()
         
@@ -1313,15 +1320,7 @@ class DataCleaner:
                     result['Регион long'] = ''
                 else:
                     result[std_col] = ''
-        
-        # # Конвертация даты
-        # if 'Дата визита' in result.columns:
-        #     result['Дата визита'] = pd.to_datetime(
-        #         result['Дата визита'], 
-        #         errors='coerce',
-        #         dayfirst=True
-        #     )
-        
+
         # Преобразуем длинные названия регионов в короткие коды
         def get_short_region(long_name):
             if pd.isna(long_name) or str(long_name).strip() in ['', 'nan', 'none', 'null']:
@@ -1338,6 +1337,59 @@ class DataCleaner:
         
         result['Регион short'] = result['Регион long'].apply(get_short_region)
         result['Регион'] = result['Регион long']  # сохраняем полное название для отчетов
+
+        # Если есть распределение RS, очищаем и заполняем ЭМ
+        if has_distribution:
+            # Очищаем колонку ЭМ
+            result['ЭМ'] = ''
+            
+            # Определяем регион (короткий код)
+            result['Регион short'] = result['Регион long'].apply(get_short_region)
+            
+            # Функция для определения Москвы/Питера
+            def is_moscow(region_value):
+                if pd.isna(region_value):
+                    return False
+                region_str = str(region_value).upper()
+                return any(x in region_str for x in ['MC', 'MS', 'МОСКВА', 'МОСКОВСКАЯ ОБЛАСТЬ'])
+            
+            def is_spb(region_value):
+                if pd.isna(region_value):
+                    return False
+                region_str = str(region_value).upper()
+                return any(x in region_str for x in ['LN', 'ЛЕНИНГРАДСКАЯ ОБЛАСТЬ', 'САНКТ-ПЕТЕРБУРГ'])
+            
+            # Заполняем ЭМ
+            for idx, row in result.iterrows():
+                region_long = row.get('Регион long', '')
+                region_short = row.get('Регион short', '')
+                client = row.get('Имя клиента', '')
+                
+                rs_value = None
+                
+                # 1. Москва
+                if is_moscow(region_long):
+                    rs_value = moscow_mapping.get(client)
+                # 2. Санкт-Петербург
+                elif is_spb(region_long):
+                    rs_value = spb_mapping.get(client)
+                # 3. Обычный регион
+                elif region_short and region_short != 'не определен':
+                    rs_value = region_mapping.get(region_short)
+                
+                if rs_value:
+                    result.at[idx, 'ЭМ'] = rs_value
+                    
+        
+        # # Конвертация даты
+        # if 'Дата визита' in result.columns:
+        #     result['Дата визита'] = pd.to_datetime(
+        #         result['Дата визита'], 
+        #         errors='coerce',
+        #         dayfirst=True
+        #     )
+        
+
         
         # Все записи Optima - полевые
         result['Полевой'] = 1

@@ -1394,24 +1394,30 @@ class DataCleaner:
                 rs_value = moscow_mapping.get(client)
                 if rs_value:
                     result.at[idx, 'ЭМ'] = rs_value
+                    stats['moscow_replaced'] += 1
                 else:
                     result.at[idx, 'ЭМ'] = ''
+                    stats['moscow_original'] += 1
             
             # 2. Санкт-Петербург
             elif is_spb(region_long):
                 rs_value = spb_mapping.get(client)
                 if rs_value:
                     result.at[idx, 'ЭМ'] = rs_value
+                    stats['spb_replaced'] += 1
                 else:
                     result.at[idx, 'ЭМ'] = ''
+                    stats['spb_original'] += 1
             
             # 3. Обычный регион
             elif region_short and region_short != 'не определен':
                 rs_value = region_mapping.get(region_short)
                 if rs_value:
                     result.at[idx, 'ЭМ'] = rs_value
+                    stats['region_replaced'] += 1
                 else:
                     result.at[idx, 'ЭМ'] = ''
+                    stats['region_original'] += 1
             
             else:
                 result.at[idx, 'ЭМ'] = ''
@@ -1422,7 +1428,8 @@ class DataCleaner:
             
             # Сохраняем строку для выгрузки
             debug_data.append({
-                'Проект': project_code,
+                'Клиент': client,
+                'Код проекта': project_code,
                 'Волна': wave_name,
                 'Регион': region_long,
                 'Регион short': region_short,

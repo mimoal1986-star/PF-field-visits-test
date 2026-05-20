@@ -1374,56 +1374,51 @@ class DataCleaner:
         debug_data = []
         
         for idx, row in result.iterrows():
+            # СОХРАНЯЕМ ИСХОДНОЕ ЗНАЧЕНИЕ
             old_em = row.get('ЭМ', '')
+            
             region_long = row.get('Регион long', '')
             region_short = row.get('Регион short', '')
             client = row.get('Имя клиента', '')
             project_code = row.get('Код анкеты', '')
             wave_name = row.get('Название проекта', '')
             asm = row.get('АСС', '')
-            old_em = row.get('ЭМ', '')  # исходное значение (уже могло быть очищено)
             status = row.get('Статус', '')
             visit_date = row.get('Дата визита', '')
             
             # Определяем новое значение RS
             rs_value = None
-            replaced = 0
             
             # 1. Москва
             if is_moscow(region_long):
                 rs_value = moscow_mapping.get(client)
                 if rs_value:
-                    replaced = 1
-                    stats['moscow_replaced'] += 1
                     result.at[idx, 'ЭМ'] = rs_value
                 else:
-                    stats['moscow_original'] += 1
                     result.at[idx, 'ЭМ'] = ''
-                    
+            
             # 2. Санкт-Петербург
             elif is_spb(region_long):
                 rs_value = spb_mapping.get(client)
                 if rs_value:
-                    replaced = 1
-                    stats['spb_replaced'] += 1
                     result.at[idx, 'ЭМ'] = rs_value
                 else:
-                    stats['spb_original'] += 1
                     result.at[idx, 'ЭМ'] = ''
-                    
+            
             # 3. Обычный регион
             elif region_short and region_short != 'не определен':
                 rs_value = region_mapping.get(region_short)
                 if rs_value:
-                    replaced = 1
-                    stats['region_replaced'] += 1
                     result.at[idx, 'ЭМ'] = rs_value
                 else:
-                    stats['region_original'] += 1
                     result.at[idx, 'ЭМ'] = ''
-
+            
             else:
                 result.at[idx, 'ЭМ'] = ''
+            
+            # ✅ ПРАВИЛЬНОЕ ОПРЕДЕЛЕНИЕ: сравниваем исходное и новое
+            new_em = result.at[idx, 'ЭМ']
+            replaced = 1 if old_em != new_em else 0
             
             # Сохраняем строку для выгрузки
             debug_data.append({
@@ -1434,8 +1429,8 @@ class DataCleaner:
                 'Статус': status,
                 'Дата визита': visit_date,
                 'ASM': asm,
-                'RS_исходный': old_em if old_em else '',
-                'RS_после_обработки': result.at[idx, 'ЭМ'],
+                'RS_исходный': old_em,
+                'RS_после_обработки': new_em,
                 'Замена_произошла': replaced
             })
         

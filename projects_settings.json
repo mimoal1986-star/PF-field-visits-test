@@ -82,60 +82,6 @@
       "added_by": "unknown_user"
     },
     {
-      "project_name": "Лукойл",
-      "wave_name": "Март 2026",
-      "project_code": "RU00.177.05.03SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T09:46:01.143019",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Лукойл",
-      "wave_name": "Март 2026",
-      "project_code": "RU00.177.05.04SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T09:46:01.143080",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Лукойл",
-      "wave_name": "Январь 2026",
-      "project_code": "RU00.177.05.04SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T09:46:01.143142",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Лукойл",
-      "wave_name": "Январь 2026",
-      "project_code": "RU00.177.05.03SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T09:46:01.143211",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Лукойл",
-      "wave_name": "",
-      "project_code": "RU00.177.05.04SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T09:46:01.143276",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Лукойл",
-      "wave_name": "Апрель 2026",
-      "project_code": "RU00.177.05.04SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-04-27T09:46:01.143338",
-      "added_by": "unknown_user"
-    },
-    {
       "project_name": "Лукойл франчайзинг ФО",
       "wave_name": "Апрель 2026",
       "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ26",
@@ -160,15 +106,6 @@
       "portal": "Чеккер",
       "fio_om": "",
       "added_at": "2026-05-12T07:32:18.011092",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "ТАЙНЫЙ ПАССАЖИР",
-      "wave_name": "4_Волна_Визит в офис продаж",
-      "project_code": "RU00.265.15.03SVZ25",
-      "portal": "Чеккер",
-      "fio_om": "",
-      "added_at": "2026-05-12T07:32:18.011256",
       "added_by": "unknown_user"
     },
     {
@@ -208,15 +145,6 @@
       "added_by": "unknown_user"
     },
     {
-      "project_name": "Лукойл франчайзинг очные",
-      "wave_name": "Май 2026",
-      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ26",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-05-13T09:31:44.282849",
-      "added_by": "unknown_user"
-    },
-    {
       "project_name": "Лукойл франчайзинг ФО",
       "wave_name": "Май 2026",
       "project_code": "RU00.390.02.01SVZ26",
@@ -235,30 +163,12 @@
       "added_by": "unknown_user"
     },
     {
-      "project_name": "Roseville",
-      "wave_name": "05.2026_Roseville",
-      "project_code": "RU00.366.06.01SVZ25",
-      "portal": "CXWAY",
-      "fio_om": "",
-      "added_at": "2026-05-14T11:50:59.646990",
-      "added_by": "unknown_user"
-    },
-    {
-      "project_name": "Roseville",
-      "wave_name": "05.2026 (ECOM)_Roseville",
-      "project_code": "RU00.366.06.03SVZ26",
-      "portal": "CXWAY",
-      "fio_om": "",
-      "added_at": "2026-05-14T11:50:59.647105",
-      "added_by": "unknown_user"
-    },
-    {
       "project_name": "ГЛАВСТРОЙ",
       "wave_name": "2026.05",
       "project_code": "RU00.342.06.01SVZ25",
       "portal": "Чеккер",
       "fio_om": "",
-      "added_at": "2026-05-14T11:51:17.222405",
+      "added_at": "2026-05-15T07:54:23.423489",
       "added_by": "unknown_user"
     },
     {
@@ -267,7 +177,25 @@
       "project_code": "RU00.343.06.02SVZ25",
       "portal": "Чеккер",
       "fio_om": "",
-      "added_at": "2026-05-14T11:51:17.222511",
+      "added_at": "2026-05-15T07:54:23.423700",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Roseville",
+      "wave_name": "05.2026_Roseville",
+      "project_code": "RU00.366.06.01SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T07:54:23.423850",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Roseville",
+      "wave_name": "05.2026 (ECOM)_Roseville",
+      "project_code": "RU00.366.06.03SVZ26",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T07:54:23.423949",
       "added_by": "unknown_user"
     },
     {
@@ -276,7 +204,7 @@
       "project_code": "",
       "portal": "CXWAY",
       "fio_om": "",
-      "added_at": "2026-05-14T11:52:56.056105",
+      "added_at": "2026-05-15T07:54:23.424071",
       "added_by": "unknown_user"
     },
     {
@@ -285,16 +213,1762 @@
       "project_code": "RU00.116.01.02SVZ24",
       "portal": "CXWAY",
       "fio_om": "",
-      "added_at": "2026-05-14T11:52:56.056282",
+      "added_at": "2026-05-15T07:54:23.424150",
       "added_by": "unknown_user"
     },
     {
       "project_name": "Марафон Сервиса",
-      "wave_name": "",
+      "wave_name": "2026.05_Марафон Сервиса",
       "project_code": "Sample_Марафон Сервиса_Улыбка радуги",
       "portal": "CXWAY",
       "fio_om": "",
-      "added_at": "2026-05-14T11:52:56.056390",
+      "added_at": "2026-05-15T07:54:23.424222",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Эконика",
+      "wave_name": "Эконика_2026.05_ВИП",
+      "project_code": "Мультикод_.306",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T07:55:37.227053",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Эконика",
+      "wave_name": "_SINGLE-Эконика",
+      "project_code": "Мультикод_.306",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T07:55:37.227393",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ЦДМ",
+      "wave_name": "ЦДМ_Визиты_04.2025",
+      "project_code": "Мультикод_.298",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T09:37:27.912933",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Фреш Маркет ДА_тест",
+      "wave_name": "2026.04_Марафон Сервиса",
+      "project_code": "",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T09:37:27.913637",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Этажи",
+      "wave_name": "2026.02-03_Этажи",
+      "project_code": "RU00.311.01.02SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T09:45:36.427600",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "CarPrice",
+      "wave_name": "2026.04",
+      "project_code": "RU00.013.06.01SVZ24",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-05-15T12:02:37.077483",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Абсолют Банк",
+      "wave_name": "2026.04_Визиты Абсолют банк",
+      "project_code": "RU00.080.01.01SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T12:02:37.077605",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Tarkett_ru",
+      "wave_name": "2026.02-03 (26 волна)_1Q",
+      "project_code": "RU00.066.01.01SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T12:02:37.077688",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Абсолют Банк",
+      "wave_name": "2026.05_Звонки Абсолют банк",
+      "project_code": "RU00.080.01.02SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T12:02:37.078012",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Абсолют Банк",
+      "wave_name": "2026.05_Звонки Абсолют банк",
+      "project_code": "RU00.080.01.03SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T12:02:37.078145",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "SUBJOY",
+      "wave_name": "2026.04 Анкета Тайного Гостя 7 Волна",
+      "project_code": "RU00.250.01.01SPK24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T12:02:37.078332",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "MIUZ Diamonds",
+      "wave_name": "2026.03 (89 волна)_MIUZ Diamonds",
+      "project_code": "RU00.201.01.01SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-15T12:02:37.078562",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ141",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.994322",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ142",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.994454",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ144",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.994541",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ148",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.994644",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ150",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.994717",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ151",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.994785",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ152",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.994851",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ153",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.994929",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ159",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.995007",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ162",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.995128",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ205",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.995250",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ206",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.995368",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ208",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.995487",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ209",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.995646",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ210",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.995731",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ213",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.995804",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ214",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.995887",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ217",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.995963",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ222",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996034",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ115",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996101",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ145",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996196",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ225",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996272",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ228",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996343",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ27",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996412",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ28",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996478",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ29",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996588",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ30",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996665",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ32",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996734",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ33",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996802",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ34",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996879",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ35",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.996952",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ36",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997023",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ37",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997091",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ38",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997164",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ39",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997235",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ40",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997306",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ41",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997376",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ42",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997449",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ43",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997518",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ44",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997608",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ45",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997689",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ46",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997780",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ47",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997850",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ48",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.997946",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ49",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.998022",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ50",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.998094",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ51",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.998164",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ52",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.998233",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ53",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.998302",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ54",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.998371",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ55",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.998443",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ56",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.998515",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ57",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.998608",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ58",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.998687",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ59",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.998817",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ60",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.998935",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ61",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999022",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ62",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999107",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ63",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999179",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ64",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999251",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ65",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999323",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ66",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999396",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ67",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999468",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ68",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999541",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ69",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999642",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ70",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999719",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ71",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999793",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ72",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999865",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ73",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:40.999951",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ74",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.000024",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ75",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.000098",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ76",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.000171",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ77",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.000244",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ78",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.000317",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ79",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.000389",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ80",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.000463",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ81",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.000537",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ82",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.000635",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ83",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.000710",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ84",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.000785",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ85",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.000900",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ86",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.001021",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ87",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.001147",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ88",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.001288",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ89",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.001403",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ90",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.001484",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ91",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.001581",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ92",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.001665",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ93",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.001742",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ94",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.001836",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ95",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.001925",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ96",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.002004",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ97",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.002084",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ98",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.002166",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ99",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.002261",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ100",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.002346",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ101",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.002425",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ102",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.002504",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ103",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.002603",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ104",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.002687",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ105",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.002768",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ106",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.002846",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ107",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.002936",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ108",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.003018",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ109",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.003097",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ110",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.003176",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ111",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.003424",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ112",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.003524",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ113",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.003637",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ114",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.003724",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ116",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.003808",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ117",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.003901",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ118",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.003987",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ120",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.004070",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ121",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.004152",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ122",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.004235",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ123",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.004318",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ124",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.004403",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ125",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.004485",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ126",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.004616",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ127",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.004785",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ128",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.004917",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ129",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.005106",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ131",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.005234",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ132",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.005327",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ133",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.005413",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ134",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.005499",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ137",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.005635",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ138",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.005761",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ139",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.005855",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ140",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.005958",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ143",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.006045",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ146",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.006134",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ147",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.006223",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ149",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.006309",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ154",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.006395",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ155",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.006482",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ157",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.006601",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ158",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.006706",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ160",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.006798",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ161",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.006902",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ163",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.006994",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ164",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.007083",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ165",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.007175",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ167",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.007263",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ168",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.007350",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ169",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.007442",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ170",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.007533",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ171",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.007675",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ172",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.007774",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ173",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.007863",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ175",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.007964",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ176",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.008054",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ177",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.008154",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ178",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.008314",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ180",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.008460",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ181",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.008591",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ182",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.008702",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ185",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.008796",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ186",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.008896",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ191",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.008991",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ194",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.009097",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ195",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.009198",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ197",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.009329",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ199",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.009443",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ202",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.009540",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ203",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.009698",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ211",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.009799",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ218",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.009906",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ219",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.010001",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ220",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.010093",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ221",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.010190",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ224",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.010282",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ226",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.010375",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ227",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.010466",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ229",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.010582",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ230",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-05-18T08:43:41.010697",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Гротекс",
+      "wave_name": "Гротекс_Реко_04.2026 (02 волна)_3 часть",
+      "project_code": "Мультикод_.404",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-20T07:42:20.739500",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Гротекс",
+      "wave_name": "Гротекс_Реко_04.2026 (02 волна)_2 часть",
+      "project_code": "Мультикод_.404",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-20T07:42:20.739930",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Гротекс",
+      "wave_name": "Гротекс_Реко_05.2026 (03 волна)",
+      "project_code": "Мультикод_.404",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-20T07:42:20.740107",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Гротекс",
+      "wave_name": "Гротекс_Реко_05.2026 (03 волна)_2",
+      "project_code": "Мультикод_.404",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-20T07:42:20.740278",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Л'Этуаль",
+      "wave_name": "2026.05_С",
+      "project_code": "RU00.174.01.01SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-05-20T10:51:05.478194",
       "added_by": "unknown_user"
     }
   ],
@@ -726,26 +2400,10 @@
     },
     {
       "action": "add_to_excluded",
-      "project_name": "Roseville",
-      "wave_name": "05.2026_Roseville",
-      "project_code": "RU00.366.06.01SVZ25",
-      "timestamp": "2026-05-14T11:50:59.647018",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "Roseville",
-      "wave_name": "05.2026 (ECOM)_Roseville",
-      "project_code": "RU00.366.06.03SVZ26",
-      "timestamp": "2026-05-14T11:50:59.647113",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
       "project_name": "ГЛАВСТРОЙ",
       "wave_name": "2026.05",
       "project_code": "RU00.342.06.01SVZ25",
-      "timestamp": "2026-05-14T11:51:17.222425",
+      "timestamp": "2026-05-15T07:54:23.423518",
       "user": "unknown_user"
     },
     {
@@ -753,7 +2411,23 @@
       "project_name": "ГЛАВСТРОЙ",
       "wave_name": "2026.05",
       "project_code": "RU00.343.06.02SVZ25",
-      "timestamp": "2026-05-14T11:51:17.222520",
+      "timestamp": "2026-05-15T07:54:23.423717",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Roseville",
+      "wave_name": "05.2026_Roseville",
+      "project_code": "RU00.366.06.01SVZ25",
+      "timestamp": "2026-05-15T07:54:23.423859",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Roseville",
+      "wave_name": "05.2026 (ECOM)_Roseville",
+      "project_code": "RU00.366.06.03SVZ26",
+      "timestamp": "2026-05-15T07:54:23.423961",
       "user": "unknown_user"
     },
     {
@@ -761,7 +2435,7 @@
       "project_name": "Марафон Сервиса",
       "wave_name": "2026.04_Марафон Сервиса",
       "project_code": "",
-      "timestamp": "2026-05-14T11:52:56.056131",
+      "timestamp": "2026-05-15T07:54:23.424079",
       "user": "unknown_user"
     },
     {
@@ -769,18 +2443,1682 @@
       "project_name": "МВЭД_ВТБ Банк",
       "wave_name": "МВЭД_05-06.2026",
       "project_code": "RU00.116.01.02SVZ24",
-      "timestamp": "2026-05-14T11:52:56.056295",
+      "timestamp": "2026-05-15T07:54:23.424157",
       "user": "unknown_user"
     },
     {
       "action": "add_to_excluded",
       "project_name": "Марафон Сервиса",
-      "wave_name": "",
+      "wave_name": "2026.05_Марафон Сервиса",
       "project_code": "Sample_Марафон Сервиса_Улыбка радуги",
-      "timestamp": "2026-05-14T11:52:56.056400",
+      "timestamp": "2026-05-15T07:54:23.424228",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Эконика",
+      "wave_name": "Эконика_2026.05_ВИП",
+      "project_code": "Мультикод_.306",
+      "timestamp": "2026-05-15T07:55:37.227081",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Эконика",
+      "wave_name": "Эконика_2026.05 (73 волна)",
+      "project_code": "Мультикод_.306",
+      "timestamp": "2026-05-15T07:55:37.227248",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Эконика",
+      "wave_name": "_SINGLE-Эконика",
+      "project_code": "Мультикод_.306",
+      "timestamp": "2026-05-15T07:55:37.227434",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ЦДМ",
+      "wave_name": "ЦДМ_Визиты_04.2025",
+      "project_code": "Мультикод_.298",
+      "timestamp": "2026-05-15T09:37:27.912955",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ЦДМ",
+      "wave_name": "2026.05_ЦДМ",
+      "project_code": "RU00.298.01.06SPK26",
+      "timestamp": "2026-05-15T09:37:27.913057",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ЦДМ",
+      "wave_name": "2026.05_ЦДМ",
+      "project_code": "RU00.298.01.03SPK26",
+      "timestamp": "2026-05-15T09:37:27.913140",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ЦДМ",
+      "wave_name": "2026.05_ЦДМ",
+      "project_code": "RU00.298.01.07SPK26",
+      "timestamp": "2026-05-15T09:37:27.913213",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ЦДМ",
+      "wave_name": "2026.05_ЦДМ",
+      "project_code": "RU00.298.01.08SPK26",
+      "timestamp": "2026-05-15T09:37:27.913285",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ЦДМ",
+      "wave_name": "2026.05_ЦДМ",
+      "project_code": "RU00.298.01.04SPK26",
+      "timestamp": "2026-05-15T09:37:27.913372",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ЦДМ",
+      "wave_name": "2026.05_ЦДМ",
+      "project_code": "RU00.298.01.05SPK26",
+      "timestamp": "2026-05-15T09:37:27.913540",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Фреш Маркет ДА_тест",
+      "wave_name": "2026.04_Марафон Сервиса",
+      "project_code": "",
+      "timestamp": "2026-05-15T09:37:27.913645",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Этажи",
+      "wave_name": "2026.02-03_Этажи",
+      "project_code": "RU00.311.01.02SVZ24",
+      "timestamp": "2026-05-15T09:45:36.427622",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "CarPrice",
+      "wave_name": "2026.04",
+      "project_code": "RU00.013.06.01SVZ24",
+      "timestamp": "2026-05-15T12:02:37.077504",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Абсолют Банк",
+      "wave_name": "2026.04_Визиты Абсолют банк",
+      "project_code": "RU00.080.01.01SVZ24",
+      "timestamp": "2026-05-15T12:02:37.077614",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Tarkett_ru",
+      "wave_name": "2026.02-03 (26 волна)_1Q",
+      "project_code": "RU00.066.01.01SVZ24",
+      "timestamp": "2026-05-15T12:02:37.077696",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Tarkett_ru",
+      "wave_name": "2026.04-06 (27 волна)_2Q",
+      "project_code": "RU00.066.01.01SVZ24",
+      "timestamp": "2026-05-15T12:02:37.077784",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Tarkett_ru",
+      "wave_name": "2026.04-06 (27 волна)_2Q_TARKETT SPACE",
+      "project_code": "RU00.066.01.01SVZ24",
+      "timestamp": "2026-05-15T12:02:37.077861",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Абсолют Банк",
+      "wave_name": "2026.05_Визиты Абсолют банк",
+      "project_code": "RU00.080.01.01SVZ24",
+      "timestamp": "2026-05-15T12:02:37.077935",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Абсолют Банк",
+      "wave_name": "2026.05_Звонки Абсолют банк",
+      "project_code": "RU00.080.01.02SVZ24",
+      "timestamp": "2026-05-15T12:02:37.078026",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Абсолют Банк",
+      "wave_name": "2026.05_Звонки Абсолют банк",
+      "project_code": "RU00.080.01.03SVZ24",
+      "timestamp": "2026-05-15T12:02:37.078162",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "SUBJOY",
+      "wave_name": "2026.05 Анкета Тайного Гостя 7 Волна",
+      "project_code": "RU00.250.01.01SPK24",
+      "timestamp": "2026-05-15T12:02:37.078264",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "SUBJOY",
+      "wave_name": "2026.04 Анкета Тайного Гостя 7 Волна",
+      "project_code": "RU00.250.01.01SPK24",
+      "timestamp": "2026-05-15T12:02:37.078341",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "MIUZ Diamonds",
+      "wave_name": "2026.05 (91 волна)_MIUZ Diamonds",
+      "project_code": "RU00.201.01.01SVZ24",
+      "timestamp": "2026-05-15T12:02:37.078458",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "MIUZ Diamonds",
+      "wave_name": "2026.03 (89 волна)_MIUZ Diamonds",
+      "project_code": "RU00.201.01.01SVZ24",
+      "timestamp": "2026-05-15T12:02:37.078573",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ141",
+      "timestamp": "2026-05-18T08:43:40.994349",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ142",
+      "timestamp": "2026-05-18T08:43:40.994465",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ144",
+      "timestamp": "2026-05-18T08:43:40.994551",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ148",
+      "timestamp": "2026-05-18T08:43:40.994653",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ150",
+      "timestamp": "2026-05-18T08:43:40.994725",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ151",
+      "timestamp": "2026-05-18T08:43:40.994794",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ152",
+      "timestamp": "2026-05-18T08:43:40.994860",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ153",
+      "timestamp": "2026-05-18T08:43:40.994938",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ159",
+      "timestamp": "2026-05-18T08:43:40.995023",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ162",
+      "timestamp": "2026-05-18T08:43:40.995145",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ205",
+      "timestamp": "2026-05-18T08:43:40.995267",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ206",
+      "timestamp": "2026-05-18T08:43:40.995385",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ208",
+      "timestamp": "2026-05-18T08:43:40.995503",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ209",
+      "timestamp": "2026-05-18T08:43:40.995658",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ210",
+      "timestamp": "2026-05-18T08:43:40.995741",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ213",
+      "timestamp": "2026-05-18T08:43:40.995816",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ214",
+      "timestamp": "2026-05-18T08:43:40.995898",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ217",
+      "timestamp": "2026-05-18T08:43:40.995974",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ222",
+      "timestamp": "2026-05-18T08:43:40.996045",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ115",
+      "timestamp": "2026-05-18T08:43:40.996112",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ145",
+      "timestamp": "2026-05-18T08:43:40.996208",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ225",
+      "timestamp": "2026-05-18T08:43:40.996284",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ228",
+      "timestamp": "2026-05-18T08:43:40.996354",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ27",
+      "timestamp": "2026-05-18T08:43:40.996423",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ28",
+      "timestamp": "2026-05-18T08:43:40.996490",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ29",
+      "timestamp": "2026-05-18T08:43:40.996601",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ30",
+      "timestamp": "2026-05-18T08:43:40.996677",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ32",
+      "timestamp": "2026-05-18T08:43:40.996746",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ33",
+      "timestamp": "2026-05-18T08:43:40.996814",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ34",
+      "timestamp": "2026-05-18T08:43:40.996892",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ35",
+      "timestamp": "2026-05-18T08:43:40.996965",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ36",
+      "timestamp": "2026-05-18T08:43:40.997035",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ37",
+      "timestamp": "2026-05-18T08:43:40.997104",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ38",
+      "timestamp": "2026-05-18T08:43:40.997176",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ39",
+      "timestamp": "2026-05-18T08:43:40.997248",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ40",
+      "timestamp": "2026-05-18T08:43:40.997319",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ41",
+      "timestamp": "2026-05-18T08:43:40.997389",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ42",
+      "timestamp": "2026-05-18T08:43:40.997462",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ43",
+      "timestamp": "2026-05-18T08:43:40.997532",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ44",
+      "timestamp": "2026-05-18T08:43:40.997623",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ45",
+      "timestamp": "2026-05-18T08:43:40.997704",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ46",
+      "timestamp": "2026-05-18T08:43:40.997796",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ47",
+      "timestamp": "2026-05-18T08:43:40.997864",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ48",
+      "timestamp": "2026-05-18T08:43:40.997962",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ49",
+      "timestamp": "2026-05-18T08:43:40.998037",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ50",
+      "timestamp": "2026-05-18T08:43:40.998109",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ51",
+      "timestamp": "2026-05-18T08:43:40.998178",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ52",
+      "timestamp": "2026-05-18T08:43:40.998248",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ53",
+      "timestamp": "2026-05-18T08:43:40.998317",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ54",
+      "timestamp": "2026-05-18T08:43:40.998386",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ55",
+      "timestamp": "2026-05-18T08:43:40.998459",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ56",
+      "timestamp": "2026-05-18T08:43:40.998530",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ57",
+      "timestamp": "2026-05-18T08:43:40.998624",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ58",
+      "timestamp": "2026-05-18T08:43:40.998713",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ59",
+      "timestamp": "2026-05-18T08:43:40.998837",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ60",
+      "timestamp": "2026-05-18T08:43:40.998954",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ61",
+      "timestamp": "2026-05-18T08:43:40.999040",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ62",
+      "timestamp": "2026-05-18T08:43:40.999124",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ63",
+      "timestamp": "2026-05-18T08:43:40.999196",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ64",
+      "timestamp": "2026-05-18T08:43:40.999268",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ65",
+      "timestamp": "2026-05-18T08:43:40.999340",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ66",
+      "timestamp": "2026-05-18T08:43:40.999413",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ67",
+      "timestamp": "2026-05-18T08:43:40.999486",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ68",
+      "timestamp": "2026-05-18T08:43:40.999577",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ69",
+      "timestamp": "2026-05-18T08:43:40.999661",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ70",
+      "timestamp": "2026-05-18T08:43:40.999737",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ71",
+      "timestamp": "2026-05-18T08:43:40.999811",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ72",
+      "timestamp": "2026-05-18T08:43:40.999892",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ73",
+      "timestamp": "2026-05-18T08:43:40.999969",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ74",
+      "timestamp": "2026-05-18T08:43:41.000043",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ75",
+      "timestamp": "2026-05-18T08:43:41.000116",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ76",
+      "timestamp": "2026-05-18T08:43:41.000190",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ77",
+      "timestamp": "2026-05-18T08:43:41.000263",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ78",
+      "timestamp": "2026-05-18T08:43:41.000335",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ79",
+      "timestamp": "2026-05-18T08:43:41.000409",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ80",
+      "timestamp": "2026-05-18T08:43:41.000483",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ81",
+      "timestamp": "2026-05-18T08:43:41.000573",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ82",
+      "timestamp": "2026-05-18T08:43:41.000655",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ83",
+      "timestamp": "2026-05-18T08:43:41.000730",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ84",
+      "timestamp": "2026-05-18T08:43:41.000805",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ85",
+      "timestamp": "2026-05-18T08:43:41.000924",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ86",
+      "timestamp": "2026-05-18T08:43:41.001045",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ87",
+      "timestamp": "2026-05-18T08:43:41.001183",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ88",
+      "timestamp": "2026-05-18T08:43:41.001323",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ89",
+      "timestamp": "2026-05-18T08:43:41.001425",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ90",
+      "timestamp": "2026-05-18T08:43:41.001505",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ91",
+      "timestamp": "2026-05-18T08:43:41.001604",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ92",
+      "timestamp": "2026-05-18T08:43:41.001687",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ93",
+      "timestamp": "2026-05-18T08:43:41.001774",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ94",
+      "timestamp": "2026-05-18T08:43:41.001859",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ95",
+      "timestamp": "2026-05-18T08:43:41.001948",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ96",
+      "timestamp": "2026-05-18T08:43:41.002027",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ97",
+      "timestamp": "2026-05-18T08:43:41.002106",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ98",
+      "timestamp": "2026-05-18T08:43:41.002188",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ99",
+      "timestamp": "2026-05-18T08:43:41.002285",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ100",
+      "timestamp": "2026-05-18T08:43:41.002368",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ101",
+      "timestamp": "2026-05-18T08:43:41.002448",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ102",
+      "timestamp": "2026-05-18T08:43:41.002527",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ103",
+      "timestamp": "2026-05-18T08:43:41.002627",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ104",
+      "timestamp": "2026-05-18T08:43:41.002710",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ105",
+      "timestamp": "2026-05-18T08:43:41.002791",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ106",
+      "timestamp": "2026-05-18T08:43:41.002876",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ107",
+      "timestamp": "2026-05-18T08:43:41.002960",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ108",
+      "timestamp": "2026-05-18T08:43:41.003042",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ109",
+      "timestamp": "2026-05-18T08:43:41.003121",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ110",
+      "timestamp": "2026-05-18T08:43:41.003200",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ111",
+      "timestamp": "2026-05-18T08:43:41.003450",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ112",
+      "timestamp": "2026-05-18T08:43:41.003550",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ113",
+      "timestamp": "2026-05-18T08:43:41.003663",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ114",
+      "timestamp": "2026-05-18T08:43:41.003749",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ116",
+      "timestamp": "2026-05-18T08:43:41.003834",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ117",
+      "timestamp": "2026-05-18T08:43:41.003926",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ118",
+      "timestamp": "2026-05-18T08:43:41.004012",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ120",
+      "timestamp": "2026-05-18T08:43:41.004095",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ121",
+      "timestamp": "2026-05-18T08:43:41.004178",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ122",
+      "timestamp": "2026-05-18T08:43:41.004260",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ123",
+      "timestamp": "2026-05-18T08:43:41.004343",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ124",
+      "timestamp": "2026-05-18T08:43:41.004429",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ125",
+      "timestamp": "2026-05-18T08:43:41.004511",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ126",
+      "timestamp": "2026-05-18T08:43:41.004661",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ127",
+      "timestamp": "2026-05-18T08:43:41.004816",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ128",
+      "timestamp": "2026-05-18T08:43:41.004978",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ129",
+      "timestamp": "2026-05-18T08:43:41.005148",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ131",
+      "timestamp": "2026-05-18T08:43:41.005263",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ132",
+      "timestamp": "2026-05-18T08:43:41.005355",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ133",
+      "timestamp": "2026-05-18T08:43:41.005441",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ134",
+      "timestamp": "2026-05-18T08:43:41.005527",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ137",
+      "timestamp": "2026-05-18T08:43:41.005666",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ138",
+      "timestamp": "2026-05-18T08:43:41.005791",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ139",
+      "timestamp": "2026-05-18T08:43:41.005892",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ140",
+      "timestamp": "2026-05-18T08:43:41.005986",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ143",
+      "timestamp": "2026-05-18T08:43:41.006074",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ146",
+      "timestamp": "2026-05-18T08:43:41.006164",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ147",
+      "timestamp": "2026-05-18T08:43:41.006251",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ149",
+      "timestamp": "2026-05-18T08:43:41.006337",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ154",
+      "timestamp": "2026-05-18T08:43:41.006424",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ155",
+      "timestamp": "2026-05-18T08:43:41.006510",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ157",
+      "timestamp": "2026-05-18T08:43:41.006633",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ158",
+      "timestamp": "2026-05-18T08:43:41.006736",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ160",
+      "timestamp": "2026-05-18T08:43:41.006829",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ161",
+      "timestamp": "2026-05-18T08:43:41.006933",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ163",
+      "timestamp": "2026-05-18T08:43:41.007024",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ164",
+      "timestamp": "2026-05-18T08:43:41.007113",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ165",
+      "timestamp": "2026-05-18T08:43:41.007205",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ167",
+      "timestamp": "2026-05-18T08:43:41.007293",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ168",
+      "timestamp": "2026-05-18T08:43:41.007380",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ169",
+      "timestamp": "2026-05-18T08:43:41.007473",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ170",
+      "timestamp": "2026-05-18T08:43:41.007590",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ171",
+      "timestamp": "2026-05-18T08:43:41.007707",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ172",
+      "timestamp": "2026-05-18T08:43:41.007805",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ173",
+      "timestamp": "2026-05-18T08:43:41.007902",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ175",
+      "timestamp": "2026-05-18T08:43:41.007996",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ176",
+      "timestamp": "2026-05-18T08:43:41.008085",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ177",
+      "timestamp": "2026-05-18T08:43:41.008203",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ178",
+      "timestamp": "2026-05-18T08:43:41.008368",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ180",
+      "timestamp": "2026-05-18T08:43:41.008494",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ181",
+      "timestamp": "2026-05-18T08:43:41.008627",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ182",
+      "timestamp": "2026-05-18T08:43:41.008735",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ185",
+      "timestamp": "2026-05-18T08:43:41.008829",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ186",
+      "timestamp": "2026-05-18T08:43:41.008930",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ191",
+      "timestamp": "2026-05-18T08:43:41.009024",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ194",
+      "timestamp": "2026-05-18T08:43:41.009134",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ195",
+      "timestamp": "2026-05-18T08:43:41.009232",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ197",
+      "timestamp": "2026-05-18T08:43:41.009368",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ199",
+      "timestamp": "2026-05-18T08:43:41.009477",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ202",
+      "timestamp": "2026-05-18T08:43:41.009606",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ203",
+      "timestamp": "2026-05-18T08:43:41.009735",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ211",
+      "timestamp": "2026-05-18T08:43:41.009835",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ218",
+      "timestamp": "2026-05-18T08:43:41.009941",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ219",
+      "timestamp": "2026-05-18T08:43:41.010036",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ220",
+      "timestamp": "2026-05-18T08:43:41.010130",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ221",
+      "timestamp": "2026-05-18T08:43:41.010225",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ224",
+      "timestamp": "2026-05-18T08:43:41.010317",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ226",
+      "timestamp": "2026-05-18T08:43:41.010409",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ227",
+      "timestamp": "2026-05-18T08:43:41.010500",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ229",
+      "timestamp": "2026-05-18T08:43:41.010623",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл франчайзинг ФО",
+      "wave_name": "Май 2026",
+      "project_code": "RU00.391.02.01SVZ26/RU00.390.02.01SVZ230",
+      "timestamp": "2026-05-18T08:43:41.010733",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Гротекс",
+      "wave_name": "Гротекс_Реко_04.2026 (02 волна)_3 часть",
+      "project_code": "Мультикод_.404",
+      "timestamp": "2026-05-20T07:42:20.739577",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Гротекс",
+      "wave_name": "_SINGLE",
+      "project_code": "Мультикод_.404",
+      "timestamp": "2026-05-20T07:42:20.739792",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Гротекс",
+      "wave_name": "Гротекс_Реко_04.2026 (02 волна)_2 часть",
+      "project_code": "Мультикод_.404",
+      "timestamp": "2026-05-20T07:42:20.739971",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Гротекс",
+      "wave_name": "Гротекс_Реко_05.2026 (03 волна)",
+      "project_code": "Мультикод_.404",
+      "timestamp": "2026-05-20T07:42:20.740148",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Гротекс",
+      "wave_name": "Гротекс_Реко_05.2026 (03 волна)_2",
+      "project_code": "Мультикод_.404",
+      "timestamp": "2026-05-20T07:42:20.740321",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Л'Этуаль",
+      "wave_name": "2026.05_Л'Этуаль",
+      "project_code": "RU00.174.01.01SVZ24",
+      "timestamp": "2026-05-20T10:51:05.477635",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Л'Этуаль",
+      "wave_name": "2026.05_С",
+      "project_code": "RU00.174.01.01SVZ24",
+      "timestamp": "2026-05-20T10:51:05.478456",
       "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-05-14T11:52:56.056404",
+  "last_updated": "2026-05-20T10:51:05.478468",
   "version": "1.0"
 }

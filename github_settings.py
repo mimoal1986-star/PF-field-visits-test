@@ -698,6 +698,150 @@ def get_multon_plan_manager():
         st.session_state.multon_plan_manager = MultonPlanManager()
     return st.session_state.multon_plan_manager
 
+class OptimaRSManager:
+    """Управление распределением RS для Optima"""
+    
+    def __init__(self):
+        """Инициализация с настройками из Streamlit Secrets"""
+        if 'github' not in st.secrets:
+            self.available = False
+            return
+            
+        self.token = st.secrets['github']['token']
+        self.repo = st.secrets['github']['repo']
+        self.branch = st.secrets['github']['branch']
+        self.file_path = 'optima_rs_distribution.json'
+        
+        self.api_url = f"https://api.github.com/repos/{self.repo}/contents/{self.file_path}"
+        self.headers = {
+            "Authorization": f"token {self.token}",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        self.available = True
+    
+    def _get_file_sha(self):
+        """Получает SHA текущего файла"""
+        try:
+            response = requests.get(
+                self.api_url,
+                headers=self.headers,
+                params={"ref": self.branch}
+            )
+            if response.status_code == 200:
+                return response.json()["sha"]
+            return None
+        except Exception:
+            return None
+    
+    def save_distribution(self, region_mapping: dict, moscow_mapping: dict, spb_mapping: dict) -> Tuple[bool, str]:
+        """Сохраняет распределение в GitHub"""
+        if not self.available:
+            return False, "❌ GitHub не доступен"
+        
+        try:
+            data = {
+                "last_updated": datetime.now().isoformat(),
+                "region_mapping": region_mapping,
+                "moscow_mapping": moscow_mapping,
+                "spb_mapping": spb_mapping
+            }
+            
+            content = json.dumps(data, indent=2, ensure_ascii=False)
+            content_bytes = content.encode("utf-8")
+            content_base64 = base64.b64encode(content_bytes).decode("utf-8")
+            
+            sha = self._get_file_sha()
+            payload = {
+                "message": f"Обновление распределения RS для Optima от {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                "content": content_base64,
+                "branch": self.branch
+            }
+            if sha:
+                payload["sha"] = sha
+            
+            response = requests.put(self.api_url, headers=self.headers, json=payload)
+            
+            if response.status_code in [200, 201]:
+                return True, f"✅ Сохранено: {len(region_mapping)} регионов, {len(moscow_mapping)} клиентов (Москва), {len(spb_mapping)} клиентов (СПб)"
+            else:
+                return False, f"❌ Ошибка: {response.status_code}"
+                
+        except Exception as e:
+            return False, f"❌ Ошибка: {e}"
+    
+    def load_distribution(self) -> Tuple[dict, dict, dict]:
+        """Загружает распределение из GitHub"""
+        if not self.available:
+            return {}, {}, {}
+        
+        try:
+            response = requests.get(
+                self.api_url,
+                headers=self.headers,
+                params={"ref": self.branch}
+            )
+            
+            if response.status_code == 200:
+                content = response.json()
+                file_content = base64.b64decode(content["content"]).decode("utf-8")
+                data = json.loads(file_content)
+                return (
+                    data.get("region_mapping", {}),
+                    data.get("moscow_mapping", {}),
+                    data.get("spb_mapping", {})
+                )
+            else:
+                return {}, {}, {}
+                
+        except Exception:
+            return {}, {}, {}
+    
+    def delete_distribution(self) -> Tuple[bool, str]:
+        """Удаляет файл с GitHub"""
+        if not self.available:
+            return False, "❌ GitHub не доступен"
+        
+        try:
+            sha = self._get_file_sha()
+            if not sha:
+                return False, "❌ Файл не найден"
+            
+            payload = {
+                "message": f"Удаление распределения RS для Optima от {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                "sha": sha,
+                "branch": self.branch
+            }
+            
+            response = requests.delete(self.api_url, headers=self.headers, json=payload)
+            
+            if response.status_code == 204:
+                return True, "✅ Распределение RS для Optima удалено"
+            else:
+                return False, f"❌ Ошибка: {response.status_code}"
+                
+        except Exception as e:
+            return False, f"❌ Ошибка: {e}"
+    
+    def has_distribution(self) -> bool:
+        """Проверяет, существует ли файл с распределением"""
+        if not self.available:
+            return False
+        try:
+            response = requests.get(
+                self.api_url,
+                headers=self.headers,
+                params={"ref": self.branch}
+            )
+            return response.status_code == 200
+        except Exception:
+            return False
+
+
+def get_optima_rs_manager():
+    """Возвращает экземпляр менеджера RS для Optima"""
+    if 'optima_rs_manager' not in st.session_state:
+        st.session_state.optima_rs_manager = OptimaRSManager()
+    return st.session_state.optima_rs_manager
 
 # Для удобства создаем глобальный экземпляр при импорте
 def get_settings_manager():

@@ -9,6 +9,7 @@ from datetime import date, datetime, timedelta
 from io import BytesIO
 from github_settings import get_settings_manager, get_plan_adjustment_manager
 from multon_excel_parser import parse_multon_excel_to_df, preview_multon_plan
+from optima_rs_parser import parse_optima_rs_excel, preview_optima_rs_mapping
 
 # Инициализация временных корректировок
 if 'temp_adjustments' not in st.session_state:
@@ -1629,6 +1630,80 @@ with tab3:
             with col2:
                 if st.button("💾 Сохранить распределение", type="primary", use_container_width=True):
                     success, msg = multon_manager.save_plan(parsed_df)
+                    if success:
+                        st.success(msg)
+                        st.rerun()
+                    else:
+                        st.error(msg)
+
+    # ============================================
+    # БЛОК: РАСПРЕДЕЛЕНИЕ RS ДЛЯ OPTIMA
+    # ============================================
+    
+    st.markdown("---")
+    st.subheader("👥 Распределение RS для Optima")
+    st.caption("Загрузите Excel-файл с распределением сотрудников (RS) по регионам и клиентам (Москва/СПб)")
+    
+    # Инициализируем менеджер
+    from optima_rs_parser import parse_optima_rs_excel, preview_optima_rs_mapping
+    from github_settings import get_optima_rs_manager
+    
+    optima_rs_manager = get_optima_rs_manager()
+    
+    # Текущее распределение
+    current_region_mapping, current_moscow_mapping, current_spb_mapping = optima_rs_manager.load_distribution()
+    
+    # Отображение текущего распределения (если есть)
+    if current_region_mapping or current_moscow_mapping or current_spb_mapping:
+        with st.expander("📋 Текущее распределение RS", expanded=False):
+            preview_df = preview_optima_rs_mapping(current_region_mapping, current_moscow_mapping, current_spb_mapping)
+            st.dataframe(preview_df, use_container_width=True, hide_index=True)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.caption(f"📊 Всего записей: {len(preview_df)}")
+            with col2:
+                if st.button("🗑️ Удалить текущее распределение", key="delete_optima_rs"):
+                    success, msg = optima_rs_manager.delete_distribution()
+                    if success:
+                        st.success(msg)
+                        st.rerun()
+                    else:
+                        st.error(msg)
+    
+    # Загрузка нового файла
+    uploaded_file = st.file_uploader(
+        "📂 Загрузить Excel с распределением RS для Optima",
+        type=['xlsx', 'xls'],
+        key="optima_rs_uploader",
+        help="Файл должен содержать колонки: 'регион', 'ФИО ЭМ', 'Москва', 'ЭМ', 'распределение по Питеру', 'эм'"
+    )
+    
+    if uploaded_file is not None:
+        # Парсим файл
+        region_mapping, moscow_mapping, spb_mapping = parse_optima_rs_excel(uploaded_file)
+        
+        if region_mapping or moscow_mapping or spb_mapping:
+            # Показываем предпросмотр
+            st.markdown("### 📋 Предпросмотр загружаемых данных")
+            preview_df = preview_optima_rs_mapping(region_mapping, moscow_mapping, spb_mapping)
+            st.dataframe(preview_df, use_container_width=True, hide_index=True)
+            
+            # Статистика
+            st.markdown("### 📊 Статистика")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("📍 Регионов", len(region_mapping))
+            with col2:
+                st.metric("🏢 Клиентов (Москва)", len(moscow_mapping))
+            with col3:
+                st.metric("🏢 Клиентов (СПб)", len(spb_mapping))
+            
+            # Кнопка сохранения
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                if st.button("💾 Сохранить распределение", type="primary", use_container_width=True, key="save_optima_rs"):
+                    success, msg = optima_rs_manager.save_distribution(region_mapping, moscow_mapping, spb_mapping)
                     if success:
                         st.success(msg)
                         st.rerun()

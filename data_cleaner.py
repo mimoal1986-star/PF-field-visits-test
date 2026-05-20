@@ -1359,26 +1359,82 @@ class DataCleaner:
                 region_str = str(region_value).upper()
                 return any(x in region_str for x in ['LN', 'ЛЕНИНГРАДСКАЯ ОБЛАСТЬ', 'САНКТ-ПЕТЕРБУРГ'])
             
-            # Заполняем ЭМ
+            # # Заполняем ЭМ
+            # for idx, row in result.iterrows():
+            #     region_long = row.get('Регион long', '')
+            #     region_short = row.get('Регион short', '')
+            #     client = row.get('Имя клиента', '')
+                
+            #     rs_value = None
+                
+            #     # 1. Москва
+            #     if is_moscow(region_long):
+            #         rs_value = moscow_mapping.get(client)
+            #     # 2. Санкт-Петербург
+            #     elif is_spb(region_long):
+            #         rs_value = spb_mapping.get(client)
+            #     # 3. Обычный регион
+            #     elif region_short and region_short != 'не определен':
+            #         rs_value = region_mapping.get(region_short)
+                
+            #     if rs_value:
+            #         result.at[idx, 'ЭМ'] = rs_value
+
+            # === ОТЛАДКА: статистика замен ===
+            stats = {
+                'moscow_replaced': 0,
+                'moscow_original': 0,
+                'spb_replaced': 0,
+                'spb_original': 0,
+                'region_replaced': 0,
+                'region_original': 0
+            }
+            
             for idx, row in result.iterrows():
                 region_long = row.get('Регион long', '')
                 region_short = row.get('Регион short', '')
                 client = row.get('Имя клиента', '')
+                old_em = row.get('ЭМ', '')
                 
                 rs_value = None
+                category = None
                 
                 # 1. Москва
                 if is_moscow(region_long):
                     rs_value = moscow_mapping.get(client)
+                    if rs_value:
+                        category = 'moscow_replaced'
+                    else:
+                        category = 'moscow_original'
                 # 2. Санкт-Петербург
                 elif is_spb(region_long):
                     rs_value = spb_mapping.get(client)
+                    if rs_value:
+                        category = 'spb_replaced'
+                    else:
+                        category = 'spb_original'
                 # 3. Обычный регион
                 elif region_short and region_short != 'не определен':
                     rs_value = region_mapping.get(region_short)
+                    if rs_value:
+                        category = 'region_replaced'
+                    else:
+                        category = 'region_original'
+                
+                if category:
+                    stats[category] += 1
                 
                 if rs_value:
                     result.at[idx, 'ЭМ'] = rs_value
+            
+            # Вывод статистики
+            st.write("### 📊 Статистика замен RS для Optima")
+            st.write(f"**Москва:** заменено {stats['moscow_replaced']}, осталось по старому {stats['moscow_original']}")
+            st.write(f"**Санкт-Петербург:** заменено {stats['spb_replaced']}, осталось по старому {stats['spb_original']}")
+            st.write(f"**Остальные регионы:** заменено {stats['region_replaced']}, осталось по старому {stats['region_original']}")
+            st.write(f"**Всего строк в Optima:** {len(result)}")
+
+        # === ОТЛАДКА: статистика замен ===
                     
         
         # # Конвертация даты

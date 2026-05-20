@@ -1358,9 +1358,8 @@ class DataCleaner:
                 return any(x in region_str for x in ['LN', 'ЛЕНИНГРАДСКАЯ ОБЛАСТЬ', 'САНКТ-ПЕТЕРБУРГ'])
             
 
-        
         # === ОТЛАДКА: выгрузка детальной информации по Optima ===
-        # Инициализируем статистику ДО цикла
+        # Инициализируем статистику
         stats = {
             'moscow_replaced': 0,
             'moscow_original': 0,
@@ -1386,45 +1385,50 @@ class DataCleaner:
             status = row.get('Статус', '')
             visit_date = row.get('Дата визита', '')
             
-            # Определяем новое значение RS
-            rs_value = None
-            
             # 1. Москва
             if is_moscow(region_long):
                 rs_value = moscow_mapping.get(client)
                 if rs_value:
                     result.at[idx, 'ЭМ'] = rs_value
-                    stats['moscow_replaced'] += 1
                 else:
                     result.at[idx, 'ЭМ'] = ''
-                    stats['moscow_original'] += 1
+                stats['moscow_original'] += 1
             
             # 2. Санкт-Петербург
             elif is_spb(region_long):
                 rs_value = spb_mapping.get(client)
                 if rs_value:
                     result.at[idx, 'ЭМ'] = rs_value
-                    stats['spb_replaced'] += 1
                 else:
                     result.at[idx, 'ЭМ'] = ''
-                    stats['spb_original'] += 1
+                stats['spb_original'] += 1
             
             # 3. Обычный регион
             elif region_short and region_short != 'не определен':
                 rs_value = region_mapping.get(region_short)
                 if rs_value:
                     result.at[idx, 'ЭМ'] = rs_value
-                    stats['region_replaced'] += 1
                 else:
                     result.at[idx, 'ЭМ'] = ''
-                    stats['region_original'] += 1
+                stats['region_original'] += 1
             
             else:
                 result.at[idx, 'ЭМ'] = ''
             
-            # ✅ ПРАВИЛЬНОЕ ОПРЕДЕЛЕНИЕ: сравниваем исходное и новое
+            # Определяем, была ли замена
             new_em = result.at[idx, 'ЭМ']
             replaced = 1 if old_em != new_em else 0
+            
+            # Считаем замены по регионам
+            if is_moscow(region_long):
+                if replaced == 1:
+                    stats['moscow_replaced'] += 1
+            elif is_spb(region_long):
+                if replaced == 1:
+                    stats['spb_replaced'] += 1
+            elif region_short and region_short != 'не определен':
+                if replaced == 1:
+                    stats['region_replaced'] += 1
             
             # Сохраняем строку для выгрузки
             debug_data.append({
@@ -1444,7 +1448,7 @@ class DataCleaner:
         # Создаем DataFrame
         debug_df = pd.DataFrame(debug_data)
         
-        # Сохраняем в session_state для последующей выгрузки
+        # Сохраняем в session_state
         st.session_state.optima_debug_data = debug_df
         
         # Выводим ссылку на скачивание
@@ -1461,43 +1465,48 @@ class DataCleaner:
             type="secondary"
         )
         
-        # Дополнительная статистика в интерфейсе
+        # Статистика в интерфейсе
         st.write("### 📊 Статистика замен RS для Optima")
         
-        # Проверяем, были ли вообще данные
         if len(debug_df) > 0:
             col1, col2, col3 = st.columns(3)
             
             with col1:
                 st.metric(
-                    "📍 Москва", 
-                    f"{stats['moscow_replaced']} / {stats['moscow_replaced'] + stats['moscow_original']}",
-                    help=f"Заменено: {stats['moscow_replaced']}, осталось по старому: {stats['moscow_original']}"
+                    "📍 Москва",
+                    f"{stats['moscow_replaced']} / {stats['moscow_original']}",
+                    help=f"Замен: {stats['moscow_replaced']}, всего строк: {stats['moscow_original']}"
                 )
             
             with col2:
                 st.metric(
-                    "📍 Санкт-Петербург", 
-                    f"{stats['spb_replaced']} / {stats['spb_replaced'] + stats['spb_original']}",
-                    help=f"Заменено: {stats['spb_replaced']}, осталось по старому: {stats['spb_original']}"
+                    "📍 Санкт-Петербург",
+                    f"{stats['spb_replaced']} / {stats['spb_original']}",
+                    help=f"Замен: {stats['spb_replaced']}, всего строк: {stats['spb_original']}"
                 )
             
             with col3:
                 st.metric(
-                    "📍 Остальные регионы", 
-                    f"{stats['region_replaced']} / {stats['region_replaced'] + stats['region_original']}",
-                    help=f"Заменено: {stats['region_replaced']}, осталось по старому: {stats['region_original']}"
+                    "📍 Остальные регионы",
+                    f"{stats['region_replaced']} / {stats['region_original']}",
+                    help=f"Замен: {stats['region_replaced']}, всего строк: {stats['region_original']}"
                 )
             
-            st.caption(f"📊 Всего строк в Optima: {len(result)} | С отладочной информацией: {len(debug_df)}")
+            # ИТОГО
+            total_replaced = stats['moscow_replaced'] + stats['spb_replaced'] + stats['region_replaced']
+            total_rows = stats['moscow_original'] + stats['spb_original'] + stats['region_original']
+            
+            st.markdown("---")
+            st.metric("📊 ВСЕГО", f"{total_replaced} / {total_rows}")
+            
+            st.caption(f"📁 Скачайте Excel-файл для детального анализа ({len(debug_df)} записей)")
         else:
             st.info("Нет данных для отображения статистики")
         
         st.info(f"📁 Скачайте Excel-файл для детального анализа (всего {len(debug_df)} записей)")
 
         # === ОТЛАДКА: выгрузка детальной информации по Optima ===
-
-                    
+        
         # # Конвертация даты
         # if 'Дата визита' in result.columns:
         #     result['Дата визита'] = pd.to_datetime(

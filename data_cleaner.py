@@ -1380,61 +1380,86 @@ class DataCleaner:
             #     if rs_value:
             #         result.at[idx, 'ЭМ'] = rs_value
 
-            # === ОТЛАДКА: статистика замен ===
-            stats = {
-                'moscow_replaced': 0,
-                'moscow_original': 0,
-                'spb_replaced': 0,
-                'spb_original': 0,
-                'region_replaced': 0,
-                'region_original': 0
-            }
+
+            # === ОТЛАДКА: выгрузка детальной информации по Optima ===
+            # Формируем DataFrame для выгрузки
+            debug_data = []
             
             for idx, row in result.iterrows():
                 region_long = row.get('Регион long', '')
                 region_short = row.get('Регион short', '')
                 client = row.get('Имя клиента', '')
-                old_em = row.get('ЭМ', '')
+                project_code = row.get('Код анкеты', '')
+                wave_name = row.get('Название проекта', '')
+                asm = row.get('АСС', '')
+                old_em = row.get('ЭМ', '')  # исходное значение (уже могло быть очищено)
+                status = row.get('Статус', '')
+                visit_date = row.get('Дата визита', '')
                 
+                # Определяем новое значение RS
                 rs_value = None
-                category = None
+                replaced = 0
                 
                 # 1. Москва
                 if is_moscow(region_long):
                     rs_value = moscow_mapping.get(client)
                     if rs_value:
-                        category = 'moscow_replaced'
-                    else:
-                        category = 'moscow_original'
+                        replaced = 1
                 # 2. Санкт-Петербург
                 elif is_spb(region_long):
                     rs_value = spb_mapping.get(client)
                     if rs_value:
-                        category = 'spb_replaced'
-                    else:
-                        category = 'spb_original'
+                        replaced = 1
                 # 3. Обычный регион
                 elif region_short and region_short != 'не определен':
                     rs_value = region_mapping.get(region_short)
                     if rs_value:
-                        category = 'region_replaced'
-                    else:
-                        category = 'region_original'
+                        replaced = 1
                 
-                if category:
-                    stats[category] += 1
-                
-                if rs_value:
-                    result.at[idx, 'ЭМ'] = rs_value
+                # Сохраняем строку для выгрузки
+                debug_data.append({
+                    'Проект': project_code,
+                    'Волна': wave_name,
+                    'Регион': region_long,
+                    'Регион short': region_short,
+                    'Статус': status,
+                    'Дата визита': visit_date,
+                    'ASM': asm,
+                    'RS_исходный': old_em if old_em else '',
+                    'RS_после_обработки': rs_value if rs_value else '',
+                    'Замена_произошла': replaced
+                })
             
-            # Вывод статистики
+            # Создаем DataFrame
+            debug_df = pd.DataFrame(debug_data)
+            
+            # Сохраняем в session_state для последующей выгрузки
+            st.session_state.optima_debug_data = debug_df
+            
+            # Выводим ссылку на скачивание
+            from io import BytesIO
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                debug_df.to_excel(writer, sheet_name='Optima_отладка', index=False)
+            
+            st.download_button(
+                label="📥 Скачать отладку Optima (детальная информация)",
+                data=output.getvalue(),
+                file_name=f"optima_debug_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                type="secondary"
+            )
+            
+            # Дополнительная статистика в интерфейсе
             st.write("### 📊 Статистика замен RS для Optima")
             st.write(f"**Москва:** заменено {stats['moscow_replaced']}, осталось по старому {stats['moscow_original']}")
             st.write(f"**Санкт-Петербург:** заменено {stats['spb_replaced']}, осталось по старому {stats['spb_original']}")
             st.write(f"**Остальные регионы:** заменено {stats['region_replaced']}, осталось по старому {stats['region_original']}")
             st.write(f"**Всего строк в Optima:** {len(result)}")
+            st.info(f"📁 Скачайте Excel-файл для детального анализа (всего {len(debug_df)} записей)")
 
-        # === ОТЛАДКА: статистика замен ===
+
+            # === ОТЛАДКА: выгрузка детальной информации по Optima ===
                     
         
         # # Конвертация даты

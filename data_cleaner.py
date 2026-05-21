@@ -371,6 +371,8 @@ class DataCleaner:
                     errors='coerce'
                 ).fillna(0)
         else:
+            # Файл загружен, но колонки с оплатой не найдены
+            st.warning("⚠️ В файле Массив не найдены колонки 'Total sum for payment'. Оплата факт = 0")
             df_clean['Оплата факт'] = 0
             
         return df_clean
@@ -1132,6 +1134,10 @@ class DataCleaner:
                 payment_col = col
             elif col == 'Доп. оплата':
                 extra_payment_col = col
+        
+        # Проверка: найдены ли колонки с оплатой
+        if not payment_col and not extra_payment_col:
+            st.warning("⚠️ В файле CXWAY не найдены колонки 'Оплата' и 'Доп. оплата'. Оплата факт = 0")
         
         def calculate_cxway_payment(row):
             payment = 0

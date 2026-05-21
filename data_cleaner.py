@@ -363,16 +363,16 @@ class DataCleaner:
         # Расчет оплаты для Чеккера
         payment_cols = [col for col in df_clean.columns if col == 'Total sum for payment']
     
-    if payment_cols:
-        df_clean['Оплата факт'] = 0
-        for col in payment_cols:
-            df_clean['Оплата факт'] += pd.to_numeric(
-                df_clean[col].astype(str).str.replace(',', '.'),
-                errors='coerce'
-            ).fillna(0)
-    else:
-        df_clean['Оплата факт'] = 0
-        
+        if payment_cols:
+            df_clean['Оплата факт'] = 0
+            for col in payment_cols:
+                df_clean['Оплата факт'] += pd.to_numeric(
+                    df_clean[col].astype(str).str.replace(',', '.'),
+                    errors='coerce'
+                ).fillna(0)
+        else:
+            df_clean['Оплата факт'] = 0
+            
         return df_clean
     
     def add_zod_from_hierarchy(self, array_df, hierarchy_df=None):

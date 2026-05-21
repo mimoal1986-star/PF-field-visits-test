@@ -564,7 +564,8 @@ class DataVisualizer:
             'Дней до конца проекта': 'first',
             'Утилизация тайминга, %': 'first',
             'Ср. план на день для 100% плана': 'sum',
-            'Фокус': 'first'
+            'Фокус': 'first',
+            'Оплата факт': 'sum'
         }
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
@@ -724,7 +725,8 @@ class DataVisualizer:
             'Дней до конца проекта',
             'Утилизация тайминга, %',
             'Ср. план на день для 100% плана',
-            'Метод подбора дат'
+            'Метод подбора дат',
+            'Оплата факт'
         ]
         
         # Добавляем всегда показываемые колонки, если они есть в данных
@@ -1032,7 +1034,8 @@ class DataVisualizer:
             'Дней до конца проекта': 'first',
             'Утилизация тайминга, %': 'first',
             'Ср. план на день для 100% плана': 'sum',
-            'Фокус': 'first'
+            'Фокус': 'first',
+            'Оплата факт': 'sum'
         }
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
@@ -1188,7 +1191,8 @@ class DataVisualizer:
             'Дней до конца проекта',
             'Утилизация тайминга, %',
             'Ср. план на день для 100% плана',
-            'Метод подбора дат'
+            'Метод подбора дат',
+            'Оплата факт'
         ]
         
         for col in always_show:
@@ -1428,7 +1432,8 @@ class DataVisualizer:
             'Дней до конца проекта': 'first',
             'Утилизация тайминга, %': 'first',
             'Ср. план на день для 100% плана': 'sum',
-            'Фокус': 'first'
+            'Фокус': 'first',
+            'Оплата факт': 'sum'
         }
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
@@ -1587,7 +1592,8 @@ class DataVisualizer:
             'Дней до конца проекта',
             'Утилизация тайминга, %',
             'Ср. план на день для 100% плана',
-            'Метод подбора дат'
+            'Метод подбора дат',
+            'Оплата факт'
         ]
         
         for col in always_show:

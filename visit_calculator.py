@@ -935,6 +935,16 @@ class VisitCalculator:
                 'АСС',
                 rs_col
             ]).size().to_dict()
+
+            # Суммируем оплату по группам
+            payment_sum = completed_df.groupby([
+                'Имя клиента',
+                'Код анкеты',
+                'Название проекта',
+                region_col,
+                'АСС',
+                rs_col
+            ])['Оплата факт'].sum().to_dict()
             
             # Если нет колонки "Дата визита" — факт на дату = факт проекта
             if 'Дата визита' in visits_df.columns:
@@ -975,6 +985,7 @@ class VisitCalculator:
                 key = (client_name, project, wave, region, asm, rs)
                 result_df.at[idx, 'Факт проекта, шт.'] = rs_facts_total.get(key, 0)
                 result_df.at[idx, 'Факт на дату, шт.'] = rs_facts_period.get(key, 0)
+                result_df.at[idx, 'Оплата факт'] = payment_sum.get(key, 0)
     
             return result_df
             

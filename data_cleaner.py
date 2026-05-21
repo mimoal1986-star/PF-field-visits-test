@@ -359,6 +359,19 @@ class DataCleaner:
         # === Добавить колонку ЗОД ===
         if 'ЗОД' not in df_clean.columns:
             df_clean['ЗОД'] = ''
+
+        # Расчет оплаты для Чеккера
+        payment_cols = [col for col in df_clean.columns if col == 'Total sum for payment']
+    
+    if payment_cols:
+        df_clean['Оплата факт'] = 0
+        for col in payment_cols:
+            df_clean['Оплата факт'] += pd.to_numeric(
+                df_clean[col].astype(str).str.replace(',', '.'),
+                errors='coerce'
+            ).fillna(0)
+    else:
+        df_clean['Оплата факт'] = 0
         
         return df_clean
     
@@ -1110,6 +1123,37 @@ class DataCleaner:
         
         result['Источник'] = 'CXWAY'
         
+        # Расчет оплаты для CXWAY (Оплата + Доп. оплата)
+        payment_col = None
+        extra_payment_col = None
+        
+        for col in df_clean.columns:
+            if col == 'Оплата':
+                payment_col = col
+            elif col == 'Доп. оплата':
+                extra_payment_col = col
+        
+        def calculate_cxway_payment(row):
+            payment = 0
+            if payment_col and pd.notna(row.get(payment_col)):
+                try:
+                    val = str(row[payment_col]).strip().replace(',', '.')
+                    payment = float(val) if val else 0
+                except:
+                    payment = 0
+            
+            extra_payment = 0
+            if extra_payment_col and pd.notna(row.get(extra_payment_col)):
+                try:
+                    val = str(row[extra_payment_col]).strip().replace(',', '.')
+                    extra_payment = float(val) if val else 0
+                except:
+                    extra_payment = 0
+            
+            return payment + extra_payment
+        
+        result['Оплата факт'] = df_clean.apply(calculate_cxway_payment, axis=1)
+    
         return result
     
     def clean_easymerch(self, df, google_df):
@@ -1236,6 +1280,8 @@ class DataCleaner:
         
         # Добавляем источник
         result['Источник'] = 'Easymerch'
+        
+        result['Оплата факт'] = 0
         
         return result
 
@@ -1542,6 +1588,7 @@ class DataCleaner:
             result['ЗОД'] = ''
         
         result['Источник'] = 'Оптима'
+        result['Оплата факт'] = 0
         
         return result
     
@@ -1770,7 +1817,8 @@ class DataCleaner:
             result['Регион'] = ''
             result['Статус'] = ''
             result['Дата визита'] = pd.NaT
-        
+
+        result['Оплата факт'] = 0
         return result
     
     def _is_field_project_vectorized(self, codes_series):

@@ -620,7 +620,8 @@ class DataCleaner:
                 'Полевой': ['Полевой'],
                 'Статус': [' Статус', 'Статус'],
                 'Дата визита': ['Дата визита'],
-                'ПО': ['ПО']
+                'ПО': ['ПО'],
+                'Оплата факт': ['Оплата факт']
             }
             
             # Находим фактические названия колонок
@@ -653,7 +654,7 @@ class DataCleaner:
             
             # Правильный порядок колонок
             final_columns = ['Код анкеты', 'Имя клиента', 'Название проекта', 
-                           'ЗОД', 'АСС', 'ЭМ', 'Регион short', 'Регион', 'ПО', 'Полевой', 'Статус', 'Дата визита']
+                           'ЗОД', 'АСС', 'ЭМ', 'Регион short', 'Регион', 'ПО', 'Полевой', 'Статус', 'Дата визита', 'Оплата факт']
             
             # Реорганизуем колонки
             if not field_projects.empty:
@@ -1139,26 +1140,20 @@ class DataCleaner:
         if not payment_col and not extra_payment_col:
             st.warning("⚠️ В файле CXWAY не найдены колонки 'Оплата' и 'Доп. оплата'. Оплата факт = 0")
         
-        def calculate_cxway_payment(row):
-            payment = 0
-            if payment_col and pd.notna(row.get(payment_col)):
-                try:
-                    val = str(row[payment_col]).strip().replace(',', '.')
-                    payment = float(val) if val else 0
-                except:
-                    payment = 0
-            
-            extra_payment = 0
-            if extra_payment_col and pd.notna(row.get(extra_payment_col)):
-                try:
-                    val = str(row[extra_payment_col]).strip().replace(',', '.')
-                    extra_payment = float(val) if val else 0
-                except:
-                    extra_payment = 0
-            
-            return payment + extra_payment
+        # Векторизованный расчет оплаты для CXWAY (быстро)
+        result['Оплата факт'] = 0
         
-        result['Оплата факт'] = df_clean.apply(calculate_cxway_payment, axis=1)
+        if payment_col:
+            result['Оплата факт'] += pd.to_numeric(
+                df_clean[payment_col].astype(str).str.replace(',', '.'),
+                errors='coerce'
+            ).fillna(0)
+        
+        if extra_payment_col:
+            result['Оплата факт'] += pd.to_numeric(
+                df_clean[extra_payment_col].astype(str).str.replace(',', '.'),
+                errors='coerce'
+            ).fillna(0)
     
         return result
     

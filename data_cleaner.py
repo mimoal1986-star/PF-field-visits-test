@@ -361,8 +361,9 @@ class DataCleaner:
             df_clean['ЗОД'] = ''
 
         # Расчет оплаты для Чеккера
-        payment_cols = [col for col in df_clean.columns if col == 'Total sum for payment']
-    
+        # Ищем все колонки, начинающиеся с 'Total sum for payment' (pandas добавляет .1, .2 и т.д.)
+        payment_cols = [col for col in df_clean.columns if col.startswith('Total sum for payment')]
+        
         if payment_cols:
             df_clean['Оплата факт'] = 0
             for col in payment_cols:
@@ -370,8 +371,8 @@ class DataCleaner:
                     df_clean[col].astype(str).str.replace(',', '.'),
                     errors='coerce'
                 ).fillna(0)
+            st.info(f"✅ Найдено колонок с оплатой: {len(payment_cols)}. Суммируем.")
         else:
-            # Файл загружен, но колонки с оплатой не найдены
             st.warning("⚠️ В файле Массив не найдены колонки 'Total sum for payment'. Оплата факт = 0")
             df_clean['Оплата факт'] = 0
             

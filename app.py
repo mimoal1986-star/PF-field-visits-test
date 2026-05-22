@@ -663,6 +663,16 @@ def process_all_data(settings_manager=None, force_recalc=False):
                 for col in assigned_result.columns:
                     if col not in fact_result.columns:
                         fact_result[col] = assigned_result[col]
+
+                # Факт по не порученным
+                not_assigned_result = visit_calculator.calculate_hierarchical_fact_on_date(
+                    plan_result, source_df, params, status_filter='not_assigned'
+                )
+                
+                # Объединяем результаты
+                for col in not_assigned_result.columns:
+                    if col not in fact_result.columns:
+                        fact_result[col] = not_assigned_result[col]
                 
                 st.session_state.debug_times.append(f"[DEBUG] Факт: {time.time() - start:.2f} сек")
                 start = time.time()

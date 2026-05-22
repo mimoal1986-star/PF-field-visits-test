@@ -247,34 +247,41 @@ class VisitCalculator:
                     date_mapping = {}
                     
                     for idx, row in google_df_original.iterrows():
-                        code = str(row.get('Код проекта RU00.000.00.01SVZ24', '')).strip()
+                        code_raw = str(row.get('Код проекта RU00.000.00.01SVZ24', '')).strip()
                         
-                        # Получаем оба названия волны
-                        wave_checker = str(row.get('Название волны на Чекере/ином ПО', '')).strip()
-                        wave_dummy = str(row.get('Название волны холостой', '')).strip()
-                        
-                        if code and code not in ['nan', '']:
+                        if code_raw and code_raw not in ['nan', '']:
                             start_date = row.get('Дата старта')
                             finish_date = row.get('Дата финиша с продлением')
                             
                             if pd.notna(start_date) and pd.notna(finish_date):
-                                # Собираем все непустые названия волн
+                                # Получаем волны
+                                wave_checker = str(row.get('Название волны на Чекере/ином ПО', '')).strip()
+                                wave_dummy = str(row.get('Название волны холостой', '')).strip()
+                                
                                 waves = []
                                 if wave_checker and wave_checker not in ['nan', '']:
                                     waves.append(wave_checker)
                                 if wave_dummy and wave_dummy not in ['nan', '']:
                                     waves.append(wave_dummy)
                                 
-                                # Создаем записи ВК для каждой волны
-                                for wave in waves:
-                                    key = (code, wave)
-                                    if key not in date_mapping:
-                                        date_mapping[key] = (start_date, finish_date, 'ВК')
+                                # ✅ РАЗДЕЛЯЕМ СОСТАВНОЙ КОД ПО '/' 
+                                codes = code_raw.split('/')
                                 
-                                # Создаем запись только по коду (как fallback)
-                                key = (code, None)
-                                if key not in date_mapping:
-                                    date_mapping[key] = (start_date, finish_date, 'К')
+                                for single_code in codes:
+                                    single_code = single_code.strip()
+                                    if not single_code:
+                                        continue
+                                        
+                                    # Для каждой волны
+                                    for wave in waves:
+                                        key = (single_code, wave)
+                                        if key not in date_mapping:
+                                            date_mapping[key] = (start_date, finish_date, 'ВК')
+                                    
+                                    # Только по коду (без волны)
+                                    key = (single_code, None)
+                                    if key not in date_mapping:
+                                        date_mapping[key] = (start_date, finish_date, 'К')
                     
                     # Функция для получения дат по строке иерархии
                     def get_dates(row):

@@ -198,9 +198,42 @@ class VisitCalculator:
                                     start_mapping[code] = start_date
                                 if pd.notna(finish_date):
                                     finish_mapping[code] = finish_date
+
+                    # Функция для получения даты из start_mapping с учетом составных кодов
+                    def get_start_date(project_code):
+                        code_str = str(project_code)
+                        # Если нет слеша — ищем как есть
+                        if '/' not in code_str:
+                            return start_mapping.get(code_str, pd.NaT)
+                        
+                        # Разделяем на части и перебираем
+                        parts = code_str.split('/')
+                        for part in parts:
+                            part = part.strip()
+                            if not part:
+                                continue
+                            # Как только нашли часть в start_mapping — берем дату
+                            if part in start_mapping:
+                                return start_mapping[part]
+                        # Если ни одной части нет в mapping — возвращаем пустоту
+                        return pd.NaT
                     
-                    hierarchy['Дата старта'] = hierarchy['Проект'].map(start_mapping)
-                    hierarchy['Дата финиша'] = hierarchy['Проект'].map(finish_mapping)
+                    def get_finish_date(project_code):
+                        code_str = str(project_code)
+                        if '/' not in code_str:
+                            return finish_mapping.get(code_str, pd.NaT)
+                        
+                        parts = code_str.split('/')
+                        for part in parts:
+                            part = part.strip()
+                            if not part:
+                                continue
+                            if part in finish_mapping:
+                                return finish_mapping[part]
+                        return pd.NaT
+                    
+                    hierarchy['Дата старта'] = hierarchy['Проект'].apply(get_start_date)
+                    hierarchy['Дата финиша'] = hierarchy['Проект'].apply(get_finish_date)
                     
                     # Если дат нет, ставим первый и последний день месяца
                     if 'plan_calc_params' in st.session_state:

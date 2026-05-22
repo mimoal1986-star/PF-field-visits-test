@@ -756,7 +756,13 @@ class DataVisualizer:
         existing_display = [c for c in display_cols if c in project_data.columns]
         st.dataframe(project_data[existing_display], use_container_width=True, hide_index=True)
 
-        
+
+        # Удаляем лишние колонки перед выгрузкой
+        cols_to_drop = ['Оплата_поручено', 'Факт проекта_поручено, шт.']
+        for col in cols_to_drop:
+            if col in project_data.columns:
+                project_data = project_data.drop(col, axis=1)
+                
         # Кнопка скачивания
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -1246,6 +1252,12 @@ class DataVisualizer:
         
         st.dataframe(region_data[existing_display], use_container_width=True, hide_index=True)
         
+        # Удаляем лишние колонки перед выгрузкой
+        cols_to_drop = ['Оплата_поручено', 'Факт проекта_поручено, шт.']
+        for col in cols_to_drop:
+            if col in region_data.columns:
+                region_data = region_data.drop(col, axis=1)
+        
         # Кнопка скачивания
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -1662,6 +1674,12 @@ class DataVisualizer:
         existing_display = [c for c in display_cols if c in dsm_data.columns]
         
         st.dataframe(dsm_data[existing_display], use_container_width=True, hide_index=True)
+
+        # Удаляем лишние колонки перед выгрузкой
+        cols_to_drop = ['Оплата_поручено', 'Факт проекта_поручено, шт.']
+        for col in cols_to_drop:
+            if col in dsm_data.columns:
+                dsm_data = dsm_data.drop(col, axis=1)
         
         # Кнопка скачивания
         output = BytesIO()

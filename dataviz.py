@@ -566,7 +566,8 @@ class DataVisualizer:
             'Ср. план на день для 100% плана': 'sum',
             'Фокус': 'first',
             'Оплата факт': 'sum',
-            'Оплата_поручено': 'sum'
+            'Оплата_поручено': 'sum',
+            'Факт проекта_поручено, шт.': 'sum'
         }
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
@@ -1054,7 +1055,8 @@ class DataVisualizer:
             'Ср. план на день для 100% плана': 'sum',
             'Фокус': 'first',
             'Оплата факт': 'sum',
-            'Оплата_поручено': 'sum'
+            'Оплата_поручено': 'sum',
+            'Факт проекта_поручено, шт.': 'sum'
         }
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
@@ -1471,7 +1473,8 @@ class DataVisualizer:
             'Ср. план на день для 100% плана': 'sum',
             'Фокус': 'first',
             'Оплата факт': 'sum',
-            'Оплата_поручено': 'sum'
+            'Оплата_поручено': 'sum',
+            'Факт проекта_поручено, шт.': 'sum'
         }
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}

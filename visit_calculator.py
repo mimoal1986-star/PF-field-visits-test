@@ -293,7 +293,25 @@ class VisitCalculator:
                             start, finish, method = date_mapping[(code, wave)]
                             return pd.Series([start, finish, method])
                         
-                        # Код есть, но волна не совпала (или пустая/с разделителями)
+                        # ✅ ЕСЛИ В КОДЕ ЕСТЬ '/', ПРОВЕРЯЕМ КАЖДУЮ ЧАСТЬ
+                        if '/' in code:
+                            parts = code.split('/')
+                            for part in parts:
+                                part = part.strip()
+                                if not part:
+                                    continue
+                                
+                                # Ищем совпадение по части кода и волне
+                                if (part, wave) in date_mapping:
+                                    start, finish, method = date_mapping[(part, wave)]
+                                    return pd.Series([start, finish, 'ВК'])
+                                
+                                # Ищем только по части кода (без волны)
+                                for (c, w), (start, finish, _) in date_mapping.items():
+                                    if c == part:
+                                        return pd.Series([start, finish, 'К'])
+                        
+                        # Код есть, но волна не совпала (или пустая)
                         for (c, w), (start, finish, _) in date_mapping.items():
                             if c == code:
                                 return pd.Series([start, finish, 'К'])

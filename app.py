@@ -651,8 +651,18 @@ def process_all_data(settings_manager=None, force_recalc=False):
             
             if plan_result is not None and not plan_result.empty:
                 fact_result = visit_calculator.calculate_hierarchical_fact_on_date(
-                    plan_result, source_df, params
+                    plan_result, source_df, params, status_filter='completed'
                 )
+                
+                # Факт по порученным
+                assigned_result = visit_calculator.calculate_hierarchical_fact_on_date(
+                    plan_result, source_df, params, status_filter='assigned'
+                )
+                
+                # Объединяем результаты
+                for col in assigned_result.columns:
+                    if col not in fact_result.columns:
+                        fact_result[col] = assigned_result[col]
                 
                 st.session_state.debug_times.append(f"[DEBUG] Факт: {time.time() - start:.2f} сек")
                 start = time.time()

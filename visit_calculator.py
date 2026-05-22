@@ -145,9 +145,7 @@ class VisitCalculator:
             # Создаём иерархию из visits_df
             start = time.time()
             hierarchy = pd.DataFrame({
-                'Проект': visits_df['Код анкеты'].apply(
-                    lambda x: str(x).split('/')[0].strip() if '/' in str(x) else str(x)
-                ).fillna('Не указано'),
+                'Проект': visits_df['Код анкеты'].fillna('Не указано'),
                 'Клиент': visits_df['Имя клиента'].fillna('Не указано'),
                 'Волна': visits_df['Название проекта'].fillna('Не указано'),
                 'Регион': visits_df[region_col].fillna('Не указано'),
@@ -185,21 +183,15 @@ class VisitCalculator:
                     finish_mapping = {}
                     
                     for idx, row in google_df.iterrows():
-                        code_raw = str(row.get('Код проекта RU00.000.00.01SVZ24', '')).strip()
-                        if code_raw and code_raw not in ['nan', '']:
+                        code = str(row.get('Код проекта RU00.000.00.01SVZ24', '')).strip()
+                        if code and code not in ['nan', '']:
                             start_date = row.get('Дата старта')
                             finish_date = row.get('Дата финиша с продлением')
                             
-                            # Разделяем составной код
-                            codes = code_raw.split('/')
-                            for code in codes:
-                                code = code.strip()
-                                if not code:
-                                    continue
-                                if pd.notna(start_date):
-                                    start_mapping[code] = start_date
-                                if pd.notna(finish_date):
-                                    finish_mapping[code] = finish_date
+                            if pd.notna(start_date):
+                                start_mapping[code] = start_date
+                            if pd.notna(finish_date):
+                                finish_mapping[code] = finish_date
                     
                     hierarchy['Дата старта'] = hierarchy['Проект'].map(start_mapping)
                     hierarchy['Дата финиша'] = hierarchy['Проект'].map(finish_mapping)
@@ -1184,7 +1176,6 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
-
 
 
 

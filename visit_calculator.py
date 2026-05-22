@@ -986,6 +986,9 @@ class VisitCalculator:
             elif status_filter == 'assigned':
                 status_mask = visits_df[status_col].astype(str).str.strip() == 'Поручено'
                 suffix = '_поручено'
+            elif status_filter == 'not_assigned':
+                status_mask = visits_df[status_col].astype(str).str.strip() == 'Не поручено'
+                suffix = '_не_поручено'
             else:
                 status_mask = None
                 suffix = ''

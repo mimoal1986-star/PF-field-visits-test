@@ -762,7 +762,7 @@ class DataVisualizer:
 
 
         # Удаляем лишние колонки перед выгрузкой
-        cols_to_drop = ['Оплата_поручено', 'Факт проекта_поручено, шт.']
+        cols_to_drop = ['Оплата_поручено']
         for col in cols_to_drop:
             if col in project_data.columns:
                 project_data = project_data.drop(col, axis=1)
@@ -1260,7 +1260,7 @@ class DataVisualizer:
         st.dataframe(region_data[existing_display], use_container_width=True, hide_index=True)
         
         # Удаляем лишние колонки перед выгрузкой
-        cols_to_drop = ['Оплата_поручено', 'Факт проекта_поручено, шт.']
+        cols_to_drop = ['Оплата_поручено']
         for col in cols_to_drop:
             if col in region_data.columns:
                 region_data = region_data.drop(col, axis=1)
@@ -1686,7 +1686,7 @@ class DataVisualizer:
         st.dataframe(dsm_data[existing_display], use_container_width=True, hide_index=True)
 
         # Удаляем лишние колонки перед выгрузкой
-        cols_to_drop = ['Оплата_поручено', 'Факт проекта_поручено, шт.']
+        cols_to_drop = ['Оплата_поручено']
         for col in cols_to_drop:
             if col in dsm_data.columns:
                 dsm_data = dsm_data.drop(col, axis=1)

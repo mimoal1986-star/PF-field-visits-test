@@ -928,7 +928,7 @@ class VisitCalculator:
         
         return result
     
-    def calculate_hierarchical_fact_on_date(self, plan_df, visits_df, calc_params):
+    def calculate_hierarchical_fact_on_date(self, plan_df, visits_df, calc_params, status_filter='completed'):
         try:
             if plan_df.empty or visits_df.empty:
                 return pd.DataFrame()
@@ -975,12 +975,21 @@ class VisitCalculator:
                 # Нормализуем к началу дня (00:00:00)
                 visits_df['Дата визита'] = visits_df['Дата визита'].dt.normalize()
             
-            # ФИЛЬТРЫ
-            completed_mask = visits_df[status_col].isin([
-                'Выполнено', 'выполнен',
-                'Заполнена', 'Проверена','Принята',
-                'Завершено', 'Готово'
-            ])
+            # ФИЛЬТРЫ - выбор статуса в зависимости от параметра
+            if status_filter == 'completed':
+                status_mask = visits_df[status_col].isin([
+                    'Выполнено', 'выполнен',
+                    'Заполнена', 'Проверена', 'Принята',
+                    'Завершено', 'Готово'
+                ])
+                suffix = ''
+            elif status_filter == 'assigned':
+                status_mask = visits_df[status_col].astype(str).str.strip() == 'Поручено'
+                suffix = '_поручено'
+            else:
+                status_mask = None
+                suffix = ''
+                
             start_date = pd.Timestamp(calc_params['start_date'])
             end_date = pd.Timestamp(calc_params['end_date'])
             period_mask = (
@@ -988,10 +997,9 @@ class VisitCalculator:
                 (visits_df['Дата визита'] <= end_date)
             )
 
-                
             # СЧИТАЕМ ФАКТЫ
-            completed_df = visits_df[completed_mask]
-            rs_facts_total = completed_df.groupby([
+            filtered_df = visits_df[status_mask]
+            rs_facts_total = filtered_df.groupby([
                 'Имя клиента',
                 'Код анкеты',
                 'Название проекта',
@@ -1001,7 +1009,7 @@ class VisitCalculator:
             ]).size().to_dict()
 
             # Суммируем оплату по группам
-            payment_sum = completed_df.groupby([
+            payment_sum = filtered_df.groupby([
                 'Имя клиента',
                 'Код анкеты',
                 'Название проекта',
@@ -1018,8 +1026,8 @@ class VisitCalculator:
                     (visits_df['Дата визита'] >= start_date) &
                     (visits_df['Дата визита'] <= end_date)
                 )
-                completed_in_period = visits_df[completed_mask & period_mask]
-                rs_facts_period = completed_in_period.groupby([
+                filtered_in_period = visits_df[status_mask & period_mask]
+                rs_facts_period = filtered_in_period.groupby([
                     'Имя клиента',
                     'Код анкеты',
                     'Название проекта',
@@ -1031,10 +1039,9 @@ class VisitCalculator:
                 # Для Optima и других без дат
                 rs_facts_period = rs_facts_total.copy()
     
-            
             # ✅ СОЗДАЁМ КОЛОНКИ
-            result_df['Факт проекта, шт.'] = 0
-            result_df['Факт на дату, шт.'] = 0
+            result_df[f'Факт проекта{suffix}, шт.'] = 0
+            result_df[f'Факт на дату{suffix}, шт.'] = 0
             
             # ✅ ЗАПОЛНЯЕМ
             for idx in result_df[result_df['Уровень'] == 'RS'].index:
@@ -1047,9 +1054,12 @@ class VisitCalculator:
                 client_name = str(row['Клиент']).strip()
                 asm = str(row['ASM']).strip()
                 key = (client_name, project, wave, region, asm, rs)
-                result_df.at[idx, 'Факт проекта, шт.'] = rs_facts_total.get(key, 0)
-                result_df.at[idx, 'Факт на дату, шт.'] = rs_facts_period.get(key, 0)
-                result_df.at[idx, 'Оплата факт'] = payment_sum.get(key, 0)
+                result_df.at[idx, f'Факт проекта{suffix}, шт.'] = rs_facts_total.get(key, 0)
+                result_df.at[idx, f'Факт на дату{suffix}, шт.'] = rs_facts_period.get(key, 0)
+                if suffix == '':
+                    result_df.at[idx, 'Оплата факт'] = payment_sum.get(key, 0)
+                else:
+                    result_df.at[idx, f'Оплата{suffix}'] = payment_sum.get(key, 0)
     
             return result_df
             

@@ -770,7 +770,7 @@ class DataVisualizer:
         # Кнопка скачивания
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            project_data.to_excel(writer, sheet_name='План_факт_проекты', index=False)
+            project_data.to_excel(writer, sheet_name='План_факт_проекты', index=False, date_format='DD.MM.YYYY')
         
         st.download_button(
             label="⬇️ Скачать Excel",
@@ -1303,7 +1303,7 @@ class DataVisualizer:
         # Кнопка скачивания
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            region_data.to_excel(writer, sheet_name='Регионы', index=False)
+            region_data.to_excel(writer, sheet_name='Регионы', index=False, date_format='DD.MM.YYYY')
         
         st.download_button(
             label="⬇️ Скачать Excel",
@@ -1764,7 +1764,7 @@ class DataVisualizer:
         # Кнопка скачивания
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            dsm_data.to_excel(writer, sheet_name='DSM', index=False)
+            dsm_data.to_excel(writer, sheet_name='DSM', index=False, date_format='DD.MM.YYYY')
         
         st.download_button(
             label="⬇️ Скачать Excel",

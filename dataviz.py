@@ -780,6 +780,40 @@ class DataVisualizer:
             type="primary",
             use_container_width=True
         )
+        
+        # Кнопка скачивания краткого отчета
+        brief_cols = [
+            'Клиент',
+            'План проекта, шт.',
+            'Факт проекта, шт.',
+            'Факт проекта_поручено, шт.',
+            'Факт проекта_не_поручено, шт.',
+            'Длительность',
+            'Дата старта',
+            'Дата финиша',
+            'Дней до конца проекта',
+            'Ср. план на день для 100% плана',
+            'Оплата факт средн., руб.',
+            'Оплата поручено средн., руб.',
+            'Прогноз ВП, %'
+        ]
+        
+        # Оставляем только существующие колонки
+        existing_brief_cols = [col for col in brief_cols if col in project_data.columns]
+        brief_report = project_data[existing_brief_cols].copy()
+        
+        output_brief = BytesIO()
+        with pd.ExcelWriter(output_brief, engine='openpyxl') as writer:
+            brief_report.to_excel(writer, sheet_name='Краткий_отчет', index=False)
+        
+        st.download_button(
+            label="📊 Скачать краткий отчет",
+            data=output_brief.getvalue(),
+            file_name=f"краткий_отчет_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            type="secondary",
+            use_container_width=True
+        )
 
     def create_region_summary(self, df):
         """
@@ -1278,6 +1312,40 @@ class DataVisualizer:
             type="primary",
             use_container_width=True
         )
+
+        # Кнопка скачивания краткого отчета
+        brief_cols = [
+            'Клиент',
+            'План проекта, шт.',
+            'Факт проекта, шт.',
+            'Факт проекта_поручено, шт.',
+            'Факт проекта_не_поручено, шт.',
+            'Длительность',
+            'Дата старта',
+            'Дата финиша',
+            'Дней до конца проекта',
+            'Ср. план на день для 100% плана',
+            'Оплата факт средн., руб.',
+            'Оплата поручено средн., руб.',
+            'Прогноз ВП, %'
+        ]
+        
+        # Оставляем только существующие колонки
+        existing_brief_cols = [col for col in brief_cols if col in region_data.columns]
+        brief_report = region_data[existing_brief_cols].copy()
+        
+        output_brief = BytesIO()
+        with pd.ExcelWriter(output_brief, engine='openpyxl') as writer:
+            brief_report.to_excel(writer, sheet_name='Краткий_отчет', index=False)
+        
+        st.download_button(
+            label="📊 Скачать краткий отчет",
+            data=output_brief.getvalue(),
+            file_name=f"краткий_отчет_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            type="secondary",
+            use_container_width=True
+        )
     
     def create_dsm_tab(self, data, hierarchy_df=None):
         """Создает вкладку DSM с фильтрами в форме"""
@@ -1704,7 +1772,40 @@ class DataVisualizer:
             type="primary",
             use_container_width=True
         )
+
+        # Кнопка скачивания краткого отчета
+        brief_cols = [
+            'Клиент',
+            'План проекта, шт.',
+            'Факт проекта, шт.',
+            'Факт проекта_поручено, шт.',
+            'Факт проекта_не_поручено, шт.',
+            'Длительность',
+            'Дата старта',
+            'Дата финиша',
+            'Дней до конца проекта',
+            'Ср. план на день для 100% плана',
+            'Оплата факт средн., руб.',
+            'Оплата поручено средн., руб.',
+            'Прогноз ВП, %'
+        ]
         
+        # Оставляем только существующие колонки
+        existing_brief_cols = [col for col in brief_cols if col in dsm_data.columns]
+        brief_report = dsm_data[existing_brief_cols].copy()
+        
+        output_brief = BytesIO()
+        with pd.ExcelWriter(output_brief, engine='openpyxl') as writer:
+            brief_report.to_excel(writer, sheet_name='Краткий_отчет', index=False)
+        
+        st.download_button(
+            label="📊 Скачать краткий отчет",
+            data=output_brief.getvalue(),
+            file_name=f"краткий_отчет_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            type="secondary",
+            use_container_width=True
+        )
     def create_prodata_table(self, prodata_df):
         """
         Создает отдельную таблицу для ПроДата с возможностью развертки по Типу мониторинга

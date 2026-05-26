@@ -812,7 +812,8 @@ class DataVisualizer:
             file_name=f"краткий_отчет_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="secondary",
-            use_container_width=True
+            use_container_width=True,
+            key="download_brief_planfact" 
         )
 
     def create_region_summary(self, df):
@@ -1344,7 +1345,8 @@ class DataVisualizer:
             file_name=f"краткий_отчет_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="secondary",
-            use_container_width=True
+            use_container_width=True,
+            key="download_brief_region"
         )
     
     def create_dsm_tab(self, data, hierarchy_df=None):
@@ -1804,7 +1806,8 @@ class DataVisualizer:
             file_name=f"краткий_отчет_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="secondary",
-            use_container_width=True
+            use_container_width=True,
+            key="download_brief_dsm"
         )
     def create_prodata_table(self, prodata_df):
         """

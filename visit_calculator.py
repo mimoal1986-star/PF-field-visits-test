@@ -1117,6 +1117,15 @@ class VisitCalculator:
                 df.loc[mask, 'Факт на дату, шт.'] / 
                 df.loc[mask, 'План на дату, шт.'] * 100
             ).round(1)
+
+        # Прогноз ВП для краткого отчета
+        if 'План на дату, шт.' in df.columns and 'Факт на дату, шт.' in df.columns:
+            mask_plan_date = df['План на дату, шт.'] > 0
+            df['Прогноз ВП, %'] = 0.0
+            df.loc[mask_plan_date, 'Прогноз ВП, %'] = (
+                df.loc[mask_plan_date, 'Факт на дату, шт.'] / 
+                df.loc[mask_plan_date, 'План на дату, шт.'] * 100
+            ).round(1)
         
         # Отклонение в штуках
         df['△План/Факт на дату, шт.'] = (

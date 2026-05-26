@@ -311,7 +311,7 @@ class DataCleaner:
                 today = datetime.now()
                 first_day = pd.Timestamp(year=today.year, month=today.month, day=1)
             
-            df_clean[date_col] = pd.to_datetime(df_clean[date_col], errors='coerce')
+            df_clean[date_col] = pd.to_datetime(df_clean[date_col], errors='coerce', dayfirst=True)
             df_clean = df_clean[pd.isna(df_clean[date_col]) | (df_clean[date_col] >= first_day)]
         
         
@@ -928,7 +928,7 @@ class DataCleaner:
                 today = datetime.now()
                 first_day = pd.Timestamp(year=today.year, month=today.month, day=1)
             
-            df_clean[date_col] = pd.to_datetime(df_clean[date_col], errors='coerce')
+            df_clean[date_col] = pd.to_datetime(df_clean[date_col], errors='coerce', dayfirst=True)
             mask = pd.isna(df_clean[date_col]) | (df_clean[date_col] >= first_day)
             df_clean = df_clean[mask]
         

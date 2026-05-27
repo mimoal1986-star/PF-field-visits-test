@@ -576,6 +576,31 @@ class DataVisualizer:
 
         # ВСЕГДА группируем (даже если group_cols == ['Клиент'])
         project_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+        
+        # ========== ДОБАВЛЕНИЕ КОЛОНОК ДЛЯ КРАТКОГО ОТЧЕТА ==========
+        # 1. Прогноз, шт - используем существующий расчет из _calculate_metrics
+        if 'Прогноз, шт' not in project_data.columns and 'Прогноз, шт.' in project_data.columns:
+            project_data['Прогноз, шт'] = project_data['Прогноз, шт.']
+        
+        # 2. Прогноз ВП, % - рассчитываем если есть прогноз и план
+        if 'Прогноз ВП, %' not in project_data.columns:
+            if 'Прогноз, шт' in project_data.columns and 'План проекта, шт.' in project_data.columns:
+                mask = project_data['План проекта, шт.'] > 0
+                project_data['Прогноз ВП, %'] = 0.0
+                project_data.loc[mask, 'Прогноз ВП, %'] = (
+                    project_data.loc[mask, 'Прогноз, шт'] / 
+                    project_data.loc[mask, 'План проекта, шт.'] * 100
+                ).round(1)
+        
+        # 3. Отклонение от плана на сегодня, шт.
+        if 'Отклонение от плана на сегодня, шт.' not in project_data.columns:
+            if 'Факт проекта, шт.' in project_data.columns and 'План на дату, шт.' in project_data.columns:
+                project_data['Отклонение от плана на сегодня, шт.'] = (
+                    project_data['Факт проекта, шт.'] - project_data['План на дату, шт.']
+                ).round(1)
+                
+        # ============================================================
+        
         # Расчет средней оплаты
         if 'Оплата факт' in project_data.columns and 'Факт проекта, шт.' in project_data.columns:
             mask = project_data['Факт проекта, шт.'] > 0
@@ -1116,6 +1141,29 @@ class DataVisualizer:
         # ВСЕГДА группируем
         region_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
         
+        # ========== ДОБАВЛЕНИЕ КОЛОНОК ДЛЯ КРАТКОГО ОТЧЕТА ==========
+        # 1. Прогноз, шт - используем существующий расчет из _calculate_metrics
+        if 'Прогноз, шт' not in region_data.columns and 'Прогноз, шт.' in region_data.columns:
+            region_data['Прогноз, шт'] = region_data['Прогноз, шт.']
+        
+        # 2. Прогноз ВП, % - рассчитываем если есть прогноз и план
+        if 'Прогноз ВП, %' not in region_data.columns:
+            if 'Прогноз, шт' in region_data.columns and 'План проекта, шт.' in region_data.columns:
+                mask = region_data['План проекта, шт.'] > 0
+                region_data['Прогноз ВП, %'] = 0.0
+                region_data.loc[mask, 'Прогноз ВП, %'] = (
+                    region_data.loc[mask, 'Прогноз, шт'] / 
+                    region_data.loc[mask, 'План проекта, шт.'] * 100
+                ).round(1)
+        
+        # 3. Отклонение от плана на сегодня, шт. = Факт проекта, шт. - План на дату, шт.
+        if 'Отклонение от плана на сегодня, шт.' not in region_data.columns:
+            if 'Факт проекта, шт.' in region_data.columns and 'План на дату, шт.' in region_data.columns:
+                region_data['Отклонение от плана на сегодня, шт.'] = (
+                    region_data['Факт проекта, шт.'] - region_data['План на дату, шт.']
+                ).round(1)
+        # ============================================================
+        
         # Расчет средней оплаты
         if 'Оплата факт' in region_data.columns and 'Факт проекта, шт.' in region_data.columns:
             mask = region_data['Факт проекта, шт.'] > 0
@@ -1162,6 +1210,29 @@ class DataVisualizer:
                 region_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
                 region_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
             ).round(1)
+        
+        region_data['△План/Факт на дату, шт'] = (
+            region_data['Факт на дату, шт.'] - region_data['План на дату, шт.']
+        ).round(1)
+        
+        region_data['△План/Факт на дату, %'] = 0.0
+        if mask_plan.any():
+            region_data.loc[mask_plan, '△План/Факт на дату, %'] = (
+                (region_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                 region_data.loc[mask_plan, 'План на дату, шт.']) - 1
+            ).round(3) * 100
+
+        region_data['△План/Факт проекта, шт'] = (
+            region_data['Факт проекта, шт.'] - region_data['План проекта, шт.']
+        ).round(1)
+        
+        mask_project_plan = region_data['План проекта, шт.'] > 0
+        region_data['△План/Факт проекта, %'] = 0.0
+        if mask_project_plan.any():
+            region_data.loc[mask_project_plan, '△План/Факт проекта, %'] = (
+                (region_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                 region_data.loc[mask_project_plan, 'План проекта, шт.']) - 1
+            ).round(3) * 100
         
         region_data['△План/Факт на дату, шт'] = (
             region_data['Факт на дату, шт.'] - region_data['План на дату, шт.']
@@ -1580,9 +1651,32 @@ class DataVisualizer:
         }
         
         existing_agg = {k: v for k, v in agg_columns.items() if k in display_data.columns}
-        
+
         # ВСЕГДА группируем
         dsm_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+        
+        # ========== ДОБАВЛЕНИЕ КОЛОНОК ДЛЯ КРАТКОГО ОТЧЕТА ==========
+        # 1. Прогноз, шт - используем существующий расчет из _calculate_metrics
+        if 'Прогноз, шт' not in dsm_data.columns and 'Прогноз, шт.' in dsm_data.columns:
+            dsm_data['Прогноз, шт'] = dsm_data['Прогноз, шт.']
+        
+        # 2. Прогноз ВП, % - рассчитываем если есть прогноз и план
+        if 'Прогноз ВП, %' not in dsm_data.columns:
+            if 'Прогноз, шт' in dsm_data.columns and 'План проекта, шт.' in dsm_data.columns:
+                mask = dsm_data['План проекта, шт.'] > 0
+                dsm_data['Прогноз ВП, %'] = 0.0
+                dsm_data.loc[mask, 'Прогноз ВП, %'] = (
+                    dsm_data.loc[mask, 'Прогноз, шт'] / 
+                    dsm_data.loc[mask, 'План проекта, шт.'] * 100
+                ).round(1)
+        
+        # 3. Отклонение от плана на сегодня, шт. = Факт проекта, шт. - План на дату, шт.
+        if 'Отклонение от плана на сегодня, шт.' not in dsm_data.columns:
+            if 'Факт проекта, шт.' in dsm_data.columns and 'План на дату, шт.' in dsm_data.columns:
+                dsm_data['Отклонение от плана на сегодня, шт.'] = (
+                    dsm_data['Факт проекта, шт.'] - dsm_data['План на дату, шт.']
+                ).round(1)
+        # ============================================================
         
         # Расчет средней оплаты
         if 'Оплата факт' in dsm_data.columns and 'Факт проекта, шт.' in dsm_data.columns:
@@ -1633,6 +1727,29 @@ class DataVisualizer:
                 dsm_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
                 dsm_data.loc[mask_project_plan, 'План проекта, шт.'] * 100
             ).round(1)
+        
+        dsm_data['△План/Факт на дату, шт'] = (
+            dsm_data['Факт на дату, шт.'] - dsm_data['План на дату, шт.']
+        ).round(1)
+        
+        dsm_data['△План/Факт на дату, %'] = 0.0
+        if mask_plan.any():
+            dsm_data.loc[mask_plan, '△План/Факт на дату, %'] = (
+                (dsm_data.loc[mask_plan, 'Факт на дату, шт.'] / 
+                 dsm_data.loc[mask_plan, 'План на дату, шт.']) - 1
+            ).round(3) * 100
+
+        dsm_data['△План/Факт проекта, шт'] = (
+            dsm_data['Факт проекта, шт.'] - dsm_data['План проекта, шт.']
+        ).round(1)
+        
+        mask_project_plan = dsm_data['План проекта, шт.'] > 0
+        dsm_data['△План/Факт проекта, %'] = 0.0
+        if mask_project_plan.any():
+            dsm_data.loc[mask_project_plan, '△План/Факт проекта, %'] = (
+                (dsm_data.loc[mask_project_plan, 'Факт проекта, шт.'] / 
+                 dsm_data.loc[mask_project_plan, 'План проекта, шт.']) - 1
+            ).round(3) * 100
         
         dsm_data['△План/Факт на дату, шт'] = (
             dsm_data['Факт на дату, шт.'] - dsm_data['План на дату, шт.']

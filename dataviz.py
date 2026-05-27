@@ -694,24 +694,21 @@ class DataVisualizer:
         pf_percent = (fact_total / plan_total * 100) if plan_total > 0 else 0
         forecast_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
         
-        # РЯД 1: План проекта и Факт проекта
-        col1, col2 = st.columns(2)
+        # РЯД 1: План проекта, Факт проекта, Факт ВП, %
+        col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("📊 План проекта", f"{plan_total:,.0f} шт")
         with col2:
             st.metric("✅ Факт проекта", f"{fact_total:,.0f} шт")
-        
-        # РЯД 2: Отклонение от плана на сегодня и Факт поручено
-        col3, col4 = st.columns(2)
         with col3:
-            st.metric("📉 Отклонение от плана на сегодня, шт", f"{deviation:+,.0f}")
-        with col4:
-            st.metric("📋 Факт поручено, шт", f"{assigned_total:,.0f}")
-        
-        # РЯД 3: Факт ВП и Прогноз ВП
-        col5, col6 = st.columns(2)
-        with col5:
             st.metric("🎯 Факт ВП, %", f"{pf_percent:.1f}%")
+        
+        # РЯД 2: Отклонение, Факт поручено, Прогноз ВП, %
+        col4, col5, col6 = st.columns(3)
+        with col4:
+            st.metric("📉 Отклонение от плана на сегодня, шт", f"{deviation:+,.0f}")
+        with col5:
+            st.metric("📋 Факт поручено, шт", f"{assigned_total:,.0f}")
         with col6:
             st.metric("🔮 Прогноз ВП, %", f"{forecast_percent:.1f}%")
         
@@ -1232,24 +1229,21 @@ class DataVisualizer:
         pf_percent = (fact_total / plan_total * 100) if plan_total > 0 else 0
         forecast_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
         
-        # РЯД 1: План проекта и Факт проекта
-        col1, col2 = st.columns(2)
+        # РЯД 1: План проекта, Факт проекта, Факт ВП, %
+        col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("📊 План проекта", f"{plan_total:,.0f} шт")
         with col2:
             st.metric("✅ Факт проекта", f"{fact_total:,.0f} шт")
-        
-        # РЯД 2: Отклонение от плана на сегодня и Факт поручено
-        col3, col4 = st.columns(2)
         with col3:
-            st.metric("📉 Отклонение от плана на сегодня, шт", f"{deviation:+,.0f}")
-        with col4:
-            st.metric("📋 Факт поручено, шт", f"{assigned_total:,.0f}")
-        
-        # РЯД 3: Факт ВП и Прогноз ВП
-        col5, col6 = st.columns(2)
-        with col5:
             st.metric("🎯 Факт ВП, %", f"{pf_percent:.1f}%")
+        
+        # РЯД 2: Отклонение, Факт поручено, Прогноз ВП, %
+        col4, col5, col6 = st.columns(3)
+        with col4:
+            st.metric("📉 Отклонение от плана на сегодня, шт", f"{deviation:+,.0f}")
+        with col5:
+            st.metric("📋 Факт поручено, шт", f"{assigned_total:,.0f}")
         with col6:
             st.metric("🔮 Прогноз ВП, %", f"{forecast_percent:.1f}%")
         
@@ -1704,24 +1698,21 @@ class DataVisualizer:
         pf_percent = (fact_total / plan_total * 100) if plan_total > 0 else 0
         forecast_percent = (fact_date_total / plan_date_total * 100) if plan_date_total > 0 else 0
         
-        # РЯД 1: План проекта и Факт проекта
-        col1, col2 = st.columns(2)
+        # РЯД 1: План проекта, Факт проекта, Факт ВП, %
+        col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("📊 План проекта", f"{plan_total:,.0f} шт")
         with col2:
             st.metric("✅ Факт проекта", f"{fact_total:,.0f} шт")
-        
-        # РЯД 2: Отклонение от плана на сегодня и Факт поручено
-        col3, col4 = st.columns(2)
         with col3:
-            st.metric("📉 Отклонение от плана на сегодня, шт", f"{deviation:+,.0f}")
-        with col4:
-            st.metric("📋 Факт поручено, шт", f"{assigned_total:,.0f}")
-        
-        # РЯД 3: Факт ВП и Прогноз ВП
-        col5, col6 = st.columns(2)
-        with col5:
             st.metric("🎯 Факт ВП, %", f"{pf_percent:.1f}%")
+        
+        # РЯД 2: Отклонение, Факт поручено, Прогноз ВП, %
+        col4, col5, col6 = st.columns(3)
+        with col4:
+            st.metric("📉 Отклонение от плана на сегодня, шт", f"{deviation:+,.0f}")
+        with col5:
+            st.metric("📋 Факт поручено, шт", f"{assigned_total:,.0f}")
         with col6:
             st.metric("🔮 Прогноз ВП, %", f"{forecast_percent:.1f}%")
         

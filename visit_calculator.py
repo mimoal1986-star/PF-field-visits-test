@@ -1119,13 +1119,44 @@ class VisitCalculator:
             ).round(1)
 
         # Прогноз ВП для краткого отчета
-        if 'План на дату, шт.' in df.columns and 'Факт на дату, шт.' in df.columns:
-            mask_plan_date = df['План на дату, шт.'] > 0
+        
+        if 'Факт проекта, шт.' in df.columns and 'План проекта, шт.' in df.columns and 'Длительность' in df.columns and 'Дата старта' in df.columns:
+            # Получаем end_date из calc_params
+            if calc_params:
+                end_date = pd.Timestamp(calc_params['end_date'])
+            else:
+                end_date = pd.Timestamp(datetime.now())
+            
+            # Преобразуем дату старта в datetime
+            start_date_series = pd.to_datetime(df['Дата старта'])
+            
+            # Рассчитываем истекшие дни (от старта до end_date)
+            days_passed = (end_date - start_date_series).dt.days + 1
+            
+            # Ограничиваем: не меньше 0, не больше длительности
+            days_passed = days_passed.clip(lower=0, upper=df['Длительность'])
+            
+            # Маска для расчета (истекшие дни > 0)
+            mask_forecast = days_passed > 0
+            
+            # Прогноз, шт.
+            df['Прогноз, шт.'] = 0.0
+            if mask_forecast.any():
+                df.loc[mask_forecast, 'Прогноз, шт.'] = (
+                    df.loc[mask_forecast, 'Факт проекта, шт.'] * 
+                    (df.loc[mask_forecast, 'Длительность'] / days_passed.loc[mask_forecast])
+                ).round(1)
+            
+            # Прогноз ВП, %
             df['Прогноз ВП, %'] = 0.0
-            df.loc[mask_plan_date, 'Прогноз ВП, %'] = (
-                df.loc[mask_plan_date, 'Факт на дату, шт.'] / 
-                df.loc[mask_plan_date, 'План на дату, шт.'] * 100
-            ).round(1)
+            mask_plan = df['План проекта, шт.'] > 0
+            if mask_plan.any():
+                df.loc[mask_plan, 'Прогноз ВП, %'] = (
+                    df.loc[mask_plan, 'Прогноз, шт.'] / df.loc[mask_plan, 'План проекта, шт.'] * 100
+                ).round(1)
+            
+            # Удаляем временную колонку Прогноз, шт.
+            df = df.drop('Прогноз, шт.', axis=1)
         
         # Отклонение в штуках
         df['△План/Факт на дату, шт.'] = (

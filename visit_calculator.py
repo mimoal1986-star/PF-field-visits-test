@@ -155,18 +155,18 @@ class VisitCalculator:
                 'ПО': visits_df['ПО'].fillna('не определено'),
                 'Полевой': visits_df['Полевой']
             })
-            st.write(f"[DETAIL] Создание DataFrame: {time.time() - start:.2f} сек")
+            # st.write(f"[DETAIL] Создание DataFrame: {time.time() - start:.2f} сек")
             
             # ТОЛЬКО ПОЛЕВЫЕ ПРОЕКТЫ
             start = time.time()
             hierarchy = hierarchy[hierarchy['Полевой'] == 1]
             hierarchy = hierarchy.drop('Полевой', axis=1)
-            st.write(f"[DETAIL] Фильтр полевых: {time.time() - start:.2f} сек")
+            # st.write(f"[DETAIL] Фильтр полевых: {time.time() - start:.2f} сек")
             
             # Удаляем дубликаты
             start = time.time()
             hierarchy = hierarchy.drop_duplicates().reset_index(drop=True)
-            st.write(f"[DETAIL] Удаление дубликатов: {time.time() - start:.2f} сек")
+            # st.write(f"[DETAIL] Удаление дубликатов: {time.time() - start:.2f} сек")
             
             # Даты - по умолчанию пустые
             hierarchy['Дата старта'] = pd.NaT
@@ -262,7 +262,7 @@ class VisitCalculator:
                     hierarchy['Дата старта'] = hierarchy['Дата старта'].fillna(first_day)
                     hierarchy['Дата финиша'] = hierarchy['Дата финиша'].fillna(last_day)
                     pass
-                st.write(f"[DETAIL] Основные даты: {time.time() - start:.2f} сек")
+                # st.write(f"[DETAIL] Основные даты: {time.time() - start:.2f} сек")
             else:
                 # Если google_df нет, ставим даты по умолчанию
                 if 'plan_calc_params' in st.session_state:
@@ -370,7 +370,7 @@ class VisitCalculator:
                     hierarchy['Дата финиша_гугл'] = pd.NaT
                     hierarchy['Метод подбора дат'] = 'МП'
                     pass
-                st.write(f"[DETAIL] Оригинальные даты: {time.time() - start:.2f} сек")
+                # st.write(f"[DETAIL] Оригинальные даты: {time.time() - start:.2f} сек")
             else:
                 hierarchy['Дата старта_гугл'] = pd.NaT
                 hierarchy['Дата финиша_гугл'] = pd.NaT
@@ -387,15 +387,15 @@ class VisitCalculator:
                     hierarchy.loc[mask_valid_dates, 'Дата финиша'] - 
                     hierarchy.loc[mask_valid_dates, 'Дата старта']
                 ).dt.days + 1
-            st.write(f"[DETAIL] Расчет длительности: {time.time() - start:.2f} сек")
+            # st.write(f"[DETAIL] Расчет длительности: {time.time() - start:.2f} сек")
             
             # Сортируем
             start = time.time()
             hierarchy = hierarchy.sort_values(['Проект', 'Клиент', 'Волна', 'Регион', 'DSM', 'ASM', 'RS'])
             hierarchy = hierarchy[hierarchy['RS'] != 'Итого']
-            st.write(f"[DETAIL] Сортировка: {time.time() - start:.2f} сек")
+            # st.write(f"[DETAIL] Сортировка: {time.time() - start:.2f} сек")
             
-            st.write(f"[DETAIL] ВСЕГО Иерархия: {time.time() - start_total:.2f} сек")
+            # st.write(f"[DETAIL] ВСЕГО Иерархия: {time.time() - start_total:.2f} сек")
             
             return hierarchy
             

@@ -908,7 +908,7 @@ class DataCleaner:
         if df is None or df.empty:
             return pd.DataFrame()
         
-        self._log_samples(df, "1. Исходные данные")
+        # self._log_samples(df, "1. Исходные данные")
         df_clean = df.copy()
         
         # Удалить строки где Status == "Удалено"
@@ -916,7 +916,7 @@ class DataCleaner:
         if status_col:
             df_clean = df_clean[df_clean[status_col].astype(str).str.strip() != 'Удалено']
        
-        self._log_samples(df_clean, "2. После удаления статуса")
+        # self._log_samples(df_clean, "2. После удаления статуса")
         
         # Удалить строки где Date of Visit < первый день месяца
         date_col = self._find_column(df_clean, ['Date of Visit', 'Дата визита', 'Visit Date'])
@@ -932,7 +932,7 @@ class DataCleaner:
             mask = pd.isna(df_clean[date_col]) | (df_clean[date_col] >= first_day)
             df_clean = df_clean[mask]
         
-        self._log_samples(df_clean, "3. После фильтра дат")
+        # self._log_samples(df_clean, "3. После фильтра дат")
         
         # Базовые колонки
         column_mapping = {
@@ -993,7 +993,7 @@ class DataCleaner:
                                 result.at[idx, 'Код анкеты'] = str(project_code).strip()
                                 filled_count += 1
         
-        self._log_samples(result, "4. После обогащения кодами")
+        # self._log_samples(result, "4. После обогащения кодами")
         
         # все CXWAY проекты полевые
         result['Полевой'] = 1
@@ -1406,154 +1406,154 @@ class DataCleaner:
                 return any(x in region_str for x in ['LN', 'ЛЕНИНГРАДСКАЯ ОБЛАСТЬ', 'САНКТ-ПЕТЕРБУРГ'])
             
 
-        # === ОТЛАДКА: выгрузка детальной информации по Optima ===
-        # Инициализируем статистику
-        stats = {
-            'moscow_replaced': 0,
-            'moscow_original': 0,
-            'spb_replaced': 0,
-            'spb_original': 0,
-            'region_replaced': 0,
-            'region_original': 0
-        }
+        # # === ОТЛАДКА: выгрузка детальной информации по Optima ===
+        # # Инициализируем статистику
+        # stats = {
+        #     'moscow_replaced': 0,
+        #     'moscow_original': 0,
+        #     'spb_replaced': 0,
+        #     'spb_original': 0,
+        #     'region_replaced': 0,
+        #     'region_original': 0
+        # }
         
-        # Формируем DataFrame для выгрузки
-        debug_data = []
+        # # Формируем DataFrame для выгрузки
+        # debug_data = []
         
-        for idx, row in result.iterrows():
-            # СОХРАНЯЕМ ИСХОДНОЕ ЗНАЧЕНИЕ
-            old_em = row.get('ЭМ', '')
+        # for idx, row in result.iterrows():
+        #     # СОХРАНЯЕМ ИСХОДНОЕ ЗНАЧЕНИЕ
+        #     old_em = row.get('ЭМ', '')
             
-            region_long = row.get('Регион long', '')
-            region_short = row.get('Регион short', '')
-            client = row.get('Имя клиента', '')
-            project_code = row.get('Код анкеты', '')
-            wave_name = row.get('Название проекта', '')
-            asm = row.get('АСС', '')
-            status = row.get('Статус', '')
-            visit_date = row.get('Дата визита', '')
+        #     region_long = row.get('Регион long', '')
+        #     region_short = row.get('Регион short', '')
+        #     client = row.get('Имя клиента', '')
+        #     project_code = row.get('Код анкеты', '')
+        #     wave_name = row.get('Название проекта', '')
+        #     asm = row.get('АСС', '')
+        #     status = row.get('Статус', '')
+        #     visit_date = row.get('Дата визита', '')
             
-            # 1. Москва
-            if is_moscow(region_long):
-                rs_value = moscow_mapping.get(client)
-                if rs_value:
-                    result.at[idx, 'ЭМ'] = rs_value
-                else:
-                    result.at[idx, 'ЭМ'] = ''
-                stats['moscow_original'] += 1
+        #     # 1. Москва
+        #     if is_moscow(region_long):
+        #         rs_value = moscow_mapping.get(client)
+        #         if rs_value:
+        #             result.at[idx, 'ЭМ'] = rs_value
+        #         else:
+        #             result.at[idx, 'ЭМ'] = ''
+        #         stats['moscow_original'] += 1
             
-            # 2. Санкт-Петербург
-            elif is_spb(region_long):
-                rs_value = spb_mapping.get(client)
-                if rs_value:
-                    result.at[idx, 'ЭМ'] = rs_value
-                else:
-                    result.at[idx, 'ЭМ'] = ''
-                stats['spb_original'] += 1
+        #     # 2. Санкт-Петербург
+        #     elif is_spb(region_long):
+        #         rs_value = spb_mapping.get(client)
+        #         if rs_value:
+        #             result.at[idx, 'ЭМ'] = rs_value
+        #         else:
+        #             result.at[idx, 'ЭМ'] = ''
+        #         stats['spb_original'] += 1
             
-            # 3. Обычный регион
-            elif region_short and region_short != 'не определен':
-                rs_value = region_mapping.get(region_short)
-                if rs_value:
-                    result.at[idx, 'ЭМ'] = rs_value
-                else:
-                    result.at[idx, 'ЭМ'] = ''
-                stats['region_original'] += 1
+        #     # 3. Обычный регион
+        #     elif region_short and region_short != 'не определен':
+        #         rs_value = region_mapping.get(region_short)
+        #         if rs_value:
+        #             result.at[idx, 'ЭМ'] = rs_value
+        #         else:
+        #             result.at[idx, 'ЭМ'] = ''
+        #         stats['region_original'] += 1
             
-            else:
-                result.at[idx, 'ЭМ'] = ''
+        #     else:
+        #         result.at[idx, 'ЭМ'] = ''
             
-            # Определяем, была ли замена
-            new_em = result.at[idx, 'ЭМ']
-            replaced = 1 if old_em != new_em else 0
+        #     # Определяем, была ли замена
+        #     new_em = result.at[idx, 'ЭМ']
+        #     replaced = 1 if old_em != new_em else 0
             
-            # Считаем замены по регионам
-            if is_moscow(region_long):
-                if replaced == 1:
-                    stats['moscow_replaced'] += 1
-            elif is_spb(region_long):
-                if replaced == 1:
-                    stats['spb_replaced'] += 1
-            elif region_short and region_short != 'не определен':
-                if replaced == 1:
-                    stats['region_replaced'] += 1
+        #     # Считаем замены по регионам
+        #     if is_moscow(region_long):
+        #         if replaced == 1:
+        #             stats['moscow_replaced'] += 1
+        #     elif is_spb(region_long):
+        #         if replaced == 1:
+        #             stats['spb_replaced'] += 1
+        #     elif region_short and region_short != 'не определен':
+        #         if replaced == 1:
+        #             stats['region_replaced'] += 1
             
-            # Сохраняем строку для выгрузки
-            debug_data.append({
-                'Клиент': client,
-                'Код проекта': project_code,
-                'Волна': wave_name,
-                'Регион': region_long,
-                'Регион short': region_short,
-                'Статус': status,
-                'Дата визита': visit_date,
-                'ASM': asm,
-                'RS_исходный': old_em,
-                'RS_после_обработки': new_em,
-                'Замена_произошла': replaced
-            })
+        #     # Сохраняем строку для выгрузки
+        #     debug_data.append({
+        #         'Клиент': client,
+        #         'Код проекта': project_code,
+        #         'Волна': wave_name,
+        #         'Регион': region_long,
+        #         'Регион short': region_short,
+        #         'Статус': status,
+        #         'Дата визита': visit_date,
+        #         'ASM': asm,
+        #         'RS_исходный': old_em,
+        #         'RS_после_обработки': new_em,
+        #         'Замена_произошла': replaced
+        #     })
         
-        # Создаем DataFrame
-        debug_df = pd.DataFrame(debug_data)
+        # # Создаем DataFrame
+        # debug_df = pd.DataFrame(debug_data)
         
-        # Сохраняем в session_state
-        st.session_state.optima_debug_data = debug_df
+        # # Сохраняем в session_state
+        # st.session_state.optima_debug_data = debug_df
         
-        # Выводим ссылку на скачивание
-        from io import BytesIO
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            debug_df.to_excel(writer, sheet_name='Optima_отладка', index=False)
+        # # Выводим ссылку на скачивание
+        # from io import BytesIO
+        # output = BytesIO()
+        # with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        #     debug_df.to_excel(writer, sheet_name='Optima_отладка', index=False)
         
-        st.download_button(
-            label="📥 Скачать отладку Optima (детальная информация)",
-            data=output.getvalue(),
-            file_name=f"optima_debug_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            type="secondary"
-        )
+        # st.download_button(
+        #     label="📥 Скачать отладку Optima (детальная информация)",
+        #     data=output.getvalue(),
+        #     file_name=f"optima_debug_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+        #     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        #     type="secondary"
+        # )
         
-        # Статистика в интерфейсе
-        st.write("### 📊 Статистика замен RS для Optima")
+        # # Статистика в интерфейсе
+        # st.write("### 📊 Статистика замен RS для Optima")
         
-        if len(debug_df) > 0:
-            col1, col2, col3 = st.columns(3)
+        # if len(debug_df) > 0:
+        #     col1, col2, col3 = st.columns(3)
             
-            with col1:
-                st.metric(
-                    "📍 Москва",
-                    f"{stats['moscow_replaced']} / {stats['moscow_original']}",
-                    help=f"Замен: {stats['moscow_replaced']}, всего строк: {stats['moscow_original']}"
-                )
+        #     with col1:
+        #         st.metric(
+        #             "📍 Москва",
+        #             f"{stats['moscow_replaced']} / {stats['moscow_original']}",
+        #             help=f"Замен: {stats['moscow_replaced']}, всего строк: {stats['moscow_original']}"
+        #         )
             
-            with col2:
-                st.metric(
-                    "📍 Санкт-Петербург",
-                    f"{stats['spb_replaced']} / {stats['spb_original']}",
-                    help=f"Замен: {stats['spb_replaced']}, всего строк: {stats['spb_original']}"
-                )
+        #     with col2:
+        #         st.metric(
+        #             "📍 Санкт-Петербург",
+        #             f"{stats['spb_replaced']} / {stats['spb_original']}",
+        #             help=f"Замен: {stats['spb_replaced']}, всего строк: {stats['spb_original']}"
+        #         )
             
-            with col3:
-                st.metric(
-                    "📍 Остальные регионы",
-                    f"{stats['region_replaced']} / {stats['region_original']}",
-                    help=f"Замен: {stats['region_replaced']}, всего строк: {stats['region_original']}"
-                )
+        #     with col3:
+        #         st.metric(
+        #             "📍 Остальные регионы",
+        #             f"{stats['region_replaced']} / {stats['region_original']}",
+        #             help=f"Замен: {stats['region_replaced']}, всего строк: {stats['region_original']}"
+        #         )
             
-            # ИТОГО
-            total_replaced = stats['moscow_replaced'] + stats['spb_replaced'] + stats['region_replaced']
-            total_rows = stats['moscow_original'] + stats['spb_original'] + stats['region_original']
+        #     # ИТОГО
+        #     total_replaced = stats['moscow_replaced'] + stats['spb_replaced'] + stats['region_replaced']
+        #     total_rows = stats['moscow_original'] + stats['spb_original'] + stats['region_original']
             
-            st.markdown("---")
-            st.metric("📊 ВСЕГО", f"{total_replaced} / {total_rows}")
+        #     st.markdown("---")
+        #     st.metric("📊 ВСЕГО", f"{total_replaced} / {total_rows}")
             
-            st.caption(f"📁 Скачайте Excel-файл для детального анализа ({len(debug_df)} записей)")
-        else:
-            st.info("Нет данных для отображения статистики")
+        #     st.caption(f"📁 Скачайте Excel-файл для детального анализа ({len(debug_df)} записей)")
+        # else:
+        #     st.info("Нет данных для отображения статистики")
         
-        st.info(f"📁 Скачайте Excel-файл для детального анализа (всего {len(debug_df)} записей)")
+        # st.info(f"📁 Скачайте Excel-файл для детального анализа (всего {len(debug_df)} записей)")
 
-        # === ОТЛАДКА: выгрузка детальной информации по Optima ===
+        # # === ОТЛАДКА: выгрузка детальной информации по Optima ===
         
         # # Конвертация даты
         # if 'Дата визита' in result.columns:

@@ -80,20 +80,13 @@ def parse_multibrand_excel(file_obj):
 def clean_dilers_table(df):
     """
     Очистка и приведение таблицы Дилеры к стандартному формату
-    
-    Ожидаемые колонки:
-    - Обозначение (код региона, например NG)
-    - Регион полный (полное название региона)
-    - АСС (ASM)
-    - ЭМ (RS)
-    - Дилеры (план)
     """
     if df.empty:
         return df
     
     df_clean = df.copy()
     
-    # Приводим названия колонок к стандартному виду
+    # Переименовываем колонки
     column_mapping = {
         'Обозначение': 'region_code',
         'Регион полный': 'region_full',
@@ -102,12 +95,11 @@ def clean_dilers_table(df):
         'Дилеры': 'plan'
     }
     
-    # Переименовываем существующие колонки
     for old_name, new_name in column_mapping.items():
         if old_name in df_clean.columns:
             df_clean = df_clean.rename(columns={old_name: new_name})
     
-    # Оставляем только нужные колонки
+    # Оставляем нужные колонки
     required_cols = ['region_code', 'region_full', 'asm', 'rs', 'plan']
     existing_cols = [col for col in required_cols if col in df_clean.columns]
     df_clean = df_clean[existing_cols]
@@ -116,30 +108,25 @@ def clean_dilers_table(df):
     df_clean['region_code'] = df_clean['region_code'].astype(str).str.strip().str.upper()
     df_clean['plan'] = pd.to_numeric(df_clean['plan'], errors='coerce').fillna(0)
     
-    # Удаляем строки с пустым регионом
+    # Для Дилеры всегда wave_type = 'Дилеры'
+    df_clean['wave_type'] = 'Дилеры'
+    
+    # Удаляем пустые строки
     df_clean = df_clean[df_clean['region_code'].notna() & (df_clean['region_code'] != '')]
     df_clean = df_clean[df_clean['region_code'] != 'nan']
     
     return df_clean.reset_index(drop=True)
 
-
 def clean_pronto_table(df):
     """
     Очистка и приведение таблицы Пронто к стандартному формату
-    
-    Ожидаемые колонки:
-    - Обозначение (код региона, например NG)
-    - Регион полный (полное название региона)
-    - АСС (ASM)
-    - ЭМ (RS)
-    - Пронто (план)
     """
     if df.empty:
         return df
     
     df_clean = df.copy()
     
-    # Приводим названия колонок к стандартному виду
+    # Переименовываем колонки
     column_mapping = {
         'Обозначение': 'region_code',
         'Регион полный': 'region_full',
@@ -148,12 +135,11 @@ def clean_pronto_table(df):
         'Пронто': 'plan'
     }
     
-    # Переименовываем существующие колонки
     for old_name, new_name in column_mapping.items():
         if old_name in df_clean.columns:
             df_clean = df_clean.rename(columns={old_name: new_name})
     
-    # Оставляем только нужные колонки
+    # Оставляем нужные колонки
     required_cols = ['region_code', 'region_full', 'asm', 'rs', 'plan']
     existing_cols = [col for col in required_cols if col in df_clean.columns]
     df_clean = df_clean[existing_cols]
@@ -162,7 +148,16 @@ def clean_pronto_table(df):
     df_clean['region_code'] = df_clean['region_code'].astype(str).str.strip().str.upper()
     df_clean['plan'] = pd.to_numeric(df_clean['plan'], errors='coerce').fillna(0)
     
-    # Удаляем строки с пустым регионом
+    # Определяем wave_type на основе региона
+    def get_wave_type(region_full):
+        if 'МСК дистр.' in str(region_full):
+            return 'Пронто М'
+        else:
+            return 'Пронто'
+    
+    df_clean['wave_type'] = df_clean['region_full'].apply(get_wave_type)
+    
+    # Удаляем пустые строки
     df_clean = df_clean[df_clean['region_code'].notna() & (df_clean['region_code'] != '')]
     df_clean = df_clean[df_clean['region_code'] != 'nan']
     

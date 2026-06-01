@@ -1189,8 +1189,12 @@ class VisitCalculator:
         if 'Факт на дату, шт.' not in df.columns:
             df['Факт на дату, шт.'] = 0
 
-        # 2.5 КОРРЕКТИРОВКА ПЛАНА: если факт > план
-        mask_fact_gt_plan_project = df['Факт проекта, шт.'] > df['План проекта, шт.']
+        # 2.5 КОРРЕКТИРОВКА ПЛАНА: если факт > план (кроме строк с skip_plan_correction)
+        if 'skip_plan_correction' in df.columns:
+            mask_fact_gt_plan_project = (df['Факт проекта, шт.'] > df['План проекта, шт.']) & (~df['skip_plan_correction'])
+        else:
+            mask_fact_gt_plan_project = df['Факт проекта, шт.'] > df['План проекта, шт.']
+        
         if mask_fact_gt_plan_project.any():
             df.loc[mask_fact_gt_plan_project, 'План проекта, шт.'] = df.loc[mask_fact_gt_plan_project, 'Факт проекта, шт.'].copy()
         

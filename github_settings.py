@@ -857,4 +857,136 @@ def get_plan_adjustment_manager():
         settings_manager = get_settings_manager()
         st.session_state.plan_adjustment_manager = PlanAdjustmentManager(settings_manager)
     return st.session_state.plan_adjustment_manager
+
+# ============================================
+# МЕНЕДЖЕР ДЛЯ МУЛЬТИБРЕНД 2024 (CXWAY)
+# ============================================
+
+class MultibrandPlanManager:
+    """Менеджер для работы с распределением плана Мультибренд 2024"""
+    
+    def __init__(self):
+        self.available = False
+        self.g = None
+        self.repo = None
+        self.json_path = 'data/multibrand_plan.json'
+        
+        if 'github_token' in st.secrets and 'github_repo' in st.secrets:
+            try:
+                from github import Github
+                token = st.secrets['github_token']
+                repo_name = st.secrets['github_repo']
+                self.g = Github(token)
+                self.repo = self.g.get_repo(repo_name)
+                self.available = True
+            except Exception as e:
+                st.error(f"❌ Ошибка подключения к GitHub: {e}")
+                self.available = False
+    
+    def _get_file_content(self):
+        """Получает текущее содержимое JSON файла"""
+        if not self.available:
+            return None
+        try:
+            import json
+            import base64
+            contents = self.repo.get_contents(self.json_path)
+            content = base64.b64decode(contents.content).decode('utf-8')
+            return json.loads(content)
+        except:
+            return None
+    
+    def load_plan(self):
+        """
+        Загружает распределение плана из GitHub
+        
+        Returns:
+            tuple: (dilers_df, pronto_df) - два DataFrame
+        """
+        if not self.available:
+            return pd.DataFrame(), pd.DataFrame()
+        
+        try:
+            import json
+            import pandas as pd
+            data = self._get_file_content()
+            if data and 'dilers' in data and 'pronto' in data:
+                dilers_df = pd.DataFrame(data['dilers'])
+                pronto_df = pd.DataFrame(data['pronto'])
+                return dilers_df, pronto_df
+            return pd.DataFrame(), pd.DataFrame()
+        except Exception as e:
+            return pd.DataFrame(), pd.DataFrame()
+    
+    def save_plan(self, dilers_df, pronto_df):
+        """
+        Сохраняет распределение плана в GitHub
+        
+        Args:
+            dilers_df: pd.DataFrame — таблица Дилеры
+            pronto_df: pd.DataFrame — таблица Пронто
+        
+        Returns:
+            (bool, str): (успех, сообщение)
+        """
+        if not self.available:
+            return False, "GitHub не доступен. Проверьте секреты."
+        
+        try:
+            import json
+            import base64
+            from datetime import datetime
+            
+            # Преобразуем DataFrames в списки словарей
+            dilers_data = dilers_df.to_dict('records') if not dilers_df.empty else []
+            pronto_data = pronto_df.to_dict('records') if not pronto_df.empty else []
+            
+            data = {
+                'dilers': dilers_data,
+                'pronto': pronto_data,
+                'updated_at': datetime.now().isoformat()
+            }
+            
+            json_content = json.dumps(data, ensure_ascii=False, indent=2, default=str)
+            
+            try:
+                contents = self.repo.get_contents(self.json_path)
+                self.repo.update_file(
+                    self.json_path,
+                    f"Обновление распределения Мультибренд 2024 ({datetime.now().strftime('%Y-%m-%d %H:%M')})",
+                    json_content,
+                    contents.sha
+                )
+                return True, "Распределение плана Мультибренд 2024 сохранено в GitHub!"
+            except:
+                self.repo.create_file(
+                    self.json_path,
+                    f"Создание распределения Мультибренд 2024 ({datetime.now().strftime('%Y-%m-%d %H:%M')})",
+                    json_content
+                )
+                return True, "Распределение плана Мультибренд 2024 сохранено в GitHub!"
+                
+        except Exception as e:
+            return False, f"Ошибка сохранения: {str(e)}"
+    
+    def delete_plan(self):
+        """Удаляет распределение плана из GitHub"""
+        if not self.available:
+            return False, "GitHub не доступен"
+        
+        try:
+            contents = self.repo.get_contents(self.json_path)
+            self.repo.delete_file(
+                self.json_path,
+                f"Удаление распределения Мультибренд 2024 ({datetime.now().strftime('%Y-%m-%d %H:%M')})",
+                contents.sha
+            )
+            return True, "Распределение плана Мультибренд 2024 удалено"
+        except Exception as e:
+            return False, f"Ошибка удаления: {str(e)}"
+
+@st.cache_resource
+def get_multibrand_plan_manager():
+    """Возвращает экземпляр менеджера для Мультибренд 2024"""
+    return MultibrandPlanManager()
     

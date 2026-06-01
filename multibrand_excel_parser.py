@@ -130,6 +130,7 @@ def clean_pronto_table(df):
     column_mapping = {
         'Обозначение': 'region_code',
         'Регион полный': 'region_full',
+        'Регион': 'wave_origin',
         'АСС': 'asm',
         'ЭМ': 'rs',
         'Пронто': 'plan'

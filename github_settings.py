@@ -7,6 +7,7 @@ from datetime import datetime
 import base64
 import requests
 from typing import Optional, Dict, List, Tuple
+from github import Github
 
 class GitHubSettingsManager:
     """

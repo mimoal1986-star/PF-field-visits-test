@@ -951,7 +951,10 @@ class DataCleaner:
         for std_col, possible_names in column_mapping.items():
             source_col = self._find_column(df_clean, possible_names)
             if source_col:
-                result[std_col] = df_clean[source_col].astype(str).fillna('')
+                if std_col == 'Регион short':
+                    result[std_col] = df_clean[source_col].astype(str).fillna('').str.upper()
+                else:
+                    result[std_col] = df_clean[source_col].astype(str).fillna('')
             else:
                 result[std_col] = ''
         

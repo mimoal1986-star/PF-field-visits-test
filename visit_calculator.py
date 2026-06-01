@@ -777,30 +777,19 @@ class VisitCalculator:
                                 total_plan = 0
                             
                         elif wave_type == 'Пронто' or wave_type == 'Пронто М':
-                            mapped_region = region
-                            if region == 'MS':
-                                if wave_type == 'Пронто':
-                                    mapped_region = 'Москва и Московская область'
-                                else:
-                                    mapped_region = 'МСК дистр.'
-                            
+                            # Поиск по короткому коду региона и типу волны
                             if 'wave_type' in multibrand_pronto_df.columns:
                                 plan_row = multibrand_pronto_df[
-                                    (multibrand_pronto_df['region_short'] == mapped_region) &
+                                    (multibrand_pronto_df['region_short'] == region) &
                                     (multibrand_pronto_df['wave_type'] == wave_type)
                                 ]
                             else:
-                                plan_row = multibrand_pronto_df[multibrand_pronto_df['region_short'] == mapped_region]
+                                plan_row = multibrand_pronto_df[multibrand_pronto_df['region_short'] == region]
                             
                             if not plan_row.empty:
                                 total_plan = plan_row.iloc[0]['plan']
                             else:
-                                # ИСПРАВЛЕНО: region_code → region_short
-                                plan_row = multibrand_pronto_df[multibrand_pronto_df['region_short'] == region]
-                                if not plan_row.empty:
-                                    total_plan = plan_row.iloc[0]['plan']
-                                else:
-                                    total_plan = 0
+                                total_plan = 0
                             
                         else:
                             total_plan = 0

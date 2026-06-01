@@ -800,7 +800,7 @@ class VisitCalculator:
                         else:
                             total_plan = 0
                         
-                        if total_plan <= 0 and not skip_plan_correction:
+                        if total_plan <= 0:
                             continue
                         
                         # Рассчитываем план на дату с учетом этапов
@@ -1367,7 +1367,6 @@ class VisitCalculator:
 
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
-
 
 
 

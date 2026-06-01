@@ -748,8 +748,7 @@ class VisitCalculator:
                             continue
                     
                     elif client == 'Мультибренд 2024' and po == 'CXWAY':
-                        # Специальная логика для Мультибренд 2024
-                        # Проверяем, загружен ли Easymerch (как в Мултон)
+                        # Проверяем, загружен ли CXWAY
                         if 'cxway' not in st.session_state.uploaded_files:
                             continue
                         
@@ -760,21 +759,20 @@ class VisitCalculator:
                         else:
                             wave_type = wave_name
                         
-                        
                         # 2. Определяем план в зависимости от типа волны
                         asm_from_plan = row['ASM']
                         rs_from_plan = row['RS']
-                        skip_plan_correction = False  # ← значение по умолчанию
+                        skip_plan_correction = False
                         
                         if wave_type == 'Нерезультативные_Пронто_Дилеры':
                             total_plan = 0
                             skip_plan_correction = True
                             
                         elif wave_type == 'Дилеры':
-                            plan_row = multibrand_dilers_df[multibrand_dilers_df['region_code'] == region]
+                            # ИСПРАВЛЕНО: region_code → region_short
+                            plan_row = multibrand_dilers_df[multibrand_dilers_df['region_short'] == region]
                             if not plan_row.empty:
                                 total_plan = plan_row.iloc[0]['plan']
-
                             else:
                                 total_plan = 0
                             
@@ -786,20 +784,19 @@ class VisitCalculator:
                                 else:
                                     mapped_region = 'МСК дистр.'
                             
-                            # Проверяем, есть ли колонка wave_type (для совместимости со старыми данными)
                             if 'wave_type' in multibrand_pronto_df.columns:
                                 plan_row = multibrand_pronto_df[
-                                    (multibrand_pronto_df['region_code'] == mapped_region) &
+                                    (multibrand_pronto_df['region_short'] == mapped_region) &
                                     (multibrand_pronto_df['wave_type'] == wave_type)
                                 ]
                             else:
-                                plan_row = multibrand_pronto_df[multibrand_pronto_df['region_code'] == mapped_region]
+                                plan_row = multibrand_pronto_df[multibrand_pronto_df['region_short'] == mapped_region]
                             
                             if not plan_row.empty:
                                 total_plan = plan_row.iloc[0]['plan']
                             else:
-                                # Fallback: ищем по исходному региону
-                                plan_row = multibrand_pronto_df[multibrand_pronto_df['region_code'] == region]
+                                # ИСПРАВЛЕНО: region_code → region_short
+                                plan_row = multibrand_pronto_df[multibrand_pronto_df['region_short'] == region]
                                 if not plan_row.empty:
                                     total_plan = plan_row.iloc[0]['plan']
                                 else:

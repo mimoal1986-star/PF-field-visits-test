@@ -518,7 +518,20 @@ class VisitCalculator:
             except Exception as e:
                 plan_adjustments = {}
 
-
+            # ============================================
+            # ЗАГРУЗКА РАСПРЕДЕЛЕНИЯ ДЛЯ МУЛЬТИБРЕНД 2024 (ОДИН РАЗ)
+            # ============================================
+            multibrand_dilers_df = pd.DataFrame()
+            multibrand_pronto_df = pd.DataFrame()
+            multibrand_loaded = False
+            
+            if 'easymerch' in st.session_state.uploaded_files:
+                try:
+                    multibrand_manager = get_multibrand_plan_manager()
+                    multibrand_dilers_df, multibrand_pronto_df = multibrand_manager.load_plan()
+                    multibrand_loaded = not (multibrand_dilers_df.empty and multibrand_pronto_df.empty)
+                except:
+                    pass
         
             # ============================================
             # 2. ПРЕДВАРИТЕЛЬНЫЙ РАСЧЕТ ВЕСОВ RS
@@ -736,6 +749,9 @@ class VisitCalculator:
                     
                     elif client == 'Мультибренд 2024' and po == 'CXWAY':
                         # Специальная логика для Мультибренд 2024
+                        # Проверяем, загружен ли Easymerch (как в Мултон)
+                        if 'easymerch' not in st.session_state.uploaded_files:
+                            continue
                         
                         # 1. Определяем тип волны по названию (после последнего '_')
                         wave_parts = wave_name.split('_')
@@ -744,11 +760,8 @@ class VisitCalculator:
                         else:
                             wave_type = wave_name
                         
-                        # 2. Загружаем распределение плана
-                        multibrand_manager = get_multibrand_plan_manager()
-                        dilers_df, pronto_df = multibrand_manager.load_plan()
                         
-                        # 3. Определяем план в зависимости от типа волны
+                        # 2. Определяем план в зависимости от типа волны
                         asm_from_plan = row['ASM']
                         rs_from_plan = row['RS']
                         skip_plan_correction = False  # ← значение по умолчанию
@@ -758,11 +771,10 @@ class VisitCalculator:
                             skip_plan_correction = True
                             
                         elif wave_type == 'Дилеры':
-                            plan_row = dilers_df[dilers_df['region_code'] == region]
+                            plan_row = multibrand_dilers_df[multibrand_dilers_df['region_code'] == region]
                             if not plan_row.empty:
                                 total_plan = plan_row.iloc[0]['plan']
-                                asm_from_plan = plan_row.iloc[0]['asm']
-                                rs_from_plan = plan_row.iloc[0]['rs']
+
                             else:
                                 total_plan = 0
                             
@@ -774,17 +786,14 @@ class VisitCalculator:
                                 else:
                                     mapped_region = 'МСК дистр.'
                             
-                            plan_row = pronto_df[pronto_df['region_code'] == mapped_region]
+                            plan_row = multibrand_pronto_df[multibrand_pronto_df['region_code'] == mapped_region]
                             if not plan_row.empty:
                                 total_plan = plan_row.iloc[0]['plan']
-                                asm_from_plan = plan_row.iloc[0]['asm']
-                                rs_from_plan = plan_row.iloc[0]['rs']
+
                             else:
-                                plan_row = pronto_df[pronto_df['region_code'] == region]
+                                plan_row = multibrand_pronto_df[multibrand_pronto_df['region_code'] == region]
                                 if not plan_row.empty:
                                     total_plan = plan_row.iloc[0]['plan']
-                                    asm_from_plan = plan_row.iloc[0]['asm']
-                                    rs_from_plan = plan_row.iloc[0]['rs']
                                 else:
                                     total_plan = 0
                             

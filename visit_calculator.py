@@ -525,7 +525,7 @@ class VisitCalculator:
             multibrand_pronto_df = pd.DataFrame()
             multibrand_loaded = False
             
-            if 'easymerch' in st.session_state.uploaded_files:
+            if 'cxway' in st.session_state.uploaded_files:
                 try:
                     multibrand_manager = get_multibrand_plan_manager()
                     multibrand_dilers_df, multibrand_pronto_df = multibrand_manager.load_plan()
@@ -750,7 +750,7 @@ class VisitCalculator:
                     elif client == 'Мультибренд 2024' and po == 'CXWAY':
                         # Специальная логика для Мультибренд 2024
                         # Проверяем, загружен ли Easymerch (как в Мултон)
-                        if 'easymerch' not in st.session_state.uploaded_files:
+                        if 'cxway' not in st.session_state.uploaded_files:
                             continue
                         
                         # 1. Определяем тип волны по названию (после последнего '_')

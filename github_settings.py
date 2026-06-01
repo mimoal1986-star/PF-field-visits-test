@@ -7,7 +7,6 @@ from datetime import datetime
 import base64
 import requests
 from typing import Optional, Dict, List, Tuple
-from github import Github
 
 class GitHubSettingsManager:
     """
@@ -866,34 +865,35 @@ class MultibrandPlanManager:
     """Менеджер для работы с распределением плана Мультибренд 2024"""
     
     def __init__(self):
-        self.available = False
-        self.g = None
-        self.repo = None
-        self.json_path = 'data/multibrand_plan.json'
+        """Инициализация с настройками из Streamlit Secrets"""
+        if 'github' not in st.secrets:
+            self.available = False
+            return
+            
+        self.token = st.secrets['github']['token']
+        self.repo = st.secrets['github']['repo']
+        self.branch = st.secrets['github']['branch']
+        self.file_path = 'multibrand_plan.json'
         
-        if 'github_token' in st.secrets and 'github_repo' in st.secrets:
-            try:
-                from github import Github
-                token = st.secrets['github_token']
-                repo_name = st.secrets['github_repo']
-                self.g = Github(token)
-                self.repo = self.g.get_repo(repo_name)
-                self.available = True
-            except Exception as e:
-                st.error(f"❌ Ошибка подключения к GitHub: {e}")
-                self.available = False
+        self.api_url = f"https://api.github.com/repos/{self.repo}/contents/{self.file_path}"
+        self.headers = {
+            "Authorization": f"token {self.token}",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        self.available = True
     
-    def _get_file_content(self):
-        """Получает текущее содержимое JSON файла"""
-        if not self.available:
-            return None
+    def _get_file_sha(self):
+        """Получает SHA текущего файла"""
         try:
-            import json
-            import base64
-            contents = self.repo.get_contents(self.json_path)
-            content = base64.b64decode(contents.content).decode('utf-8')
-            return json.loads(content)
-        except:
+            response = requests.get(
+                self.api_url,
+                headers=self.headers,
+                params={"ref": self.branch}
+            )
+            if response.status_code == 200:
+                return response.json()["sha"]
+            return None
+        except Exception:
             return None
     
     def load_plan(self):
@@ -907,14 +907,22 @@ class MultibrandPlanManager:
             return pd.DataFrame(), pd.DataFrame()
         
         try:
-            import json
-            import pandas as pd
-            data = self._get_file_content()
-            if data and 'dilers' in data and 'pronto' in data:
-                dilers_df = pd.DataFrame(data['dilers'])
-                pronto_df = pd.DataFrame(data['pronto'])
+            response = requests.get(
+                self.api_url,
+                headers=self.headers,
+                params={"ref": self.branch}
+            )
+            
+            if response.status_code == 200:
+                content = response.json()
+                file_content = base64.b64decode(content["content"]).decode("utf-8")
+                data = json.loads(file_content)
+                
+                dilers_df = pd.DataFrame(data.get('dilers', []))
+                pronto_df = pd.DataFrame(data.get('pronto', []))
                 return dilers_df, pronto_df
             return pd.DataFrame(), pd.DataFrame()
+                
         except Exception as e:
             return pd.DataFrame(), pd.DataFrame()
     
@@ -933,10 +941,6 @@ class MultibrandPlanManager:
             return False, "GitHub не доступен. Проверьте секреты."
         
         try:
-            import json
-            import base64
-            from datetime import datetime
-            
             # Преобразуем DataFrames в списки словарей
             dilers_data = dilers_df.to_dict('records') if not dilers_df.empty else []
             pronto_data = pronto_df.to_dict('records') if not pronto_df.empty else []
@@ -947,24 +951,25 @@ class MultibrandPlanManager:
                 'updated_at': datetime.now().isoformat()
             }
             
-            json_content = json.dumps(data, ensure_ascii=False, indent=2, default=str)
+            content = json.dumps(data, indent=2, ensure_ascii=False, default=str)
+            content_bytes = content.encode("utf-8")
+            content_base64 = base64.b64encode(content_bytes).decode("utf-8")
             
-            try:
-                contents = self.repo.get_contents(self.json_path)
-                self.repo.update_file(
-                    self.json_path,
-                    f"Обновление распределения Мультибренд 2024 ({datetime.now().strftime('%Y-%m-%d %H:%M')})",
-                    json_content,
-                    contents.sha
-                )
+            sha = self._get_file_sha()
+            payload = {
+                "message": f"Обновление распределения Мультибренд 2024 ({datetime.now().strftime('%Y-%m-%d %H:%M')})",
+                "content": content_base64,
+                "branch": self.branch
+            }
+            if sha:
+                payload["sha"] = sha
+            
+            response = requests.put(self.api_url, headers=self.headers, json=payload)
+            
+            if response.status_code in [200, 201]:
                 return True, "Распределение плана Мультибренд 2024 сохранено в GitHub!"
-            except:
-                self.repo.create_file(
-                    self.json_path,
-                    f"Создание распределения Мультибренд 2024 ({datetime.now().strftime('%Y-%m-%d %H:%M')})",
-                    json_content
-                )
-                return True, "Распределение плана Мультибренд 2024 сохранено в GitHub!"
+            else:
+                return False, f"❌ Ошибка: {response.status_code}"
                 
         except Exception as e:
             return False, f"Ошибка сохранения: {str(e)}"
@@ -975,13 +980,23 @@ class MultibrandPlanManager:
             return False, "GitHub не доступен"
         
         try:
-            contents = self.repo.get_contents(self.json_path)
-            self.repo.delete_file(
-                self.json_path,
-                f"Удаление распределения Мультибренд 2024 ({datetime.now().strftime('%Y-%m-%d %H:%M')})",
-                contents.sha
-            )
-            return True, "Распределение плана Мультибренд 2024 удалено"
+            sha = self._get_file_sha()
+            if not sha:
+                return False, "❌ Файл не найден"
+            
+            payload = {
+                "message": f"Удаление распределения Мультибренд 2024 ({datetime.now().strftime('%Y-%m-%d %H:%M')})",
+                "sha": sha,
+                "branch": self.branch
+            }
+            
+            response = requests.delete(self.api_url, headers=self.headers, json=payload)
+            
+            if response.status_code == 204:
+                return True, "Распределение плана Мультибренд 2024 удалено"
+            else:
+                return False, f"❌ Ошибка: {response.status_code}"
+                
         except Exception as e:
             return False, f"Ошибка удаления: {str(e)}"
 

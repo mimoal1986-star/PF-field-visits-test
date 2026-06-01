@@ -164,17 +164,9 @@ def clean_pronto_table(df):
     
     return df_clean.reset_index(drop=True)
 
-
 def preview_multibrand_plan(dilers_df, pronto_df):
     """
     Создает предпросмотр для отображения в интерфейсе
-    
-    Args:
-        dilers_df: DataFrame таблицы Дилеры
-        pronto_df: DataFrame таблицы Пронто
-    
-    Returns:
-        DataFrame: объединенный предпросмотр
     """
     preview_data = []
     
@@ -187,7 +179,8 @@ def preview_multibrand_plan(dilers_df, pronto_df):
                 'Регион полный': row.get('region_full', ''),
                 'АСС': row.get('asm', ''),
                 'ЭМ': row.get('rs', ''),
-                'План': row.get('plan', 0)
+                'План': row.get('plan', 0),
+                'wave_type': row.get('wave_type', '')  # ← ДОБАВИТЬ
             })
     
     # Добавляем данные Пронто
@@ -199,7 +192,8 @@ def preview_multibrand_plan(dilers_df, pronto_df):
                 'Регион полный': row.get('region_full', ''),
                 'АСС': row.get('asm', ''),
                 'ЭМ': row.get('rs', ''),
-                'План': row.get('plan', 0)
+                'План': row.get('plan', 0),
+                'wave_type': row.get('wave_type', '')  # ← ДОБАВИТЬ
             })
     
     if not preview_data:

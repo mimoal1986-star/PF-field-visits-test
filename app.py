@@ -10,6 +10,8 @@ from io import BytesIO
 from github_settings import get_settings_manager, get_plan_adjustment_manager
 from multon_excel_parser import parse_multon_excel_to_df, preview_multon_plan
 from optima_rs_parser import parse_optima_rs_excel, preview_optima_rs_mapping
+from multibrand_excel_parser import parse_multibrand_excel, preview_multibrand_plan
+from github_settings import get_multibrand_plan_manager
 
 # Инициализация временных корректировок
 if 'temp_adjustments' not in st.session_state:
@@ -1655,6 +1657,84 @@ with tab3:
                         st.rerun()
                     else:
                         st.error(msg)
+
+
+    # ============================================
+    # БЛОК: РАСПРЕДЕЛЕНИЕ ПЛАНА МУЛЬТИБРЕНД 2024
+    # ============================================
+    
+    st.markdown("---")
+    st.subheader("📊 Распределение плана Мультибренд 2024 (CXWAY)")
+    st.caption("Загрузите Excel-файл с распределением плана по регионам для Мультибренд 2024")
+    st.caption("📌 Формат: две вкладки 'Дилеры_май' и 'Пронто_май'. Колонки: Обозначение, Регион полный, АСС, ЭМ, Дилеры/Пронто")
+    
+    # Инициализируем менеджер
+    from multibrand_excel_parser import parse_multibrand_excel, preview_multibrand_plan
+    from github_settings import get_multibrand_plan_manager
+    
+    multibrand_manager = get_multibrand_plan_manager()
+    
+    # Текущее распределение
+    current_dilers_df, current_pronto_df = multibrand_manager.load_plan()
+    
+    # Отображение текущего распределения (если есть)
+    if not current_dilers_df.empty or not current_pronto_df.empty:
+        with st.expander("📋 Текущее распределение плана Мультибренд 2024", expanded=False):
+            preview_df = preview_multibrand_plan(current_dilers_df, current_pronto_df)
+            st.dataframe(preview_df, use_container_width=True, hide_index=True)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.caption(f"📊 Дилеры: {len(current_dilers_df)} записей | Пронто: {len(current_pronto_df)} записей")
+            with col2:
+                if st.button("🗑️ Удалить текущее распределение", key="delete_multibrand_plan"):
+                    success, msg = multibrand_manager.delete_plan()
+                    if success:
+                        st.success(msg)
+                        st.rerun()
+                    else:
+                        st.error(msg)
+    
+    # Загрузка нового файла
+    uploaded_file = st.file_uploader(
+        "📂 Загрузить Excel с распределением плана Мультибренд 2024",
+        type=['xlsx', 'xls'],
+        key="multibrand_plan_uploader",
+        help="Файл должен содержать две вкладки: 'Дилеры_май' и 'Пронто_май'"
+    )
+    
+    if uploaded_file is not None:
+        # Парсим файл
+        dilers_df, pronto_df, month = parse_multibrand_excel(uploaded_file)
+        
+        if not dilers_df.empty or not pronto_df.empty:
+            # Показываем предпросмотр
+            st.markdown("### 📋 Предпросмотр загружаемых данных")
+            preview_df = preview_multibrand_plan(dilers_df, pronto_df)
+            st.dataframe(preview_df, use_container_width=True, hide_index=True)
+            
+            # Статистика
+            st.markdown("### 📊 Статистика")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("📁 Дилеры (записей)", len(dilers_df))
+            with col2:
+                st.metric("📁 Пронто (записей)", len(pronto_df))
+            with col3:
+                st.metric("📅 Месяц", month if month else "не определен")
+            
+            # Кнопка сохранения
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                if st.button("💾 Сохранить распределение", type="primary", use_container_width=True, key="save_multibrand_plan"):
+                    success, msg = multibrand_manager.save_plan(dilers_df, pronto_df)
+                    if success:
+                        st.success(msg)
+                        st.rerun()
+                    else:
+                        st.error(msg)
+        else:
+            st.error("❌ Не удалось распознать вкладки. Убедитесь, что файл содержит вкладки 'Дилеры_...' и 'Пронто_...'")
 
     # ============================================
     # БЛОК: РАСПРЕДЕЛЕНИЕ RS ДЛЯ OPTIMA

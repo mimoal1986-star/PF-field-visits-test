@@ -76,7 +76,6 @@ def parse_multibrand_excel(file_obj):
         st.error(f"Ошибка при парсинге файла: {e}")
         return pd.DataFrame(), pd.DataFrame(), None
 
-
 def clean_dilers_table(df):
     """
     Очистка и приведение таблицы Дилеры к стандартному формату
@@ -88,8 +87,9 @@ def clean_dilers_table(df):
     
     # Переименовываем колонки
     column_mapping = {
-        'Обозначение': 'region_code',
+        'Обозначение': 'region_short',
         'Регион полный': 'region_full',
+        'Регион': 'region_long',
         'АСС': 'asm',
         'ЭМ': 'rs',
         'Дилеры': 'plan'
@@ -100,20 +100,20 @@ def clean_dilers_table(df):
             df_clean = df_clean.rename(columns={old_name: new_name})
     
     # Оставляем нужные колонки
-    required_cols = ['region_code', 'region_full', 'asm', 'rs', 'plan']
+    required_cols = ['region_short', 'region_full', 'region_long', 'asm', 'rs', 'plan']
     existing_cols = [col for col in required_cols if col in df_clean.columns]
     df_clean = df_clean[existing_cols]
     
     # Очищаем данные
-    df_clean['region_code'] = df_clean['region_code'].astype(str).str.strip().str.upper()
+    df_clean['region_short'] = df_clean['region_short'].astype(str).str.strip().str.upper()
     df_clean['plan'] = pd.to_numeric(df_clean['plan'], errors='coerce').fillna(0)
     
     # Для Дилеры всегда wave_type = 'Дилеры'
     df_clean['wave_type'] = 'Дилеры'
     
     # Удаляем пустые строки
-    df_clean = df_clean[df_clean['region_code'].notna() & (df_clean['region_code'] != '')]
-    df_clean = df_clean[df_clean['region_code'] != 'nan']
+    df_clean = df_clean[df_clean['region_short'].notna() & (df_clean['region_short'] != '')]
+    df_clean = df_clean[df_clean['region_short'] != 'nan']
     
     return df_clean.reset_index(drop=True)
 
@@ -128,9 +128,9 @@ def clean_pronto_table(df):
     
     # Переименовываем колонки
     column_mapping = {
-        'Обозначение': 'region_code',
+        'Обозначение': 'region_short',
         'Регион полный': 'region_full',
-        'Регион': 'wave_origin',
+        'Регион': 'region_long',
         'АСС': 'asm',
         'ЭМ': 'rs',
         'Пронто': 'plan'
@@ -141,26 +141,26 @@ def clean_pronto_table(df):
             df_clean = df_clean.rename(columns={old_name: new_name})
     
     # Оставляем нужные колонки
-    required_cols = ['region_code', 'region_full', 'asm', 'rs', 'plan']
+    required_cols = ['region_short', 'region_full', 'region_long', 'asm', 'rs', 'plan']
     existing_cols = [col for col in required_cols if col in df_clean.columns]
     df_clean = df_clean[existing_cols]
     
     # Очищаем данные
-    df_clean['region_code'] = df_clean['region_code'].astype(str).str.strip().str.upper()
+    df_clean['region_short'] = df_clean['region_short'].astype(str).str.strip().str.upper()
     df_clean['plan'] = pd.to_numeric(df_clean['plan'], errors='coerce').fillna(0)
     
-    # Определяем wave_type на основе региона
-    def get_wave_type(region_full):
-        if 'МСК дистр.' in str(region_full):
+    # Определяем wave_type на основе region_long
+    def get_wave_type(region_long):
+        if 'МСК дистр.' in str(region_long):
             return 'Пронто М'
         else:
             return 'Пронто'
     
-    df_clean['wave_type'] = df_clean['region_full'].apply(get_wave_type)
+    df_clean['wave_type'] = df_clean['region_long'].apply(get_wave_type)
     
     # Удаляем пустые строки
-    df_clean = df_clean[df_clean['region_code'].notna() & (df_clean['region_code'] != '')]
-    df_clean = df_clean[df_clean['region_code'] != 'nan']
+    df_clean = df_clean[df_clean['region_short'].notna() & (df_clean['region_short'] != '')]
+    df_clean = df_clean[df_clean['region_short'] != 'nan']
     
     return df_clean.reset_index(drop=True)
 
@@ -175,12 +175,12 @@ def preview_multibrand_plan(dilers_df, pronto_df):
         for _, row in dilers_df.iterrows():
             preview_data.append({
                 'Тип': 'Дилеры',
-                'Регион': row.get('region_code', ''),
-                'Регион полный': row.get('region_full', ''),
+                'Регион короткий': row.get('region_short', ''),
+                'Регион полный': row.get('region_long', ''),
                 'АСС': row.get('asm', ''),
                 'ЭМ': row.get('rs', ''),
                 'План': row.get('plan', 0),
-                'wave_type': row.get('wave_type', '')  # ← ДОБАВИТЬ
+                'wave_type': row.get('wave_type', '')
             })
     
     # Добавляем данные Пронто
@@ -188,12 +188,12 @@ def preview_multibrand_plan(dilers_df, pronto_df):
         for _, row in pronto_df.iterrows():
             preview_data.append({
                 'Тип': 'Пронто',
-                'Регион': row.get('region_code', ''),
-                'Регион полный': row.get('region_full', ''),
+                'Регион короткий': row.get('region_short', ''),
+                'Регион полный': row.get('region_long', ''),
                 'АСС': row.get('asm', ''),
                 'ЭМ': row.get('rs', ''),
                 'План': row.get('plan', 0),
-                'wave_type': row.get('wave_type', '')  # ← ДОБАВИТЬ
+                'wave_type': row.get('wave_type', '')
             })
     
     if not preview_data:

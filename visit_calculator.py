@@ -786,11 +786,19 @@ class VisitCalculator:
                                 else:
                                     mapped_region = 'МСК дистр.'
                             
-                            plan_row = multibrand_pronto_df[multibrand_pronto_df['region_code'] == mapped_region]
+                            # Проверяем, есть ли колонка wave_type (для совместимости со старыми данными)
+                            if 'wave_type' in multibrand_pronto_df.columns:
+                                plan_row = multibrand_pronto_df[
+                                    (multibrand_pronto_df['region_code'] == mapped_region) &
+                                    (multibrand_pronto_df['wave_type'] == wave_type)
+                                ]
+                            else:
+                                plan_row = multibrand_pronto_df[multibrand_pronto_df['region_code'] == mapped_region]
+                            
                             if not plan_row.empty:
                                 total_plan = plan_row.iloc[0]['plan']
-
                             else:
+                                # Fallback: ищем по исходному региону
                                 plan_row = multibrand_pronto_df[multibrand_pronto_df['region_code'] == region]
                                 if not plan_row.empty:
                                     total_plan = plan_row.iloc[0]['plan']

@@ -658,6 +658,15 @@ def process_all_data(settings_manager=None, force_recalc=False):
                 optima_df=st.session_state.cleaned_data.get('optima_processed')
             )
             
+            # === ДОБАВЛЕНИЕ ПЛАНОВОЙ ОПЛАТЫ ===
+            if plan_result is not None and not plan_result.empty:
+                bdr_df = st.session_state.cleaned_data.get('bdr_processed')
+                if bdr_df is not None and not bdr_df.empty:
+                    region_coeff_manager = get_region_coefficient_manager()
+                    region_coeffs = region_coeff_manager.load_coefficients()
+                    plan_result = visit_calculator.add_plan_payment(plan_result, bdr_df, region_coeffs)
+            # ===================================
+            
             st.session_state.debug_times.append(f"[DEBUG] План: {time.time() - start:.2f} сек")
             start = time.time()
             

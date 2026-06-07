@@ -1004,4 +1004,152 @@ class MultibrandPlanManager:
 def get_multibrand_plan_manager():
     """Возвращает экземпляр менеджера для Мультибренд 2024"""
     return MultibrandPlanManager()
+
+# ============================================
+# МЕНЕДЖЕР ДЛЯ КОЭФФИЦИЕНТОВ РЕГИОНОВ
+# ============================================
+
+class RegionCoefficientManager:
+    """Управление коэффициентами регионов для расчета плановой оплаты"""
+    
+    def __init__(self):
+        """Инициализация с настройками из Streamlit Secrets"""
+        if 'github' not in st.secrets:
+            self.available = False
+            return
+            
+        self.token = st.secrets['github']['token']
+        self.repo = st.secrets['github']['repo']
+        self.branch = st.secrets['github']['branch']
+        self.file_path = 'region_coefficients.json'
+        
+        self.api_url = f"https://api.github.com/repos/{self.repo}/contents/{self.file_path}"
+        self.headers = {
+            "Authorization": f"token {self.token}",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        self.available = True
+    
+    def _get_file_sha(self):
+        """Получает SHA текущего файла"""
+        try:
+            response = requests.get(
+                self.api_url,
+                headers=self.headers,
+                params={"ref": self.branch}
+            )
+            if response.status_code == 200:
+                return response.json()["sha"]
+            return None
+        except Exception:
+            return None
+    
+    def save_coefficients(self, coefficients_dict: dict):
+        """Сохраняет коэффициенты регионов в GitHub"""
+        if not self.available:
+            return False, "❌ GitHub не доступен"
+        
+        try:
+            data = {
+                "last_updated": datetime.now().isoformat(),
+                "coefficients": coefficients_dict
+            }
+            
+            content = json.dumps(data, indent=2, ensure_ascii=False)
+            content_bytes = content.encode("utf-8")
+            content_base64 = base64.b64encode(content_bytes).decode("utf-8")
+            
+            sha = self._get_file_sha()
+            payload = {
+                "message": f"Обновление коэффициентов регионов от {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                "content": content_base64,
+                "branch": self.branch
+            }
+            if sha:
+                payload["sha"] = sha
+            
+            response = requests.put(self.api_url, headers=self.headers, json=payload)
+            
+            if response.status_code in [200, 201]:
+                return True, f"✅ Сохранено {len(coefficients_dict)} коэффициентов"
+            else:
+                return False, f"❌ Ошибка: {response.status_code}"
+                
+        except Exception as e:
+            return False, f"❌ Ошибка: {e}"
+    
+    def load_coefficients(self) -> dict:
+        """Загружает коэффициенты регионов из GitHub"""
+        if not self.available:
+            return {}
+        
+        try:
+            response = requests.get(
+                self.api_url,
+                headers=self.headers,
+                params={"ref": self.branch}
+            )
+            
+            if response.status_code == 200:
+                content = response.json()
+                file_content = base64.b64decode(content["content"]).decode("utf-8")
+                data = json.loads(file_content)
+                return data.get("coefficients", {})
+            else:
+                return {}
+                
+        except Exception:
+            return {}
+    
+    def delete_coefficients(self):
+        """Удаляет файл с коэффициентами из GitHub"""
+        if not self.available:
+            return False, "❌ GitHub не доступен"
+        
+        try:
+            sha = self._get_file_sha()
+            if not sha:
+                return False, "❌ Файл не найден"
+            
+            payload = {
+                "message": f"Удаление коэффициентов регионов от {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                "sha": sha,
+                "branch": self.branch
+            }
+            
+            response = requests.delete(self.api_url, headers=self.headers, json=payload)
+            
+            if response.status_code == 204:
+                return True, "✅ Коэффициенты регионов удалены"
+            else:
+                return False, f"❌ Ошибка: {response.status_code}"
+                
+        except Exception as e:
+            return False, f"❌ Ошибка: {e}"
+    
+    def has_coefficients(self) -> bool:
+        """Проверяет, существует ли файл с коэффициентами"""
+        if not self.available:
+            return False
+        try:
+            response = requests.get(
+                self.api_url,
+                headers=self.headers,
+                params={"ref": self.branch}
+            )
+            return response.status_code == 200
+        except Exception:
+            return False
+    
+    def get_coefficient_for_region(self, region_code: str) -> float:
+        """Возвращает коэффициент для региона (по умолчанию 1.0)"""
+        coefficients = self.load_coefficients()
+        return coefficients.get(region_code, 1.0)
+
+
+def get_region_coefficient_manager():
+    """Возвращает экземпляр менеджера коэффициентов регионов"""
+    if 'region_coefficient_manager' not in st.session_state:
+        st.session_state.region_coefficient_manager = RegionCoefficientManager()
+    return st.session_state.region_coefficient_manager
     

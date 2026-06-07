@@ -1360,23 +1360,6 @@ class VisitCalculator:
             df.loc[mask, 'Оплата факт средн., руб.'] = (
                 df.loc[mask, 'Оплата факт'] / df.loc[mask, 'Факт проекта, шт.']
             ).round(2)
-
-        # Расчет плановой оплаты средн.
-        if 'Оплата план' in df.columns and 'План проекта, шт.' in df.columns:
-            # Только там где plan_payment_per_visit > 0
-            if 'plan_payment_per_visit' in df.columns:
-                mask_payment_positive = df['plan_payment_per_visit'] > 0
-            else:
-                mask_payment_positive = pd.Series([False] * len(df))
-            
-            mask_plan_positive = df['План проекта, шт.'] > 0
-            mask = mask_payment_positive & mask_plan_positive
-            
-            df['Оплата план средн., руб.'] = 0.0
-            if mask.any():
-                df.loc[mask, 'Оплата план средн., руб.'] = (
-                    df.loc[mask, 'Оплата план'] / df.loc[mask, 'План проекта, шт.']
-                ).round(2)
             
         return df
         

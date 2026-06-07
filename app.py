@@ -1812,5 +1812,111 @@ with tab3:
                     else:
                         st.error(msg)
 
+    # ============================================
+    # БЛОК: КОЭФФИЦИЕНТЫ РЕГИОНОВ
+    # ============================================
+    
+    st.markdown("---")
+    st.subheader("💰 Коэффициенты регионов")
+    st.caption("Загрузите Excel-файл с коэффициентами регионов для расчета плановой оплаты")
+    st.caption("📌 Формат: первая строка — коды регионов (AA, AD...), вторая строка — коэффициенты (100%, 95%...)")
+    
+    # Инициализируем менеджер
+    from github_settings import get_region_coefficient_manager
+    from region_coefficients_parser import parse_region_coefficients_excel, preview_region_coefficients
+    from data_cleaner import REGION_MAPPING
+    
+    region_coeff_manager = get_region_coefficient_manager()
+    
+    # Текущие коэффициенты
+    current_coefficients = region_coeff_manager.load_coefficients()
+    
+    # Формируем полную таблицу для отображения:
+    # 1. Все загруженные регионы
+    # 2. Все регионы из REGION_MAPPING, которых нет в загруженных (коэффициент 1.0)
+    
+    all_regions_display = {}
+    
+    # Добавляем загруженные
+    for code, coeff in current_coefficients.items():
+        all_regions_display[code] = coeff
+    
+    # Добавляем недостающие из REGION_MAPPING
+    for code in REGION_MAPPING.keys():
+        if code not in all_regions_display:
+            all_regions_display[code] = 1.0
+    
+    # Сортируем по коду региона
+    all_regions_display = dict(sorted(all_regions_display.items()))
+    
+    # Отображение текущих коэффициентов
+    if all_regions_display:
+        with st.expander("📋 Текущие коэффициенты регионов", expanded=False):
+            preview_data = []
+            for code, coeff in all_regions_display.items():
+                region_name = REGION_MAPPING.get(code, code)
+                is_defined = 'Да' if code in REGION_MAPPING else 'Нет'
+                preview_data.append({
+                    'Регион (код)': code,
+                    'Регион (название)': region_name,
+                    'Коэффициент': coeff,
+                    'Регион определен': is_defined
+                })
+            
+            preview_df = pd.DataFrame(preview_data)
+            st.dataframe(preview_df, use_container_width=True, hide_index=True)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.caption(f"📊 Всего регионов: {len(all_regions_display)}")
+            with col2:
+                if st.button("🗑️ Удалить коэффициенты", key="delete_region_coefficients"):
+                    success, msg = region_coeff_manager.delete_coefficients()
+                    if success:
+                        st.success(msg)
+                        st.rerun()
+                    else:
+                        st.error(msg)
+    
+    # Загрузка нового файла
+    uploaded_file = st.file_uploader(
+        "📂 Загрузить Excel с коэффициентами регионов",
+        type=['xlsx', 'xls'],
+        key="region_coefficients_uploader",
+        help="Файл должен содержать две строки: первая — коды регионов, вторая — коэффициенты в процентах"
+    )
+    
+    if uploaded_file is not None:
+        # Парсим файл
+        coefficients_dict = parse_region_coefficients_excel(uploaded_file)
+        
+        if not coefficients_dict:
+            st.error("❌ Не удалось извлечь коэффициенты. Проверьте формат файла.")
+        else:
+            # Показываем предпросмотр
+            st.markdown("### 📋 Предпросмотр загружаемых данных")
+            preview_df = preview_region_coefficients(coefficients_dict)
+            st.dataframe(preview_df, use_container_width=True, hide_index=True)
+            
+            # Статистика
+            st.markdown("### 📊 Статистика")
+            col1, col2 = st.columns(2)
+            with col1:
+                defined_count = sum(1 for code in coefficients_dict.keys() if code in REGION_MAPPING)
+                st.metric("✅ Регионы из справочника", f"{defined_count} / {len(coefficients_dict)}")
+            with col2:
+                st.metric("📍 Всего регионов", len(coefficients_dict))
+            
+            # Кнопка сохранения
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                if st.button("💾 Сохранить коэффициенты", type="primary", use_container_width=True, key="save_region_coefficients"):
+                    success, msg = region_coeff_manager.save_coefficients(coefficients_dict)
+                    if success:
+                        st.success(msg)
+                        st.rerun()
+                    else:
+                        st.error(msg)
+
 
 

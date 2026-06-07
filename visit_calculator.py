@@ -1305,6 +1305,7 @@ class VisitCalculator:
                 df.loc[mask_dates, 'Дней потрачено'] = days_spent.clip(lower=0, upper=df.loc[mask_dates, 'Длительность'])
                 
                 # Дней до конца
+                
                 days_left = (df.loc[mask_dates, 'Дата финиша'] - end_period).dt.days
                 df.loc[mask_dates, 'Дней до конца проекта'] = days_left.clip(lower=0)
             
@@ -1359,10 +1360,78 @@ class VisitCalculator:
             df.loc[mask, 'Оплата факт средн., руб.'] = (
                 df.loc[mask, 'Оплата факт'] / df.loc[mask, 'Факт проекта, шт.']
             ).round(2)
+
+        # Расчет плановой оплаты средн.
+        if 'Оплата план' in df.columns and 'План проекта, шт.' in df.columns:
+            # Только там где plan_payment_per_visit > 0
+            if 'plan_payment_per_visit' in df.columns:
+                mask_payment_positive = df['plan_payment_per_visit'] > 0
+            else:
+                mask_payment_positive = pd.Series([False] * len(df))
+            
+            mask_plan_positive = df['План проекта, шт.'] > 0
+            mask = mask_payment_positive & mask_plan_positive
+            
+            df['Оплата план средн., руб.'] = 0.0
+            if mask.any():
+                df.loc[mask, 'Оплата план средн., руб.'] = (
+                    df.loc[mask, 'Оплата план'] / df.loc[mask, 'План проекта, шт.']
+                ).round(2)
             
         return df
         
-
+    def add_plan_payment(self, plan_df, bdr_df, region_coeffs):
+        """
+        Добавляет плановую оплату к данным план/факта
+        
+        Параметры:
+            plan_df: DataFrame с плановыми данными
+            bdr_df: DataFrame с плановой оплатой (project_code, plan_payment)
+            region_coeffs: dict {код_региона: коэффициент}
+        
+        Возвращает:
+            DataFrame с колонками: plan_payment_per_visit, Оплата план
+        """
+        if plan_df is None or plan_df.empty:
+            return plan_df
+        
+        # Проверяем наличие необходимых колонок
+        if 'Проект' not in plan_df.columns or 'Регион' not in plan_df.columns:
+            return plan_df
+        
+        df = plan_df.copy()
+        
+        # Инициализируем колонки
+        df['plan_payment_per_visit'] = 0.0
+        df['Оплата план'] = 0.0
+        
+        # Если нет БДР — возвращаем с нулями
+        if bdr_df is None or bdr_df.empty:
+            return df
+        
+        # Словарь для быстрого поиска оплаты по коду проекта
+        bdr_dict = dict(zip(bdr_df['project_code'], bdr_df['plan_payment']))
+        
+        # Векторизованный расчет
+        df['_base_payment'] = df['Проект'].map(bdr_dict).fillna(0)
+        
+        # Коэффициент региона (по умолчанию 1.0)
+        if region_coeffs:
+            df['_region_coeff'] = df['Регион'].map(region_coeffs).fillna(1.0)
+        else:
+            df['_region_coeff'] = 1.0
+        
+        # Плановая оплата за 1 визит
+        df['plan_payment_per_visit'] = (df['_base_payment'] * df['_region_coeff']).round(2)
+        
+        # Суммарная плановая оплата
+        df['Оплата план'] = (df['plan_payment_per_visit'] * df['План проекта, шт.']).round(2)
+        
+        # Удаляем временные колонки
+        df = df.drop(['_base_payment', '_region_coeff'], axis=1)
+        
+        return df
+        
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
 

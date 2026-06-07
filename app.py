@@ -12,6 +12,8 @@ from multon_excel_parser import parse_multon_excel_to_df, preview_multon_plan
 from optima_rs_parser import parse_optima_rs_excel, preview_optima_rs_mapping
 from multibrand_excel_parser import parse_multibrand_excel, preview_multibrand_plan
 from github_settings import get_multibrand_plan_manager
+from region_coefficients_parser import parse_region_coefficients_excel, preview_region_coefficients
+from github_settings import get_region_coefficient_manager
 
 # Инициализация временных корректировок
 if 'temp_adjustments' not in st.session_state:

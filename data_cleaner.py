@@ -1947,6 +1947,97 @@ class DataCleaner:
             df['ЗОД'] = ''
         
         return df
+
+    def enrich_array_batch(self, array_df, google_df):
+        """Быстрое обогащение: Полевой, ПО, ЗОД за один проход"""
+        df = array_df.copy()
+        
+        # Полевой (векторно)
+        df['Полевой'] = self._is_field_project_vectorized(df['Код анкеты'])
+        
+        # ПО из Google
+        google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
+        google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+        
+        portal_map = {}
+        if google_code_col and google_portal_col:
+            for _, row in google_df.iterrows():
+                code = str(row.get(google_code_col, '')).strip()
+                portal = str(row.get(google_portal_col, '')).strip()
+                if code and code.lower() not in ['nan', 'none', 'null', '']:
+                    portal_map[code] = portal
+        
+        df['ПО'] = df['Код анкеты'].map(portal_map).fillna('не определено')
+        
+        # ЗОД из справочника
+        if 'АСС' in df.columns:
+            df['ЗОД'] = df['АСС'].map(ZOD_MAPPING).fillna('')
+        else:
+            df['ЗОД'] = ''
+
+        return df
+
+
+    def clean_bdr(self, df) -> pd.DataFrame:
+        """
+        Очистка файла БДР и приведение к структуре {project_code: plan_payment}
+        """
+        if df is None or df.empty:
+            return pd.DataFrame()
+        
+        df_clean = df.copy()
+        
+        # Находим колонку с кодом проекта
+        code_col = None
+        for col in df_clean.columns:
+            if col == 'КОД':
+                code_col = col
+                break
+        
+        # Находим колонку с плановой оплатой
+        payment_col = None
+        for col in df_clean.columns:
+            if 'Расходы на ТП/Респонденты' in col or 'план на 1 ед' in col:
+                payment_col = col
+                break
+        
+        if code_col is None or payment_col is None:
+            return pd.DataFrame()
+        
+        # Берем только нужные колонки
+        result = pd.DataFrame()
+        result['project_code'] = df_clean[code_col].astype(str).str.strip()
+        result['plan_payment_raw'] = df_clean[payment_col]
+        
+        # Удаляем пустые коды
+        result = result[
+            (result['project_code'].notna()) & 
+            (result['project_code'] != '') &
+            (result['project_code'] != 'nan') &
+            (result['project_code'] != 'None')
+        ]
+        
+        # Парсим плановую оплату (российский формат: 650,00 -> 650.0)
+        def parse_payment(value):
+            if pd.isna(value):
+                return 0.0
+            value_str = str(value).strip().replace(',', '.')
+            try:
+                return float(value_str)
+            except ValueError:
+                return 0.0
+        
+        result['plan_payment'] = result['plan_payment_raw'].apply(parse_payment)
+        
+        # Удаляем строки с нулевой оплатой и дубликаты
+        result = result[result['plan_payment'] > 0]
+        result = result.drop_duplicates(subset=['project_code'], keep='first')
+        
+        # Оставляем только нужные колонки
+        result = result[['project_code', 'plan_payment']]
+        
+        return result
+        
         
 # Глобальный экземпляр
 data_cleaner = DataCleaner()

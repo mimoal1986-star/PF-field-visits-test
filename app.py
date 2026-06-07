@@ -332,6 +332,14 @@ def process_all_data(settings_manager=None, force_recalc=False):
                     st.session_state.cleaned_data['prodata_processed'] = prodata_processed
             except Exception as e:
                 st.warning(f"⚠️ Ошибка при обработке ПроДата: {e}")
+
+        # Обработка БДР (плановая оплата) - опционально
+        bdr_processed = None
+        bdr_raw = st.session_state.uploaded_files.get('bdr')
+        if bdr_raw is not None:
+            bdr_processed = data_cleaner.clean_bdr(bdr_raw)
+            if bdr_processed is not None and not bdr_processed.empty:
+                st.session_state.cleaned_data['bdr_processed'] = bdr_processed
         
         # Обработка CXWAY (если есть)
         cxway_processed = None
@@ -794,7 +802,7 @@ with tab1:
     
     # Размещаем загрузчики БЕЗ формы (чтобы они обновляли session_state сразу)
     col1, col2, col3, col4, col5, col6 = st.columns(6)
-    
+
     with col1:
         st.subheader("1. 📋 Портал (Массив.xlsx)")
         portal_file = st.file_uploader(
@@ -802,6 +810,17 @@ with tab1:
             type=['xlsx', 'xls'],
             key="portal_uploader",
             label_visibility="collapsed"
+        )
+        
+        st.markdown("---")  # разделитель
+        
+        st.subheader("1.5. 💰 БДР (плановая оплата)")
+        bdr_file = st.file_uploader(
+            "Загрузите файл БДР.xlsx (опционально)",
+            type=['xlsx', 'xls'],
+            key="bdr_uploader",
+            label_visibility="collapsed",
+            help="Колонки: 'КОД' и 'Расходы на ТП/Респонденты (план на 1 ед.)'"
         )
     
     with col2:
@@ -865,6 +884,7 @@ with tab1:
                     # 1. ЗАГРУЖАЕМ ФАЙЛЫ из session_state
                     portal_file_obj = st.session_state.get('portal_uploader')
                     projects_file_obj = st.session_state.get('projects_uploader')
+                    bdr_file_obj = st.session_state.get('bdr_uploader')
                     cxway_file_obj = st.session_state.get('cxway_uploader')
                     easymerch_file_obj = st.session_state.get('easymerch_uploader')
                     optima_file_obj = st.session_state.get('optima_uploader')
@@ -872,6 +892,7 @@ with tab1:
                     
                     portal_df = load_excel(portal_file_obj, "портал")
                     projects_df = load_excel(projects_file_obj, "проекты")
+                    bdr_df = load_excel(bdr_file_obj, "bdr") if bdr_file_obj else None
                     cxway_df = load_excel(cxway_file_obj, "cxway")
                     easymerch_df = load_excel(easymerch_file_obj, "easymerch")
                     optima_df = load_excel(optima_file_obj, "optima")
@@ -882,6 +903,8 @@ with tab1:
                         st.session_state.uploaded_files['портал'] = portal_df
                     if projects_df is not None:
                         st.session_state.uploaded_files['сервизория'] = projects_df
+                    if bdr_df is not None:
+                        st.session_state.uploaded_files['bdr'] = bdr_df
                     if cxway_df is not None:
                         st.session_state.uploaded_files['cxway'] = cxway_df
                     if easymerch_df is not None:

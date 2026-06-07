@@ -10,24 +10,16 @@ from data_cleaner import REGION_MAPPING
 
 
 def parse_percent(value: str) -> float:
-    """Преобразует строку с процентом в число, по умолчанию 1.0"""
+    """Преобразует значение из Excel в коэффициент"""
     if pd.isna(value):
         return 1.0
     
-    value_str = str(value).strip()
-    
-    # Удаляем знак %
-    if value_str.endswith('%'):
-        value_str = value_str[:-1]
-    
-    # Заменяем запятую на точку (российский формат)
-    value_str = value_str.replace(',', '.')
+    value_str = str(value).strip().replace(',', '.')
     
     try:
-        percent = float(value_str)
-        return percent / 100
-    except ValueError:
-        return 1.0  # по умолчанию, если не удалось распарсить
+        return float(value_str)
+    except:
+        return 1.0
 
 
 def parse_region_coefficients_excel(excel_file) -> dict:

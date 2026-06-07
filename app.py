@@ -340,6 +340,21 @@ def process_all_data(settings_manager=None, force_recalc=False):
             bdr_processed = data_cleaner.clean_bdr(bdr_raw)
             if bdr_processed is not None and not bdr_processed.empty:
                 st.session_state.cleaned_data['bdr_processed'] = bdr_processed
+                # === ТЕСТОВАЯ ВЫГРУЗКА ===
+                st.write("### 📊 БДР после обработки")
+                st.dataframe(bdr_processed.head(10), use_container_width=True)
+                
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    bdr_processed.to_excel(writer, sheet_name='БДР_обработанный', index=False)
+                st.download_button(
+                    label="⬇️ Скачать обработанный БДР",
+                    data=output.getvalue(),
+                    file_name=f"БДР_обработанный_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="secondary"
+                )
+                # === ТЕСТОВАЯ ВЫГРУЗКА ===
         
         # Обработка CXWAY (если есть)
         cxway_processed = None

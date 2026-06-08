@@ -595,17 +595,15 @@ class DataVisualizer:
                     project_data.loc[mask_plan_positive, 'План проекта, шт.']
                 ).round(2)
 
-        # === РАСЧЕТ НОВЫХ МЕТРИК ПОСЛЕ АГРЕГАЦИИ ===
-        # Проверяем наличие Оплата факт средн., руб. (пересчитываем если нет)
-        if 'Оплата факт средн., руб.' not in project_data.columns:
-            if 'Оплата факт' in project_data.columns and 'Факт проекта, шт.' in project_data.columns:
-                mask_fact_positive = project_data['Факт проекта, шт.'] > 0
-                project_data['Оплата факт средн., руб.'] = 0.0
-                if mask_fact_positive.any():
-                    project_data.loc[mask_fact_positive, 'Оплата факт средн., руб.'] = (
-                        project_data.loc[mask_fact_positive, 'Оплата факт'] / 
-                        project_data.loc[mask_fact_positive, 'Факт проекта, шт.']
-                    ).round(2)
+        # === ПЕРЕСЧЕТ ОПЛАТА ФАКТ СРЕДН. ПОСЛЕ АГРЕГАЦИИ (ВСЕГДА) ===
+        if 'Оплата факт' in project_data.columns and 'Факт проекта, шт.' in project_data.columns:
+            mask_fact_positive = project_data['Факт проекта, шт.'] > 0
+            project_data['Оплата факт средн., руб.'] = 0.0
+            if mask_fact_positive.any():
+                project_data.loc[mask_fact_positive, 'Оплата факт средн., руб.'] = (
+                    project_data.loc[mask_fact_positive, 'Оплата факт'] / 
+                    project_data.loc[mask_fact_positive, 'Факт проекта, шт.']
+                ).round(2)
         
         # Определяем колонку прогноза
         forecast_col = None
@@ -1255,17 +1253,15 @@ class DataVisualizer:
                     region_data.loc[mask_plan_positive, 'План проекта, шт.']
                 ).round(2)
 
-        # === РАСЧЕТ НОВЫХ МЕТРИК ПОСЛЕ АГРЕГАЦИИ ===
-        # Проверяем наличие Оплата факт средн., руб. (пересчитываем если нет)
-        if 'Оплата факт средн., руб.' not in region_data.columns:
-            if 'Оплата факт' in region_data.columns and 'Факт проекта, шт.' in region_data.columns:
-                mask_fact_positive = region_data['Факт проекта, шт.'] > 0
-                region_data['Оплата факт средн., руб.'] = 0.0
-                if mask_fact_positive.any():
-                    region_data.loc[mask_fact_positive, 'Оплата факт средн., руб.'] = (
-                        region_data.loc[mask_fact_positive, 'Оплата факт'] / 
-                        region_data.loc[mask_fact_positive, 'Факт проекта, шт.']
-                    ).round(2)
+        # === ПЕРЕСЧЕТ ОПЛАТА ФАКТ СРЕДН. ПОСЛЕ АГРЕГАЦИИ (ВСЕГДА) ===
+        if 'Оплата факт' in region_data.columns and 'Факт проекта, шт.' in region_data.columns:
+            mask_fact_positive = region_data['Факт проекта, шт.'] > 0
+            region_data['Оплата факт средн., руб.'] = 0.0
+            if mask_fact_positive.any():
+                region_data.loc[mask_fact_positive, 'Оплата факт средн., руб.'] = (
+                    region_data.loc[mask_fact_positive, 'Оплата факт'] / 
+                    region_data.loc[mask_fact_positive, 'Факт проекта, шт.']
+                ).round(2)
         
         # Определяем колонку прогноза
         forecast_col = None
@@ -1854,6 +1850,7 @@ class DataVisualizer:
 
         # ВСЕГДА группируем
         dsm_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
+        
         # === ПЕРЕСЧЕТ ОПЛАТА ПЛАН СРЕДН. ПОСЛЕ АГРЕГАЦИИ ===
         if 'Оплата план' in dsm_data.columns and 'План проекта, шт.' in dsm_data.columns:
             mask_plan_positive = dsm_data['План проекта, шт.'] > 0
@@ -1864,17 +1861,15 @@ class DataVisualizer:
                     dsm_data.loc[mask_plan_positive, 'План проекта, шт.']
                 ).round(2)
 
-        # === РАСЧЕТ НОВЫХ МЕТРИК ПОСЛЕ АГРЕГАЦИИ ===
-        # Проверяем наличие Оплата факт средн., руб. (пересчитываем если нет)
-        if 'Оплата факт средн., руб.' not in dsm_data.columns:
-            if 'Оплата факт' in dsm_data.columns and 'Факт проекта, шт.' in dsm_data.columns:
-                mask_fact_positive = dsm_data['Факт проекта, шт.'] > 0
-                dsm_data['Оплата факт средн., руб.'] = 0.0
-                if mask_fact_positive.any():
-                    dsm_data.loc[mask_fact_positive, 'Оплата факт средн., руб.'] = (
-                        dsm_data.loc[mask_fact_positive, 'Оплата факт'] / 
-                        dsm_data.loc[mask_fact_positive, 'Факт проекта, шт.']
-                    ).round(2)
+        # === ПЕРЕСЧЕТ ОПЛАТА ФАКТ СРЕДН. ПОСЛЕ АГРЕГАЦИИ (ВСЕГДА) ===
+        if 'Оплата факт' in dsm_data.columns and 'Факт проекта, шт.' in dsm_data.columns:
+            mask_fact_positive = dsm_data['Факт проекта, шт.'] > 0
+            dsm_data['Оплата факт средн., руб.'] = 0.0
+            if mask_fact_positive.any():
+                dsm_data.loc[mask_fact_positive, 'Оплата факт средн., руб.'] = (
+                    dsm_data.loc[mask_fact_positive, 'Оплата факт'] / 
+                    dsm_data.loc[mask_fact_positive, 'Факт проекта, шт.']
+                ).round(2)
         
         # Определяем колонку прогноза
         forecast_col = None

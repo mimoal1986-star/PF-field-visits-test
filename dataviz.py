@@ -585,6 +585,16 @@ class DataVisualizer:
         # ВСЕГДА группируем (даже если group_cols == ['Клиент'])
         project_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
 
+        # === ПЕРЕСЧЕТ ОПЛАТА ПЛАН СРЕДН. ПОСЛЕ АГРЕГАЦИИ ===
+        if 'Оплата план' in project_data.columns and 'План проекта, шт.' in project_data.columns:
+            mask_plan_positive = project_data['План проекта, шт.'] > 0
+            project_data['Оплата план средн., руб.'] = 0.0
+            if mask_plan_positive.any():
+                project_data.loc[mask_plan_positive, 'Оплата план средн., руб.'] = (
+                    project_data.loc[mask_plan_positive, 'Оплата план'] / 
+                    project_data.loc[mask_plan_positive, 'План проекта, шт.']
+                ).round(2)
+
         # === РАСЧЕТ НОВЫХ МЕТРИК ПОСЛЕ АГРЕГАЦИИ ===
         # Проверяем наличие Оплата факт средн., руб. (пересчитываем если нет)
         if 'Оплата факт средн., руб.' not in project_data.columns:
@@ -633,7 +643,6 @@ class DataVisualizer:
                 (project_data['Оплата план средн., руб.'] - project_data['Оплата факт средн., руб.']) * 
                 project_data['План проекта, шт.']
             ).round(2)
-        # ===================================================
         
         # ========== ДОБАВЛЕНИЕ КОЛОНОК ДЛЯ КРАТКОГО ОТЧЕТА ==========
         # 1. Прогноз, шт - используем существующий расчет из _calculate_metrics
@@ -1236,6 +1245,16 @@ class DataVisualizer:
         # ВСЕГДА группируем
         region_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
         
+        # === ПЕРЕСЧЕТ ОПЛАТА ПЛАН СРЕДН. ПОСЛЕ АГРЕГАЦИИ ===
+        if 'Оплата план' in region_data.columns and 'План проекта, шт.' in region_data.columns:
+            mask_plan_positive = region_data['План проекта, шт.'] > 0
+            region_data['Оплата план средн., руб.'] = 0.0
+            if mask_plan_positive.any():
+                region_data.loc[mask_plan_positive, 'Оплата план средн., руб.'] = (
+                    region_data.loc[mask_plan_positive, 'Оплата план'] / 
+                    region_data.loc[mask_plan_positive, 'План проекта, шт.']
+                ).round(2)
+
         # === РАСЧЕТ НОВЫХ МЕТРИК ПОСЛЕ АГРЕГАЦИИ ===
         # Проверяем наличие Оплата факт средн., руб. (пересчитываем если нет)
         if 'Оплата факт средн., руб.' not in region_data.columns:
@@ -1835,7 +1854,16 @@ class DataVisualizer:
 
         # ВСЕГДА группируем
         dsm_data = display_data.groupby(group_cols).agg(existing_agg).reset_index()
-        
+        # === ПЕРЕСЧЕТ ОПЛАТА ПЛАН СРЕДН. ПОСЛЕ АГРЕГАЦИИ ===
+        if 'Оплата план' in dsm_data.columns and 'План проекта, шт.' in dsm_data.columns:
+            mask_plan_positive = dsm_data['План проекта, шт.'] > 0
+            dsm_data['Оплата план средн., руб.'] = 0.0
+            if mask_plan_positive.any():
+                dsm_data.loc[mask_plan_positive, 'Оплата план средн., руб.'] = (
+                    dsm_data.loc[mask_plan_positive, 'Оплата план'] / 
+                    dsm_data.loc[mask_plan_positive, 'План проекта, шт.']
+                ).round(2)
+
         # === РАСЧЕТ НОВЫХ МЕТРИК ПОСЛЕ АГРЕГАЦИИ ===
         # Проверяем наличие Оплата факт средн., руб. (пересчитываем если нет)
         if 'Оплата факт средн., руб.' not in dsm_data.columns:
@@ -1884,7 +1912,6 @@ class DataVisualizer:
                 (dsm_data['Оплата план средн., руб.'] - dsm_data['Оплата факт средн., руб.']) * 
                 dsm_data['План проекта, шт.']
             ).round(2)
-        # ===================================================
         
         # ========== ДОБАВЛЕНИЕ КОЛОНОК ДЛЯ КРАТКОГО ОТЧЕТА ==========
         # 1. Прогноз, шт - используем существующий расчет из _calculate_metrics

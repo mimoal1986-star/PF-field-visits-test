@@ -1936,7 +1936,17 @@
       "added_by": "unknown_user"
     }
   ],
-  "included_projects": [],
+  "included_projects": [
+    {
+      "project_name": "Гвозди",
+      "wave_name": "2026.06_Гвозди",
+      "project_code": "RU00.124.01.02SPK24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-09T11:58:48.695689",
+      "added_by": "unknown_user"
+    }
+  ],
   "history": [
     {
       "action": "add_to_included",
@@ -4089,8 +4099,16 @@
       "project_code": "RU00.124.01.02SPK24",
       "timestamp": "2026-06-09T11:58:18.766708",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Гвозди",
+      "wave_name": "2026.06_Гвозди",
+      "project_code": "RU00.124.01.02SPK24",
+      "timestamp": "2026-06-09T11:58:48.695712",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-06-09T11:58:18.766714",
+  "last_updated": "2026-06-09T11:58:48.695719",
   "version": "1.0"
 }

@@ -1177,25 +1177,67 @@ with tab3:
                 
                 st.dataframe(projects_in_calc, width='stretch')
                 
-            
+                # Формируем Мультиселект в формате "Название проекта | Волна | Код проекта | ПО"
+                project_options = projects_in_calc.apply(
+                    lambda row: f"{row['Название проекта']} | {row['Волна']} | {row['Код проекта']} | {row['ПО']}", 
+                    axis=1
+                ).tolist()
                 
-                # Мультиселект по Название проекта
-                selected_clients = st.multiselect(
+                selected_projects_left = st.multiselect(
                     "Выберите проекты для исключения:",
-                    options=projects_in_calc['Название проекта'].unique(),
-                    key='multiselect_exclude'
+                    options=project_options,
+                    key='multiselect_exclude_left'
                 )
                 
-                if selected_clients and st.button("🗑️ Убрать выбранные из расчета", type="secondary", width='stretch'):
-                    # Берем строки с выбранными клиентами
-                    selected_df = projects_in_calc[projects_in_calc['Название проекта'].isin(selected_clients)].copy()
+                if selected_projects_left and st.button("🗑️ Убрать выбранные из расчета", type="secondary", width='stretch'):
+                    selected_rows = []
+                    for s in selected_projects_left:
+                        parts = s.split(' | ')
+                        if len(parts) >= 4:
+                            # Находим оригинальную строку в projects_in_calc
+                            mask = (
+                                (projects_in_calc['Название проекта'] == parts[0]) &
+                                (projects_in_calc['Волна'] == parts[1]) &
+                                (projects_in_calc['Код проекта'] == parts[2])
+                            )
+                            if mask.any():
+                                original_row = projects_in_calc[mask].iloc[0]
+                                selected_rows.append({
+                                    'Название проекта': parts[0],
+                                    'Волна': parts[1],
+                                    'Код проекта': parts[2],
+                                    'ПО': original_row['ПО']
+                                })
                     
-                    # Передаем как есть
-                    success, msg = manager.add_to_excluded(selected_df)
-                    if success:
-                        st.success(msg)
-                    else:
-                        st.error(msg)
+                    if selected_rows:
+                        selected_df = pd.DataFrame(selected_rows)
+                        success, msg = manager.add_to_excluded(selected_df)
+                        if success:
+                            # Обновляем данные в session_state
+                            if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
+                                field_df = st.session_state.cleaned_data['полевые_проекты'].copy()
+                                non_field_df = st.session_state.cleaned_data['неполевые_проекты'].copy()
+                                
+                                for _, row in selected_df.iterrows():
+                                    # Находим проект в полевых
+                                    mask = (
+                                        (field_df['Имя клиента'] == row['Название проекта']) &
+                                        (field_df['Название проекта'] == row['Волна']) &
+                                        (field_df['Код анкеты'] == row['Код проекта'])
+                                    )
+                                    if mask.any():
+                                        moved_rows = field_df[mask].copy()
+                                        moved_rows['Полевой'] = 0
+                                        non_field_df = pd.concat([non_field_df, moved_rows], ignore_index=True)
+                                        field_df = field_df[~mask]
+                                
+                                st.session_state.cleaned_data['полевые_проекты'] = field_df
+                                st.session_state.cleaned_data['неполевые_проекты'] = non_field_df
+                            
+                            st.success(msg)
+                            st.rerun()
+                        else:
+                            st.error(msg)
                     
             else:
                 st.info("⏳ Сначала выполните расчет на вкладке 'Загрузка данных'")
@@ -1213,6 +1255,7 @@ with tab3:
             non_field_df = non_field_df[non_field_df['Полевой'] == 0]
             
             if non_field_df is not None and not non_field_df.empty:
+                
                 # Формируем DataFrame для отображения
                 projects_not_in_calc = non_field_df[['Имя клиента', 'Название проекта', 'Код анкеты', 'ПО']].copy()
                 projects_not_in_calc = projects_not_in_calc.rename(columns={
@@ -1242,24 +1285,23 @@ with tab3:
                 if not projects_not_in_calc.empty:
                     st.dataframe(projects_not_in_calc, width='stretch')
                     
-                    # Мультиселект для выбора проектов
-                    project_options = projects_not_in_calc.apply(
-                        lambda row: f"{row['Название проекта']} | {row['Волна']} | {row['Код проекта']}", 
+                    # Формируем options в формате "Название проекта | Волна | Код проекта | ПО"
+                    project_options_right = projects_not_in_calc.apply(
+                        lambda row: f"{row['Название проекта']} | {row['Волна']} | {row['Код проекта']} | {row['ПО']}", 
                         axis=1
                     ).tolist()
                     
-                    selected_projects = st.multiselect(
+                    selected_projects_right = st.multiselect(
                         "Выберите проекты для добавления:",
-                        options=project_options,
-                        key='multiselect_include'
+                        options=project_options_right,
+                        key='multiselect_include_right'
                     )
                     
-                    if selected_projects and st.button("➕ Добавить выбранные в расчет", type="primary", width='stretch'):
+                    if selected_projects_right and st.button("➕ Добавить выбранные в расчет", type="primary", width='stretch'):
                         selected_rows = []
-                        for s in selected_projects:
+                        for s in selected_projects_right:
                             parts = s.split(' | ')
-                            if len(parts) >= 3:
-                                # Находим оригинальную строку в projects_not_in_calc
+                            if len(parts) >= 4:
                                 mask = (
                                     (projects_not_in_calc['Название проекта'] == parts[0]) &
                                     (projects_not_in_calc['Волна'] == parts[1]) &
@@ -1271,8 +1313,7 @@ with tab3:
                                         'Название проекта': parts[0],
                                         'Волна': parts[1],
                                         'Код проекта': parts[2],
-                                        'ПО': original_row['ПО'],
-                                        'ФИО ОМ': ''
+                                        'ПО': original_row['ПО']
                                     }
                                     selected_rows.append(row_data)
                         
@@ -1280,7 +1321,29 @@ with tab3:
                             selected_df = pd.DataFrame(selected_rows)
                             success, msg = manager.add_to_included(selected_df)
                             if success:
+                                # Обновляем данные в session_state
+                                if 'cleaned_data' in st.session_state and 'неполевые_проекты' in st.session_state.cleaned_data:
+                                    field_df = st.session_state.cleaned_data['полевые_проекты'].copy()
+                                    non_field_df = st.session_state.cleaned_data['неполевые_проекты'].copy()
+                                    
+                                    for _, row in selected_df.iterrows():
+                                        # Находим проект в неполевых
+                                        mask = (
+                                            (non_field_df['Имя клиента'] == row['Название проекта']) &
+                                            (non_field_df['Название проекта'] == row['Волна']) &
+                                            (non_field_df['Код анкеты'] == row['Код проекта'])
+                                        )
+                                        if mask.any():
+                                            moved_rows = non_field_df[mask].copy()
+                                            moved_rows['Полевой'] = 1
+                                            field_df = pd.concat([field_df, moved_rows], ignore_index=True)
+                                            non_field_df = non_field_df[~mask]
+                                    
+                                    st.session_state.cleaned_data['полевые_проекты'] = field_df
+                                    st.session_state.cleaned_data['неполевые_проекты'] = non_field_df
+                                
                                 st.success(msg)
+                                st.rerun()
                             else:
                                 st.error(msg)
                 else:

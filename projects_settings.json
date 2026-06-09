@@ -1954,6 +1954,15 @@
       "fio_om": "",
       "added_at": "2026-06-09T11:58:48.695689",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Гротекс",
+      "wave_name": "_SINGLE",
+      "project_code": "Мультикод_.404",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-09T11:59:43.341252",
+      "added_by": "unknown_user"
     }
   ],
   "history": [
@@ -4124,8 +4133,16 @@
       "project_code": "Мультикод_.404",
       "timestamp": "2026-06-09T11:59:24.965637",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Гротекс",
+      "wave_name": "_SINGLE",
+      "project_code": "Мультикод_.404",
+      "timestamp": "2026-06-09T11:59:43.341272",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-06-09T11:59:24.965646",
+  "last_updated": "2026-06-09T11:59:43.341278",
   "version": "1.0"
 }

@@ -1934,6 +1934,15 @@
       "fio_om": "",
       "added_at": "2026-06-09T11:58:18.766647",
       "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Гротекс",
+      "wave_name": "_SINGLE",
+      "project_code": "Мультикод_.404",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-09T11:59:24.965540",
+      "added_by": "unknown_user"
     }
   ],
   "included_projects": [
@@ -4107,8 +4116,16 @@
       "project_code": "RU00.124.01.02SPK24",
       "timestamp": "2026-06-09T11:58:48.695712",
       "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Гротекс",
+      "wave_name": "_SINGLE",
+      "project_code": "Мультикод_.404",
+      "timestamp": "2026-06-09T11:59:24.965637",
+      "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-06-09T11:58:48.695719",
+  "last_updated": "2026-06-09T11:59:24.965646",
   "version": "1.0"
 }

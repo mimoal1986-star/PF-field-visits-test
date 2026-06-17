@@ -816,6 +816,10 @@ class VisitCalculator:
                         client_name = row['Клиент']
                         plan_key = (client_name, project_code, wave_name, region)
                         total_plan = project_wave_region_plans.get(plan_key, 0)
+
+                        asm_from_plan = row['ASM']
+                        rs_from_plan = rs_name
+                        skip_plan_correction = False
                         
                         if total_plan <= 0:
                             continue
@@ -841,11 +845,6 @@ class VisitCalculator:
                             period_end
                         )
                         
-                        asm_from_plan = row['ASM']
-                        rs_from_plan = rs_name
-                        skip_plan_correction = False
-                    
-
 
                 results.append({
                     'Проект': project_code,

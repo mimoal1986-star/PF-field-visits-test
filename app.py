@@ -659,6 +659,25 @@ def process_all_data(settings_manager=None, force_recalc=False):
         st.session_state.visit_report['base_data'] = base_data
         st.session_state.visit_report['timestamp'] = datetime.now().isoformat()
 
+        # === ВЫГРУЗКА ИЕРАРХИИ В EXCEL (ВСЕ ПРОЕКТЫ) ===
+        if base_data is not None and not base_data.empty:
+            try:
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    base_data.to_excel(writer, sheet_name='Иерархия_все_проекты', index=False)
+                
+                st.download_button(
+                    label="📥 Скачать иерархию (все проекты)",
+                    data=output.getvalue(),
+                    file_name=f"иерархия_все_проекты_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="secondary",
+                    key="download_hierarchy_all"
+                )
+            except Exception as e:
+                st.warning(f"⚠️ Ошибка при выгрузке иерархии: {e}")
+        # =======================================================
+
         st.session_state.debug_times.append(f"[DEBUG] Иерархия: {time.time() - start:.2f} сек")
         start = time.time()
         

@@ -391,16 +391,6 @@ class VisitCalculator:
                     hierarchy.loc[mask_valid_dates, 'Дата старта']
                 ).dt.days + 1
             # st.write(f"[DETAIL] Расчет длительности: {time.time() - start:.2f} сек")
-
-            # ================= ДИАГНОСТИКА МУЛТОН
-            try:
-                if st.session_state.get('multon_debug_enabled', False):
-                    mul_hierarchy_before = hierarchy[hierarchy['Клиент'] == 'Мултон'].copy()
-                    if not mul_hierarchy_before.empty:
-                        st.session_state.multon_debug_data['step9_hierarchy_before'] = mul_hierarchy_before
-            except:
-                pass
-            # ================= ДИАГНОСТИКА МУЛТОН
             
             # Сортируем
             start = time.time()
@@ -635,16 +625,6 @@ class VisitCalculator:
                     # Добавляем в иерархию
                     new_rows_df = pd.DataFrame(new_rows)
                     hierarchy_df = pd.concat([hierarchy_df, new_rows_df], ignore_index=True)
-
-            # === ДИАГНОСТИКА МУЛТОН
-            try:
-                if st.session_state.get('multon_debug_enabled', False):
-                    mul_hierarchy_after = hierarchy[hierarchy['Клиент'] == 'Мултон'].copy()
-                    if not mul_hierarchy_after.empty:
-                        st.session_state.multon_debug_data['step10_hierarchy_after'] = mul_hierarchy_after
-            except:
-                pass
-           # === ДИАГНОСТИКА МУЛТОН
         
             
             # ============================================
@@ -1511,7 +1491,6 @@ class VisitCalculator:
         
 # Глобальный экземпляр
 visit_calculator = VisitCalculator()
-
 
 
 

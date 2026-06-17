@@ -91,6 +91,13 @@ for key, default_value in DEFAULT_STATE.items():
     if key not in st.session_state:
         st.session_state[key] = default_value
 
+# === ДИАГНОСТИКА МУЛТОН ===
+if 'multon_debug_enabled' not in st.session_state:
+    st.session_state.multon_debug_enabled = True  # ← поставьте False, чтобы отключить
+if 'multon_debug_data' not in st.session_state:
+    st.session_state.multon_debug_data = {}
+# === ДИАГНОСТИКА МУЛТОН ===
+
 # Вспомогательные функции
 
 def deduplicate_by_priority(df, priority_sources):
@@ -197,6 +204,14 @@ def process_all_data(settings_manager=None, force_recalc=False):
         
         # Разделение на полевые/неполевые
         field_df, non_field_df = data_cleaner.split_array_by_field_flag(array_with_portal)
+
+        # === ДИАГНОСТИКА МУЛТОН
+        if st.session_state.multon_debug_enabled and field_df is not None and not field_df.empty:
+            if 'Имя клиента' in field_df.columns:
+                mul_field_before = field_df[field_df['Имя клиента'] == 'Мултон'].copy()
+                if not mul_field_before.empty:
+                    st.session_state.multon_debug_data['step6_field_before_settings'] = mul_field_before
+        # === ДИАГНОСТИКА МУЛТОН
         
         # Загружаем настройки
         if settings_manager is None:
@@ -310,6 +325,14 @@ def process_all_data(settings_manager=None, force_recalc=False):
             easymerch_processed = data_cleaner.clean_easymerch(easymerch_raw, google_with_field)
             if easymerch_processed is not None and not easymerch_processed.empty:
                 st.session_state.cleaned_data['easymerch_processed'] = easymerch_processed
+
+        # === ДИАГНОСТИКА МУЛТОН
+        if st.session_state.multon_debug_enabled and easymerch_processed is not None and not easymerch_processed.empty:
+            if 'Имя клиента' in easymerch_processed.columns:
+                mul_easy = easymerch_processed[easymerch_processed['Имя клиента'] == 'Мултон'].copy()
+                if not mul_easy.empty:
+                    st.session_state.multon_debug_data['step2_easymerch_clean'] = mul_easy
+        # === ДИАГНОСТИКА МУЛТОН
         
         # Обработка Optima (если есть)
         optima_processed = None
@@ -456,6 +479,15 @@ def process_all_data(settings_manager=None, force_recalc=False):
             st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
         else:
             st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()
+
+        # === ДИАГНОСТИКА МУЛТОН
+        if st.session_state.multon_debug_enabled and st.session_state.cleaned_data['полевые_проекты'] is not None:
+            field_df_after = st.session_state.cleaned_data['полевые_проекты']
+            if not field_df_after.empty and 'Имя клиента' in field_df_after.columns:
+                mul_field_after = field_df_after[field_df_after['Имя клиента'] == 'Мултон'].copy()
+                if not mul_field_after.empty:
+                    st.session_state.multon_debug_data['step7_field_after_settings'] = mul_field_after
+        # === ДИАГНОСТИКА МУЛТОН
 
         # ============================================
         # ДОБАВЛЯЕМ ЗОД ДЛЯ ВСЕХ ПОЛЕВЫХ ПРОЕКТОВ
@@ -672,6 +704,14 @@ def process_all_data(settings_manager=None, force_recalc=False):
                 google_df=st.session_state.cleaned_data['сервизория'],
                 optima_df=st.session_state.cleaned_data.get('optima_processed')
             )
+
+            # === ДИАГНОСТИКА МУЛТОН
+            if st.session_state.multon_debug_enabled and plan_result is not None and not plan_result.empty:
+                if 'Клиент' in plan_result.columns:
+                    mul_plan_result = plan_result[plan_result['Клиент'] == 'Мултон'].copy()
+                    if not mul_plan_result.empty:
+                        st.session_state.multon_debug_data['step11_plan'] = mul_plan_result
+            # === ДИАГНОСТИКА МУЛТОН
             
             # === ДОБАВЛЕНИЕ ПЛАНОВОЙ ОПЛАТЫ ===
             if plan_result is not None and not plan_result.empty:
@@ -715,9 +755,16 @@ def process_all_data(settings_manager=None, force_recalc=False):
                 
                 final_result = visit_calculator._calculate_metrics(
                     fact_result, params, plan_result
-                )
-                
+                )   
                 st.session_state.visit_report['calculated_data'] = final_result
+
+                # === ДИАГНОСТИКА МУЛТОН
+                if st.session_state.multon_debug_enabled and final_result is not None and not final_result.empty:
+                    if 'Клиент' in final_result.columns:
+                        mul_final = final_result[final_result['Клиент'] == 'Мултон'].copy()
+                        if not mul_final.empty:
+                            st.session_state.multon_debug_data['step12_fact_matching'] = mul_final
+                # === ДИАГНОСТИКА МУЛТОН
                 
 
             
@@ -731,6 +778,55 @@ def process_all_data(settings_manager=None, force_recalc=False):
             st.dataframe(st.session_state.not_found_projects, width='stretch')
             st.info("💡 Проверьте: возможно, визиты по этим проектам не были загружены, или указан неверный портал.")
             
+
+        # === ДИАГНОСТИКА МУЛТОН
+        if st.session_state.multon_debug_enabled and st.session_state.multon_debug_data:
+            try:
+                from io import BytesIO
+                from datetime import datetime
+                
+                st.markdown("---")
+                st.subheader("🔍 Диагностика Мултон")
+                
+                step_names = {
+                    'step2_easymerch_clean': 'Шаг 2: Easymerch после clean_easymerch()',
+                    'step3_plan_json': 'Шаг 3: Распределение плана (JSON)',
+                    'step6_field_before_settings': 'Шаг 6: Полевые проекты ДО настроек',
+                    'step7_field_after_settings': 'Шаг 7: Полевые проекты ПОСЛЕ настроек',
+                    'step9_hierarchy_before': 'Шаг 9: Иерархия ДО расширения из JSON',
+                    'step10_hierarchy_after': 'Шаг 10: Иерархия ПОСЛЕ расширения из JSON',
+                    'step11_plan': 'Шаг 11: План (после calculate_hierarchical_plan_on_date)',
+                    'step12_fact_matching': 'Шаг 12: Факт и матчинг'
+                }
+                
+                for key, df in st.session_state.multon_debug_data.items():
+                    if key in step_names and not df.empty:
+                        st.markdown(f"### {step_names[key]}")
+                        st.caption(f"📊 Всего записей: {len(df)}")
+                        
+                        display_cols = df.columns.tolist()[:8]
+                        st.dataframe(df[display_cols].head(10), use_container_width=True, hide_index=True)
+                
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    for key, df in st.session_state.multon_debug_data.items():
+                        if not df.empty:
+                            sheet_name = key[:31]
+                            df.to_excel(writer, sheet_name=sheet_name, index=False)
+                
+                st.download_button(
+                    label="⬇️ Скачать диагностику Мултон",
+                    data=output.getvalue(),
+                    file_name=f"диагностика_мултон_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="primary",
+                    key="download_multon_debug"
+                )
+                
+            except Exception as e:
+                st.warning(f"⚠️ Ошибка при диагностике: {e}")
+        # === ДИАГНОСТИКА МУЛТОН
+
         st.session_state.processing_complete = True
         return True
         
@@ -1709,6 +1805,7 @@ with tab3:
     from github_settings import get_multon_plan_manager
     
     multon_manager = get_multon_plan_manager()
+    
     
     # Текущее распределение
     current_plan = multon_manager.load_plan()

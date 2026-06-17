@@ -1190,6 +1190,22 @@ class DataCleaner:
                 result[std_col] = df_clean[source_col].astype(str).fillna('')
             else:
                 result[std_col] = ''
+
+        # Все волны, которые не являются конкретными названиями, приводим к "не указано"
+        # Это нужно для корректного матчинга плана и факта
+        if 'Название проекта' in result.columns:
+            # Определяем, какие значения считать "пустыми" волнами
+            empty_wave_values = ['', 'nan', 'None', 'null', 'нет', '-', '—', '–', ' ']
+            
+            def normalize_wave(value):
+                if pd.isna(value):
+                    return 'не указано'
+                value_str = str(value).strip()
+                if value_str.lower() in empty_wave_values:
+                    return 'не указано'
+                return value_str
+            
+            result['Название проекта'] = result['Название проекта'].apply(normalize_wave)
         
         # Обработка региона (берем первые 2 символа)
         if 'Регион short' in result.columns:
@@ -2041,8 +2057,6 @@ class DataCleaner:
         
 # Глобальный экземпляр
 data_cleaner = DataCleaner()
-
-
 
 
 

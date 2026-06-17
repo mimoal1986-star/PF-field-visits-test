@@ -1195,14 +1195,14 @@ class DataCleaner:
         # Это нужно для корректного матчинга плана и факта
         if 'Название проекта' in result.columns:
             # Определяем, какие значения считать "пустыми" волнами
-            empty_wave_values = ['', 'nan', 'None', 'null', 'нет', '-', '—', '–', ' ']
+            empty_wave_values = ['', 'nan', 'None', 'null', '-', '—', '–', ' ']
             
             def normalize_wave(value):
                 if pd.isna(value):
-                    return 'не указано'
+                    return 'нет'
                 value_str = str(value).strip()
                 if value_str.lower() in empty_wave_values:
-                    return 'не указано'
+                    return 'нет'
                 return value_str
             
             result['Название проекта'] = result['Название проекта'].apply(normalize_wave)

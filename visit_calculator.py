@@ -416,6 +416,20 @@ class VisitCalculator:
                 return pd.DataFrame()
             
             start_period = calc_params['start_date']
+            
+            # === ДИАГНОСТИКА ТОЧКА 1: Вход в цикл ===
+            st.write("### 🔍 ТОЧКА 1: Иерархия для Мултон ДО цикла")
+            mul_rows = hierarchy_df[hierarchy_df['Клиент'] == 'Мултон']
+            if not mul_rows.empty:
+                st.dataframe(
+                    mul_rows[['Проект', 'Регион', 'ASM', 'RS']].drop_duplicates(),
+                    use_container_width=True,
+                    hide_index=True
+                )
+            else:
+                st.write("Нет строк с Мултон в иерархии")
+            # =========================================
+            
             end_period = calc_params['end_date']
             month_days = calendar.monthrange(start_period.year, start_period.month)[1]
             
@@ -724,6 +738,13 @@ class VisitCalculator:
                     # Для всех остальных типов (Чеккер, CXWAY, Easymerch, Мултон, Оптима)
                     # Сначала рассчитываем total_plan (как раньше)
                     
+                    # === ДИАГНОСТИКА ТОЧКА 2: До обработки Мултон ===
+                    if client == 'Мултон':
+                        st.write(f"### 🔍 ТОЧКА 2: До обработки (проект: {project_code}, регион: {region})")
+                        st.write(f"row['ASM']: **{row['ASM']}**")
+                        st.write(f"row['RS']: **{row['RS']}**")
+                    # =====================================================
+                    
                     if po == 'ПО клиента' and client == 'Мултон':
                         # Проверяем, загружен ли Easymerch
                         if 'easymerch' not in st.session_state.uploaded_files:
@@ -747,6 +768,14 @@ class VisitCalculator:
                                 total_plan = plan_df.loc[mask, 'plan'].iloc[0]
                             else:
                                 total_plan = 0
+
+                            # === ДИАГНОСТИКА ТОЧКА 3: После поиска в JSON ===
+                            if client == 'Мултон':
+                                st.write(f"### 🔍 ТОЧКА 3: После поиска в JSON (проект: {project_code}, регион: {region})")
+                                st.write(f"Найден план: {total_plan}")
+                                st.write(f"row['ASM'] (из иерархии): **{row['ASM']}**")
+                                st.write(f"row['RS'] (из иерархии): **{row['RS']}**")
+                            # ===================================================
                         
                         if total_plan <= 0:
                             continue
@@ -845,7 +874,15 @@ class VisitCalculator:
                             period_end
                         )
                         
-
+                # === ДИАГНОСТИКА ТОЧКА 4: Перед записью в results ===
+                if client == 'Мултон':
+                    st.write(f"### 🔍 ТОЧКА 4: Перед записью (проект: {project_code}, регион: {region})")
+                    st.write(f"Будет записано:")
+                    st.write(f"  ASM: **{asm_from_plan}**")
+                    st.write(f"  RS: **{rs_from_plan}**")
+                    st.write(f"  План: **{total_plan}**")
+                # =================================================
+                
                 results.append({
                     'Проект': project_code,
                     'Клиент': row['Клиент'],
@@ -875,6 +912,19 @@ class VisitCalculator:
             # ПРИМЕНЕНИЕ КОРРЕКТИРОВОК (ПОСЛЕ СБОРА ВСЕХ ДАННЫХ)
             # ============================================
             
+            # === ДИАГНОСТИКА ТОЧКА 5: Итоговый план ===
+            if results:
+                results_df = pd.DataFrame(results)
+                mul_results = results_df[results_df['Клиент'] == 'Мултон']
+                if not mul_results.empty:
+                    st.write("### 🔍 ТОЧКА 5: Итоговый план для Мултон")
+                    st.dataframe(
+                        mul_results[['Проект', 'Регион', 'ASM', 'RS', 'План проекта, шт.']],
+                        use_container_width=True,
+                        hide_index=True
+                    )
+            # =============================================
+                    
             if plan_adjustments and results:
                 # Преобразуем в DataFrame
                 results_df = pd.DataFrame(results)

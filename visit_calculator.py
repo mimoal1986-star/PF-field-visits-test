@@ -777,6 +777,10 @@ class VisitCalculator:
                                 st.write(f"row['RS'] (из иерархии): **{row['RS']}**")
                             # ===================================================
                         
+                        asm_from_plan = row['ASM']
+                        rs_from_plan = row['RS']
+                        skip_plan_correction = False
+                        
                         if total_plan <= 0:
                             continue
 

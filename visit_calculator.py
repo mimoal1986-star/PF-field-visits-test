@@ -716,6 +716,9 @@ class VisitCalculator:
                     # Мониторинги: старая логика, без этапов
                     rs_plan_on_date = total_plan
                     rs_daily_plan = total_plan
+                    asm_from_plan = row['ASM'] 
+                    rs_from_plan = row['RS']
+                    skip_plan_correction = False
                 
                 else:
                     # Для всех остальных типов (Чеккер, CXWAY, Easymerch, Мултон, Оптима)

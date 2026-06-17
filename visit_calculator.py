@@ -779,6 +779,13 @@ class VisitCalculator:
                         
                         if total_plan <= 0:
                             continue
+
+                    # === ДИАГНОСТИКА ТОЧКА 3.5: Сразу после блока Мултон ===
+                    if client == 'Мултон':
+                        st.write(f"### 🔍 ТОЧКА 3.5: Сразу после блока Мултон (проект: {project_code}, регион: {region})")
+                        st.write(f"asm_from_plan: **{asm_from_plan}**")
+                        st.write(f"rs_from_plan: **{rs_from_plan}**")
+                    # ========================================================
                     
                     elif client == 'Мультибренд 2024' and po == 'CXWAY':
                         # Проверяем, загружен ли CXWAY
@@ -882,6 +889,7 @@ class VisitCalculator:
                     st.write(f"  RS: **{rs_from_plan}**")
                     st.write(f"  План: **{total_plan}**")
                 # =================================================
+                
                 
                 results.append({
                     'Проект': project_code,

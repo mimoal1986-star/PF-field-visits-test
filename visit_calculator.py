@@ -609,7 +609,7 @@ class VisitCalculator:
                         new_rows.append({
                             'Проект': project_code,
                             'Клиент': 'Мултон',
-                            'Волна': 'не указано',
+                            'Волна': 'нет',
                             'Регион': region,
                             'DSM': 'не указано',
                             'ASM': asm,

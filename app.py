@@ -700,6 +700,25 @@ def process_all_data(settings_manager=None, force_recalc=False):
                     region_coeffs = region_coeff_manager.load_coefficients()
                     plan_result = visit_calculator.add_plan_payment(plan_result, bdr_df, region_coeffs)
             # ===================================
+
+            # === ВЫГРУЗКА ПЛАНА (plan_result) ===
+            if plan_result is not None and not plan_result.empty:
+                try:
+                    output = BytesIO()
+                    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                        plan_result.to_excel(writer, sheet_name='План', index=False)
+                    
+                    st.download_button(
+                        label="📥 Скачать план (plan_result)",
+                        data=output.getvalue(),
+                        file_name=f"план_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        type="secondary",
+                        key="download_plan"
+                    )
+                except Exception as e:
+                    st.warning(f"⚠️ Ошибка при выгрузке плана: {e}")
+            # ===========================================
             
             st.session_state.debug_times.append(f"[DEBUG] План: {time.time() - start:.2f} сек")
             start = time.time()

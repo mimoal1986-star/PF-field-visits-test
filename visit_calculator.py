@@ -416,20 +416,6 @@ class VisitCalculator:
                 return pd.DataFrame()
             
             start_period = calc_params['start_date']
-            
-            # === ДИАГНОСТИКА ТОЧКА 1: Вход в цикл ===
-            st.write("### 🔍 ТОЧКА 1: Иерархия для Мултон ДО цикла")
-            mul_rows = hierarchy_df[hierarchy_df['Клиент'] == 'Мултон']
-            if not mul_rows.empty:
-                st.dataframe(
-                    mul_rows[['Проект', 'Регион', 'ASM', 'RS']].drop_duplicates(),
-                    use_container_width=True,
-                    hide_index=True
-                )
-            else:
-                st.write("Нет строк с Мултон в иерархии")
-            # =========================================
-            
             end_period = calc_params['end_date']
             month_days = calendar.monthrange(start_period.year, start_period.month)[1]
             
@@ -738,13 +724,6 @@ class VisitCalculator:
                     # Для всех остальных типов (Чеккер, CXWAY, Easymerch, Мултон, Оптима)
                     # Сначала рассчитываем total_plan (как раньше)
                     
-                    # === ДИАГНОСТИКА ТОЧКА 2: До обработки Мултон ===
-                    if client == 'Мултон':
-                        st.write(f"### 🔍 ТОЧКА 2: До обработки (проект: {project_code}, регион: {region})")
-                        st.write(f"row['ASM']: **{row['ASM']}**")
-                        st.write(f"row['RS']: **{row['RS']}**")
-                    # =====================================================
-                    
                     if po == 'ПО клиента' and client == 'Мултон':
                         # Проверяем, загружен ли Easymerch
                         if 'easymerch' not in st.session_state.uploaded_files:
@@ -768,14 +747,6 @@ class VisitCalculator:
                                 total_plan = plan_df.loc[mask, 'plan'].iloc[0]
                             else:
                                 total_plan = 0
-
-                            # === ДИАГНОСТИКА ТОЧКА 3: После поиска в JSON ===
-                            if client == 'Мултон':
-                                st.write(f"### 🔍 ТОЧКА 3: После поиска в JSON (проект: {project_code}, регион: {region})")
-                                st.write(f"Найден план: {total_plan}")
-                                st.write(f"row['ASM'] (из иерархии): **{row['ASM']}**")
-                                st.write(f"row['RS'] (из иерархии): **{row['RS']}**")
-                            # ===================================================
                         
                         asm_from_plan = row['ASM']
                         rs_from_plan = row['RS']
@@ -783,13 +754,6 @@ class VisitCalculator:
                         
                         if total_plan <= 0:
                             continue
-
-                    # === ДИАГНОСТИКА ТОЧКА 3.5: Сразу после блока Мултон ===
-                    if client == 'Мултон':
-                        st.write(f"### 🔍 ТОЧКА 3.5: Сразу после блока Мултон (проект: {project_code}, регион: {region})")
-                        st.write(f"asm_from_plan: **{asm_from_plan}**")
-                        st.write(f"rs_from_plan: **{rs_from_plan}**")
-                    # ========================================================
                     
                     elif client == 'Мультибренд 2024' and po == 'CXWAY':
                         # Проверяем, загружен ли CXWAY
@@ -885,16 +849,6 @@ class VisitCalculator:
                             period_end
                         )
                         
-                # === ДИАГНОСТИКА ТОЧКА 4: Перед записью в results ===
-                if client == 'Мултон':
-                    st.write(f"### 🔍 ТОЧКА 4: Перед записью (проект: {project_code}, регион: {region})")
-                    st.write(f"Будет записано:")
-                    st.write(f"  ASM: **{asm_from_plan}**")
-                    st.write(f"  RS: **{rs_from_plan}**")
-                    st.write(f"  План: **{total_plan}**")
-                # =================================================
-                
-                
                 results.append({
                     'Проект': project_code,
                     'Клиент': row['Клиент'],
@@ -922,20 +876,7 @@ class VisitCalculator:
 
             # ============================================
             # ПРИМЕНЕНИЕ КОРРЕКТИРОВОК (ПОСЛЕ СБОРА ВСЕХ ДАННЫХ)
-            # ============================================
-            
-            # === ДИАГНОСТИКА ТОЧКА 5: Итоговый план ===
-            if results:
-                results_df = pd.DataFrame(results)
-                mul_results = results_df[results_df['Клиент'] == 'Мултон']
-                if not mul_results.empty:
-                    st.write("### 🔍 ТОЧКА 5: Итоговый план для Мултон")
-                    st.dataframe(
-                        mul_results[['Проект', 'Регион', 'ASM', 'RS', 'План проекта, шт.']],
-                        use_container_width=True,
-                        hide_index=True
-                    )
-            # =============================================
+            # ============================================        
                     
             if plan_adjustments and results:
                 # Преобразуем в DataFrame
@@ -1213,79 +1154,6 @@ class VisitCalculator:
                     result_df.at[idx, 'Оплата факт'] = payment_sum.get(key, 0)
                 else:
                     result_df.at[idx, f'Оплата{suffix}'] = payment_sum.get(key, 0)
-    
-            # # === ДИАГНОСТИКА МАТЧИНГА ДЛЯ МУЛТОН ===
-            # try:
-            #     # Собираем данные по Мултон
-            #     debug_data = []
-                
-            #     # 1. Ключи фактов (из группировки)
-            #     fact_keys = list(rs_facts_total.keys())
-            #     for key in fact_keys:
-            #         if 'Мултон' in str(key[0]):
-            #             debug_data.append({
-            #                 'Источник': 'Факт',
-            #                 'Клиент': key[0],
-            #                 'Проект': key[1],
-            #                 'Волна': key[2],
-            #                 'Регион': key[3],
-            #                 'ASM': key[4],
-            #                 'RS': key[5],
-            #                 'Количество': rs_facts_total[key],
-            #                 'Матчинг': 'Есть в фактах'
-            #             })
-                
-            #     # 2. Ключи плана (из result_df для Мултон)
-            #     fact_col_name = f'Факт проекта{suffix}, шт.'
-                
-            #     for idx in result_df[result_df['Клиент'] == 'Мултон'].index:
-            #         row = result_df.loc[idx]
-            #         plan_key = (
-            #             row['Клиент'],
-            #             row['Проект'],
-            #             row['Волна'],
-            #             row['Регион'],
-            #             row['ASM'],
-            #             row['RS']
-            #         )
-            #         fact_value = row.get(fact_col_name, 0)
-                    
-            #         matched = '✅ Да' if fact_value > 0 else '❌ Нет'
-                    
-            #         debug_data.append({
-            #             'Источник': 'План',
-            #             'Клиент': plan_key[0],
-            #             'Проект': plan_key[1],
-            #             'Волна': plan_key[2],
-            #             'Регион': plan_key[3],
-            #             'ASM': plan_key[4],
-            #             'RS': plan_key[5],
-            #             'Количество': fact_value,
-            #             'Матчинг': matched
-            #         })
-                
-            #     if debug_data:
-            #         debug_df = pd.DataFrame(debug_data)
-                    
-            #         st.write("### 🔍 Диагностика матчинга для Мултон")
-            #         st.dataframe(debug_df, use_container_width=True, hide_index=True)
-                    
-            #         output = BytesIO()
-            #         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            #             debug_df.to_excel(writer, sheet_name='Матчинг_Мултон', index=False)
-                    
-            #         st.download_button(
-            #             label="⬇️ Скачать диагностику матчинга",
-            #             data=output.getvalue(),
-            #             file_name=f"матчинг_мултон_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-            #             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            #             type="secondary",
-            #             key=f"download_matching_{suffix}"  # ← уникальный ключ
-            #         )
-            # except Exception as e:
-            #     st.warning(f"⚠️ Ошибка при диагностике матчинга: {e}")
-
-            # # === ДИАГНОСТИКА МАТЧИНГА ДЛЯ МУЛТОН ===
             
             return result_df
             

@@ -11,7 +11,7 @@ import calendar
 from github_settings import get_plan_adjustment_manager
 from github_settings import get_multon_plan_manager
 from github_settings import get_plan_adjustment_manager, get_multon_plan_manager, get_multibrand_plan_manager
-from data_cleaner import REGION_NAME_TO_CODE
+from data_cleaner import REGION_NAME_TO_CODE, ZOD_MAPPING
 
 
 class VisitCalculator:
@@ -605,13 +605,15 @@ class VisitCalculator:
                 if missing_combinations:
                     # Создаем строки для недостающих комбинаций
                     new_rows = []
+                    start_period = calc_params['start_date']
+                    end_period = calc_params['end_date']
                     for project_code, region, asm in missing_combinations:
                         new_rows.append({
                             'Проект': project_code,
                             'Клиент': 'Мултон',
                             'Волна': 'нет',
                             'Регион': region,
-                            'DSM': 'не указано',
+                            'DSM': ZOD_MAPPING.get(asm, 'не указано'),
                             'ASM': asm,
                             'RS': 'нет',
                             'ПО': 'ПО клиента',

@@ -1197,7 +1197,11 @@ with tab3:
         # Получаем проекты из расчета (из session_state после process_all_data)
         if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
             field_df = st.session_state.cleaned_data['полевые_проекты'].copy()
-            field_df = field_df[field_df['Полевой'] == 1]
+            # Проверяем, есть ли колонка 'Полевой'
+            if not field_df.empty and 'Полевой' in field_df.columns:
+                field_df = field_df[field_df['Полевой'] == 1]
+            else:
+                field_df = pd.DataFrame()
             
             # 🔥 ПРИМЕНЯЕМ НАСТРОЙКИ 🔥
             if field_df is not None and not field_df.empty:
@@ -1311,7 +1315,12 @@ with tab3:
         # Здесь будут неполевые проекты
         if 'cleaned_data' in st.session_state and 'неполевые_проекты' in st.session_state.cleaned_data:
             non_field_df = st.session_state.cleaned_data['неполевые_проекты'].copy()
-            non_field_df = non_field_df[non_field_df['Полевой'] == 0]
+            
+            # Проверяем, есть ли колонка 'Полевой'
+            if not non_field_df.empty and 'Полевой' in non_field_df.columns:
+                non_field_df = non_field_df[non_field_df['Полевой'] == 0]
+            else:
+                non_field_df = pd.DataFrame()
             
             if non_field_df is not None and not non_field_df.empty:
                 
@@ -1541,7 +1550,11 @@ with tab3:
     # Выбираем проект для корректировки
     if 'cleaned_data' in st.session_state and 'полевые_проекты' in st.session_state.cleaned_data:
         field_df = st.session_state.cleaned_data['полевые_проекты'].copy()
-        field_df = field_df[field_df['Полевой'] == 1]
+        # Проверяем, есть ли колонка 'Полевой'
+        if not field_df.empty and 'Полевой' in field_df.columns:
+            field_df = field_df[field_df['Полевой'] == 1]
+        else:
+            field_df = pd.DataFrame()
         
         if not field_df.empty:
             # Кэшируем уникальные проекты для корректировки

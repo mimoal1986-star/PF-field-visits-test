@@ -948,6 +948,9 @@ with tab1:
                     optima_df = load_excel(optima_file_obj, "optima") if optima_file_obj else None
                     prodata_df = load_excel(prodata_file_obj, "prodata") if prodata_file_obj else None
                     
+                    # ✅ ОЧИЩАЕМ uploaded_files ПЕРЕД СОХРАНЕНИЕМ
+                    st.session_state.uploaded_files = {}
+                    
                     # 2. СОХРАНЯЕМ В SESSION_STATE.uploaded_files
                     if portal_df is not None:
                         st.session_state.uploaded_files['портал'] = portal_df

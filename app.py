@@ -950,6 +950,7 @@ with tab1:
                     
                     # ✅ ОЧИЩАЕМ uploaded_files ПЕРЕД СОХРАНЕНИЕМ
                     st.session_state.uploaded_files = {}
+                    st.session_state.cleaned_data = {} 
                     
                     # 2. СОХРАНЯЕМ В SESSION_STATE.uploaded_files
                     if portal_df is not None:
@@ -966,14 +967,6 @@ with tab1:
                         st.session_state.uploaded_files['optima'] = optima_df
                     if prodata_df is not None:
                         st.session_state.uploaded_files['prodata'] = prodata_df
-
-                    # ОТЛАДКА
-                    st.write("📁 Файлы перед расчетом:", list(st.session_state.uploaded_files.keys()))
-                    if 'cxway' in st.session_state.uploaded_files:
-                        st.write("✅ CXWAY загружен")
-                    if 'easymerch' in st.session_state.uploaded_files:
-                        st.write("✅ Easymerch загружен")
-                    # ОТЛАДКА
                     
                     # Сбрасываем флаг перед расчетом
                     st.session_state.data_calculated = False

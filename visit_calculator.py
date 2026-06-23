@@ -777,6 +777,7 @@ class VisitCalculator:
                         if wave_type == 'Нерезультативные_Пронто_Дилеры':
                             total_plan = 0
                             skip_plan_correction = True
+                            continue
                             
                         elif wave_type == 'Дилеры':
                             # ИСПРАВЛЕНО: region_code → region_short

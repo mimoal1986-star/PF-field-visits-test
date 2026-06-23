@@ -823,7 +823,7 @@ class VisitCalculator:
                         client_name = row['Клиент']
                         plan_key = (client_name, project_code, wave_name, region)
                         total_plan = project_wave_region_plans.get(plan_key, 0)
-
+                    
                         asm_from_plan = row['ASM']
                         rs_from_plan = rs_name
                         skip_plan_correction = False
@@ -840,6 +840,10 @@ class VisitCalculator:
                         
                         if weight > 0:
                             total_plan = round(total_plan * weight, 1)
+                        
+                        # ✅ ДОБАВЛЯЕМ ПРОВЕРКУ!
+                        if total_plan <= 0:
+                            continue
                         
                         # Рассчитываем план на дату с учетом этапов
                         rs_plan_on_date, rs_daily_plan = self.calculate_plan_with_stages(

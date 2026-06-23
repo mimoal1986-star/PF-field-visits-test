@@ -271,16 +271,30 @@ def process_all_data(settings_manager=None, force_recalc=False):
             non_field_df = non_field_df.drop('_temp_key', axis=1)
         
         # Объединяем все проекты в один датасет
-        all_projects = pd.concat([field_df, non_field_df], ignore_index=True)
+        # Проверяем, есть ли данные из портала
+        if not field_df.empty or not non_field_df.empty:
+            all_projects = pd.concat([field_df, non_field_df], ignore_index=True)
+        else:
+            # Если портала нет — создаем пустой DataFrame с нужными колонками
+            all_projects = pd.DataFrame(columns=[
+                'Код анкеты', 'Имя клиента', 'Название проекта', 
+                'ЗОД', 'АСС', 'ЭМ', 'Регион short', 'Регион', 'ПО', 
+                'Полевой', 'Статус', 'Дата визита', 'Оплата факт', 'Источник'
+            ])
         st.session_state.cleaned_data['all_projects'] = all_projects
-
-        # 2. Создаем обновленные датасеты
-        field_df = all_projects[all_projects['Полевой'] == 1].copy()
-        non_field_df = all_projects[all_projects['Полевой'] == 0].copy()
         
-        # Создаем датасеты на основе актуального значения Полевой
-        st.session_state.cleaned_data['полевые_проекты'] = all_projects[all_projects['Полевой'] == 1].copy()
-        st.session_state.cleaned_data['неполевые_проекты'] = all_projects[all_projects['Полевой'] == 0].copy()
+        # Создаем датасеты из портала (если есть данные)
+        if not all_projects.empty and 'Полевой' in all_projects.columns:
+            field_df = all_projects[all_projects['Полевой'] == 1].copy()
+            non_field_df = all_projects[all_projects['Полевой'] == 0].copy()
+            st.session_state.cleaned_data['полевые_проекты'] = all_projects[all_projects['Полевой'] == 1].copy()
+            st.session_state.cleaned_data['неполевые_проекты'] = all_projects[all_projects['Полевой'] == 0].copy()
+        else:
+            field_df = pd.DataFrame()
+            non_field_df = pd.DataFrame()
+            st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()
+            st.session_state.cleaned_data['неполевые_проекты'] = pd.DataFrame()
+    
         
         # ============================================
         # ВЕКТОРИЗОВАННОЕ ДОБАВЛЕНИЕ ЗОД

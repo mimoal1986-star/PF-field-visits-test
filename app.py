@@ -160,14 +160,32 @@ def process_all_data(settings_manager=None, force_recalc=False):
             return False
         
         # Получаем данные
-        portal_raw = st.session_state.uploaded_files['портал']
         google_raw = st.session_state.uploaded_files['сервизория']
         
-        # Очистка портала
-        portal_cleaned = data_cleaner.clean_array(portal_raw)
-        if portal_cleaned is None:
-            portal_cleaned = portal_raw
-        st.session_state.cleaned_data['портал'] = portal_cleaned
+        # ============================================
+        # ОБРАБОТКА ПОРТАЛА (CHECKER) - ЕСЛИ ЗАГРУЖЕН
+        # ============================================
+        if 'портал' in st.session_state.uploaded_files:
+            portal_raw = st.session_state.uploaded_files['портал']
+            
+            # Очистка портала
+            portal_cleaned = data_cleaner.clean_array(portal_raw)
+            if portal_cleaned is None:
+                portal_cleaned = portal_raw
+            st.session_state.cleaned_data['портал'] = portal_cleaned
+            
+            # Обогащение массива кодами проектов
+            enriched_result = data_cleaner.enrich_array_with_project_codes(
+                st.session_state.cleaned_data['портал'],
+                st.session_state.cleaned_data['сервизория']
+            )
+            
+            if enriched_result:
+                enriched_array, discrepancy_df, stats = enriched_result
+                st.session_state.cleaned_data['портал'] = enriched_array
+        else:
+            # Если портала нет, создаем пустой DataFrame
+            st.session_state.cleaned_data['портал'] = pd.DataFrame()
         
         # Очистка проектов
         google_cleaned = data_cleaner.clean_google(google_raw)
@@ -175,16 +193,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
             google_cleaned = google_raw
         st.session_state.cleaned_data['сервизория'] = google_cleaned
         st.session_state.cleaned_data['сервизория_original'] = google_raw.copy() 
-        
-        # Обогащение массива кодами проектов
-        enriched_result = data_cleaner.enrich_array_with_project_codes(
-            st.session_state.cleaned_data['портал'],
-            st.session_state.cleaned_data['сервизория']
-        )
-        
-        if enriched_result:
-            enriched_array, discrepancy_df, stats = enriched_result
-            st.session_state.cleaned_data['портал'] = enriched_array
         
         # Добавление признака полевой проект
         google_with_field = data_cleaner.update_field_projects_flag(st.session_state.cleaned_data['сервизория'])
@@ -197,14 +205,23 @@ def process_all_data(settings_manager=None, force_recalc=False):
         # ОБОГАЩЕНИЕ ДАННЫХ (ОПТИМИЗИРОВАННО)
         # ============================================
         
-        # Добавляем поле 'Полевой' и 'ПО'
-        array_with_field = data_cleaner.add_field_flag_to_array(st.session_state.cleaned_data['портал'])
-        array_with_portal = data_cleaner.add_portal_to_array(array_with_field, google_with_field)
-        array_with_portal = data_cleaner.remove_cxway_from_portal(array_with_portal, google_with_field)
-        st.session_state.cleaned_data['портал_с_полем'] = array_with_portal
+        # Добавляем поле 'Полевой' и 'ПО' (только если есть портал)
+        if 'портал' in st.session_state.cleaned_data and not st.session_state.cleaned_data['портал'].empty:
+            array_with_field = data_cleaner.add_field_flag_to_array(st.session_state.cleaned_data['портал'])
+            array_with_portal = data_cleaner.add_portal_to_array(array_with_field, google_with_field)
+            array_with_portal = data_cleaner.remove_cxway_from_portal(array_with_portal, google_with_field)
+            st.session_state.cleaned_data['портал_с_полем'] = array_with_portal
+        else:
+            st.session_state.cleaned_data['портал_с_полем'] = pd.DataFrame()
         
-        # Разделение на полевые/неполевые
-        field_df, non_field_df = data_cleaner.split_array_by_field_flag(array_with_portal)
+        # Разделение на полевые/неполевые (только если есть портал_с_полем)
+        if not st.session_state.cleaned_data['портал_с_полем'].empty:
+            field_df, non_field_df = data_cleaner.split_array_by_field_flag(
+                st.session_state.cleaned_data['портал_с_полем']
+            )
+        else:
+            field_df = pd.DataFrame()
+            non_field_df = pd.DataFrame()
         
         # Загружаем настройки
         if settings_manager is None:
@@ -348,21 +365,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
             bdr_processed = data_cleaner.clean_bdr(bdr_raw)
             if bdr_processed is not None and not bdr_processed.empty:
                 st.session_state.cleaned_data['bdr_processed'] = bdr_processed
-                # # === ТЕСТОВАЯ ВЫГРУЗКА ===
-                # st.write("### 📊 БДР после обработки")
-                # st.dataframe(bdr_processed.head(10), use_container_width=True)
-                
-                # output = BytesIO()
-                # with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                #     bdr_processed.to_excel(writer, sheet_name='БДР_обработанный', index=False)
-                # st.download_button(
-                #     label="⬇️ Скачать обработанный БДР",
-                #     data=output.getvalue(),
-                #     file_name=f"БДР_обработанный_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-                #     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                #     type="secondary"
-                # )
-                # # === ТЕСТОВАЯ ВЫГРУЗКА ===
         
         # Обработка CXWAY (если есть)
         cxway_processed = None
@@ -667,25 +669,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
         st.session_state.visit_report['base_data'] = base_data
         st.session_state.visit_report['timestamp'] = datetime.now().isoformat()
 
-        # # === ВЫГРУЗКА ИЕРАРХИИ В EXCEL (ВСЕ ПРОЕКТЫ) ===
-        # if base_data is not None and not base_data.empty:
-        #     try:
-        #         output = BytesIO()
-        #         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        #             base_data.to_excel(writer, sheet_name='Иерархия_все_проекты', index=False)
-                
-        #         st.download_button(
-        #             label="📥 Скачать иерархию (все проекты)",
-        #             data=output.getvalue(),
-        #             file_name=f"иерархия_все_проекты_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-        #             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        #             type="secondary",
-        #             key="download_hierarchy_all"
-        #         )
-        #     except Exception as e:
-        #         st.warning(f"⚠️ Ошибка при выгрузке иерархии: {e}")
-        # # =======================================================
-
         st.session_state.debug_times.append(f"[DEBUG] Иерархия: {time.time() - start:.2f} сек")
         start = time.time()
         
@@ -709,25 +692,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
                     plan_result = visit_calculator.add_plan_payment(plan_result, bdr_df, region_coeffs)
             # ===================================
 
-            # # === ВЫГРУЗКА ПЛАНА (plan_result) ===
-            # if plan_result is not None and not plan_result.empty:
-            #     try:
-            #         output = BytesIO()
-            #         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            #             plan_result.to_excel(writer, sheet_name='План', index=False)
-                    
-            #         st.download_button(
-            #             label="📥 Скачать план (plan_result)",
-            #             data=output.getvalue(),
-            #             file_name=f"план_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-            #             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            #             type="secondary",
-            #             key="download_plan"
-            #         )
-            #     except Exception as e:
-            #         st.warning(f"⚠️ Ошибка при выгрузке плана: {e}")
-            # # ===========================================
-            
             st.session_state.debug_times.append(f"[DEBUG] План: {time.time() - start:.2f} сек")
             start = time.time()
             
@@ -765,8 +729,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
                 
                 st.session_state.visit_report['calculated_data'] = final_result
                 
-
-            
                 st.session_state.debug_times.append(f"[DEBUG] Метрики: {time.time() - start:.2f} сек")
                 
         st.session_state.debug_times.append(f"[DEBUG] ВСЕГО: {time.time() - start_total:.2f} сек")

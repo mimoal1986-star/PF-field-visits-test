@@ -162,48 +162,41 @@ def process_all_data(settings_manager=None, force_recalc=False):
         # Получаем данные
         google_raw = st.session_state.uploaded_files['сервизория']
         
-        # ============================================
-        # ОБРАБОТКА ПОРТАЛА (CHECKER) - ЕСЛИ ЗАГРУЖЕН
-        # ============================================
-        if 'портал' in st.session_state.uploaded_files:
-            portal_raw = st.session_state.uploaded_files['портал']
-            
-            # Очистка портала
-            portal_cleaned = data_cleaner.clean_array(portal_raw)
-            if portal_cleaned is None:
-                portal_cleaned = portal_raw
-            st.session_state.cleaned_data['портал'] = portal_cleaned
-            
-            # Обогащение массива кодами проектов
-            enriched_result = data_cleaner.enrich_array_with_project_codes(
-                st.session_state.cleaned_data['портал'],
-                st.session_state.cleaned_data['сервизория']
-            )
-            
-            if enriched_result:
-                enriched_array, discrepancy_df, stats = enriched_result
-                st.session_state.cleaned_data['портал'] = enriched_array
-        else:
-            # Если портала нет, создаем пустой DataFrame
-            st.session_state.cleaned_data['портал'] = pd.DataFrame()
-        
-        # Очистка проектов
+        # ОЧИСТКА ПРОЕКТОВ (GOOGLE)
         google_cleaned = data_cleaner.clean_google(google_raw)
         if google_cleaned is None:
             google_cleaned = google_raw
         st.session_state.cleaned_data['сервизория'] = google_cleaned
-        st.session_state.cleaned_data['сервизория_original'] = google_raw.copy() 
+        st.session_state.cleaned_data['сервизория_original'] = google_raw.copy()
         
         # Добавление признака полевой проект
         google_with_field = data_cleaner.update_field_projects_flag(st.session_state.cleaned_data['сервизория'])
         st.session_state.cleaned_data['сервизория'] = google_with_field
         st.session_state.debug_times.append(f"[DEBUG] Очистка: {time.time() - start:.2f} сек")
         start = time.time()
+        
+
+        # ОБРАБОТКА ПОРТАЛА (CHECKER) - ЕСЛИ ЗАГРУЖЕН
+        if 'портал' in st.session_state.uploaded_files:
+            portal_raw = st.session_state.uploaded_files['портал']
+            portal_cleaned = data_cleaner.clean_array(portal_raw)
+            if portal_cleaned is None:
+                portal_cleaned = portal_raw
+            st.session_state.cleaned_data['портал'] = portal_cleaned
+            
+            enriched_result = data_cleaner.enrich_array_with_project_codes(
+                st.session_state.cleaned_data['портал'],
+                st.session_state.cleaned_data['сервизория']  # ← ТЕПЕРЬ СУЩЕСТВУЕТ!
+            )
+            
+            if enriched_result:
+                enriched_array, discrepancy_df, stats = enriched_result
+                st.session_state.cleaned_data['портал'] = enriched_array
+        else:
+            st.session_state.cleaned_data['портал'] = pd.DataFrame()
 
         
-        # ============================================
         # ОБОГАЩЕНИЕ ДАННЫХ (ОПТИМИЗИРОВАННО)
-        # ============================================
         
         # Добавляем поле 'Полевой' и 'ПО' (только если есть портал)
         if 'портал' in st.session_state.cleaned_data and not st.session_state.cleaned_data['портал'].empty:

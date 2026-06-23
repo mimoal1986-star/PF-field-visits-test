@@ -340,9 +340,7 @@ def process_all_data(settings_manager=None, force_recalc=False):
         easymerch_processed = None
         easymerch_raw = st.session_state.uploaded_files.get('easymerch')
         if easymerch_raw is not None:
-            st.write(f"📁 Easymerch сырой: {len(easymerch_raw)} строк, колонки: {list(easymerch_raw.columns)}")
             easymerch_processed = data_cleaner.clean_easymerch(easymerch_raw, google_with_field)
-            st.write(f"📊 Easymerch после clean_easymerch: {len(easymerch_processed) if easymerch_processed is not None else 'None'} строк")
             if easymerch_processed is not None and not easymerch_processed.empty:
                 st.session_state.cleaned_data['easymerch_processed'] = easymerch_processed
         
@@ -447,17 +445,7 @@ def process_all_data(settings_manager=None, force_recalc=False):
                     field_df_with_zod = pd.DataFrame()
                     
             
-        # ============================================
-        # ДИАГНОСТИКА ПЕРЕД MERGE
-        # ============================================
-        st.write("### 🔍 Диагностика источников перед merge:")
-        st.write(f"  easymerch_processed: {'есть' if easymerch_processed is not None and not easymerch_processed.empty else 'ПУСТО'}")
-        if easymerch_processed is not None and not easymerch_processed.empty:
-            st.write(f"    - Строк: {len(easymerch_processed)}")
-            st.write(f"    - Колонки: {list(easymerch_processed.columns)}")
-        st.write("---")
         
-
         # ============================================
         # ФИНАЛЬНОЕ ОБЪЕДИНЕНИЕ ВСЕХ ИСТОЧНИКОВ
         # ============================================
@@ -486,14 +474,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
             st.session_state.cleaned_data['полевые_проекты'] = all_field_projects
         else:
             st.session_state.cleaned_data['полевые_проекты'] = pd.DataFrame()
-
-        # ✅ ДИАГНОСТИКА ПОСЛЕ MERGE
-        st.write(f"📊 После merge: {len(sources_for_merge)} источников")
-        if not st.session_state.cleaned_data['полевые_проекты'].empty:
-            st.write(f"  - полевые_проекты строк: {len(st.session_state.cleaned_data['полевые_проекты'])}")
-            if 'Источник' in st.session_state.cleaned_data['полевые_проекты'].columns:
-                st.write(f"  - Источники: {st.session_state.cleaned_data['полевые_проекты']['Источник'].unique()}")
-        st.write("---")
 
         # ============================================
         # ДОБАВЛЯЕМ ЗОД ДЛЯ ВСЕХ ПОЛЕВЫХ ПРОЕКТОВ
@@ -690,7 +670,7 @@ def process_all_data(settings_manager=None, force_recalc=False):
             st.session_state.cleaned_data['сервизория'],
             st.session_state.cleaned_data.get('сервизория_original')
         )
-        
+
         # st.write(f"🔍 КОНЕЦ ИЕРАРХИИ: {tm.time() - start_hier:.2f} сек (время выполнения)")
         # st.write(f"🔍 ВСЕГО СТРОК В ИЕРАРХИИ: {len(base_data)}")
         

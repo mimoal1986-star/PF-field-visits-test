@@ -977,6 +977,32 @@ with tab1:
                         # st.rerun()
                     else:
                         st.error("❌ Ошибка при расчете")
+                        # ========== ОТЛАДКА ==========
+                        if 'last_error' in st.session_state:
+                            st.markdown("---")
+                            st.subheader("🐛 Детали ошибки")
+                            
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.warning(f"**Шаг:** {st.session_state.last_error.get('step', 'неизвестен')}")
+                            with col2:
+                                st.error(f"**Ошибка:** {st.session_state.last_error.get('error', 'неизвестна')}")
+                            
+                            with st.expander("📋 Полный traceback (для разработчика)", expanded=True):
+                                st.code(st.session_state.last_error.get('traceback', 'Нет данных'), language="python")
+                            
+                            st.markdown("---")
+                            st.info("💡 Проверьте traceback выше, чтобы понять, где именно произошла ошибка.")
+                        else:
+                            st.info("ℹ️ Нет детальной информации об ошибке.")
+                        
+                        # Показываем, какие файлы загружены
+                        st.subheader("📁 Загруженные файлы")
+                        if st.session_state.uploaded_files:
+                            st.write(list(st.session_state.uploaded_files.keys()))
+                        else:
+                            st.write("Нет загруженных файлов")
+                        # ==============================
         else:
             if not projects_exists:
                 st.warning("📌 Загрузите файл 'Проекты Сервизория' (обязательно)")

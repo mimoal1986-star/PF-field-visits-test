@@ -122,6 +122,10 @@ def deduplicate_by_priority(df, priority_sources):
     return df
     
 def process_all_data(settings_manager=None, force_recalc=False):
+    # ОТЛАДКА
+    st.write(f"📁 cleaned_data в начале: {list(st.session_state.cleaned_data.keys())}")
+    # ОТЛАДКА
+    
     """Полная обработка данных и расчет план/факт"""
 
     # Проверяем, изменились ли загруженные файлы

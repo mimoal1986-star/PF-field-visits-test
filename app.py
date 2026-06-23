@@ -144,11 +144,19 @@ def process_all_data(settings_manager=None, force_recalc=False):
             st.session_state.debug_times = []
         st.session_state.debug_times = []
         
-        # Проверяем наличие основных файлов
-        required_files = ['портал', 'сервизория']
-        missing_files = [f for f in required_files if f not in st.session_state.uploaded_files]
+        # Проверяем наличие Сервизория (всегда обязательна)
+        if 'сервизория' not in st.session_state.uploaded_files:
+            return False
         
-        if missing_files:
+        # Проверяем наличие ХОТЯ БЫ одного источника визитов
+        has_visits_source = (
+            'портал' in st.session_state.uploaded_files or
+            'cxway' in st.session_state.uploaded_files or
+            'easymerch' in st.session_state.uploaded_files or
+            'optima' in st.session_state.uploaded_files
+        )
+        
+        if not has_visits_source:
             return False
         
         # Получаем данные
@@ -860,15 +868,19 @@ with tab1:
         st.session_state.show_messages = False
         
     st.title("📤 Загрузка исходных данных")
-    st.markdown("Загрузите необходимые Excel файлы")
+    st.markdown("""
+    **Обязательные файлы:**
+    - 📅 **Проекты Сервизория** — всегда обязателен
+    - 📊 **Хотя бы один источник визитов:** Checker, CXWAY, Easymerch или Optima
+    """)
     
     # Размещаем загрузчики БЕЗ формы (чтобы они обновляли session_state сразу)
     col1, col2, col3, col4, col5, col6 = st.columns(6)
 
     with col1:
-        st.subheader("1. 📋 Портал (Массив.xlsx)")
+        st.subheader("1. 📋 Checker")
         portal_file = st.file_uploader(
-            "Загрузите файл Массив.xlsx",
+            "Загрузите файл Checker.xlsx",
             type=['xlsx', 'xls'],
             key="portal_uploader",
             label_visibility="collapsed"
@@ -935,11 +947,18 @@ with tab1:
     # КНОПКА РАССЧИТАТЬ (вне формы)
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        # Проверяем наличие файлов (они уже в session_state)
-        portal_exists = st.session_state.get('portal_uploader') is not None
+        # Проверяем наличие файлов
         projects_exists = st.session_state.get('projects_uploader') is not None
         
-        if portal_exists and projects_exists:
+        # Проверяем наличие ХОТЯ БЫ одного из источников визитов
+        portal_exists = st.session_state.get('portal_uploader') is not None
+        cxway_exists = st.session_state.get('cxway_uploader') is not None
+        easymerch_exists = st.session_state.get('easymerch_uploader') is not None
+        optima_exists = st.session_state.get('optima_uploader') is not None
+        
+        has_visits_source = portal_exists or cxway_exists or easymerch_exists or optima_exists
+        
+        if projects_exists and has_visits_source:
             if st.button("🚀 РАССЧИТАТЬ ПЛАН/ФАКТ", type="primary", width='stretch'):
                 with st.spinner("📥 Загрузка файлов и обработка данных..."):
                     
@@ -952,13 +971,13 @@ with tab1:
                     optima_file_obj = st.session_state.get('optima_uploader')
                     prodata_file_obj = st.session_state.get('prodata_uploader')
                     
-                    portal_df = load_excel(portal_file_obj, "портал")
+                    portal_df = load_excel(portal_file_obj, "портал") if portal_file_obj else None
                     projects_df = load_excel(projects_file_obj, "проекты")
                     bdr_df = load_excel(bdr_file_obj, "bdr") if bdr_file_obj else None
-                    cxway_df = load_excel(cxway_file_obj, "cxway")
-                    easymerch_df = load_excel(easymerch_file_obj, "easymerch")
-                    optima_df = load_excel(optima_file_obj, "optima")
-                    prodata_df = load_excel(prodata_file_obj, "prodata")
+                    cxway_df = load_excel(cxway_file_obj, "cxway") if cxway_file_obj else None
+                    easymerch_df = load_excel(easymerch_file_obj, "easymerch") if easymerch_file_obj else None
+                    optima_df = load_excel(optima_file_obj, "optima") if optima_file_obj else None
+                    prodata_df = load_excel(prodata_file_obj, "prodata") if prodata_file_obj else None
                     
                     # 2. СОХРАНЯЕМ В SESSION_STATE.uploaded_files
                     if portal_df is not None:
@@ -997,7 +1016,10 @@ with tab1:
                     else:
                         st.error("❌ Ошибка при расчете")
         else:
-            st.info("📌 Загрузите оба основных файла для расчета")
+            if not projects_exists:
+                st.warning("📌 Загрузите файл 'Проекты Сервизория' (обязательно)")
+            elif not has_visits_source:
+                st.warning("📌 Загрузите хотя бы один источник визитов: Checker, CXWAY, Easymerch или Optima")
             st.button("🚀 РАССЧИТАТЬ ПЛАН/ФАКТ", type="primary", width='stretch', disabled=True)
             
 with tab2:

@@ -122,9 +122,6 @@ def deduplicate_by_priority(df, priority_sources):
     return df
     
 def process_all_data(settings_manager=None, force_recalc=False):
-    # ОТЛАДКА
-    st.write(f"📁 cleaned_data в начале: {list(st.session_state.cleaned_data.keys())}")
-    # ОТЛАДКА
     
     """Полная обработка данных и расчет план/факт"""
 
@@ -985,6 +982,16 @@ with tab1:
                     success = process_all_data(settings_manager, force_recalc=True)
                     
                     if success:
+                        # ОТЛАДКА
+                        st.write("📊 Данные в calculated_data:")
+                        if 'calculated_data' in st.session_state.visit_report:
+                            st.write(f"  - Количество строк: {len(st.session_state.visit_report['calculated_data'])}")
+                            st.write(f"  - Колонки: {list(st.session_state.visit_report['calculated_data'].columns)}")
+                            st.write(f"  - Источники: {st.session_state.visit_report['calculated_data']['Источник'].unique() if 'Источник' in st.session_state.visit_report['calculated_data'].columns else 'НЕТ'}")
+                        else:
+                            st.write("  ❌ calculated_data НЕТ!")
+                        # ОТЛАДКА
+         
                         # Сохраняем сообщения в память
                         st.session_state.calculation_messages = st.session_state.debug_times.copy()
                         st.session_state.show_messages = True 

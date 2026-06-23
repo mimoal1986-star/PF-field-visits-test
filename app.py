@@ -670,6 +670,12 @@ def process_all_data(settings_manager=None, force_recalc=False):
             st.session_state.cleaned_data['сервизория'],
             st.session_state.cleaned_data.get('сервизория_original')
         )
+        
+        # ОТЛАДКА
+        st.write(f"📊 base_data: {len(base_data)} строк")
+        if not base_data.empty:
+            st.write(f"  - Источники в base_data: {base_data['ПО'].unique() if 'ПО' in base_data.columns else 'НЕТ'}")
+        # ОТЛАДКА
 
         # st.write(f"🔍 КОНЕЦ ИЕРАРХИИ: {tm.time() - start_hier:.2f} сек (время выполнения)")
         # st.write(f"🔍 ВСЕГО СТРОК В ИЕРАРХИИ: {len(base_data)}")
@@ -981,17 +987,7 @@ with tab1:
                     
                     success = process_all_data(settings_manager, force_recalc=True)
                     
-                    if success:
-                        # ОТЛАДКА
-                        st.write("📊 Данные в calculated_data:")
-                        if 'calculated_data' in st.session_state.visit_report:
-                            st.write(f"  - Количество строк: {len(st.session_state.visit_report['calculated_data'])}")
-                            st.write(f"  - Колонки: {list(st.session_state.visit_report['calculated_data'].columns)}")
-                            st.write(f"  - Источники: {st.session_state.visit_report['calculated_data']['Источник'].unique() if 'Источник' in st.session_state.visit_report['calculated_data'].columns else 'НЕТ'}")
-                        else:
-                            st.write("  ❌ calculated_data НЕТ!")
-                        # ОТЛАДКА
-         
+                    if success:         
                         # Сохраняем сообщения в память
                         st.session_state.calculation_messages = st.session_state.debug_times.copy()
                         st.session_state.show_messages = True 

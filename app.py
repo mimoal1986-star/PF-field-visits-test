@@ -1026,40 +1026,44 @@ with tab2:
     else:
         tab_projects, tab_regions, tab_dsm, tab_dynamics = st.tabs(["📊 ПФ проекты", "🗺️ Регионы", "👥 DSM", "📈 Динамика"])
         
-        with tab_projects:
-            data = st.session_state.visit_report['calculated_data']
-            dataviz.create_planfact_tab(data, None)
+        # Проверяем, есть ли данные для отчета
+        if 'calculated_data' in st.session_state.visit_report and st.session_state.visit_report['calculated_data'] is not None:
+            calculated_data = st.session_state.visit_report['calculated_data']
             
-            prodata_df = st.session_state.cleaned_data.get('prodata_processed')
-            if prodata_df is not None and not prodata_df.empty:
-                dataviz.create_prodata_table(prodata_df)
-        
-        with tab_regions:
-            data = st.session_state.visit_report['calculated_data']
-            dataviz.create_region_tab(data, None)
-        
-        with tab_dsm:
-            data = st.session_state.visit_report['calculated_data']
-            dataviz.create_dsm_tab(data, None)
-        
-        with tab_dynamics:
-            visits_for_dynamics = st.session_state.cleaned_data.get('полевые_проекты')
+            with tab_projects:
+                dataviz.create_planfact_tab(calculated_data, None)
+                
+                prodata_df = st.session_state.cleaned_data.get('prodata_processed')
+                if prodata_df is not None and not prodata_df.empty:
+                    dataviz.create_prodata_table(prodata_df)
             
-            if visits_for_dynamics is not None and not visits_for_dynamics.empty:
-                # Исключаем ПроДата из динамики
-                if 'Источник' in visits_for_dynamics.columns:
-                    visits_for_dynamics = visits_for_dynamics[visits_for_dynamics['Источник'] != 'Мониторинги']
+            with tab_regions:
+                dataviz.create_region_tab(calculated_data, None)
+            
+            with tab_dsm:
+                dataviz.create_dsm_tab(calculated_data, None)
+            
+            with tab_dynamics:
+                visits_for_dynamics = st.session_state.cleaned_data.get('полевые_проекты')
                 
-                if 'RS' not in visits_for_dynamics.columns and 'ЭМ' in visits_for_dynamics.columns:
-                    visits_for_dynamics = visits_for_dynamics.rename(columns={'ЭМ': 'RS'})
-                
-                dataviz.create_dynamics_tab(
-                    st.session_state.visit_report['calculated_data'],
-                    visits_for_dynamics,
-                    st.session_state.plan_calc_params
-                )
-            else:
-                st.warning("⚠️ Нет данных для динамики")
+                if visits_for_dynamics is not None and not visits_for_dynamics.empty:
+                    # Исключаем ПроДата из динамики
+                    if 'Источник' in visits_for_dynamics.columns:
+                        visits_for_dynamics = visits_for_dynamics[visits_for_dynamics['Источник'] != 'Мониторинги']
+                    
+                    if 'RS' not in visits_for_dynamics.columns and 'ЭМ' in visits_for_dynamics.columns:
+                        visits_for_dynamics = visits_for_dynamics.rename(columns={'ЭМ': 'RS'})
+                    
+                    dataviz.create_dynamics_tab(
+                        calculated_data,
+                        visits_for_dynamics,
+                        st.session_state.plan_calc_params
+                    )
+                else:
+                    st.warning("⚠️ Нет данных для динамики")
+        else:
+            # Если данных нет — показываем сообщение
+            st.info("📊 Нет данных для отображения. Выполните расчет на вкладке 'Загрузка данных'.")
 
 # # ============================================
 # # ВЫГРУЗКА ПОЛЕВЫХ ПРОЕКТОВ

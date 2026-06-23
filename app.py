@@ -974,7 +974,7 @@ with tab1:
                         settings_manager = get_settings_manager()
                         st.session_state.settings_manager = settings_manager
                     
-                    success = process_all_data(settings_manager)
+                    success = process_all_data(settings_manager, force_recalc=True)
                     
                     if success:
                         # Сохраняем сообщения в память

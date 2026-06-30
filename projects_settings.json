@@ -136,15 +136,6 @@
       "added_by": "unknown_user"
     },
     {
-      "project_name": "Лукойл",
-      "wave_name": "Май 2026",
-      "project_code": "RU00.177.05.03SVZ25",
-      "portal": "Оптима",
-      "fio_om": "",
-      "added_at": "2026-05-13T09:31:44.282548",
-      "added_by": "unknown_user"
-    },
-    {
       "project_name": "Лукойл франчайзинг ФО",
       "wave_name": "Май 2026",
       "project_code": "RU00.390.02.01SVZ26",
@@ -1927,41 +1918,374 @@
       "added_by": "unknown_user"
     },
     {
-      "project_name": "Гвозди",
-      "wave_name": "2026.06_Гвозди",
-      "project_code": "RU00.124.01.02SPK24",
+      "project_name": "Sminex",
+      "wave_name": "Sminex_05.2026",
+      "project_code": "RU00.398.06.01SVZ26",
       "portal": "CXWAY",
       "fio_om": "",
-      "added_at": "2026-06-09T11:58:18.766647",
+      "added_at": "2026-05-28T10:26:22.958552",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "Сертификация",
+      "project_code": "RU00.265.01.05SVZ25",
+      "portal": "Чеккер",
+      "fio_om": "",
+      "added_at": "2026-05-28T10:31:50.860965",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Beeline_Фотомониторинг",
+      "wave_name": "май",
+      "project_code": "RU00.109.02.01SVZ24",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-06-04T08:54:47.514206",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Лукойл",
+      "wave_name": "Июнь 2026",
+      "project_code": "RU00.177.05.04SVZ25",
+      "portal": "Оптима",
+      "fio_om": "",
+      "added_at": "2026-06-05T10:23:00.158008",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.06_Береговой",
+      "project_code": "RU00.343.06.02SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.031817",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.05_Береговой",
+      "project_code": "RU00.343.06.02SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.032156",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.05_ЖК Баланс",
+      "project_code": "RU00.342.06.01SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.032382",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2026.06 - Хирург",
+      "project_code": "RU00.320.01.02SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.032589",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Roseville",
+      "wave_name": "06.2026_Roseville",
+      "project_code": "RU00.366.06.01SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.032781",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Абсолют Банк",
+      "wave_name": "2026.05_Визиты Абсолют банк",
+      "project_code": "RU00.080.01.01SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.032961",
       "added_by": "unknown_user"
     },
     {
       "project_name": "Гротекс",
-      "wave_name": "_SINGLE",
+      "wave_name": "Гротекс_Реко_06.2026 (04 волна)_УСТМ",
       "project_code": "Мультикод_.404",
       "portal": "CXWAY",
       "fio_om": "",
-      "added_at": "2026-06-09T11:59:24.965540",
+      "added_at": "2026-06-11T06:29:49.033139",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Гротекс",
+      "wave_name": "_Гротекс_Реко_06.2026 (04 волна)_УСТМ",
+      "project_code": "Мультикод_.404",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.033403",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Гротекс",
+      "wave_name": "Гротекс_МП_06.2026 (02 волна)_Сообщение",
+      "project_code": "Мультикод_.404",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.033627",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Гротекс",
+      "wave_name": "_Гротекс_МП_06.2026 (02 волна)_Сообщение",
+      "project_code": "Мультикод_.404",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.033820",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Ренессанс Кредит (Россия)",
+      "wave_name": "Ренессанс Кредит (Россия)_Кредит наличными_05.2026",
+      "project_code": "RU00.238.01.02SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.034018",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Ростикс",
+      "wave_name": "05.2026_Ростикс",
+      "project_code": "RU00.416.02.02SVZ26",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.034199",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Технополис",
+      "wave_name": "Технополис_05.2026",
+      "project_code": "мультикод_.283",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.034407",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Эконика",
+      "wave_name": "Эконика_2026.06 (ВИП)",
+      "project_code": "Мультикод_.306",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:29:49.034592",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ОТП Банк Розница",
+      "wave_name": "2026.05_ОТП Банк Розница",
+      "project_code": "RU00.224.01.13SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-11T06:31:59.390035",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Эконика",
+      "wave_name": "Эконика_2026.06 (74 волна)",
+      "project_code": "Мультикод_.306",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-16T09:26:19.361219",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ОТП Банк ЦКД",
+      "wave_name": "Тест_ОТП Банк ЦКД",
+      "project_code": "RU00.224.01.14SVZ26",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-17T09:00:11.211075",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.04 - Хирург",
+      "project_code": "",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-17T09:00:11.211268",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.03 - Хирург",
+      "project_code": "RU00.320.06.02SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-17T09:00:11.211386",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.04 - Хирург",
+      "project_code": "RU00.320.06.02SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-17T09:00:11.211487",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.05 - Хирург",
+      "project_code": "RU00.320.06.02SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-17T09:00:11.211593",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.05 - Косметолог",
+      "project_code": "RU00.320.01.01SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-17T09:00:11.211687",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Эконика",
+      "wave_name": "Эконика_2026.07_ВИП",
+      "project_code": "Мультикод_.306",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-19T09:38:40.022641",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.06_ЖК Баланс",
+      "project_code": "RU00.342.06.01SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-24T07:39:50.933847",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "ОТП Банк Премиум",
+      "wave_name": "2026.06_ОТП Банк Премиум Звонки",
+      "project_code": "RU00.224.01.06SVZ24",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-26T08:01:20.878081",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "Panacea",
+      "wave_name": "2026.06_Panacea",
+      "project_code": "RU00.384.01.01SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-26T08:01:20.878413",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.07_Хирург",
+      "project_code": "RU00.320.06.02SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-29T07:29:02.553293",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.08_Хирург",
+      "project_code": "RU00.320.01.02SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-29T07:29:02.553511",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.09_Хирург",
+      "project_code": "RU00.320.01.01SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-29T07:29:02.553630",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.10_Хирург",
+      "project_code": "RU00.320.06.02SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-29T07:29:02.553734",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.10_Хирург",
+      "project_code": "RU00.320.01.02SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-29T07:29:02.553828",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.08_Косметолог",
+      "project_code": "RU00.320.01.01SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-29T07:29:02.553919",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.10_Косметолог",
+      "project_code": "RU00.320.01.01SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-29T07:29:02.554005",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.11_Косметолог",
+      "project_code": "RU00.320.01.01SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-29T07:29:02.554091",
+      "added_by": "unknown_user"
+    },
+    {
+      "project_name": "DEGA",
+      "wave_name": "2025.12_Процедура INC",
+      "project_code": "RU00.320.01.05SVZ25",
+      "portal": "CXWAY",
+      "fio_om": "",
+      "added_at": "2026-06-29T07:29:02.554205",
       "added_by": "unknown_user"
     }
   ],
   "included_projects": [
     {
-      "project_name": "Гвозди",
-      "wave_name": "2026.06_Гвозди",
-      "project_code": "RU00.124.01.02SPK24",
+      "project_name": "Гротекс",
+      "wave_name": "Гротекс_Реко_06.2026 (04 волна)_УСТМ",
+      "project_code": "Мультикод_.404",
       "portal": "CXWAY",
       "fio_om": "",
-      "added_at": "2026-06-09T11:58:48.695689",
+      "added_at": "2026-06-11T06:31:16.197538",
       "added_by": "unknown_user"
     },
     {
       "project_name": "Гротекс",
-      "wave_name": "_SINGLE",
+      "wave_name": "Гротекс_МП_06.2026 (02 волна)_Сообщение",
       "project_code": "Мультикод_.404",
       "portal": "CXWAY",
       "fio_om": "",
-      "added_at": "2026-06-09T11:59:43.341252",
+      "added_at": "2026-06-11T06:31:16.197893",
       "added_by": "unknown_user"
     }
   ],
@@ -2324,14 +2648,6 @@
       "wave_name": "4_Волна_Звонки",
       "project_code": "RU00.265.03.01SVZ25",
       "timestamp": "2026-05-12T07:32:18.011120",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
-      "project_name": "ТАЙНЫЙ ПАССАЖИР",
-      "wave_name": "4_Волна_Визит в офис продаж",
-      "project_code": "RU00.265.15.03SVZ25",
-      "timestamp": "2026-05-12T07:32:18.011265",
       "user": "unknown_user"
     },
     {
@@ -4112,37 +4428,357 @@
     },
     {
       "action": "add_to_excluded",
-      "project_name": "Гвозди",
-      "wave_name": "2026.06_Гвозди",
-      "project_code": "RU00.124.01.02SPK24",
-      "timestamp": "2026-06-09T11:58:18.766708",
+      "project_name": "Sminex",
+      "wave_name": "Sminex_05.2026",
+      "project_code": "RU00.398.06.01SVZ26",
+      "timestamp": "2026-05-28T10:26:22.958625",
       "user": "unknown_user"
     },
     {
-      "action": "add_to_included",
-      "project_name": "Гвозди",
-      "wave_name": "2026.06_Гвозди",
-      "project_code": "RU00.124.01.02SPK24",
-      "timestamp": "2026-06-09T11:58:48.695712",
+      "action": "add_to_excluded",
+      "project_name": "ТАЙНЫЙ ПАССАЖИР",
+      "wave_name": "Сертификация",
+      "project_code": "RU00.265.01.05SVZ25",
+      "timestamp": "2026-05-28T10:31:50.861059",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Beeline_Фотомониторинг",
+      "wave_name": "май",
+      "project_code": "RU00.109.02.01SVZ24",
+      "timestamp": "2026-06-04T08:54:47.514282",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Beeline_Фотомониторинг",
+      "wave_name": "июнь",
+      "project_code": "",
+      "timestamp": "2026-06-04T08:54:47.514482",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Beeline_Фотомониторинг",
+      "wave_name": "июнь",
+      "project_code": "RU00.109.02.01SVZ24",
+      "timestamp": "2026-06-04T08:54:47.514644",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл",
+      "wave_name": "Июнь 2026",
+      "project_code": "RU00.177.05.03SVZ25",
+      "timestamp": "2026-06-05T10:23:00.157838",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Лукойл",
+      "wave_name": "Июнь 2026",
+      "project_code": "RU00.177.05.04SVZ25",
+      "timestamp": "2026-06-05T10:23:00.158052",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.06_Береговой",
+      "project_code": "RU00.343.06.02SVZ25",
+      "timestamp": "2026-06-11T06:29:49.031983",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.05_Береговой",
+      "project_code": "RU00.343.06.02SVZ25",
+      "timestamp": "2026-06-11T06:29:49.032206",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.05_ЖК Баланс",
+      "project_code": "RU00.342.06.01SVZ25",
+      "timestamp": "2026-06-11T06:29:49.032444",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2026.06 - Хирург",
+      "project_code": "RU00.320.01.02SVZ25",
+      "timestamp": "2026-06-11T06:29:49.032636",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Roseville",
+      "wave_name": "06.2026_Roseville",
+      "project_code": "RU00.366.06.01SVZ25",
+      "timestamp": "2026-06-11T06:29:49.032831",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Абсолют Банк",
+      "wave_name": "2026.05_Визиты Абсолют банк",
+      "project_code": "RU00.080.01.01SVZ24",
+      "timestamp": "2026-06-11T06:29:49.033007",
       "user": "unknown_user"
     },
     {
       "action": "add_to_excluded",
       "project_name": "Гротекс",
-      "wave_name": "_SINGLE",
+      "wave_name": "Гротекс_Реко_06.2026 (04 волна)_УСТМ",
       "project_code": "Мультикод_.404",
-      "timestamp": "2026-06-09T11:59:24.965637",
+      "timestamp": "2026-06-11T06:29:49.033186",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Гротекс",
+      "wave_name": "_Гротекс_Реко_06.2026 (04 волна)_УСТМ",
+      "project_code": "Мультикод_.404",
+      "timestamp": "2026-06-11T06:29:49.033477",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Гротекс",
+      "wave_name": "Гротекс_МП_06.2026 (02 волна)_Сообщение",
+      "project_code": "Мультикод_.404",
+      "timestamp": "2026-06-11T06:29:49.033676",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Гротекс",
+      "wave_name": "_Гротекс_МП_06.2026 (02 волна)_Сообщение",
+      "project_code": "Мультикод_.404",
+      "timestamp": "2026-06-11T06:29:49.033869",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Ренессанс Кредит (Россия)",
+      "wave_name": "Ренессанс Кредит (Россия)_Кредит наличными_05.2026",
+      "project_code": "RU00.238.01.02SVZ24",
+      "timestamp": "2026-06-11T06:29:49.034066",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Ростикс",
+      "wave_name": "05.2026_Ростикс",
+      "project_code": "RU00.416.02.02SVZ26",
+      "timestamp": "2026-06-11T06:29:49.034245",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Технополис",
+      "wave_name": "Технополис_05.2026",
+      "project_code": "мультикод_.283",
+      "timestamp": "2026-06-11T06:29:49.034465",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Эконика",
+      "wave_name": "Эконика_2026.06 (ВИП)",
+      "project_code": "Мультикод_.306",
+      "timestamp": "2026-06-11T06:29:49.034640",
       "user": "unknown_user"
     },
     {
       "action": "add_to_included",
       "project_name": "Гротекс",
-      "wave_name": "_SINGLE",
+      "wave_name": "Гротекс_Реко_06.2026 (04 волна)_УСТМ",
       "project_code": "Мультикод_.404",
-      "timestamp": "2026-06-09T11:59:43.341272",
+      "timestamp": "2026-06-11T06:31:16.197574",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_included",
+      "project_name": "Гротекс",
+      "wave_name": "Гротекс_МП_06.2026 (02 волна)_Сообщение",
+      "project_code": "Мультикод_.404",
+      "timestamp": "2026-06-11T06:31:16.197907",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ОТП Банк Розница",
+      "wave_name": "2026.05_ОТП Банк Розница",
+      "project_code": "RU00.224.01.13SVZ25",
+      "timestamp": "2026-06-11T06:31:59.390235",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Эконика",
+      "wave_name": "Эконика_2026.06 (74 волна)",
+      "project_code": "Мультикод_.306",
+      "timestamp": "2026-06-16T09:26:19.361299",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ОТП Банк ЦКД",
+      "wave_name": "Тест_ОТП Банк ЦКД",
+      "project_code": "RU00.224.01.14SVZ26",
+      "timestamp": "2026-06-17T09:00:11.211150",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.04 - Хирург",
+      "project_code": "",
+      "timestamp": "2026-06-17T09:00:11.211305",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.03 - Хирург",
+      "project_code": "RU00.320.06.02SVZ25",
+      "timestamp": "2026-06-17T09:00:11.211417",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.04 - Хирург",
+      "project_code": "RU00.320.06.02SVZ25",
+      "timestamp": "2026-06-17T09:00:11.211515",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.05 - Хирург",
+      "project_code": "RU00.320.06.02SVZ25",
+      "timestamp": "2026-06-17T09:00:11.211621",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.05 - Косметолог",
+      "project_code": "RU00.320.01.01SVZ25",
+      "timestamp": "2026-06-17T09:00:11.211714",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Эконика",
+      "wave_name": "Эконика_2026.07_ВИП",
+      "project_code": "Мультикод_.306",
+      "timestamp": "2026-06-19T09:38:40.022722",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ГЛАВСТРОЙ",
+      "wave_name": "2026.06_ЖК Баланс",
+      "project_code": "RU00.342.06.01SVZ25",
+      "timestamp": "2026-06-24T07:39:50.933950",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "ОТП Банк Премиум",
+      "wave_name": "2026.06_ОТП Банк Премиум Звонки",
+      "project_code": "RU00.224.01.06SVZ24",
+      "timestamp": "2026-06-26T08:01:20.878215",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "Panacea",
+      "wave_name": "2026.06_Panacea",
+      "project_code": "RU00.384.01.01SVZ25",
+      "timestamp": "2026-06-26T08:01:20.878459",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.07_Хирург",
+      "project_code": "RU00.320.06.02SVZ25",
+      "timestamp": "2026-06-29T07:29:02.553398",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.08_Хирург",
+      "project_code": "RU00.320.01.02SVZ25",
+      "timestamp": "2026-06-29T07:29:02.553546",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.09_Хирург",
+      "project_code": "RU00.320.01.01SVZ25",
+      "timestamp": "2026-06-29T07:29:02.553660",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.10_Хирург",
+      "project_code": "RU00.320.06.02SVZ25",
+      "timestamp": "2026-06-29T07:29:02.553763",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.10_Хирург",
+      "project_code": "RU00.320.01.02SVZ25",
+      "timestamp": "2026-06-29T07:29:02.553857",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.08_Косметолог",
+      "project_code": "RU00.320.01.01SVZ25",
+      "timestamp": "2026-06-29T07:29:02.553947",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.10_Косметолог",
+      "project_code": "RU00.320.01.01SVZ25",
+      "timestamp": "2026-06-29T07:29:02.554033",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.11_Косметолог",
+      "project_code": "RU00.320.01.01SVZ25",
+      "timestamp": "2026-06-29T07:29:02.554119",
+      "user": "unknown_user"
+    },
+    {
+      "action": "add_to_excluded",
+      "project_name": "DEGA",
+      "wave_name": "2025.12_Процедура INC",
+      "project_code": "RU00.320.01.05SVZ25",
+      "timestamp": "2026-06-29T07:29:02.554250",
       "user": "unknown_user"
     }
   ],
-  "last_updated": "2026-06-09T11:59:43.341278",
+  "last_updated": "2026-06-29T07:29:02.554254",
   "version": "1.0"
 }

@@ -698,6 +698,21 @@ def process_all_data(settings_manager=None, force_recalc=False):
                     region_coeff_manager = get_region_coefficient_manager()
                     region_coeffs = region_coeff_manager.load_coefficients()
                     plan_result = visit_calculator.add_plan_payment(plan_result, bdr_df, region_coeffs)
+
+            # ✅ ВЫГРУЗКА: plan_result
+            if plan_result is not None and not plan_result.empty:
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    plan_result.to_excel(writer, sheet_name='plan_result', index=False)
+                st.download_button(
+                    label="📥 Скачать plan_result",
+                    data=output.getvalue(),
+                    file_name=f"plan_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key="download_plan_result"
+                )
+            else:
+                st.warning("⚠️ plan_result ПУСТОЙ!")
             # ===================================
 
             st.session_state.debug_times.append(f"[DEBUG] План: {time.time() - start:.2f} сек")
@@ -708,6 +723,22 @@ def process_all_data(settings_manager=None, force_recalc=False):
                     plan_result, source_df, params, status_filter='completed'
                 )
                 
+                # ✅ ВЫГРУЗКА: fact_result
+                if fact_result is not None and not fact_result.empty:
+                    output = BytesIO()
+                    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                        fact_result.to_excel(writer, sheet_name='fact_result', index=False)
+                    st.download_button(
+                        label="📥 Скачать fact_result",
+                        data=output.getvalue(),
+                        file_name=f"fact_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key="download_fact_result"
+                    )
+                else:
+                    st.warning("⚠️ fact_result ПУСТОЙ!")
+
+
                 # Факт по порученным
                 assigned_result = visit_calculator.calculate_hierarchical_fact_on_date(
                     plan_result, source_df, params, status_filter='assigned'

@@ -159,17 +159,51 @@ class VisitCalculator:
                 'Полевой': visits_df['Полевой']
             })
             # st.write(f"[DETAIL] Создание DataFrame: {time.time() - start:.2f} сек")
+
+            # ============================================
+            # ✅ ДИАГНОСТИКА ПОСЛЕ СОЗДАНИЯ hierarchy
+            # ============================================
+            st.write(f"📊 extract_hierarchical_data (после создания hierarchy):")
+            st.write(f"  hierarchy строк: {len(hierarchy)}")
+            if not hierarchy.empty:
+                if 'ПО' in hierarchy.columns:
+                    st.write(f"  ПО: {hierarchy['ПО'].unique()}")
+                if 'Полевой' in hierarchy.columns:
+                    st.write(f"  Полевой == 1: {(hierarchy['Полевой'] == 1).sum()}")
+                    st.write(f"  Полевой == 0: {(hierarchy['Полевой'] == 0).sum()}")
+                    st.write(f"  Полевой isna: {hierarchy['Полевой'].isna().sum()}")
+            st.write("---")
+            # ============================================
             
             # ТОЛЬКО ПОЛЕВЫЕ ПРОЕКТЫ
             start = time.time()
             hierarchy = hierarchy[hierarchy['Полевой'] == 1]
             hierarchy = hierarchy.drop('Полевой', axis=1)
             # st.write(f"[DETAIL] Фильтр полевых: {time.time() - start:.2f} сек")
+
+            # ============================================
+            # ✅ ДИАГНОСТИКА ПОСЛЕ ФИЛЬТРА
+            # ============================================
+            st.write(f"📊 extract_hierarchical_data (после фильтра Полевой == 1):")
+            st.write(f"  hierarchy строк: {len(hierarchy)}")
+            if not hierarchy.empty and 'ПО' in hierarchy.columns:
+                st.write(f"  ПО: {hierarchy['ПО'].unique()}")
+            st.write("---")
+            # ============================================
             
             # Удаляем дубликаты
             start = time.time()
             hierarchy = hierarchy.drop_duplicates().reset_index(drop=True)
             # st.write(f"[DETAIL] Удаление дубликатов: {time.time() - start:.2f} сек")
+            # ============================================
+            # ✅ ДИАГНОСТИКА ПОСЛЕ drop_duplicates
+            # ============================================
+            st.write(f"📊 extract_hierarchical_data (после drop_duplicates):")
+            st.write(f"  hierarchy строк: {len(hierarchy)}")
+            if not hierarchy.empty and 'ПО' in hierarchy.columns:
+                st.write(f"  ПО: {hierarchy['ПО'].unique()}")
+            st.write("---")
+            # ============================================
             
             # Даты - по умолчанию пустые
             hierarchy['Дата старта'] = pd.NaT

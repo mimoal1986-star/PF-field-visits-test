@@ -665,6 +665,16 @@ def process_all_data(settings_manager=None, force_recalc=False):
         start_hier = tm.time()
         # st.write(f"🔍 НАЧАЛО ИЕРАРХИИ: {tm.time() - start_total:.2f} сек от старта")
         
+        # ✅ ДИАГНОСТИКА ПЕРЕД ИЕРАРХИЕЙ
+        st.write(f"📊 ПОЛЕВЫЕ_ПРОЕКТЫ ПЕРЕД ИЕРАРХИЕЙ:")
+        st.write(f"  строк: {len(st.session_state.cleaned_data['полевые_проекты'])}")
+        if not st.session_state.cleaned_data['полевые_проекты'].empty:
+            if 'Источник' in st.session_state.cleaned_data['полевые_проекты'].columns:
+                st.write(f"  Источники: {st.session_state.cleaned_data['полевые_проекты']['Источник'].unique()}")
+            if 'Полевой' in st.session_state.cleaned_data['полевые_проекты'].columns:
+                st.write(f"  Полевой == 1: {(st.session_state.cleaned_data['полевые_проекты']['Полевой'] == 1).sum()}")
+        st.write("---")
+        
         base_data = visit_calculator.extract_hierarchical_data(
             st.session_state.cleaned_data['полевые_проекты'],
             st.session_state.cleaned_data['сервизория'],

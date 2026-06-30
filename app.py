@@ -1065,6 +1065,33 @@ with tab1:
             
 with tab2:
     st.title("📈 Отчеты по полевым визитам")
+    # ========== ДИАГНОСТИКА ==========
+    st.write("### 🔍 Диагностика перед отчетами")
+    
+    # 1. Проверяем data_calculated
+    st.write(f"1. data_calculated: {st.session_state.get('data_calculated', False)}")
+    
+    # 2. Проверяем visit_report
+    st.write(f"2. visit_report keys: {list(st.session_state.visit_report.keys()) if 'visit_report' in st.session_state else 'НЕТ visit_report'}")
+    
+    # 3. Проверяем calculated_data
+    if 'calculated_data' in st.session_state.visit_report:
+        calculated_data = st.session_state.visit_report['calculated_data']
+        st.write(f"3. calculated_data существует: {calculated_data is not None}")
+        if calculated_data is not None:
+            st.write(f"   - Тип: {type(calculated_data)}")
+            st.write(f"   - Пустой: {calculated_data.empty if hasattr(calculated_data, 'empty') else 'N/A'}")
+            st.write(f"   - Размер: {len(calculated_data) if hasattr(calculated_data, '__len__') else 'N/A'}")
+            if hasattr(calculated_data, 'columns'):
+                st.write(f"   - Колонки: {list(calculated_data.columns)}")
+        else:
+            st.write("   ❌ calculated_data = None")
+    else:
+        st.write("❌ calculated_data НЕТ в visit_report")
+    
+    st.markdown("---")
+    # ========== КОНЕЦ ДИАГНОСТИКИ ==========
+    
 
     if not st.session_state.get('data_calculated', False):
         st.info("📌 Сначала выполните расчет на вкладке 'Загрузка данных'")

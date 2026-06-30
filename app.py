@@ -743,8 +743,9 @@ def process_all_data(settings_manager=None, force_recalc=False):
                 )
             else:
                 st.warning("⚠️ plan_result ПУСТОЙ!")
-            ===================================
+            # ===================================
 
+            
             st.session_state.debug_times.append(f"[DEBUG] План: {time.time() - start:.2f} сек")
             start = time.time()
             

@@ -700,12 +700,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
         if base_data is not None:
             st.write(f"   - empty: {base_data.empty}")
             st.write(f"   - len: {len(base_data)}")
-        st.write(f"3. source_df (полевые_проекты):")
-        if source_df is not None:
-            st.write(f"   - empty: {source_df.empty}")
-            st.write(f"   - len: {len(source_df)}")
-            if 'Источник' in source_df.columns:
-                st.write(f"   - Источники: {source_df['Источник'].unique()}")
         st.markdown("---")
         # ==============================================
         

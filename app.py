@@ -689,7 +689,27 @@ def process_all_data(settings_manager=None, force_recalc=False):
 
         st.session_state.debug_times.append(f"[DEBUG] Иерархия: {time.time() - start:.2f} сек")
         start = time.time()
+
+        # ========== ДИАГНОСТИКА ПЕРЕД РАСЧЕТОМ ==========
+        st.write("### 🔍 ДИАГНОСТИКА В process_all_data")
+        st.write(f"1. plan_calc_params: {st.session_state.plan_calc_params is not None}")
+        if st.session_state.plan_calc_params:
+            st.write(f"   - start_date: {st.session_state.plan_calc_params.get('start_date')}")
+            st.write(f"   - end_date: {st.session_state.plan_calc_params.get('end_date')}")
+        st.write(f"2. base_data: {base_data is not None}")
+        if base_data is not None:
+            st.write(f"   - empty: {base_data.empty}")
+            st.write(f"   - len: {len(base_data)}")
+        st.write(f"3. source_df (полевые_проекты):")
+        if source_df is not None:
+            st.write(f"   - empty: {source_df.empty}")
+            st.write(f"   - len: {len(source_df)}")
+            if 'Источник' in source_df.columns:
+                st.write(f"   - Источники: {source_df['Источник'].unique()}")
+        st.markdown("---")
+        # ==============================================
         
+
         # Расчет план/факт
         if st.session_state.plan_calc_params and not base_data.empty:
             params = st.session_state.plan_calc_params
@@ -709,21 +729,21 @@ def process_all_data(settings_manager=None, force_recalc=False):
                     region_coeffs = region_coeff_manager.load_coefficients()
                     plan_result = visit_calculator.add_plan_payment(plan_result, bdr_df, region_coeffs)
 
-            # # ✅ ВЫГРУЗКА: plan_result
-            # if plan_result is not None and not plan_result.empty:
-            #     output = BytesIO()
-            #     with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            #         plan_result.to_excel(writer, sheet_name='plan_result', index=False)
-            #     st.download_button(
-            #         label="📥 Скачать plan_result",
-            #         data=output.getvalue(),
-            #         file_name=f"plan_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
-            #         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            #         key="download_plan_result"
-            #     )
-            # else:
-            #     st.warning("⚠️ plan_result ПУСТОЙ!")
-            # ===================================
+            # ✅ ВЫГРУЗКА: plan_result
+            if plan_result is not None and not plan_result.empty:
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    plan_result.to_excel(writer, sheet_name='plan_result', index=False)
+                st.download_button(
+                    label="📥 Скачать plan_result",
+                    data=output.getvalue(),
+                    file_name=f"plan_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key="download_plan_result"
+                )
+            else:
+                st.warning("⚠️ plan_result ПУСТОЙ!")
+            ===================================
 
             st.session_state.debug_times.append(f"[DEBUG] План: {time.time() - start:.2f} сек")
             start = time.time()
@@ -733,20 +753,20 @@ def process_all_data(settings_manager=None, force_recalc=False):
                     plan_result, source_df, params, status_filter='completed'
                 )
                 
-                # # ✅ ВЫГРУЗКА: fact_result
-                # if fact_result is not None and not fact_result.empty:
-                #     output = BytesIO()
-                #     with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                #         fact_result.to_excel(writer, sheet_name='fact_result', index=False)
-                #     st.download_button(
-                #         label="📥 Скачать fact_result",
-                #         data=output.getvalue(),
-                #         file_name=f"fact_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
-                #         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                #         key="download_fact_result"
-                #     )
-                # else:
-                #     st.warning("⚠️ fact_result ПУСТОЙ!")
+                # ✅ ВЫГРУЗКА: fact_result
+                if fact_result is not None and not fact_result.empty:
+                    output = BytesIO()
+                    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                        fact_result.to_excel(writer, sheet_name='fact_result', index=False)
+                    st.download_button(
+                        label="📥 Скачать fact_result",
+                        data=output.getvalue(),
+                        file_name=f"fact_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key="download_fact_result"
+                    )
+                else:
+                    st.warning("⚠️ fact_result ПУСТОЙ!")
 
 
                 # Факт по порученным

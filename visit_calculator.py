@@ -410,6 +410,19 @@ class VisitCalculator:
     def calculate_hierarchical_plan_on_date(self, hierarchy_df, visits_df, calc_params, google_df=None, optima_df=None):
         
         coefficients = calc_params.get('coefficients', [0.25, 0.25, 0.25, 0.25])
+
+        # ============================================
+        # ✅ ДИАГНОСТИКА
+        # ============================================
+        st.write(f"📊 calculate_hierarchical_plan_on_date:")
+        st.write(f"  hierarchy_df строк: {len(hierarchy_df)}")
+        st.write(f"  visits_df строк: {len(visits_df)}")
+        if not visits_df.empty and 'Источник' in visits_df.columns:
+            st.write(f"  Источники в visits_df: {visits_df['Источник'].unique()}")
+        if not hierarchy_df.empty and 'ПО' in hierarchy_df.columns:
+            st.write(f"  ПО в hierarchy_df: {hierarchy_df['ПО'].unique()}")
+        st.write("---")
+        # ============================================
         
         try:
             if hierarchy_df.empty or visits_df.empty:
@@ -947,6 +960,7 @@ class VisitCalculator:
                 # Обновляем results
                 results = results_df.to_dict('records')
             if not results:
+                st.warning("⚠️ calculate_hierarchical_plan_on_date: НЕТ РЕЗУЛЬТАТОВ!")
                 return pd.DataFrame()
             return pd.DataFrame(results)
         

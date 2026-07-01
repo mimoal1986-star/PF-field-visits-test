@@ -470,21 +470,21 @@ class VisitCalculator:
             # 1. ПРЕДВАРИТЕЛЬНЫЙ РАСЧЕТ ВСЕХ НУЖНЫХ ДАННЫХ
             # ============================================
             
-            # КВОТЫ МУЛТОН
-            multon_quotas = {}
-            if google_df is not None and not google_df.empty:
-                project_col = 'Проекты в  https://ru.checker-soft.com'
-                code_col = 'Код проекта RU00.000.00.01SVZ24'
-                kvota_col = 'Квота'
-                if all(col in google_df.columns for col in [project_col, code_col, kvota_col]):
-                    multon_mask = google_df[project_col].astype(str).str.strip() == 'Мултон'
-                    for _, row in google_df[multon_mask].iterrows():
-                        code = str(row.get(code_col, '')).strip()
-                        if code and code not in ['', 'nan', 'None', 'null']:
-                            try:
-                                multon_quotas[code] = float(row.get(kvota_col, 0))
-                            except:
-                                pass
+            # # КВОТЫ МУЛТОН
+            # multon_quotas = {}
+            # if google_df is not None and not google_df.empty:
+            #     project_col = 'Проекты в  https://ru.checker-soft.com'
+            #     code_col = 'Код проекта RU00.000.00.01SVZ24'
+            #     kvota_col = 'Квота'
+            #     if all(col in google_df.columns for col in [project_col, code_col, kvota_col]):
+            #         multon_mask = google_df[project_col].astype(str).str.strip() == 'Мултон'
+            #         for _, row in google_df[multon_mask].iterrows():
+            #             code = str(row.get(code_col, '')).strip()
+            #             if code and code not in ['', 'nan', 'None', 'null']:
+            #                 try:
+            #                     multon_quotas[code] = float(row.get(kvota_col, 0))
+            #                 except:
+            #                     pass
             
             
             # КВОТЫ ПРОДАТА

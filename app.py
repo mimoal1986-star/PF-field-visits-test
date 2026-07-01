@@ -680,6 +680,20 @@ def process_all_data(settings_manager=None, force_recalc=False):
             st.session_state.cleaned_data['сервизория'],
             st.session_state.cleaned_data.get('сервизория_original')
         )
+        
+        # ========== ВЫГРУЗКА base_data ==========
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            base_data.to_excel(writer, sheet_name='base_data', index=False)
+        
+        st.download_button(
+            label="📥 Скачать base_data (иерархия)",
+            data=output.getvalue(),
+            file_name=f"base_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="download_base_data"
+        )
+        # ===========================================
 
         # st.write(f"🔍 КОНЕЦ ИЕРАРХИИ: {tm.time() - start_hier:.2f} сек (время выполнения)")
         # st.write(f"🔍 ВСЕГО СТРОК В ИЕРАРХИИ: {len(base_data)}")

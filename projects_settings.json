@@ -4612,14 +4612,6 @@
     },
     {
       "action": "add_to_excluded",
-      "project_name": "Эконика",
-      "wave_name": "Эконика_2026.06 (74 волна)",
-      "project_code": "Мультикод_.306",
-      "timestamp": "2026-06-16T09:26:19.361299",
-      "user": "unknown_user"
-    },
-    {
-      "action": "add_to_excluded",
       "project_name": "ОТП Банк ЦКД",
       "wave_name": "Тест_ОТП Банк ЦКД",
       "project_code": "RU00.224.01.14SVZ26",

@@ -706,8 +706,7 @@ class VisitCalculator:
                 days_in_period = max(0, (period_end - period_start).days + 1)
 
                 
-                # ============================================
-                # РАСЧЕТ КОЭФФИЦИЕНТА МЕСЯЦА
+                # РАСЧЕТ КОЭФФИЦИЕНТА МЕСЯЦА (НОВАЯ ЛОГИКА)
                 # ============================================
                 start_date_google = row.get('Дата старта_гугл', None)
                 finish_date_google = row.get('Дата финиша_гугл', None)
@@ -717,7 +716,7 @@ class VisitCalculator:
                 if pd.isna(finish_date_google):
                     finish_date_google = finish_date
                 
-                # Приводим все к Timestamp (чтобы можно было сравнивать)
+                # Приводим все к Timestamp
                 if hasattr(start_date_google, 'date'):
                     start_ts = pd.Timestamp(start_date_google.date())
                 elif hasattr(start_date_google, 'year'):
@@ -732,20 +731,75 @@ class VisitCalculator:
                 else:
                     finish_ts = pd.Timestamp(finish_date.date())
                 
-                # Границы текущего месяца (как Timestamp)
+                # Границы текущего месяца
                 month_start_ts = pd.Timestamp(calc_params['start_date'])
                 month_end_ts = month_start_ts + pd.offsets.MonthEnd(1)
                 
-                # Рабочие дни проекта в текущем месяце (числитель)
-                project_start_in_month = max(start_ts, month_start_ts)
-                project_end_in_month = min(finish_ts, month_end_ts)
-                working_days_in_month = self._get_working_days_in_range(project_start_in_month, project_end_in_month)
+                # ============================================
+                # ОПРЕДЕЛЯЕМ СЦЕНАРИЙ
+                # ============================================
                 
-                # Общие рабочие дни проекта (знаменатель)
-                total_working_days = self._get_working_days_in_range(start_ts, finish_ts)
+                # Приводим к date для корректного сравнения (если нужно)
+                start_date_clean = start_ts.date() if hasattr(start_ts, 'date') else start_ts
+                finish_date_clean = finish_ts.date() if hasattr(finish_ts, 'date') else finish_ts
+                month_start_clean = month_start_ts.date() if hasattr(month_start_ts, 'date') else month_start_ts
+                month_end_clean = month_end_ts.date() if hasattr(month_end_ts, 'date') else month_end_ts
                 
-                if total_working_days > 0:
-                    month_coefficient = working_days_in_month / total_working_days
+                # Флаги для определения сценария
+                project_starts_in_month = start_date_clean >= month_start_clean
+                project_ends_in_month = finish_date_clean <= month_end_clean
+                project_continues_after_month = finish_date_clean > month_end_clean
+                project_started_before_month = start_date_clean < month_start_clean
+                
+                # ============================================
+                # СЦЕНАРИЙ 1: Проект начался в этом месяце
+                # ============================================
+                if project_starts_in_month and project_continues_after_month:
+                    # Текущая логика: знаменатель = весь проект
+                    project_start_in_month = max(start_ts, month_start_ts)
+                    project_end_in_month = min(finish_ts, month_end_ts)
+                    working_days_in_month = self._get_working_days_in_range(
+                        project_start_in_month, 
+                        project_end_in_month
+                    )
+                    total_working_days = self._get_working_days_in_range(start_ts, finish_ts)
+                    
+                    if total_working_days > 0:
+                        month_coefficient = working_days_in_month / total_working_days
+                    else:
+                        month_coefficient = 1.0
+                
+                # ============================================
+                # СЦЕНАРИЙ 2: Проект начался ДО месяца и продолжается ПОСЛЕ месяца
+                # ============================================
+                elif project_started_before_month and project_continues_after_month:
+                    # НОВАЯ ЛОГИКА: знаменатель = рабочие дни от начала проекта до конца месяца
+                    project_start_in_month = max(start_ts, month_start_ts)
+                    project_end_in_month = min(finish_ts, month_end_ts)
+                    
+                    working_days_in_month = self._get_working_days_in_range(
+                        project_start_in_month, 
+                        project_end_in_month
+                    )
+                    
+                    # 🔥 КЛЮЧЕВОЕ ОТЛИЧИЕ: знаменатель до конца месяца, а не до конца проекта
+                    total_working_days = self._get_working_days_in_range(start_ts, month_end_ts)
+                    
+                    if total_working_days > 0:
+                        month_coefficient = working_days_in_month / total_working_days
+                    else:
+                        month_coefficient = 1.0
+                
+                # ============================================
+                # СЦЕНАРИЙ 3: Проект начался ДО месяца и заканчивается В месяце
+                # ============================================
+                elif project_started_before_month and project_ends_in_month:
+                    # Коэффициент = 1 (весь план проекта должен быть выполнен в этом месяце)
+                    month_coefficient = 1.0
+                
+                # ============================================
+                # DEFAULT: если ни одно условие не подошло
+                # ============================================
                 else:
                     month_coefficient = 1.0
                 # ============================================

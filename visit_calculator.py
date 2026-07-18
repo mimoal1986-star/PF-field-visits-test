@@ -1156,6 +1156,9 @@ class VisitCalculator:
                     if po == 'ПО клиента' and client == 'Мултон':
                         # Проверяем, загружен ли Easymerch
                         if 'easymerch' not in st.session_state.uploaded_files:
+                            if is_target:
+                                st.error("❌ ПРОПУСК #4a: Easymerch не загружен")
+                                st.write("=" * 80)
                             continue
                             
                         # Загружаем распределение плана из JSON
@@ -1163,26 +1166,51 @@ class VisitCalculator:
                         multon_manager = get_multon_plan_manager()
                         plan_df = multon_manager.load_plan()
                         
+                        if is_target:
+                            st.write(f"  - JSON загружен: {not plan_df.empty}, строк: {len(plan_df)}")
+                        
                         if plan_df.empty:
-                            # Нет распределения → проект не существует
                             total_plan = 0
+                            if is_target:
+                                st.error("❌ JSON пустой!")
                         else:
-                            # Ищем план по (код_проекта, регион, RS)
                             mask = (plan_df['project_code'] == project_code) & \
                                    (plan_df['region'] == region) & \
                                    (plan_df['rs'] == row['ASM'])
                             
+                            if is_target:
+                                st.write(f"  - Поиск в JSON: project_code='{project_code}', region='{region}', rs='{row['ASM']}'")
+                                st.write(f"  - Найдено: {mask.any()}")
+                            
                             if mask.any():
                                 total_plan = plan_df.loc[mask, 'plan'].iloc[0]
+                                if is_target:
+                                    st.write(f"  - total_plan из JSON: {total_plan}")
                             else:
                                 total_plan = 0
+                                if is_target:
+                                    st.warning("⚠️ Не найдено в JSON!")
                         
                         asm_from_plan = row['ASM']
                         rs_from_plan = row['RS']
                         skip_plan_correction = False
                         
                         if total_plan <= 0:
+                            if is_target:
+                                st.error("❌ ПРОПУСК #4: total_plan <= 0 (Мултон)")
+                                st.write("=" * 80)
                             continue
+                        
+                        # 🔥 РАСЧЕТ ПЛАНА НА ДАТУ ДЛЯ МУЛТОН
+                        rs_plan_on_date, rs_daily_plan = self.calculate_plan_with_stages(
+                            total_plan,
+                            duration,
+                            coefficients,
+                            start_date,
+                            finish_date,
+                            period_start,
+                            period_end
+                        )
                     
                     elif client == 'Мультибренд 2024' and po == 'CXWAY':
                         # Проверяем, загружен ли CXWAY

@@ -875,6 +875,41 @@ class VisitCalculator:
                 po = row['ПО']
                 client = row['Клиент']
                 region = row['Регион']
+
+                # ============================================================
+                # ДИАГНОСТИКА: ВХОД В ЦИКЛ
+                # ============================================================
+                project_code = row['Проект']
+                po = row['ПО']
+                client = row['Клиент']
+                region = row['Регион']
+                asm = row['ASM']
+                start_date = row['Дата старта']
+                finish_date = row['Дата финиша']
+                duration = row['Длительность']
+                
+                is_target = (project_code == TARGET_PROJECT and 
+                             region == TARGET_REGION and 
+                             asm == TARGET_ASM)
+                
+                if is_target:
+                    st.write("=" * 80)
+                    st.write("🔍 ВХОД В ОСНОВНОЙ ЦИКЛ ДЛЯ ЦЕЛЕВОГО ПРОЕКТА!")
+                    st.write(f"  - project_code: '{project_code}'")
+                    st.write(f"  - region: '{region}'")
+                    st.write(f"  - asm: '{asm}'")
+                    st.write(f"  - po: '{po}'")
+                    st.write(f"  - client: '{client}'")
+                    st.write(f"  - start_date: {start_date}")
+                    st.write(f"  - finish_date: {finish_date}")
+                    st.write(f"  - duration: {duration}")
+                    st.write("=" * 80)
+                # ============================================================
+               
+                if po == 'ПО клиента' and client == 'Мултон':
+                    if project_code not in multon_regions:
+                        multon_regions[project_code] = set()
+                    multon_regions[project_code].add(region)
                 
                 if po == 'ПО клиента' and client == 'Мултон':
                     if project_code not in multon_regions:
@@ -952,15 +987,49 @@ class VisitCalculator:
                 finish_date = row['Дата финиша']
                 duration = row['Длительность']
                 
+
                 if pd.isna(start_date) or pd.isna(finish_date) or duration <= 0:
+                    #ДИАГНОСТИКА
+                    if is_target:
+                        st.error("❌ ПРОПУСК #1: start_date isna, finish_date isna или duration <= 0")
+                        st.write(f"  - start_date isna: {pd.isna(start_date)}")
+                        st.write(f"  - finish_date isna: {pd.isna(finish_date)}")
+                        st.write(f"  - duration <= 0: {duration <= 0}")
+                        st.write("=" * 80)
+                     #ДИАГНОСТИКА   
                     continue
                 
                 if end_period < start_date.date() or start_period > finish_date.date():
+                    #ДИАГНОСТИКА
+                    if is_target:
+                        st.error("❌ ПРОПУСК #2: Нет пересечения с отчетным периодом")
+                        st.write(f"  - end_period: {end_period}")
+                        st.write(f"  - start_date: {start_date.date()}")
+                        st.write(f"  - start_period: {start_period}")
+                        st.write(f"  - finish_date: {finish_date.date()}")
+                        st.write("=" * 80)
+                    #ДИАГНОСТИКА
                     continue
                 
                 period_start = max(start_period, start_date.date())
                 period_end = min(end_period, finish_date.date())
                 days_in_period = max(0, (period_end - period_start).days + 1)
+                #ДИАГНОСТИКА
+                if days_in_period == 0:
+                    if is_target:
+                        st.error("❌ ПРОПУСК #3: days_in_period == 0")
+                        st.write(f"  - period_start: {period_start}")
+                        st.write(f"  - period_end: {period_end}")
+                        st.write(f"  - days_in_period: {days_in_period}")
+                        st.write("=" * 80)
+                    continue
+                
+                if is_target:
+                    st.success("✅ ПРОЕКТ ПРОШЕЛ ПРОВЕРКИ ДАТ! Дальше проверяем total_plan...")
+                    st.write(f"  - period_start: {period_start}")
+                    st.write(f"  - period_end: {period_end}")
+                    st.write(f"  - days_in_period: {days_in_period}")
+                #ДИАГНОСТИКА
 
                 
                 # РАСЧЕТ КОЭФФИЦИЕНТА МЕСЯЦА (НОВАЯ ЛОГИКА)
@@ -1242,7 +1311,12 @@ class VisitCalculator:
                         st.success("✅ rs_plan_on_date > 0! Проект будет добавлен в results!")
                     st.write("=" * 80)
                 # ============================================================
-
+                
+                #ДИАГНОСТИКА
+                if is_target:
+                    st.success("✅ ПРОЕКТ ПРОШЕЛ ВСЕ ПРОВЕРКИ! Будет добавлен в results!")
+                    st.write("=" * 80)
+                #ДИАГНОСТИКА
 
                 results.append({
                     'Проект': project_code,

@@ -444,6 +444,263 @@ class VisitCalculator:
     def calculate_hierarchical_plan_on_date(self, hierarchy_df, visits_df, calc_params, google_df=None, optima_df=None):
         
         coefficients = calc_params.get('coefficients', [0.25, 0.25, 0.25, 0.25])
+    
+        # ============================================================
+        # 🔥 ДИАГНОСТИКА: поиск конкретного проекта
+        # ============================================================
+        
+        TARGET_PROJECT = "RU00.381.02.03SVZ25"
+        TARGET_REGION = "TT"
+        TARGET_ASM = "Воронин Евгений"
+        
+        st.write("=" * 80)
+        st.write("🔍 ДИАГНОСТИКА ПРОЕКТА:", TARGET_PROJECT)
+        st.write("=" * 80)
+        
+        # 1. Проверяем hierarchy_df
+        st.write("### 1. Иерархия (hierarchy_df)")
+        
+        # Ищем проект в иерархии
+        hierarchy_mask = (
+            (hierarchy_df['Проект'] == TARGET_PROJECT) &
+            (hierarchy_df['Регион'] == TARGET_REGION) &
+            (hierarchy_df['ASM'] == TARGET_ASM)
+        )
+        
+        hierarchy_matches = hierarchy_df[hierarchy_mask]
+        st.write(f"Найдено в иерархии: {len(hierarchy_matches)} строк")
+        
+        if not hierarchy_matches.empty:
+            st.write("Первая строка:")
+            st.dataframe(hierarchy_matches.head(1))
+            
+            # Показываем все значения для первой строки
+            row = hierarchy_matches.iloc[0]
+            st.write("Детали:")
+            st.write(f"  - Проект: '{row['Проект']}'")
+            st.write(f"  - Клиент: '{row['Клиент']}'")
+            st.write(f"  - Волна: '{row['Волна']}'")
+            st.write(f"  - Регион: '{row['Регион']}'")
+            st.write(f"  - ASM: '{row['ASM']}'")
+            st.write(f"  - RS: '{row['RS']}'")
+            st.write(f"  - ПО: '{row['ПО']}'")
+            st.write(f"  - Дата старта: {row['Дата старта']}")
+            st.write(f"  - Дата финиша: {row['Дата финиша']}")
+            st.write(f"  - Длительность: {row['Длительность']}")
+        else:
+            st.error(f"❌ Проект {TARGET_PROJECT} с регионом {TARGET_REGION} и ASM {TARGET_ASM} НЕ НАЙДЕН в иерархии!")
+            st.write("Доступные проекты в иерархии:")
+            st.write(hierarchy_df[['Проект', 'Регион', 'ASM']].drop_duplicates().head(10))
+        
+        st.write("---")
+        
+        # 2. Проверяем visits_df (project_wave_region_plans)
+        st.write("### 2. Данные визитов (visits_df / project_wave_region_plans)")
+        
+        # Ищем в visits_df
+        visits_mask = (
+            (visits_df['Код анкеты'] == TARGET_PROJECT) &
+            (visits_df['Регион short'] == TARGET_REGION) &
+            (visits_df['АСС'] == TARGET_ASM)
+        )
+        
+        visits_matches = visits_df[visits_mask]
+        st.write(f"Найдено в visits_df: {len(visits_matches)} строк")
+        
+        if not visits_matches.empty:
+            st.write("Первая строка:")
+            st.dataframe(visits_matches.head(1))
+            
+            row = visits_matches.iloc[0]
+            st.write("Детали:")
+            st.write(f"  - Код анкеты: '{row['Код анкеты']}'")
+            st.write(f"  - Имя клиента: '{row['Имя клиента']}'")
+            st.write(f"  - Название проекта: '{row['Название проекта']}'")
+            st.write(f"  - Регион short: '{row['Регион short']}'")
+            st.write(f"  - АСС: '{row['АСС']}'")
+            st.write(f"  - ЭМ: '{row['ЭМ']}'")
+            st.write(f"  - ПО: '{row['ПО']}'")
+            
+            # Строим ключ для project_wave_region_plans
+            plan_key = (row['Имя клиента'], row['Код анкеты'], row['Название проекта'], row['Регион short'])
+            st.write(f"  - Ключ для project_wave_region_plans: {plan_key}")
+            
+            # Проверяем project_wave_region_plans
+            # (этот словарь должен быть создан ДО основного цикла)
+            # Вставляем проверку здесь, но словарь создается позже,
+            # поэтому мы проверим его в основном цикле
+        else:
+            st.error(f"❌ Проект {TARGET_PROJECT} с регионом {TARGET_REGION} и ASM {TARGET_ASM} НЕ НАЙДЕН в visits_df!")
+            st.write("Доступные проекты в visits_df:")
+            st.write(visits_df[['Код анкеты', 'Регион short', 'АСС']].drop_duplicates().head(10))
+        
+        st.write("---")
+        
+        # 3. Проверяем JSON (Multon план)
+        st.write("### 3. JSON-файл (Multon план)")
+        
+        from github_settings import get_multon_plan_manager
+        multon_manager = get_multon_plan_manager()
+        plan_df = multon_manager.load_plan()
+        
+        st.write(f"JSON загружен: {not plan_df.empty}, строк: {len(plan_df)}")
+        
+        if not plan_df.empty:
+            # Ищем в JSON
+            json_mask = (
+                (plan_df['project_code'] == TARGET_PROJECT) &
+                (plan_df['region'] == TARGET_REGION) &
+                (plan_df['rs'] == TARGET_ASM)
+            )
+            json_matches = plan_df[json_mask]
+            st.write(f"Найдено в JSON: {len(json_matches)} строк")
+            
+            if not json_matches.empty:
+                st.write("Строка из JSON:")
+                st.dataframe(json_matches)
+                st.write(f"  - plan: {json_matches.iloc[0]['plan']}")
+            else:
+                st.error(f"❌ Проект {TARGET_PROJECT} с регионом {TARGET_REGION} и RS {TARGET_ASM} НЕ НАЙДЕН в JSON!")
+                st.write("Доступные проекты в JSON:")
+                st.write(plan_df[['project_code', 'region', 'rs']].drop_duplicates().head(10))
+        else:
+            st.error("❌ JSON пустой или не загрузился!")
+        
+        st.write("---")
+        
+        # 4. Проверяем project_wave_region_plans (создается в коде)
+        st.write("### 4. project_wave_region_plans (из visits_df)")
+        
+        # Этот словарь создается в коде ДО основного цикла.
+        # Мы не можем его получить здесь, поэтому создадим его заново для диагностики.
+        
+        # Определяем колонки для группировки (как в коде)
+        project_wave_region_plans = visits_df.groupby([
+            'Имя клиента',
+            'Код анкеты',
+            'Название проекта',
+            'Регион short'
+        ]).size().to_dict()
+        
+        st.write(f"Всего ключей в project_wave_region_plans: {len(project_wave_region_plans)}")
+        
+        # Ищем наш ключ
+        # Берем из visits_matches первую строку
+        if not visits_matches.empty:
+            row = visits_matches.iloc[0]
+            test_key = (row['Имя клиента'], row['Код анкеты'], row['Название проекта'], row['Регион short'])
+            st.write(f"Проверяем ключ: {test_key}")
+            
+            if test_key in project_wave_region_plans:
+                st.success(f"✅ Ключ НАЙДЕН в project_wave_region_plans! Значение: {project_wave_region_plans[test_key]}")
+            else:
+                st.error(f"❌ Ключ НЕ НАЙДЕН в project_wave_region_plans!")
+                
+                # Показываем похожие ключи
+                st.write("Похожие ключи (первые 5):")
+                similar_keys = [k for k in project_wave_region_plans.keys() if TARGET_PROJECT in k[1]]
+                for k in similar_keys[:5]:
+                    st.write(f"  - {k}: {project_wave_region_plans[k]}")
+        
+        st.write("=" * 80)
+        st.write("### 5. СИМУЛЯЦИЯ ОСНОВНОГО ЦИКЛА")
+        st.write("=" * 80)
+        
+        # ============================================================
+        # СИМУЛЯЦИЯ ОСНОВНОГО ЦИКЛА ДЛЯ КОНКРЕТНОГО ПРОЕКТА
+        # ============================================================
+        
+        # Находим строку в иерархии
+        if not hierarchy_matches.empty:
+            row = hierarchy_matches.iloc[0]
+            
+            st.write("### Шаг 5.1: Исходные данные из иерархии")
+            st.write(f"  - project_code: '{row['Проект']}'")
+            st.write(f"  - client: '{row['Клиент']}'")
+            st.write(f"  - wave_name: '{row['Волна']}'")
+            st.write(f"  - region: '{row['Регион']}'")
+            st.write(f"  - asm: '{row['ASM']}'")
+            st.write(f"  - rs: '{row['RS']}'")
+            st.write(f"  - po: '{row['ПО']}'")
+            
+            st.write("### Шаг 5.2: Определение источника (ПО)")
+            po = row['ПО']
+            client = row['Клиент']
+            project_code = row['Проект']
+            wave_name = row['Волна']
+            region = row['Регион']
+            asm = row['ASM']
+            
+            st.write(f"  - po == 'ПО клиента'? {po == 'ПО клиента'}")
+            st.write(f"  - client == 'Мултон'? {client == 'Мултон'}")
+            
+            if po == 'ПО клиента' and client == 'Мултон':
+                st.write("### Шаг 5.3: ВЕТКА JSON (Мултон)")
+                
+                # Загружаем JSON еще раз
+                plan_df = multon_manager.load_plan()
+                
+                if plan_df.empty:
+                    st.error("❌ JSON пустой! total_plan = 0")
+                    total_plan = 0
+                else:
+                    # Ищем в JSON
+                    json_mask = (plan_df['project_code'] == project_code) & \
+                                (plan_df['region'] == region) & \
+                                (plan_df['rs'] == asm)
+                    json_matches = plan_df[json_mask]
+                    
+                    st.write(f"  - Поиск в JSON по (project_code='{project_code}', region='{region}', rs='{asm}')")
+                    st.write(f"  - Найдено: {len(json_matches)} строк")
+                    
+                    if json_matches.any():
+                        total_plan = json_matches.iloc[0]['plan']
+                        st.success(f"✅ total_plan = {total_plan}")
+                    else:
+                        st.error("❌ Не найдено в JSON! total_plan = 0")
+                        total_plan = 0
+                        
+                        # Показываем, что есть в JSON для этого проекта
+                        st.write("Доступные записи в JSON для этого проекта:")
+                        project_json = plan_df[plan_df['project_code'] == project_code]
+                        if not project_json.empty:
+                            st.dataframe(project_json)
+                        else:
+                            st.write("Нет записей для этого проекта в JSON")
+            else:
+                st.write("### Шаг 5.3: ВЕТКА project_wave_region_plans (обычный расчет)")
+                
+                plan_key = (client, project_code, wave_name, region)
+                st.write(f"  - plan_key: {plan_key}")
+                
+                if plan_key in project_wave_region_plans:
+                    total_plan = project_wave_region_plans[plan_key]
+                    st.success(f"✅ total_plan = {total_plan}")
+                else:
+                    st.error(f"❌ Ключ не найден в project_wave_region_plans! total_plan = 0")
+                    
+                    # Показываем похожие ключи
+                    st.write("Похожие ключи:")
+                    similar = [k for k in project_wave_region_plans.keys() if k[0] == client]
+                    for k in similar[:5]:
+                        st.write(f"  - {k}: {project_wave_region_plans[k]}")
+            
+            st.write("---")
+            st.write(f"### Шаг 5.4: ИТОГОВЫЙ total_plan = {total_plan}")
+            
+            if total_plan > 0:
+                st.success("✅ Проект будет включен в план!")
+            else:
+                st.error("❌ total_plan = 0 → проект НЕ БУДЕТ включен в план!")
+        
+        st.write("=" * 80)
+        st.write("🔍 ДИАГНОСТИКА ЗАВЕРШЕНА")
+        st.write("=" * 80)
+        
+        # ============================================================
+        # КОНЕЦ ДИАГНОСТИКИ
+        # ============================================================
+    
 
         # ============================================
         # ✅ ДИАГНОСТИКА

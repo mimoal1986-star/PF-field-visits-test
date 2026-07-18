@@ -653,7 +653,7 @@ class VisitCalculator:
                     st.write(f"  - Поиск в JSON по (project_code='{project_code}', region='{region}', rs='{asm}')")
                     st.write(f"  - Найдено: {len(json_matches)} строк")
                     
-                    if json_matches.any():
+                    if not json_matches.empty:
                         total_plan = json_matches.iloc[0]['plan']
                         st.success(f"✅ total_plan = {total_plan}")
                     else:
@@ -1213,7 +1213,37 @@ class VisitCalculator:
                             period_start,
                             period_end
                         )
-                        
+
+                # ============================================================
+                # 🔥 ДИАГНОСТИКА В ОСНОВНОМ ЦИКЛЕ (для целевого проекта)
+                # ============================================================
+                if project_code == TARGET_PROJECT and region == TARGET_REGION and asm == TARGET_ASM:
+                    st.write("=" * 80)
+                    st.write("🔍 ОСНОВНОЙ ЦИКЛ: ДОСТИГЛИ ЦЕЛЕВОГО ПРОЕКТА!")
+                    st.write(f"  - total_plan = {total_plan}")
+                    st.write(f"  - duration = {duration}")
+                    st.write(f"  - start_date = {start_date}")
+                    st.write(f"  - finish_date = {finish_date}")
+                    st.write(f"  - period_start = {period_start}")
+                    st.write(f"  - period_end = {period_end}")
+                    st.write(f"  - days_in_period = {days_in_period}")
+                    st.write(f"  - coefficients = {coefficients}")
+                    
+                    # Проверка calculate_plan_with_stages
+                    rs_plan_on_date, rs_daily_plan = self.calculate_plan_with_stages(
+                        total_plan, duration, coefficients, start_date, finish_date, period_start, period_end
+                    )
+                    st.write(f"  - rs_plan_on_date = {rs_plan_on_date}")
+                    st.write(f"  - rs_daily_plan = {rs_daily_plan}")
+                    
+                    if rs_plan_on_date <= 0:
+                        st.error("❌ rs_plan_on_date = 0! Проект НЕ БУДЕТ добавлен в results!")
+                    else:
+                        st.success("✅ rs_plan_on_date > 0! Проект будет добавлен в results!")
+                    st.write("=" * 80)
+                # ============================================================
+
+
                 results.append({
                     'Проект': project_code,
                     'Клиент': row['Клиент'],

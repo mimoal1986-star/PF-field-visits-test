@@ -1895,7 +1895,7 @@ class DataCleaner:
             return array_field_df if array_field_df is not None else pd.DataFrame()
 
     def remove_cxway_from_portal(self, portal_df, google_df):
-        """Удаляет из портала проекты, которые в google отмечены как CXWAY (только для обычных проектов)"""
+        """Удаляет из портала проекты, которые в google отмечены как CXWAY или Optima (только для обычных проектов)"""
         if portal_df is None or portal_df.empty or google_df is None or google_df.empty:
             return portal_df
         
@@ -1908,10 +1908,10 @@ class DataCleaner:
             return portal_df
         
         # Удаляем проекты с ПО = CXWAY ИЛИ Optima
-        exclude_mask = google_df[portal_col].astype(str).str.strip().str.upper().isin(['CXWAY', 'ОПТИМА'])
-        exclude_df = google_df[exclude_mask].copy()
+        cxway_mask = google_df[portal_col].astype(str).str.strip().str.upper().isin(['CXWAY', 'ОПТИМА'])
+        cxway_df = google_df[cxway_mask].copy()  # ← ВОЗВРАЩАЕМ cxway_df
         
-        if exclude_df.empty:
+        if cxway_df.empty:  # ← ВОЗВРАЩАЕМ cxway_df
             return portal_df
         
         # Находим колонки в портале

@@ -1050,39 +1050,46 @@ class DataCleaner:
                 
                 result['ПО'] = result['Код анкеты'].apply(get_portal_from_google)
         
-        # Удаляем проекты, которые в Google отмечены как Чеккер
-        if google_df is not None and not google_df.empty:
+
+        # =Удаляем в Чеккер дубликаты СХ, Оптима
+        if google_df is not None and not google_df.empty and not result.empty:
             google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
             google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
             google_client_col = self._find_column(google_df, ['Проекты в  https://ru.checker-soft.com', 'Проекты'])
+            google_wave_col = self._find_column(google_df, ['Название волны на Чекере/ином ПО', 'Волна'])
             
-            if google_code_col and google_portal_col and google_client_col:
-                # Находим проекты с ПО Чеккер
+            if (google_code_col and google_portal_col and google_client_col and google_wave_col and
+                'Название проекта' in result.columns and 'Имя клиента' in result.columns and 'Код анкеты' in result.columns):
+                
                 checker_mask = google_df[google_portal_col].astype(str).str.strip().str.upper() == 'ЧЕККЕР'
                 checker_df = google_df[checker_mask].copy()
                 
                 if not checker_df.empty:
-                    # Создаем ключи (клиент + код) для проектов Чеккер
+                    # Создаем ключи (клиент + код + волна) для проектов Чеккер
+                    checker_df['_wave_clean'] = checker_df[google_wave_col].fillna('не указано').astype(str).str.strip()
                     checker_df['_key'] = (
                         checker_df[google_client_col].astype(str).str.strip() + '|' +
-                        checker_df[google_code_col].astype(str).str.strip()
+                        checker_df[google_code_col].astype(str).str.strip() + '|' +
+                        checker_df['_wave_clean']
                     )
                     
-                    # Создаем ключи в CXWAY (клиент + код)
+                    # Создаем ключи в CXWAY
+                    result['_wave_clean'] = result['Название проекта'].fillna('не указано').astype(str).str.strip()
                     result['_key'] = (
                         result['Имя клиента'].astype(str).str.strip() + '|' +
-                        result['Код анкеты'].astype(str).str.strip()
+                        result['Код анкеты'].astype(str).str.strip() + '|' +
+                        result['_wave_clean']
                     )
                     
-                    # Определяем семплы и пилоты
                     result['_is_sample_pilot'] = result['Код анкеты'].astype(str).str.contains('семпл|пилот', case=False, na=False)
                     
-                    # Удаляем ТОЛЬКО обычные проекты (не семплы/пилоты)
                     mask_to_remove = result['_key'].isin(checker_df['_key']) & ~result['_is_sample_pilot']
                     result = result[~mask_to_remove]
                     
-                    # Удаляем временные колонки
-                    result = result.drop(['_key', '_is_sample_pilot'], axis=1)
+                    result = result.drop(['_wave_clean', '_key', '_is_sample_pilot'], axis=1)
+                    
+                    if result.empty:
+                        return pd.DataFrame()
         
         # Добавление полного региона
         region_mapping = {
@@ -1611,6 +1618,9 @@ class DataCleaner:
         result['Источник'] = 'Оптима'
         result['Оплата факт'] = 0
         
+        # === УДАЛЯЕМ ДУБЛИ С ЧЕККЕР И CXWAY ===
+        result = self.remove_optima_duplicates(result, google_df)
+        
         return result
     
     def clean_prodata(self, df, google_df):
@@ -1893,45 +1903,52 @@ class DataCleaner:
         code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
         portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
         client_col = self._find_column(google_df, ['Проекты в  https://ru.checker-soft.com', 'Проекты'])
+        wave_col = self._find_column(google_df, ['Название волны на Чекере/ином ПО', 'Волна'])
         
-        if code_col is None or portal_col is None or client_col is None:
+        if code_col is None or portal_col is None or client_col is None or wave_col is None:
             return portal_df
         
-        # Находим проекты с ПО CXWAY
         cxway_mask = google_df[portal_col].astype(str).str.strip().str.upper() == 'CXWAY'
         cxway_df = google_df[cxway_mask].copy()
         
         if cxway_df.empty:
             return portal_df
         
-        # Создаем ключи (клиент + код) для CXWAY-проектов
-        cxway_df['_key'] = (
-            cxway_df[client_col].astype(str).str.strip() + '|' +
-            cxway_df[code_col].astype(str).str.strip()
-        )
-        
-        # Создаем ключи в портале (клиент + код)
+        # Находим колонки в портале
         portal_code_col = self._find_column(portal_df, ['Код анкеты', 'Код'])
         portal_client_col = self._find_column(portal_df, ['Имя клиента', 'Client'])
+        portal_wave_col = self._find_column(portal_df, ['Название проекта', 'Wave Name'])
         
-        if portal_code_col is None or portal_client_col is None:
+        if portal_code_col is None or portal_client_col is None or portal_wave_col is None:
             return portal_df
         
-        portal_df = portal_df.copy()
-        portal_df['_key'] = (
-            portal_df[portal_client_col].astype(str).str.strip() + '|' +
-            portal_df[portal_code_col].astype(str).str.strip()
+        # Создаем ключи (клиент + код + волна) для CXWAY-проектов
+        cxway_df['_wave_clean'] = cxway_df[wave_col].fillna('не указано').astype(str).str.strip()
+        cxway_df['_key'] = (
+            cxway_df[client_col].astype(str).str.strip() + '|' +
+            cxway_df[code_col].astype(str).str.strip() + '|' +
+            cxway_df['_wave_clean']
         )
         
-        # Определяем семплы и пилоты в портале
+        # Создаем ключи в портале
+        portal_df = portal_df.copy()
+        
+        portal_df['_wave_clean'] = portal_df[portal_wave_col].fillna('не указано').astype(str).str.strip()
+        portal_df['_key'] = (
+            portal_df[portal_client_col].astype(str).str.strip() + '|' +
+            portal_df[portal_code_col].astype(str).str.strip() + '|' +
+            portal_df['_wave_clean']
+        )
+        
         portal_df['_is_sample_pilot'] = portal_df[portal_code_col].astype(str).str.contains('семпл|пилот', case=False, na=False)
         
-        # Удаляем ТОЛЬКО обычные проекты (не семплы/пилоты)
         mask_to_remove = portal_df['_key'].isin(cxway_df['_key']) & ~portal_df['_is_sample_pilot']
         portal_df = portal_df[~mask_to_remove]
         
-        # Удаляем временные колонки
-        portal_df = portal_df.drop(['_key', '_is_sample_pilot'], axis=1)
+        portal_df = portal_df.drop(['_wave_clean', '_key', '_is_sample_pilot'], axis=1)
+        
+        if portal_df.empty:
+            return pd.DataFrame()
         
         return portal_df
     
@@ -2053,6 +2070,75 @@ class DataCleaner:
         result = result[['project_code', 'plan_payment']]
         
         return result
+
+    # Очищаем в Оптима дубликаты СХ и Чеккер
+    def remove_optima_duplicates(self, optima_df, google_df):
+        """
+        Удаляет из Optima проекты, которые в Google отмечены как Чеккер или CXWAY
+        (кроме семплов и пилотов)
+        """
+        if optima_df is None or optima_df.empty or google_df is None or google_df.empty:
+            return optima_df
+        
+        # Находим колонки в Google
+        code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
+        portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
+        client_col = self._find_column(google_df, ['Проекты в  https://ru.checker-soft.com', 'Проекты'])
+        wave_col = self._find_column(google_df, ['Название волны на Чекере/ином ПО', 'Волна'])
+        
+        if code_col is None or portal_col is None or client_col is None or wave_col is None:
+            return optima_df
+        
+        # Находим проекты с ПО Чеккер или CXWAY
+        portal_mask = google_df[portal_col].astype(str).str.strip().str.upper().isin(['ЧЕККЕР', 'CXWAY'])
+        portal_df = google_df[portal_mask].copy()
+        
+        if portal_df.empty:
+            return optima_df
+        
+        # Создаем ключи (клиент + код + волна) для проектов из Google
+        portal_df['_wave_clean'] = portal_df[wave_col].fillna('не указано').astype(str).str.strip()
+        portal_df['_key'] = (
+            portal_df[client_col].astype(str).str.strip() + '|' +
+            portal_df[code_col].astype(str).str.strip() + '|' +
+            portal_df['_wave_clean']
+        )
+        
+        if portal_df.empty:
+            return optima_df
+        
+        # Создаем ключи в Optima (клиент + код + волна)
+        optima_df = optima_df.copy()
+        
+        # Находим колонки в Optima
+        optima_client_col = self._find_column(optima_df, ['Имя клиента', 'Client'])
+        optima_code_col = self._find_column(optima_df, ['Код анкеты', 'Project Code'])
+        optima_wave_col = self._find_column(optima_df, ['Название проекта', 'Wave Name'])
+        
+        if optima_client_col is None or optima_code_col is None or optima_wave_col is None:
+            return optima_df
+        
+        optima_df['_wave_clean'] = optima_df[optima_wave_col].fillna('не указано').astype(str).str.strip()
+        optima_df['_key'] = (
+            optima_df[optima_client_col].astype(str).str.strip() + '|' +
+            optima_df[optima_code_col].astype(str).str.strip() + '|' +
+            optima_df['_wave_clean']
+        )
+        
+        # Определяем семплы и пилоты в Optima (их не удаляем)
+        optima_df['_is_sample_pilot'] = optima_df[optima_code_col].astype(str).str.contains('семпл|пилот', case=False, na=False)
+        
+        # Удаляем ТОЛЬКО обычные проекты (не семплы/пилоты)
+        mask_to_remove = optima_df['_key'].isin(portal_df['_key']) & ~optima_df['_is_sample_pilot']
+        optima_df = optima_df[~mask_to_remove]
+        
+        # Удаляем временные колонки
+        optima_df = optima_df.drop(['_wave_clean', '_key', '_is_sample_pilot'], axis=1)
+        
+        if optima_df.empty:
+            return pd.DataFrame()
+        
+        return optima_df
         
         
 # Глобальный экземпляр

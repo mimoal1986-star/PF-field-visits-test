@@ -1051,7 +1051,7 @@ class DataCleaner:
                 result['ПО'] = result['Код анкеты'].apply(get_portal_from_google)
         
 
-        # =Удаляем в Чеккер дубликаты СХ, Оптима
+        # Удаляем в CXWAY дубликаты Чеккер и Оптима
         if google_df is not None and not google_df.empty and not result.empty:
             google_code_col = self._find_column(google_df, ['Код проекта RU00.000.00.01SVZ24', 'Код проекта'])
             google_portal_col = self._find_column(google_df, ['Портал на котором идет проект (для работы полевой команды)', 'ПО'])
@@ -1061,19 +1061,18 @@ class DataCleaner:
             if (google_code_col and google_portal_col and google_client_col and google_wave_col and
                 'Название проекта' in result.columns and 'Имя клиента' in result.columns and 'Код анкеты' in result.columns):
                 
-                checker_mask = google_df[google_portal_col].astype(str).str.strip().str.upper() == 'ЧЕККЕР'
-                checker_df = google_df[checker_mask].copy()
+                # Удаляем проекты с ПО = Чеккер ИЛИ Оптима
+                exclude_mask = google_df[google_portal_col].astype(str).str.strip().str.upper().isin(['ЧЕККЕР', 'ОПТИМА'])
+                exclude_df = google_df[exclude_mask].copy()
                 
-                if not checker_df.empty:
-                    # Создаем ключи (клиент + код + волна) для проектов Чеккер
-                    checker_df['_wave_clean'] = checker_df[google_wave_col].fillna('не указано').astype(str).str.strip()
-                    checker_df['_key'] = (
-                        checker_df[google_client_col].astype(str).str.strip() + '|' +
-                        checker_df[google_code_col].astype(str).str.strip() + '|' +
-                        checker_df['_wave_clean']
+                if not exclude_df.empty:
+                    exclude_df['_wave_clean'] = exclude_df[google_wave_col].fillna('не указано').astype(str).str.strip()
+                    exclude_df['_key'] = (
+                        exclude_df[google_client_col].astype(str).str.strip() + '|' +
+                        exclude_df[google_code_col].astype(str).str.strip() + '|' +
+                        exclude_df['_wave_clean']
                     )
                     
-                    # Создаем ключи в CXWAY
                     result['_wave_clean'] = result['Название проекта'].fillna('не указано').astype(str).str.strip()
                     result['_key'] = (
                         result['Имя клиента'].astype(str).str.strip() + '|' +
@@ -1083,7 +1082,7 @@ class DataCleaner:
                     
                     result['_is_sample_pilot'] = result['Код анкеты'].astype(str).str.contains('семпл|пилот', case=False, na=False)
                     
-                    mask_to_remove = result['_key'].isin(checker_df['_key']) & ~result['_is_sample_pilot']
+                    mask_to_remove = result['_key'].isin(exclude_df['_key']) & ~result['_is_sample_pilot']
                     result = result[~mask_to_remove]
                     
                     result = result.drop(['_wave_clean', '_key', '_is_sample_pilot'], axis=1)
@@ -1908,10 +1907,11 @@ class DataCleaner:
         if code_col is None or portal_col is None or client_col is None or wave_col is None:
             return portal_df
         
-        cxway_mask = google_df[portal_col].astype(str).str.strip().str.upper() == 'CXWAY'
-        cxway_df = google_df[cxway_mask].copy()
+        # Удаляем проекты с ПО = CXWAY ИЛИ Optima
+        exclude_mask = google_df[portal_col].astype(str).str.strip().str.upper().isin(['CXWAY', 'ОПТИМА'])
+        exclude_df = google_df[exclude_mask].copy()
         
-        if cxway_df.empty:
+        if exclude_df.empty:
             return portal_df
         
         # Находим колонки в портале

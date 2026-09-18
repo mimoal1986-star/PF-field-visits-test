@@ -1017,7 +1017,14 @@ with tab1:
         with st.expander("📋 Отчет по историческим строкам CXWAY", expanded=False):
             # Если это реальный отчет с данными (есть колонки Клиент + Волна)
             if 'Клиент' in st.session_state.cxway_historical_report.columns and 'Волна' in st.session_state.cxway_historical_report.columns:
-                st.caption("Строки из CXWAY, которые были удалены из расчета (Is Historical = ИСТИНА)")
+                # Формируем caption с исходными значениями
+                original_values = st.session_state.get('cxway_historical_values', '')
+                if original_values:
+                    caption_text = f'Строки из CXWAY, которые были удалены из расчета. Колонка "Is Historical" содержит значения: {original_values} — интерпретированы как ИСТИНА'
+                else:
+                    caption_text = 'Строки из CXWAY, которые были удалены из расчета (Is Historical = ИСТИНА)'
+                
+                st.caption(caption_text)
                 st.dataframe(st.session_state.cxway_historical_report, use_container_width=True, hide_index=True)
                 
                 # Кнопка скачивания

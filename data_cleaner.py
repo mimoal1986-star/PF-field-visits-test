@@ -916,9 +916,26 @@ class DataCleaner:
         df_clean = df.copy()
         
         #  Удаление исторических строк
-        # Если есть колонка 'Is Historical' — удаляем строки со значением ИСТИНА/Истина/истина
+        # Если есть колонка 'Is Historical' — удаляем строки со значением "истина" (в любом регистре), "1", "1.0" или "true"
         if 'Is Historical' in df_clean.columns:
-            historical_mask = df_clean['Is Historical'].astype(str).str.strip().isin(['ИСТИНА', 'Истина', 'истина'])
+            # Универсальная нормализация значений:
+            # 1. Приводим к строке
+            # 2. Убираем невидимые символы (\xa0 — неразрывный пробел, \u200b — zero-width space)
+            # 3. Убираем пробелы по краям (strip)
+            # 4. Приводим к нижнему регистру
+            is_historical_normalized = (
+                df_clean['Is Historical']
+                .astype(str)
+                .str.replace('\xa0', ' ')
+                .str.replace('\u200b', '')
+                .str.strip()
+                .str.lower()
+            )
+            
+            # Удаляем строки, где значение = 'истина', '1', '1.0' или 'true'
+            # 'true' покрывает случай логического типа ячейки в Excel (после dtype=str → 'True' → 'true')
+            # '1.0' покрывает случай числового формата с плавающей точкой
+            historical_mask = is_historical_normalized.isin(['истина', '1', '1.0', 'true'])
             removed_count = historical_mask.sum()
             
             if removed_count > 0:
@@ -931,7 +948,7 @@ class DataCleaner:
                 
                 if client_col and wave_col:
                     # Группируем по (Клиент + Волна) и считаем количество
-                    historical_report = historical_df.groupby([client_col, wave_col]).size().reset_index(name='Количество строк с ИСТИНА')
+                    historical_report = historical_df.groupby([client_col, wave_col]).size().reset_index(name='Количество исторических строк')
                     historical_report = historical_report.rename(columns={
                         client_col: 'Клиент',
                         wave_col: 'Волна'
@@ -947,7 +964,7 @@ class DataCleaner:
                 # Удаляем исторические строки
                 df_clean = df_clean[~historical_mask]
             else:
-                # Колонка есть, но нет строк с ИСТИНА
+                # Колонка есть, но нет строк со значением "истина", "1", "1.0" или "true"
                 st.session_state.cxway_historical_report = pd.DataFrame({
                     'Статус': ['Исторических строк не найдено']
                 })

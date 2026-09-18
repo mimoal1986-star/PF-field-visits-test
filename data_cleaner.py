@@ -911,8 +911,22 @@ class DataCleaner:
         # self._log_samples(df, "1. Исходные данные")
         df_clean = df.copy()
         
+        #  Удаление исторических строк
+        # Если есть колонка 'Is Historical' — удаляем строки со значением ИСТИНА/Истина/истина
+        if 'Is Historical' in df_clean.columns:
+            historical_mask = df_clean['Is Historical'].astype(str).str.strip().isin(['ИСТИНА', 'Истина', 'истина'])
+            removed_count = historical_mask.sum()
+            if removed_count > 0:
+                df_clean = df_clean[~historical_mask]
+                st.info(f"✅ Из CXWAY удалено {removed_count} исторических строк (Is Historical = ИСТИНА)")
+            
+            # Если после удаления не осталось строк — возвращаем пустой DataFrame
+            if df_clean.empty:
+                return pd.DataFrame()
+        
         # Удалить строки где Status == "Удалено"
         status_col = self._find_column(df_clean, ['Status', 'Статус', 'status'])
+        
         if status_col:
             df_clean = df_clean[df_clean[status_col].astype(str).str.strip() != 'Удалено']
        

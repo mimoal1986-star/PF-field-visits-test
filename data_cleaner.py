@@ -908,6 +908,7 @@ class DataCleaner:
         
         # Сбрасываем старый отчет ПЕРЕД всеми проверками
         st.session_state.cxway_historical_report = pd.DataFrame()
+        st.session_state.cxway_historical_values = ''
         
         if df is None or df.empty:
             return pd.DataFrame()
@@ -939,6 +940,41 @@ class DataCleaner:
             removed_count = historical_mask.sum()
             
             if removed_count > 0:
+                # === СОБИРАЕМ УНИКАЛЬНЫЕ ИСХОДНЫЕ ЗНАЧЕНИЯ ===
+                # Берем "сырые" значения из колонки Is Historical для строк, которые будут удалены
+                original_values_raw = (
+                    df_clean.loc[historical_mask, 'Is Historical']
+                    .astype(str)
+                    .str.replace('\xa0', ' ')
+                    .str.replace('\u200b', '')
+                    .str.strip()
+                    .unique()
+                    .tolist()
+                )
+                
+                # Фильтруем пустые значения (nan, none, null, '')
+                original_values_raw = [
+                    v for v in original_values_raw 
+                    if str(v).strip().lower() not in ['nan', 'none', 'null', '']
+                ]
+                
+                # Убираем дубликаты по нормализованному значению (нижний регистр),
+                # но сохраняем оригинальное написание первого встреченного варианта
+                seen_normalized = set()
+                unique_original_values = []
+                for v in original_values_raw:
+                    normalized = str(v).strip().lower()
+                    if normalized not in seen_normalized:
+                        seen_normalized.add(normalized)
+                        unique_original_values.append(v)
+                
+                # Сортируем для предсказуемого отображения
+                unique_original_values = sorted(unique_original_values)
+                
+                # Формируем строку для caption: "ИСТИНА", "1", "1.0"
+                original_values_str = ', '.join(f'"{v}"' for v in unique_original_values)
+                st.session_state.cxway_historical_values = original_values_str
+                
                 # === ФОРМИРУЕМ ОТЧЕТ ПО ИСТОРИЧЕСКИМ СТРОКАМ ===
                 historical_df = df_clean[historical_mask].copy()
                 

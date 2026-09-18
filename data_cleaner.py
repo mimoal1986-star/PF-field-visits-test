@@ -905,6 +905,10 @@ class DataCleaner:
     
     def clean_cxway(self, df, hierarchy_df, google_df):
         """Очистка файла CXWAY и приведение к структуре полевых проектов"""
+        
+        # Сбрасываем старый отчет ПЕРЕД всеми проверками
+        st.session_state.cxway_historical_report = pd.DataFrame()
+        
         if df is None or df.empty:
             return pd.DataFrame()
         
@@ -934,19 +938,28 @@ class DataCleaner:
                     })
                     historical_report = historical_report.sort_values(['Клиент', 'Волна'])
                     
-                    # Сохраняем в session_state для последующего скачивания
                     st.session_state.cxway_historical_report = historical_report
-                    
-                    st.info(f"✅ Из CXWAY удалено {removed_count} исторических строк (Is Historical = ИСТИНА). Отчет доступен для скачивания во вкладке 'Настройки проектов'.")
                 else:
-                    st.info(f"✅ Из CXWAY удалено {removed_count} исторических строк (Is Historical = ИСТИНА)")
+                    st.session_state.cxway_historical_report = pd.DataFrame({
+                        'Статус': [f'Найдено {removed_count} исторических строк, но не удалось сгруппировать по клиентам/волнам']
+                    })
                 
                 # Удаляем исторические строки
                 df_clean = df_clean[~historical_mask]
+            else:
+                # Колонка есть, но нет строк с ИСТИНА
+                st.session_state.cxway_historical_report = pd.DataFrame({
+                    'Статус': ['Исторических строк не найдено']
+                })
             
             # Если после удаления не осталось строк — возвращаем пустой DataFrame
             if df_clean.empty:
                 return pd.DataFrame()
+        else:
+            # Колонки Is Historical нет
+            st.session_state.cxway_historical_report = pd.DataFrame({
+                'Статус': ['Колонка Is Historical не найдена в файле CXWAY']
+            })
             
         # Удалить строки где Status == "Удалено"
         status_col = self._find_column(df_clean, ['Status', 'Статус', 'status'])

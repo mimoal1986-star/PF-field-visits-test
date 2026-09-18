@@ -410,7 +410,7 @@ def process_all_data(settings_manager=None, force_recalc=False):
             bdr_processed = data_cleaner.clean_bdr(bdr_raw)
             if bdr_processed is not None and not bdr_processed.empty:
                 st.session_state.cleaned_data['bdr_processed'] = bdr_processed
-        
+                
         # Обработка CXWAY (если есть)
         cxway_processed = None
         cxway_raw = st.session_state.uploaded_files.get('cxway')
@@ -428,11 +428,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
                         st.session_state.cleaned_data['неполевые_проекты'],
                         cxway_non_field
                     ], ignore_index=True)
-        else:
-            # CXWAY не загружен — формируем отчет с сообщением
-            st.session_state.cxway_historical_report = pd.DataFrame({
-                'Статус': ['CXWAY не загружен']
-            })
 
 
         # ============================================
@@ -1009,42 +1004,6 @@ with tab1:
             st.write(msg)
         st.success("✅ Расчет завершен!")
         st.session_state.show_messages = False
-    
-    # ============================================
-    # ОТЧЕТ ПО ИСТОРИЧЕСКИМ СТРОКАМ CXWAY
-    # ============================================
-    if 'cxway_historical_report' in st.session_state and not st.session_state.cxway_historical_report.empty:
-        with st.expander("📋 Отчет по историческим строкам CXWAY", expanded=False):
-            # Если это реальный отчет с данными (есть колонки Клиент + Волна)
-            if 'Клиент' in st.session_state.cxway_historical_report.columns and 'Волна' in st.session_state.cxway_historical_report.columns:
-                # Формируем caption с исходными значениями
-                original_values = st.session_state.get('cxway_historical_values', '')
-                if original_values:
-                    caption_text = f'Строки из CXWAY, которые были удалены из расчета. Колонка "Is Historical" содержит значения: {original_values} — интерпретированы как ИСТИНА'
-                else:
-                    caption_text = 'Строки из CXWAY, которые были удалены из расчета (Is Historical = ИСТИНА)'
-                
-                st.caption(caption_text)
-                st.dataframe(st.session_state.cxway_historical_report, use_container_width=True, hide_index=True)
-                
-                # Кнопка скачивания
-                output = BytesIO()
-                with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                    st.session_state.cxway_historical_report.to_excel(writer, sheet_name='Исторические_строки', index=False)
-                
-                st.download_button(
-                    label="⬇️ Скачать отчет по историческим строкам",
-                    data=output.getvalue(),
-                    file_name=f"cxway_исторические_строки_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    type="secondary",
-                    use_container_width=True,
-                    key="download_cxway_historical"
-                )
-            else:
-                # Статусное сообщение (колонки нет / нет строк / CXWAY не загружен)
-                st.dataframe(st.session_state.cxway_historical_report, use_container_width=True, hide_index=True)
-    # ============================================
     
     st.title("📤 Загрузка исходных данных")
     

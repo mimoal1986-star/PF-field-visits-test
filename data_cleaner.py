@@ -906,16 +906,12 @@ class DataCleaner:
     def clean_cxway(self, df, hierarchy_df, google_df):
         """Очистка файла CXWAY и приведение к структуре полевых проектов"""
         
-        # Сбрасываем старый отчет ПЕРЕД всеми проверками
-        st.session_state.cxway_historical_report = pd.DataFrame()
-        st.session_state.cxway_historical_values = ''
-        
         if df is None or df.empty:
             return pd.DataFrame()
         
         # self._log_samples(df, "1. Исходные данные")
         df_clean = df.copy()
-        
+
         #  Удаление исторических строк
         # Если есть колонка 'Is Historical' — удаляем строки со значением "истина" (в любом регистре), "1", "1.0" или "true"
         if 'Is Historical' in df_clean.columns:
@@ -937,88 +933,23 @@ class DataCleaner:
             # 'true' покрывает случай логического типа ячейки в Excel (после dtype=str → 'True' → 'true')
             # '1.0' покрывает случай числового формата с плавающей точкой
             historical_mask = is_historical_normalized.isin(['истина', '1', '1.0', 'true'])
-            removed_count = historical_mask.sum()
             
-            if removed_count > 0:
-                # === СОБИРАЕМ УНИКАЛЬНЫЕ ИСХОДНЫЕ ЗНАЧЕНИЯ ===
-                # Берем "сырые" значения из колонки Is Historical для строк, которые будут удалены
-                original_values_raw = (
-                    df_clean.loc[historical_mask, 'Is Historical']
-                    .astype(str)
-                    .str.replace('\xa0', ' ')
-                    .str.replace('\u200b', '')
-                    .str.strip()
-                    .unique()
-                    .tolist()
-                )
-                
-                # Фильтруем пустые значения (nan, none, null, '')
-                original_values_raw = [
-                    v for v in original_values_raw 
-                    if str(v).strip().lower() not in ['nan', 'none', 'null', '']
-                ]
-                
-                # Убираем дубликаты по нормализованному значению (нижний регистр),
-                # но сохраняем оригинальное написание первого встреченного варианта
-                seen_normalized = set()
-                unique_original_values = []
-                for v in original_values_raw:
-                    normalized = str(v).strip().lower()
-                    if normalized not in seen_normalized:
-                        seen_normalized.add(normalized)
-                        unique_original_values.append(v)
-                
-                # Сортируем для предсказуемого отображения
-                unique_original_values = sorted(unique_original_values)
-                
-                # Формируем строку для caption: "ИСТИНА", "1", "1.0"
-                original_values_str = ', '.join(f'"{v}"' for v in unique_original_values)
-                st.session_state.cxway_historical_values = original_values_str
-                
-                # === ФОРМИРУЕМ ОТЧЕТ ПО ИСТОРИЧЕСКИМ СТРОКАМ ===
-                historical_df = df_clean[historical_mask].copy()
-                
-                # Находим колонки для группировки (до маппинга — оригинальные названия CXWAY)
-                client_col = self._find_column(historical_df, ['Client', 'Имя клиента', 'Клиент имя'])
-                wave_col = self._find_column(historical_df, ['Wave Name', 'Название проекта', 'Название волны'])
-                
-                if client_col and wave_col:
-                    # Группируем по (Клиент + Волна) и считаем количество
-                    historical_report = historical_df.groupby([client_col, wave_col]).size().reset_index(name='Количество исторических строк')
-                    historical_report = historical_report.rename(columns={
-                        client_col: 'Клиент',
-                        wave_col: 'Волна'
-                    })
-                    historical_report = historical_report.sort_values(['Клиент', 'Волна'])
-                    
-                    st.session_state.cxway_historical_report = historical_report
-                else:
-                    st.session_state.cxway_historical_report = pd.DataFrame({
-                        'Статус': [f'Найдено {removed_count} исторических строк, но не удалось сгруппировать по клиентам/волнам']
-                    })
-                
-                # Удаляем исторические строки
+            if historical_mask.any():
                 df_clean = df_clean[~historical_mask]
-            else:
-                # Колонка есть, но нет строк со значением "истина", "1", "1.0" или "true"
-                st.session_state.cxway_historical_report = pd.DataFrame({
-                    'Статус': ['Исторических строк не найдено']
-                })
             
             # Если после удаления не осталось строк — возвращаем пустой DataFrame
             if df_clean.empty:
                 return pd.DataFrame()
-        else:
-            # Колонки Is Historical нет
-            st.session_state.cxway_historical_report = pd.DataFrame({
-                'Статус': ['Колонка Is Historical не найдена в файле CXWAY']
-            })
-            
+
         # Удалить строки где Status == "Удалено"
         status_col = self._find_column(df_clean, ['Status', 'Статус', 'status'])
         
         if status_col:
             df_clean = df_clean[df_clean[status_col].astype(str).str.strip() != 'Удалено']
+            
+            # Если после удаления не осталось строк — возвращаем пустой DataFrame
+            if df_clean.empty:
+                return pd.DataFrame()
        
         # self._log_samples(df_clean, "2. После удаления статуса")
         
@@ -1035,6 +966,10 @@ class DataCleaner:
             df_clean[date_col] = pd.to_datetime(df_clean[date_col], errors='coerce', dayfirst=True)
             mask = pd.isna(df_clean[date_col]) | (df_clean[date_col] >= first_day)
             df_clean = df_clean[mask]
+            
+            # Если после фильтра не осталось строк — возвращаем пустой DataFrame
+            if df_clean.empty:
+                return pd.DataFrame()
         
         # self._log_samples(df_clean, "3. После фильтра дат")
         

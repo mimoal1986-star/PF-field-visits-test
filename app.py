@@ -1646,7 +1646,30 @@ with tab3:
             st.dataframe(history_display, width='stretch')
         else:
             st.info("История изменений пуста")
-        
+    
+    # ============================================
+    # ДИАГНОСТИКА ОТЧЕТ ПО ИСТОРИЧЕСКИМ СТРОКАМ CXWAY
+    # ============================================
+    if 'cxway_historical_report' in st.session_state and not st.session_state.cxway_historical_report.empty:
+        with st.expander("📋 Отчет по историческим строкам CXWAY", expanded=False):
+            st.caption("Строки из CXWAY, которые были удалены из расчета (Is Historical = ИСТИНА)")
+            st.dataframe(st.session_state.cxway_historical_report, use_container_width=True, hide_index=True)
+            
+            # Кнопка скачивания
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                st.session_state.cxway_historical_report.to_excel(writer, sheet_name='Исторические_строки', index=False)
+            
+            st.download_button(
+                label="⬇️ Скачать отчет по историческим строкам",
+                data=output.getvalue(),
+                file_name=f"cxway_исторические_строки_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                type="secondary",
+                use_container_width=True,
+                key="download_cxway_historical"
+            )
+            
     # ============================================
     # ПРОБЛЕМНЫЕ ПРОЕКТЫ
     # ============================================

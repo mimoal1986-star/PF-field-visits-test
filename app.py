@@ -416,6 +416,11 @@ def process_all_data(settings_manager=None, force_recalc=False):
         cxway_raw = st.session_state.uploaded_files.get('cxway')
         if cxway_raw is not None:
             cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
+        else:
+            # CXWAY не загружен — формируем отчет с сообщением
+            st.session_state.cxway_historical_report = pd.DataFrame({
+                'Статус': ['CXWAY не загружен']
+            })
             
             # Разделяем CXWAY на полевые и неполевые
             if cxway_processed is not None and not cxway_processed.empty:
@@ -1004,8 +1009,38 @@ with tab1:
             st.write(msg)
         st.success("✅ Расчет завершен!")
         st.session_state.show_messages = False
-        
+    
+    # ============================================
+    # ОТЧЕТ ПО ИСТОРИЧЕСКИМ СТРОКАМ CXWAY
+    # ============================================
+    if 'cxway_historical_report' in st.session_state and not st.session_state.cxway_historical_report.empty:
+        with st.expander("📋 Отчет по историческим строкам CXWAY", expanded=False):
+            # Если это реальный отчет с данными (есть колонки Клиент + Волна)
+            if 'Клиент' in st.session_state.cxway_historical_report.columns and 'Волна' in st.session_state.cxway_historical_report.columns:
+                st.caption("Строки из CXWAY, которые были удалены из расчета (Is Historical = ИСТИНА)")
+                st.dataframe(st.session_state.cxway_historical_report, use_container_width=True, hide_index=True)
+                
+                # Кнопка скачивания
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    st.session_state.cxway_historical_report.to_excel(writer, sheet_name='Исторические_строки', index=False)
+                
+                st.download_button(
+                    label="⬇️ Скачать отчет по историческим строкам",
+                    data=output.getvalue(),
+                    file_name=f"cxway_исторические_строки_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="secondary",
+                    use_container_width=True,
+                    key="download_cxway_historical"
+                )
+            else:
+                # Статусное сообщение (колонки нет / нет строк / CXWAY не загружен)
+                st.dataframe(st.session_state.cxway_historical_report, use_container_width=True, hide_index=True)
+    # ============================================
+    
     st.title("📤 Загрузка исходных данных")
+    
     st.markdown("""
     **Обязательные файлы:**
     - 📅 **Проекты Сервизория** — всегда обязателен
@@ -1646,29 +1681,7 @@ with tab3:
             st.dataframe(history_display, width='stretch')
         else:
             st.info("История изменений пуста")
-    
-    # ============================================
-    # ДИАГНОСТИКА ОТЧЕТ ПО ИСТОРИЧЕСКИМ СТРОКАМ CXWAY
-    # ============================================
-    if 'cxway_historical_report' in st.session_state and not st.session_state.cxway_historical_report.empty:
-        with st.expander("📋 Отчет по историческим строкам CXWAY", expanded=False):
-            st.caption("Строки из CXWAY, которые были удалены из расчета (Is Historical = ИСТИНА)")
-            st.dataframe(st.session_state.cxway_historical_report, use_container_width=True, hide_index=True)
-            
-            # Кнопка скачивания
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                st.session_state.cxway_historical_report.to_excel(writer, sheet_name='Исторические_строки', index=False)
-            
-            st.download_button(
-                label="⬇️ Скачать отчет по историческим строкам",
-                data=output.getvalue(),
-                file_name=f"cxway_исторические_строки_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                type="secondary",
-                use_container_width=True,
-                key="download_cxway_historical"
-            )
+
             
     # ============================================
     # ПРОБЛЕМНЫЕ ПРОЕКТЫ

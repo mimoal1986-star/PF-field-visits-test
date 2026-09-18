@@ -916,14 +916,38 @@ class DataCleaner:
         if 'Is Historical' in df_clean.columns:
             historical_mask = df_clean['Is Historical'].astype(str).str.strip().isin(['ИСТИНА', 'Истина', 'истина'])
             removed_count = historical_mask.sum()
+            
             if removed_count > 0:
+                # === ФОРМИРУЕМ ОТЧЕТ ПО ИСТОРИЧЕСКИМ СТРОКАМ ===
+                historical_df = df_clean[historical_mask].copy()
+                
+                # Находим колонки для группировки (до маппинга — оригинальные названия CXWAY)
+                client_col = self._find_column(historical_df, ['Client', 'Имя клиента', 'Клиент имя'])
+                wave_col = self._find_column(historical_df, ['Wave Name', 'Название проекта', 'Название волны'])
+                
+                if client_col and wave_col:
+                    # Группируем по (Клиент + Волна) и считаем количество
+                    historical_report = historical_df.groupby([client_col, wave_col]).size().reset_index(name='Количество строк с ИСТИНА')
+                    historical_report = historical_report.rename(columns={
+                        client_col: 'Клиент',
+                        wave_col: 'Волна'
+                    })
+                    historical_report = historical_report.sort_values(['Клиент', 'Волна'])
+                    
+                    # Сохраняем в session_state для последующего скачивания
+                    st.session_state.cxway_historical_report = historical_report
+                    
+                    st.info(f"✅ Из CXWAY удалено {removed_count} исторических строк (Is Historical = ИСТИНА). Отчет доступен для скачивания во вкладке 'Настройки проектов'.")
+                else:
+                    st.info(f"✅ Из CXWAY удалено {removed_count} исторических строк (Is Historical = ИСТИНА)")
+                
+                # Удаляем исторические строки
                 df_clean = df_clean[~historical_mask]
-                st.info(f"✅ Из CXWAY удалено {removed_count} исторических строк (Is Historical = ИСТИНА)")
             
             # Если после удаления не осталось строк — возвращаем пустой DataFrame
             if df_clean.empty:
                 return pd.DataFrame()
-        
+            
         # Удалить строки где Status == "Удалено"
         status_col = self._find_column(df_clean, ['Status', 'Статус', 'status'])
         

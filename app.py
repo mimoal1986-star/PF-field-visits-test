@@ -416,11 +416,6 @@ def process_all_data(settings_manager=None, force_recalc=False):
         cxway_raw = st.session_state.uploaded_files.get('cxway')
         if cxway_raw is not None:
             cxway_processed = data_cleaner.clean_cxway(cxway_raw, None, google_with_field)
-        else:
-            # CXWAY не загружен — формируем отчет с сообщением
-            st.session_state.cxway_historical_report = pd.DataFrame({
-                'Статус': ['CXWAY не загружен']
-            })
             
             # Разделяем CXWAY на полевые и неполевые
             if cxway_processed is not None and not cxway_processed.empty:
@@ -433,6 +428,11 @@ def process_all_data(settings_manager=None, force_recalc=False):
                         st.session_state.cleaned_data['неполевые_проекты'],
                         cxway_non_field
                     ], ignore_index=True)
+        else:
+            # CXWAY не загружен — формируем отчет с сообщением
+            st.session_state.cxway_historical_report = pd.DataFrame({
+                'Статус': ['CXWAY не загружен']
+            })
 
 
         # ============================================
